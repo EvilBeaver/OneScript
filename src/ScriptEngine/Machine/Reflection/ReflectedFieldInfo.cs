@@ -104,7 +104,7 @@ namespace ScriptEngine.Machine.Reflection
 
         public void AddAnnotation(AnnotationDefinition annotation)
         {
-            _attributes.Add(new UserAnnotationAttribute()
+            _attributes.Add(new UserAnnotationAttribute(annotation.Name)
             {
                 Annotation = annotation
             });

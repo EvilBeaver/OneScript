@@ -15,7 +15,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Reflection
 {
-    public class ClassBuilder : IReflectedClassBuilder
+    public class ClassBuilder
     {
         private readonly Type _classType;
         private List<SysReflection.MethodInfo> _methods = new List<SysReflection.MethodInfo>();
@@ -31,19 +31,19 @@ namespace ScriptEngine.Machine.Reflection
         public string TypeName { get; set; }
         public LoadedModule Module { get; set; }
 
-        public IReflectedClassBuilder SetTypeName(string typeName)
+        public ClassBuilder SetTypeName(string typeName)
         {
             TypeName = typeName;
             return this;
         }
 
-        public IReflectedClassBuilder SetModule(LoadedModule module)
+        public ClassBuilder SetModule(LoadedModule module)
         {
             Module = module;
             return this;
         }
 
-        public IReflectedClassBuilder ExportClassMethod(string methodName)
+        public ClassBuilder ExportClassMethod(string methodName)
         {
             var mi = _classType.GetMethod(methodName);
             if(mi == null)
@@ -53,7 +53,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public IReflectedClassBuilder ExportClassMethod(SysReflection.MethodInfo nativeMethod)
+        public ClassBuilder ExportClassMethod(SysReflection.MethodInfo nativeMethod)
         {
             if(nativeMethod == null)
                 throw new ArgumentNullException(nameof(nativeMethod));
@@ -69,7 +69,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public IReflectedClassBuilder ExportProperty(string propName)
+        public ClassBuilder ExportProperty(string propName)
         {
             var info = _classType.GetProperty(propName);
             if (info == null)
@@ -80,7 +80,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public IReflectedClassBuilder ExportMethods(bool includeDeprecations = false)
+        public ClassBuilder ExportMethods(bool includeDeprecations = false)
         {
             var methods = _classType.GetMethods()
                                    .Where(x => MarkedAsContextMethod(x, includeDeprecations))
@@ -90,7 +90,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
         
-        public IReflectedClassBuilder ExportProperties(bool includeDeprecations = false)
+        public ClassBuilder ExportProperties(bool includeDeprecations = false)
         {
             var props = _classType.GetProperties()
                                    .Where(MarkedAsContextProperty);
@@ -110,7 +110,7 @@ namespace ScriptEngine.Machine.Reflection
             return member.GetCustomAttributes(typeof(ContextPropertyAttribute), false).Any();
         }
 
-        public IReflectedClassBuilder ExportConstructor(SysReflection.ConstructorInfo info)
+        public ClassBuilder ExportConstructor(SysReflection.ConstructorInfo info)
         {
             if (info.DeclaringType != _classType)
             {
@@ -121,7 +121,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public IReflectedClassBuilder ExportConstructor(Func<object[], IRuntimeContextInstance> creator)
+        public ClassBuilder ExportConstructor(Func<object[], IRuntimeContextInstance> creator)
         {
             var info = new ReflectedConstructorInfo(creator);
             info.SetDeclaringType(_classType);
@@ -129,7 +129,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public IReflectedClassBuilder ExportScriptVariables()
+        public ClassBuilder ExportScriptVariables()
         {
             if(Module == null)
                 throw new InvalidOperationException("Module is not set");
@@ -156,7 +156,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public IReflectedClassBuilder ExportScriptMethods()
+        public ClassBuilder ExportScriptMethods()
         {
             if (Module == null)
                 throw new InvalidOperationException("Module is not set");
@@ -166,58 +166,14 @@ namespace ScriptEngine.Machine.Reflection
                 var methodDescriptor = Module.Methods[i];
                 if(methodDescriptor.Signature.Name == ModuleImage.BODY_METHOD_NAME)
                     continue;
-
-                var methInfo = CreateMethodInfo(methodDescriptor.Signature);
-                _methods.Add(methInfo);
+                
+                _methods.Add(methodDescriptor.MethodInfo);
             }
 
             return this;
         }
 
-        private ReflectedMethodInfo CreateMethodInfo(MethodSignature signature)
-        {
-            var reflectedMethod = new ReflectedMethodInfo(signature.Name);
-            reflectedMethod.SetPrivate(!signature.IsExport);
-            reflectedMethod.IsFunction = signature.IsFunction;
-
-            var unknownVal = ValueFactory.CreateInvalidValueMarker();
-
-            for (int i = 0; i < signature.Params.Length; i++)
-            {
-                var currentParam = signature.Params[i];
-                var reflectedParam = new ReflectedParamInfo(currentParam.Name, currentParam.IsByValue);
-                reflectedParam.SetOwner(reflectedMethod);
-                reflectedParam.SetPosition(i);
-                if (currentParam.HasDefaultValue)
-                {
-
-                }
-
-                reflectedParam.SetDefaultValue(unknownVal);
-                if (currentParam.Annotations != null)
-                {
-                    foreach (var annotation in currentParam.Annotations)
-                    {
-                        reflectedParam.AddAnnotation(annotation);
-                    }
-                }
-
-                reflectedMethod.Parameters.Add(reflectedParam);
-            }
-
-            if(signature.Annotations != null)
-            {
-                foreach (var annotation in signature.Annotations)
-                {
-                    reflectedMethod.AddAnnotation(annotation);
-                }
-            }
-
-            return reflectedMethod;
-
-        }
-
-        public IReflectedClassBuilder ExportScriptConstructors()
+        public ClassBuilder ExportScriptConstructors()
         {
             var statics = _classType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
                                    .Where(x => x.GetCustomAttributes(false).Any(y => y is ScriptConstructorAttribute));
@@ -235,13 +191,13 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public IReflectedClassBuilder ExportIndexer()
+        public ClassBuilder ExportIndexer()
         {
             _properties.Add(new IndexerPropertyInfo(_classType));
             return this;
         }
 
-        public IReflectedClassBuilder ExportDefaults()
+        public ClassBuilder ExportDefaults()
         {
             ExportMethods();
             ExportProperties();

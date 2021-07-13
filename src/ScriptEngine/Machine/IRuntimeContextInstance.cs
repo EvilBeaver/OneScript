@@ -31,9 +31,9 @@ namespace ScriptEngine.Machine
         int GetMethodsCount();
 
         BslMethodInfo GetMethodInfo(int methodNumber);
+
+        BslPropertyInfo GetPropertyInfo(int propertyNumber);
         
-        [Obsolete]
-        VariableInfo GetPropertyInfo(int propertyNumber);
         void CallAsProcedure(int methodNumber, IValue[] arguments);
         void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue);
     }

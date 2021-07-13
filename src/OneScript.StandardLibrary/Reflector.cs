@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Native.Runtime;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.TypeDescriptions;
@@ -280,31 +281,25 @@ namespace OneScript.StandardLibrary
                                          PropDef = x.GetCustomAttribute<ContextPropertyAttribute>(),
                                          Prop = x
                                      })
-                                     .Where(x=>x.PropDef != null);
+                                     .Where(x=>x.PropDef != null)
+                                     .Select(x => new ContextPropertyInfo(x.Prop));
 
-            int indices = 0;
-            var infos = new List<VariableInfo>();
-            foreach(var prop in nativeProps)
-            {
-                var info = new VariableInfo();
-                info.Type = SymbolType.ContextProperty;
-                info.Index = indices++;
-                info.Identifier = prop.PropDef.GetName();
-                info.Annotations = GetAnnotations(prop.Prop.GetCustomAttributes<UserAnnotationAttribute>());
-                infos.Add(info);
-            }
+            var infos = new List<BslPropertyInfo>();
+
+            infos.AddRange(nativeProps);
+            int indices = infos.Count;
 
             if (clrType.BaseType == typeof(ScriptDrivenObject))
             {
                 var nativeFields = clrType.GetFields();
                 foreach(var field in nativeFields)
                 {
-                    var info = new VariableInfo();
-                    info.Type = SymbolType.ContextProperty;
-                    info.Index = indices++;
-                    info.Identifier = field.Name;
-                    info.Annotations = GetAnnotations(field.GetCustomAttributes<UserAnnotationAttribute>());
-                    infos.Add(info);
+                    var prop = BslPropertyBuilder.Create()
+                        .Name(field.Name)
+                        .SetDispatchingIndex(indices++)
+                        .Build();
+                    
+                    infos.Add(prop);
                 }
             }
 
@@ -415,7 +410,7 @@ namespace OneScript.StandardLibrary
             target.SetPropValue(propIdx, value);
         }
 
-        private static void FillPropertiesTable(ValueTable result, IEnumerable<VariableInfo> properties)
+        private static void FillPropertiesTable(ValueTable result, IEnumerable<BslPropertyInfo> properties)
         {
             var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
             var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
@@ -423,22 +418,13 @@ namespace OneScript.StandardLibrary
 
             foreach (var propInfo in properties)
             {
-                if (systemVarNames.Contains(propInfo.Identifier.ToLower())) continue;
+                if (systemVarNames.Contains(propInfo.Name.ToLower())) continue;
 
                 ValueTableRow new_row = result.Add();
-                new_row.Set(nameColumn, ValueFactory.Create(propInfo.Identifier));
+                new_row.Set(nameColumn, ValueFactory.Create(propInfo.Name));
 
-                new_row.Set(annotationsColumn, propInfo.AnnotationsCount != 0 ? CreateAnnotationTable(propInfo.Annotations
-                    .Select(x =>
-                    {
-                        var a = new BslAnnotationAttribute(x.Name);
-                        if (x.ParamCount > 0)
-                        {
-                            a.SetParameters(x.Parameters.Select(y => new BslAnnotationParameter(y.Name, (BslPrimitiveValue)y.RuntimeValue)));
-                        }
-
-                        return a;
-                    }).ToArray()) : EmptyAnnotationsTable());
+                var annotations = propInfo.GetAnnotations();
+                new_row.Set(annotationsColumn, annotations.Length != 0 ? CreateAnnotationTable(annotations) : EmptyAnnotationsTable());
             }
         }
 

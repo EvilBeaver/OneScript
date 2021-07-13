@@ -63,11 +63,16 @@ namespace OneScript.StandardLibrary.Collections
             return _methods.GetRuntimeMethod(methodNumber);
         }
 
-        public override VariableInfo GetPropertyInfo(int propertyNumber)
+        public override BslPropertyInfo GetPropertyInfo(int propertyNumber)
         {
             var realProp = _structure.GetPropertyInfo(propertyNumber);
-            realProp.CanSet = false;
-            return realProp;
+            return BslPropertyBuilder.Create()
+                .Name(realProp.Name)
+                .CanRead(true)
+                .CanWrite(false)
+                .ReturnType(realProp.PropertyType)
+                .DeclaringType(GetType())
+                .Build();
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)

@@ -15,7 +15,7 @@ namespace ScriptEngine.Machine
     /// Уже создано много с похожим функционалом по всему проекту. Постепенно можно переводить сюда.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class IndexedNameValueCollection<T> : IEnumerable<T>
+    public class _IndexedNameValueCollection<T> : IEnumerable<T>
     {
         private readonly Dictionary<string, int> _nameIndex = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
         private readonly List<T> _values = new List<T>();

@@ -277,11 +277,18 @@ namespace ScriptEngine.Machine.Contexts
 
         void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
         {
-            var propVariables = RciHelperExtensions.GetProperties(this)
-                .Where(x => x.Identifier != ThisAwareScriptedObjectBase.THISOBJ_RU)
-                .Select(x => Variable.Create(GetPropValue(x.Index), x.Identifier));
+            var thisId = FindProperty(THISOBJ_RU);
+            var total = GetPropCount();
+            var props = new List<IVariable>(total);
+            for (int i = 0; i < total; i++)
+            {
+                if (i != thisId)
+                {
+                    props.Add(Variable.Create(GetPropValue(i), GetPropName(i)));
+                }
+            }
             
-            visitor.ShowCustom(propVariables.ToList());
+            visitor.ShowCustom(props);
         }
     }
 }

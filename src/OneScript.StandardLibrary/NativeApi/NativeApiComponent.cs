@@ -260,20 +260,17 @@ namespace OneScript.StandardLibrary.NativeApi
         //     };
         // }
 
-        public VariableInfo GetPropertyInfo(int propertyNumber)
+        public BslPropertyInfo GetPropertyInfo(int propertyNumber)
         {
             var propName = GetPropName(propertyNumber);
             var isReadable = IsPropReadable(propertyNumber);
             var isWritable = IsPropWritable(propertyNumber);
 
-            return new VariableInfo
-            {
-                Identifier = propName,
-                CanGet = isReadable,
-                CanSet = isWritable,
-                Index = propertyNumber,
-                Type = SymbolType.ContextProperty
-            };
+            return BslPropertyBuilder.Create()
+                .Name(propName)
+                .CanRead(isReadable)
+                .CanWrite(isWritable)
+                .Build();
         }
 
         private void SetDefValues(int methodNumber, int paramCount, IValue[] arguments)

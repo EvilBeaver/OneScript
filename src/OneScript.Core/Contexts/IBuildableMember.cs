@@ -25,4 +25,10 @@ namespace OneScript.Contexts
     {
         void SetParameters(IEnumerable<BslParameterInfo> parameters);
     }
+    
+    internal interface IBuildableProperty : IBuildableMember
+    {
+        void CanRead(bool canRead);
+        void CanWrite(bool canWrite);
+    }
 }

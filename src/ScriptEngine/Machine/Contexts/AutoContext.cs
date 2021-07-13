@@ -93,9 +93,9 @@ namespace ScriptEngine.Machine.Contexts
             return _methods.GetRuntimeMethod(methodNumber);
         }
 
-        public override VariableInfo GetPropertyInfo(int propertyNumber)
+        public override BslPropertyInfo GetPropertyInfo(int propertyNumber)
         {
-            return _properties.GetPropertyInfo(propertyNumber);
+            return _properties.GetProperty(propertyNumber).PropertyInfo;
         }
 
         private void CheckIfCallIsPossible(int methodNumber, IValue[] arguments)

@@ -244,11 +244,11 @@ namespace oscript
 			return _methods.GetRuntimeMethod(methodNumber);
 		}
 
-		public VariableInfo GetPropertyInfo(int propertyNumber)
+		public BslPropertyInfo GetPropertyInfo(int propertyNumber)
 		{
 			throw new NotImplementedException();
 		}
-
+		
 		public void CallAsProcedure(int methodNumber, IValue[] arguments)
 		{
 			_methods.GetCallableDelegate(methodNumber)(this, arguments);

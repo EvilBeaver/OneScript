@@ -87,7 +87,6 @@ namespace OneScript.StandardLibrary.Collections
 
             _values.RemoveAt(propIndex);
             RemoveProperty(name);
-            ReorderPropertyNumbers();
         }
 
         [ContextMethod("Свойство", "Property")]

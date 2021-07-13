@@ -50,7 +50,7 @@ namespace OneScript.Core.Tests
             value.AsNumber().Should().Be(18);
 
             var allNames = instance.GetProperties()
-                .Select(x => x.Identifier)
+                .Select(x => x.Name)
                 .ToArray();
 
             allNames[0].Should().BeOneOf("ThisObject", "ЭтотОбъект");

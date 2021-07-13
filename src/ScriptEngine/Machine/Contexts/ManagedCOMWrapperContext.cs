@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 //#if !__MonoCS__
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -47,9 +48,9 @@ namespace ScriptEngine.Machine.Contexts
                 if (_isIndexed == null)
                 {
                     _isIndexed = _instanceType.GetProperties().Any(x => x.GetIndexParameters().Length > 0);
-                }     
-                
-                return (bool)_isIndexed;
+                }
+
+                return (bool) _isIndexed;
             }
         }
 
@@ -59,12 +60,11 @@ namespace ScriptEngine.Machine.Contexts
 
             try
             {
-
-                comEnumerator = (System.Collections.IEnumerator)_instanceType.InvokeMember("GetEnumerator",
-                                        BindingFlags.InvokeMethod,
-                                        null,
-                                        Instance,
-                                        new object[0]);
+                comEnumerator = (System.Collections.IEnumerator) _instanceType.InvokeMember("GetEnumerator",
+                    BindingFlags.InvokeMethod,
+                    null,
+                    Instance,
+                    new object[0]);
             }
             catch (MissingMethodException)
             {
@@ -104,9 +104,9 @@ namespace ScriptEngine.Machine.Contexts
         public override void SetPropValue(int propNum, IValue newVal)
         {
             var pi = _nameMapper.GetProperty(propNum);
-            
+
             var setMethod = pi.GetSetMethod();
-            setMethod.Invoke(Instance, MarshalArgumentsStrict(new[] { newVal }, new[] { pi.PropertyType }));
+            setMethod.Invoke(Instance, MarshalArgumentsStrict(new[] {newVal}, new[] {pi.PropertyType}));
         }
 
         public override IValue GetIndexedValue(IValue index)
@@ -114,29 +114,30 @@ namespace ScriptEngine.Machine.Contexts
             if (!IsIndexed)
                 throw RuntimeException.IndexedAccessIsNotSupportedException();
 
-            var member = _instanceType.GetMethod("get_Item", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance);
+            var member = _instanceType.GetMethod("get_Item",
+                BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance);
 
             if (member == null) // set only?
                 throw RuntimeException.IndexedAccessIsNotSupportedException();
 
-            object retValue = member.Invoke(Instance, MarshalArgumentsStrict(new[] { index }, GetMethodParametersTypes(member)));
+            object retValue = member.Invoke(Instance,
+                MarshalArgumentsStrict(new[] {index}, GetMethodParametersTypes(member)));
 
             return CreateIValue(retValue);
-
         }
-        
+
         public override void SetIndexedValue(IValue index, IValue value)
         {
             if (!IsIndexed)
                 throw RuntimeException.IndexedAccessIsNotSupportedException();
 
-            var member = _instanceType.GetMethod("set_Item", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance);
+            var member = _instanceType.GetMethod("set_Item",
+                BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance);
 
             if (member == null) // get only?
                 throw RuntimeException.IndexedAccessIsNotSupportedException();
 
-            member.Invoke(Instance, MarshalArgumentsStrict(new[] { index, value }, GetMethodParametersTypes(member)));
-
+            member.Invoke(Instance, MarshalArgumentsStrict(new[] {index, value}, GetMethodParametersTypes(member)));
         }
 
         public override int FindMethod(string name)
@@ -150,17 +151,10 @@ namespace ScriptEngine.Machine.Contexts
             return GetReflectableMethod(methodInfo);
         }
 
-        public override VariableInfo GetPropertyInfo(int propertyNumber)
+        public override BslPropertyInfo GetPropertyInfo(int propertyNumber)
         {
             var info = _nameMapper.GetProperty(propertyNumber);
-            return new VariableInfo
-            {
-                Identifier = info.Name,
-                Index = propertyNumber,
-                CanGet = info.CanRead,
-                CanSet = info.CanWrite,
-                Type = SymbolType.ContextProperty
-            };
+            return GetReflectableProperty(propertyNumber, info);
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
@@ -176,18 +170,28 @@ namespace ScriptEngine.Machine.Contexts
             retValue = CreateIValue(result);
         }
 
+        private BslPropertyInfo GetReflectableProperty(int index, PropertyInfo p)
+        {
+            return BslPropertyBuilder.Create()
+                .Name(p.Name)
+                .SetDispatchingIndex(index)
+                .CanRead(p.CanRead)
+                .CanWrite(p.CanWrite)
+                .Build();
+        }
+
         private BslMethodInfo GetReflectableMethod(MethodInfo reflectionMethod)
         {
             var builder = BslMethodBuilder.Create();
             builder.Name(reflectionMethod.Name);
             builder.ReturnType(reflectionMethod.ReturnType);
-            
+
             var reflectionParams = reflectionMethod.GetParameters();
             FillMethodInfoParameters(builder, reflectionParams);
-            
+
             return builder.Build();
         }
-        
+
         private static Type[] GetMethodParametersTypes(MethodInfo method)
         {
             return method.GetParameters()
@@ -195,19 +199,20 @@ namespace ScriptEngine.Machine.Contexts
                 .ToArray();
         }
 
-        private static void FillMethodInfoParameters(BslMethodBuilder<BslScriptMethodInfo> methodSignature, ParameterInfo[] reflectionParams)
+        private static void FillMethodInfoParameters(BslMethodBuilder<BslScriptMethodInfo> methodSignature,
+            ParameterInfo[] reflectionParams)
         {
             foreach (var reflectedParam in reflectionParams)
             {
                 var paramBuilder = methodSignature.NewParameter()
                     .ByValue(!reflectedParam.IsOut);
 
-                if (!reflectedParam.HasDefaultValue) 
+                if (!reflectedParam.HasDefaultValue)
                     continue;
-                
+
                 var marshalled = ContextValuesMarshaller.ConvertReturnValue(reflectedParam.DefaultValue);
                 Debug.Assert(marshalled is BslPrimitiveValue);
-                paramBuilder.DefaultValue((BslPrimitiveValue)marshalled);
+                paramBuilder.DefaultValue((BslPrimitiveValue) marshalled);
             }
         }
     }

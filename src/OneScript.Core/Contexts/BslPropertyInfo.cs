@@ -12,7 +12,7 @@ namespace OneScript.Contexts
 {
     public abstract class BslPropertyInfo : PropertyInfo, IAliasedMemberInfo
     {
-        public string Alias { get; protected set; }
+        public abstract string Alias { get; }
         
         private AnnotationHolder _annotations;
         

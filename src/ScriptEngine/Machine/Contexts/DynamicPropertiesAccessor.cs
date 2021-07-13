@@ -28,11 +28,6 @@ namespace ScriptEngine.Machine.Contexts
             _propHolder.RemoveProperty(name);
         }
 
-        protected void ReorderPropertyNumbers()
-        {
-            _propHolder.ReorderPropertyNumbers();
-        }
-
         protected void ClearProperties()
         {
             _propHolder.ClearProperties();

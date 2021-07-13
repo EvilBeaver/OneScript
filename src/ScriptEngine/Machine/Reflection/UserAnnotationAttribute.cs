@@ -6,12 +6,17 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Contexts;
 
 namespace ScriptEngine.Machine.Reflection
 {
     [AttributeUsage(AttributeTargets.Method|AttributeTargets.Parameter, AllowMultiple = true)]
-    public class UserAnnotationAttribute : Attribute
+    public class UserAnnotationAttribute : BslAnnotationAttribute
     {
         public AnnotationDefinition Annotation { get; set; }
+
+        public UserAnnotationAttribute(string name) : base(name)
+        {
+        }
     }
 }

@@ -27,7 +27,7 @@ namespace ScriptEngine.Machine
         {
             foreach (var item in Instance.GetProperties())
             {
-                Symbols.DefineVariable(item.Identifier, item.Alias);
+                Symbols.DefineVariable(item.Name, item.Alias);
             }
 
             foreach (var item in Instance.GetMethods())

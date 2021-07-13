@@ -26,18 +26,12 @@ namespace ScriptEngine.Machine
             return methods;
         }
 
-        public static IEnumerable<VariableInfo> GetProperties(this IRuntimeContextInstance context)
+        public static IEnumerable<BslPropertyInfo> GetProperties(this IRuntimeContextInstance context)
         {
-            VariableInfo[] infos = new VariableInfo[context.GetPropCount()];
-            for (int i = 0; i < infos.Length; i++)
+            var infos = new BslPropertyInfo[context.GetPropCount()];
+            for (var i = 0; i < infos.Length; i++)
             {
                 infos[i] = context.GetPropertyInfo(i);
-                // new VariableInfo()
-                // {
-                //     Identifier = context.GetPropName(i),
-                //     Type = SymbolType.ContextProperty,
-                //     Index = i
-                // };
             }
 
             return infos;

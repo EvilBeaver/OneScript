@@ -170,18 +170,12 @@ namespace ScriptEngine.Machine.Contexts
         {
             throw new NotImplementedException();
         }
-        
-        public virtual VariableInfo GetPropertyInfo(int propertyNumber)
+
+        public virtual BslPropertyInfo GetPropertyInfo(int propertyNumber)
         {
-            return new VariableInfo
-            {
-                Identifier = GetPropName(propertyNumber),
-                CanGet = IsPropReadable(propertyNumber),
-                CanSet = IsPropWritable(propertyNumber),
-                Index = propertyNumber,
-                Type = SymbolType.ContextProperty
-            };
+            throw new NotImplementedException();
         }
+        
         public virtual void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
             throw new NotImplementedException();

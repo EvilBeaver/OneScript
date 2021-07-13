@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OneScript.Commons
 {
@@ -21,7 +22,7 @@ namespace OneScript.Commons
         private readonly Dictionary<string, int> _nameIndex = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
         private readonly List<T> _values = new List<T>();
 
-        public void Add(T item, string name)
+        public int Add(T item, string name)
         {
             if (_nameIndex.ContainsKey(name))
                 throw new InvalidOperationException($"Name {name} already registered");
@@ -29,13 +30,15 @@ namespace OneScript.Commons
             var idx = _values.Count;
             _values.Add(item);
             _nameIndex[name] = idx;
+            return idx;
         }
 
-        public void Add(T item, string name, string alias)
+        public int Add(T item, string name, string alias)
         {
             var index = _values.Count;
             Add(item, name);
             AddName(index, alias);
+            return index;
         }
 
         public T this[int index]
@@ -62,11 +65,10 @@ namespace OneScript.Commons
         
         public int IndexOf(string name)
         {
-            int idx;
-            if (!_nameIndex.TryGetValue(name, out idx))
+            if (!_nameIndex.TryGetValue(name, out var index))
                 return -1;
 
-            return _nameIndex[name];
+            return index;
         }
 
         public bool TryGetValue(string name, out T result)
@@ -92,6 +94,63 @@ namespace OneScript.Commons
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public IEnumerable<KeyValuePair<string, int>> GetIndex()
+        {
+            return _nameIndex.AsEnumerable();
+        }
+        
+        public void RemoveValue(string name)
+        {
+            var idx = IndexOf(name);
+            if (idx == -1)
+            {
+                throw new InvalidOperationException("Name is not belong to index");
+            }
+
+            var indices = _nameIndex
+                .Where(x => x.Value == idx)
+                .Select(x => x.Key);
+
+            foreach (var referencedName in indices)
+            {
+                _nameIndex.Remove(referencedName);
+            }
+            
+            Reindex();
+        }
+
+        private void Reindex()
+        {
+            var nameMap = _nameIndex
+                .OrderBy(x => x.Value)
+                .Select(x => new
+                {
+                    x.Key,
+                    Value = _values[x.Value]
+                }).ToList();
+
+            Clear();
+
+            foreach (var item in nameMap)
+            {
+                var newIndex = _values.Count;
+                _values.Add(item.Value);
+                _nameIndex.Add(item.Key, newIndex);
+            }
+        }
+
+        public void RemoveName(string name)
+        {
+            _nameIndex.Remove(name);
+            Reindex();
+        }
+
+        public void Clear()
+        {
+            _nameIndex.Clear();
+            _values.Clear();
         }
     }
 }

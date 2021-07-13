@@ -196,7 +196,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public void AddAnnotation(AnnotationDefinition annotation)
         {
-            _annotations.Add(new UserAnnotationAttribute()
+            _annotations.Add(new UserAnnotationAttribute(annotation.Name)
             {
                 Annotation = annotation
             });

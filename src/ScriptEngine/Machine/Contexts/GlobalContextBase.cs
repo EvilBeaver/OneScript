@@ -96,9 +96,9 @@ namespace ScriptEngine.Machine.Contexts
             return Methods.GetRuntimeMethod(methodNumber);
         }
 
-        public virtual VariableInfo GetPropertyInfo(int propertyNumber)
+        public virtual BslPropertyInfo GetPropertyInfo(int propertyNumber)
         {
-            return Properties.GetPropertyInfo(propertyNumber);
+            return Properties.GetProperty(propertyNumber).PropertyInfo;
         }
 
         public virtual void CallAsProcedure(int methodNumber, IValue[] arguments)
@@ -117,12 +117,13 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodSignature[] methods)
         {
-            variables = RciHelperExtensions.GetProperties(this)
-                .OrderBy(x => x.Index)
-                .Select(x => Variable.CreateContextPropertyReference(this, x.Index, x.Identifier))
-                .ToArray();
-
-            methods = RciHelperExtensions.GetMethods(this)
+            variables = new IVariable[GetPropCount()];
+            for (int i = 0; i < variables.Length; i++)
+            {
+                variables[i] = Variable.CreateContextPropertyReference(this, i, GetPropName(i));
+            }
+            
+            methods = this.GetMethods()
                 .Select(x => x.MakeSignature())
                 .ToArray();
         }

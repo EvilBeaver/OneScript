@@ -11,11 +11,10 @@ using System.Linq;
 using System.Reflection;
 using OneScript.Commons;
 using OneScript.Types;
-using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.Machine.Reflection
+namespace OneScript.Contexts
 {
-    public class ContextPropertyInfo : PropertyInfo, IObjectWrapper
+    public class ContextPropertyInfo : BslPropertyInfo, IObjectWrapper
     {
         private readonly PropertyInfo _realProperty;
         private readonly ContextPropertyAttribute _scriptMark;
@@ -46,9 +45,9 @@ namespace ScriptEngine.Machine.Reflection
         
         public override string Name => _scriptMark.GetName();
         
-        public string Alias => _scriptMark.GetAlias();
+        public override string Alias => _scriptMark.GetAlias();
         
-        public override System.Reflection.MethodInfo[] GetAccessors(bool nonPublic)
+        public override MethodInfo[] GetAccessors(bool nonPublic)
         {
             var getter = GetGetMethod(nonPublic);
             var setter = GetSetMethod(nonPublic);
@@ -61,7 +60,7 @@ namespace ScriptEngine.Machine.Reflection
             return setter == null ? new [] {getter} : new [] {setter};
         }
 
-        public override System.Reflection.MethodInfo GetGetMethod(bool nonPublic)
+        public override MethodInfo GetGetMethod(bool nonPublic)
         {
             return _scriptMark.CanRead ? _realProperty.GetGetMethod(nonPublic) : null;
         }
@@ -71,7 +70,7 @@ namespace ScriptEngine.Machine.Reflection
             return new ParameterInfo[0];
         }
 
-        public override System.Reflection.MethodInfo GetSetMethod(bool nonPublic)
+        public override MethodInfo GetSetMethod(bool nonPublic)
         {
             return _scriptMark.CanWrite ? _realProperty.GetSetMethod(nonPublic) : null;
         }

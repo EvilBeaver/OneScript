@@ -21,9 +21,7 @@ namespace OneScript.Contexts
         private Type _declaringType;
         private Type _returnType = typeof(void);
         private string _name;
-        private string _alias;
         private bool _isPrivate = true;
-        private int _dispId = -1;
 
         protected BslScriptMethodInfo()
         {
@@ -36,7 +34,7 @@ namespace OneScript.Contexts
         
         void IBuildableMember.SetDispatchIndex(int index)
         {
-            _dispId = index;
+            DispatchId = index;
         }
         
         void IBuildableMember.SetDeclaringType(Type type)
@@ -51,7 +49,6 @@ namespace OneScript.Contexts
 
         void IBuildableMember.SetAlias(string alias)
         {
-            _alias = alias;
         }
 
         void IBuildableMember.SetExportFlag(bool isExport)
@@ -86,7 +83,9 @@ namespace OneScript.Contexts
         public override string Alias => default;
 
         public override Type ReflectedType => _declaringType;
-        
+
+        public int DispatchId { get; private set; } = -1;
+
         public override MethodImplAttributes GetMethodImplementationFlags() => MethodImplAttributes.Managed;
 
         public override ParameterInfo[] GetParameters() => Parameters.ToArray();

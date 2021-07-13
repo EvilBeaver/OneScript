@@ -4,109 +4,108 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using OneScript.Contexts;
 using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
     public class PropertyTarget<TInstance>
     {
-        private readonly Func<TInstance, IValue> _getter;
-        private readonly Action<TInstance, IValue> _setter;
-        private readonly string _name;
-        private readonly string _alias;
+        private readonly BslPropertyInfo _propertyInfo;
 
         public PropertyTarget(PropertyInfo propInfo)
         {
-            var attrib = (ContextPropertyAttribute)propInfo.GetCustomAttributes(typeof(ContextPropertyAttribute), false)[0];
-            _name = attrib.GetName();
-            _alias = attrib.GetAlias();
-            if (string.IsNullOrEmpty(_alias))
-                _alias = propInfo.Name;
+            _propertyInfo = new ContextPropertyInfo(propInfo);
+            Name = _propertyInfo.Name;
+            Alias = _propertyInfo.Alias;
+            
+            if (string.IsNullOrEmpty(Alias))
+                Alias = propInfo.Name;
 
             IValue CantReadAction(TInstance inst)
             {
-                throw PropertyAccessException.PropIsNotReadableException(_name);
+                throw PropertyAccessException.PropIsNotReadableException(Name);
             }
 
             void CantWriteAction(TInstance inst, IValue val)
             {
-                throw PropertyAccessException.PropIsNotWritableException(_name);
+                throw PropertyAccessException.PropIsNotWritableException(Name);
             }
 
-            this.CanRead = attrib.CanRead;
-            this.CanWrite = attrib.CanWrite;
-
-            if (attrib.CanRead)
+            if (_propertyInfo.CanRead)
             {
                 var getMethodInfo = propInfo.GetGetMethod();
                 if (getMethodInfo == null)
                 {
-                    _getter = CantReadAction;
+                    Getter = CantReadAction;
                 }
                 else
                 {
-                    var genericGetter = typeof(PropertyTarget<TInstance>).GetMembers(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                        .Where(x => x.MemberType == System.Reflection.MemberTypes.Method && x.Name == "CreateGetter")
-                        .Select(x => (System.Reflection.MethodInfo)x)
+                    var genericGetter = typeof(PropertyTarget<TInstance>).GetMembers(BindingFlags.NonPublic | BindingFlags.Instance)
+                        .Where(x => x.MemberType == MemberTypes.Method && x.Name == nameof(CreateGetter))
+                        .Select(x => (MethodInfo)x)
                         .First();
 
-                    var resolvedGetter = genericGetter.MakeGenericMethod(new Type[] { propInfo.PropertyType });
+                    var resolvedGetter = genericGetter.MakeGenericMethod(propInfo.PropertyType);
 
-                    _getter = (Func<TInstance, IValue>)resolvedGetter.Invoke(this, new object[] { getMethodInfo });
+                    Getter = (Func<TInstance, IValue>)resolvedGetter.Invoke(this, new object[] { getMethodInfo });
                 }
             }
             else
             {
-                _getter = CantReadAction;
+                Getter = CantReadAction;
             }
 
-            if (attrib.CanWrite)
+            if (_propertyInfo.CanWrite)
             {
                 var setMethodInfo = propInfo.GetSetMethod();
                 if (setMethodInfo == null)
                 {
-                    _setter = CantWriteAction;
+                    Setter = CantWriteAction;
                 }
                 else
                 {
-                    var genericSetter = typeof(PropertyTarget<TInstance>).GetMembers(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                        .Where(x => x.MemberType == System.Reflection.MemberTypes.Method && x.Name == "CreateSetter")
-                        .Select(x => (System.Reflection.MethodInfo)x)
+                    var genericSetter = typeof(PropertyTarget<TInstance>).GetMembers(BindingFlags.NonPublic | BindingFlags.Instance)
+                        .Where(x => x.MemberType == MemberTypes.Method && x.Name == nameof(CreateSetter))
+                        .Select(x => (MethodInfo)x)
                         .First();
 
-                    var resolvedSetter = genericSetter.MakeGenericMethod(new Type[] { propInfo.PropertyType });
+                    var resolvedSetter = genericSetter.MakeGenericMethod(propInfo.PropertyType);
 
-                    _setter = (Action<TInstance, IValue>)resolvedSetter.Invoke(this, new object[] { setMethodInfo });
+                    Setter = (Action<TInstance, IValue>)resolvedSetter.Invoke(this, new object[] { setMethodInfo });
                 }
             }
             else
             {
-                _setter = CantWriteAction;
+                Setter = CantWriteAction;
             }
         }
+        
+        public Func<TInstance, IValue> Getter { get; }
 
-        public Func<TInstance, IValue> Getter => _getter;
+        public Action<TInstance, IValue> Setter { get; }
 
-        public Action<TInstance, IValue> Setter => _setter;
+        public string Name { get; }
 
-        public string Name => _name;
+        public string Alias { get; }
 
-        public string Alias => _alias;
+        public bool CanRead => _propertyInfo.CanRead;
+        public bool CanWrite => _propertyInfo.CanWrite;
 
-        public bool CanRead { get; private set; }
-        public bool CanWrite { get; private set; }
+        public BslPropertyInfo PropertyInfo => _propertyInfo;
 
-        private Func<TInstance, IValue> CreateGetter<T>(System.Reflection.MethodInfo methInfo)
+        private Func<TInstance, IValue> CreateGetter<T>(MethodInfo methInfo)
         {
             var method = (Func<TInstance, T>)Delegate.CreateDelegate(typeof(Func<TInstance, T>), methInfo);
-            return (inst) => ConvertReturnValue(method(inst));
+            return inst => ConvertReturnValue(method(inst));
         }
 
-        private Action<TInstance, IValue> CreateSetter<T>(System.Reflection.MethodInfo methInfo)
+        private Action<TInstance, IValue> CreateSetter<T>(MethodInfo methInfo)
         {
             var method = (Action<TInstance, T>)Delegate.CreateDelegate(typeof(Action<TInstance, T>), methInfo);
             return (inst, val) => method(inst, ConvertParam<T>(val));
@@ -119,7 +118,7 @@ namespace ScriptEngine.Machine.Contexts
 
         private IValue ConvertReturnValue<TRet>(TRet param)
         {
-            return ContextValuesMarshaller.ConvertReturnValue<TRet>(param);
+            return ContextValuesMarshaller.ConvertReturnValue(param);
         }
 
     }
@@ -127,21 +126,25 @@ namespace ScriptEngine.Machine.Contexts
     public class ContextPropertyMapper<TInstance>
     {
         private List<PropertyTarget<TInstance>> _properties;
+        private readonly object _locker = new object();
 
-        public void Init()
+        private void Init()
         {
-            if (_properties != null) return;
+            if (_properties != null) 
+                return;
 
-            lock (this)
+            lock (_locker)
             {
-                if(_properties == null)
-                    FindProperties();
+                if (_properties == null)
+                {
+                    _properties = FindProperties();
+                }
             }
         }
 
-        private void FindProperties()
+        private List<PropertyTarget<TInstance>> FindProperties()
         {
-            _properties = typeof(TInstance).GetProperties()
+            return typeof(TInstance).GetProperties()
                 .Where(x => x.GetCustomAttributes(typeof(ContextPropertyAttribute), false).Any())
                 .Select(x => new PropertyTarget<TInstance>(x)).ToList();
         }
@@ -178,7 +181,7 @@ namespace ScriptEngine.Machine.Contexts
         public VariableInfo GetPropertyInfo(int propNum)
         {
             var prop = _properties[propNum];
-            return new VariableInfo()
+            return new VariableInfo
             {
                 Identifier = prop.Name,
                 Alias = prop.Alias,
@@ -186,7 +189,7 @@ namespace ScriptEngine.Machine.Contexts
                 Index = propNum
             };
         }
-        
+
         public IEnumerable<VariableInfo> GetProperties()
         {
             Init();
