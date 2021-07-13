@@ -7,10 +7,12 @@ at http://mozilla.org/MPL/2.0/.
 //#if !__MonoCS__
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -133,7 +135,7 @@ namespace ScriptEngine.Machine.Contexts
             if (member == null) // get only?
                 throw RuntimeException.IndexedAccessIsNotSupportedException();
 
-            object retValue = member.Invoke(Instance, MarshalArgumentsStrict(new[] { index, value }, GetMethodParametersTypes(member)));
+            member.Invoke(Instance, MarshalArgumentsStrict(new[] { index, value }, GetMethodParametersTypes(member)));
 
         }
 
@@ -145,7 +147,7 @@ namespace ScriptEngine.Machine.Contexts
         public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
             var methodInfo = _nameMapper.GetMethod(methodNumber).Method;
-            return new ContextMethodInfo(methodInfo);
+            return GetReflectableMethod(methodInfo);
         }
 
         public override VariableInfo GetPropertyInfo(int propertyNumber)
@@ -174,42 +176,38 @@ namespace ScriptEngine.Machine.Contexts
             retValue = CreateIValue(result);
         }
 
-        private MethodSignature GetReflectableMethod(System.Reflection.MethodInfo reflectionMethod)
+        private BslMethodInfo GetReflectableMethod(MethodInfo reflectionMethod)
         {
-            MethodSignature methodSignature;
-
-            methodSignature = new MethodSignature();
-            methodSignature.Name = reflectionMethod.Name;
-
-            var reflectedMethod = reflectionMethod as System.Reflection.MethodInfo;
-
-            if (reflectedMethod != null)
-            {
-                methodSignature.IsFunction = reflectedMethod.ReturnType != typeof(void);
-                var reflectionParams = reflectedMethod.GetParameters();
-                FillMethodInfoParameters(ref methodSignature, reflectionParams);
-            }
-
-            return methodSignature;
+            var builder = BslMethodBuilder.Create();
+            builder.Name(reflectionMethod.Name);
+            builder.ReturnType(reflectionMethod.ReturnType);
+            
+            var reflectionParams = reflectionMethod.GetParameters();
+            FillMethodInfoParameters(builder, reflectionParams);
+            
+            return builder.Build();
         }
         
-        private static Type[] GetMethodParametersTypes(System.Reflection.MethodInfo method)
+        private static Type[] GetMethodParametersTypes(MethodInfo method)
         {
             return method.GetParameters()
                 .Select(x => x.ParameterType)
                 .ToArray();
         }
 
-        private static void FillMethodInfoParameters(ref MethodSignature methodSignature, System.Reflection.ParameterInfo[] reflectionParams)
+        private static void FillMethodInfoParameters(BslMethodBuilder<BslScriptMethodInfo> methodSignature, ParameterInfo[] reflectionParams)
         {
-            methodSignature.Params = new ParameterDefinition[reflectionParams.Length];
-            for (int i = 0; i < reflectionParams.Length; i++)
+            foreach (var reflectedParam in reflectionParams)
             {
-                var reflectedParam = reflectionParams[i];
-                var param = new ParameterDefinition();
-                param.HasDefaultValue = reflectedParam.IsOptional;
-                param.IsByValue = !reflectedParam.IsOut;
-                methodSignature.Params[i] = param;
+                var paramBuilder = methodSignature.NewParameter()
+                    .ByValue(!reflectedParam.IsOut);
+
+                if (!reflectedParam.HasDefaultValue) 
+                    continue;
+                
+                var marshalled = ContextValuesMarshaller.ConvertReturnValue(reflectedParam.DefaultValue);
+                Debug.Assert(marshalled is BslPrimitiveValue);
+                paramBuilder.DefaultValue((BslPrimitiveValue)marshalled);
             }
         }
     }
