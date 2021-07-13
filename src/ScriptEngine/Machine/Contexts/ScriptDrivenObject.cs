@@ -350,7 +350,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (PropDefinedInScript(propertyNumber))
             {
-                var variable = _module.Variables[propertyNumber];
+                var variable = _module.Variables[propertyNumber-VARIABLE_COUNT];
                 return BslPropertyBuilder.Create()
                     .Name(variable.Identifier)
                     .IsExported(_propertySearchCache.ContainsKey(variable.Identifier))

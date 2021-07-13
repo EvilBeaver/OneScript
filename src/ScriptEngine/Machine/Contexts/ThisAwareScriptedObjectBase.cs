@@ -13,7 +13,7 @@ namespace ScriptEngine.Machine.Contexts
 {
     public abstract class ThisAwareScriptedObjectBase : ScriptDrivenObject
     {
-        private const int THISOBJ_VARIABLE_INDEX = 0;
+        protected const int THISOBJ_VARIABLE_INDEX = 0;
         private const int INVALID_INDEX = -1;
         
         protected const string THISOBJ_EN = "ThisObject";

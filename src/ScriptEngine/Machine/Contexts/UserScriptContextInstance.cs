@@ -175,6 +175,29 @@ namespace ScriptEngine.Machine.Contexts
             return GetOwnMethodsDefinition()[RAIZEEVENT_INDEX];
         }
 
+        protected override BslPropertyInfo GetOwnPropertyInfo(int index)
+        {
+            if (index == THISOBJ_VARIABLE_INDEX)
+                return base.GetOwnPropertyInfo(index);
+            
+            var names = _ownPropertyIndexes.Where(x => x.Value == index)
+                .Select(x => x.Key)
+                .ToArray();
+            
+            Debug.Assert(names.Length > 0 && names.Length <= 2);
+            
+            var builder = BslPropertyBuilder.Create()
+                .Name(names[0]);
+            if (names.Length == 2)
+            {
+                builder.Alias(names[1]);
+            }
+
+            builder.SetDispatchingIndex(index);
+
+            return builder.Build();
+        }
+
         public static void PrepareCompilation(ICompilerService compiler)
         {
             RegisterSymbols(compiler);
