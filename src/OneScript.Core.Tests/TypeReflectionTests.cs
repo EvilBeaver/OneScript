@@ -5,7 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Linq;
 using System.Reflection;
+using OneScript.Contexts;
 using ScriptEngine;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine.Contexts;
@@ -225,11 +227,10 @@ namespace OneScript.Core.Tests
             var reflected = CreateDummyType(script);
             var method = reflected.GetMethod("Внешняя");
             Assert.NotNull(method);
-            Assert.Equal(3, method.GetCustomAttributes(false).Length);
-            Assert.Equal(2, method.GetCustomAttributes(typeof(UserAnnotationAttribute), false).Length);
+            Assert.Equal(2, method.GetCustomAttributes(typeof(BslAnnotationAttribute), false).Length);
 
-            var first = (UserAnnotationAttribute)method.GetCustomAttributes(typeof(UserAnnotationAttribute), false)[0];
-            Assert.Equal("Аннотация", first.Annotation.Name);
+            var first = (BslAnnotationAttribute)method.GetCustomAttributes(typeof(BslAnnotationAttribute), false)[0];
+            Assert.Equal("Аннотация", first.Name);
         }
 
         [Fact]
@@ -243,8 +244,8 @@ namespace OneScript.Core.Tests
             Assert.NotNull(method);
             var param = method.GetParameters()[0];
 
-            var first = (UserAnnotationAttribute)param.GetCustomAttributes(typeof(UserAnnotationAttribute), false)[0];
-            Assert.Equal("Аннотация", first.Annotation.Name);
+            var first = (BslAnnotationAttribute)param.GetCustomAttributes(typeof(BslAnnotationAttribute), false)[0];
+            Assert.Equal("Аннотация", first.Name);
         }
     }
 }
