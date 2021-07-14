@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using OneScript.Contexts;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine.Reflection
@@ -20,7 +21,7 @@ namespace ScriptEngine.Machine.Reflection
         private bool _isPublic;
         private readonly VariableInfo _info;
 
-        private readonly List<UserAnnotationAttribute> _attributes = new List<UserAnnotationAttribute>();
+        private readonly List<BslAnnotationAttribute> _attributes = new List<BslAnnotationAttribute>();
 
         public ReflectedFieldInfo(VariableInfo info, bool isPublic)
         {
@@ -33,7 +34,7 @@ namespace ScriptEngine.Machine.Reflection
             _declaringType = declType;
         }
 
-        private IEnumerable<UserAnnotationAttribute> GetCustomAttributesInternal(bool inherit)
+        private IEnumerable<BslAnnotationAttribute> GetCustomAttributesInternal(bool inherit)
         {
             return _attributes;
         }
@@ -104,7 +105,7 @@ namespace ScriptEngine.Machine.Reflection
 
         public void AddAnnotation(AnnotationDefinition annotation)
         {
-            _attributes.Add(new UserAnnotationAttribute(annotation));
+            _attributes.Add(annotation.MakeBslAttribute());
         }
     }
 }

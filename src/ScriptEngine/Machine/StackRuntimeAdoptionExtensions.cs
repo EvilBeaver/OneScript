@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Linq;
 using System.Reflection;
 using OneScript.Contexts;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine
 {
@@ -71,6 +72,21 @@ namespace ScriptEngine.Machine
             return member.GetCustomAttributes(typeof(BslAnnotationAttribute), false)
                 .Cast<BslAnnotationAttribute>()
                 .Select(ToMachineDefinition).ToArray();
+        }
+
+        public static BslAnnotationAttribute MakeBslAttribute(this in AnnotationDefinition annotation)
+        {
+            var attribute = new BslAnnotationAttribute(annotation.Name);
+            if (annotation.ParamCount > 0)
+            {
+                attribute.SetParameters(annotation.Parameters.Select(p => 
+                    new BslAnnotationParameter(p.Name, (BslPrimitiveValue) p.RuntimeValue)
+                    {
+                        ConstantValueIndex = p.ValueIndex
+                    }));
+            }
+
+            return attribute;
         }
     }
 }

@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-
+using OneScript.Contexts;
 using ScriptEngine.Machine.Reflection;
 
 namespace ScriptEngine.Machine.Contexts
@@ -25,13 +25,13 @@ namespace ScriptEngine.Machine.Contexts
         private Type _declaringType;
 
         private readonly List<ParameterInfo> _parameters;
-        private List<UserAnnotationAttribute> _annotations;
+        private List<BslAnnotationAttribute> _annotations;
 
         public ReflectedMethodInfo(string name)
         {
             _name = name;
             _parameters = new List<ParameterInfo>();
-            _annotations = new List<UserAnnotationAttribute>();
+            _annotations = new List<BslAnnotationAttribute>();
         }
 
         public void SetDeclaringType(Type declaringType)
@@ -162,7 +162,7 @@ namespace ScriptEngine.Machine.Contexts
                 return attribs;
             }
 
-            if(attributeType == typeof(UserAnnotationAttribute))
+            if(attributeType == typeof(BslAnnotationAttribute))
             {
                 return _annotations.ToArray();
             }
@@ -181,7 +181,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override bool IsDefined(Type attributeType, bool inherit)
         {
-            return attributeType == typeof(DispIdAttribute) || _annotations.Count > 0 && attributeType == typeof(UserAnnotationAttribute);
+            return attributeType == typeof(DispIdAttribute) || _annotations.Count > 0 && attributeType == typeof(BslAnnotationAttribute);
         }
 
         public override string Name
@@ -192,11 +192,6 @@ namespace ScriptEngine.Machine.Contexts
         public override Type ReflectedType
         {
             get { return _declaringType; }
-        }
-
-        public void AddAnnotation(AnnotationDefinition annotation)
-        {
-            _annotations.Add(new UserAnnotationAttribute(annotation));
         }
     }
 }

@@ -181,8 +181,6 @@ namespace ScriptEngine.Machine
         
     }
     
-    
-
     [Serializable]
     public struct AnnotationDefinition
     {

@@ -354,7 +354,7 @@ namespace ScriptEngine.Machine.Contexts
                 return BslPropertyBuilder.Create()
                     .Name(variable.Identifier)
                     .IsExported(_propertySearchCache.ContainsKey(variable.Identifier))
-                    .SetAnnotations(variable.Annotations.Select(x => new UserAnnotationAttribute(x)))
+                    .SetAnnotations(variable.Annotations.Select(x => x.MakeBslAttribute()))
                     .Build();
             }
             else

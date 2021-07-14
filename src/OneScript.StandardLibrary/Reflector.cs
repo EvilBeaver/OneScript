@@ -229,49 +229,6 @@ namespace OneScript.StandardLibrary
             FillMethodsTable(result, clrMethods.Select(x=>new Contexts.ContextMethodInfo(x)));
         }
 
-        private static IEnumerable<MethodSignature> ConvertToOsMethods(IEnumerable<System.Reflection.MethodInfo> source)
-        {
-            var dest = new List<MethodSignature>();
-            foreach (var methodInfo in source)
-            {
-                var osMethod = new MethodSignature();
-                osMethod.Name = methodInfo.Name;
-                osMethod.Alias = null;
-                osMethod.IsExport = methodInfo.IsPublic;
-                osMethod.IsFunction = methodInfo.ReturnType != typeof(void);
-                osMethod.Annotations = GetAnnotations(methodInfo.GetCustomAttributes<UserAnnotationAttribute>());
-
-                var methodParameters = methodInfo.GetParameters();
-                var osParams = new ParameterDefinition[methodParameters.Length];
-                osMethod.Params = osParams;
-                for (int i = 0; i < osParams.Length; i++)
-                {
-                    var parameterInfo = methodParameters[i];
-                    var osParam = new ParameterDefinition();
-                    osParam.Name = parameterInfo.Name;
-                    osParam.IsByValue = parameterInfo.GetCustomAttribute<ByRefAttribute>() != null;
-                    osParam.HasDefaultValue = parameterInfo.HasDefaultValue;
-                    osParam.DefaultValueIndex = -1;
-
-                    // On Mono 5.20 we can't use GetCustomAttributes<T> because it fails with InvalidCast.
-                    // Here's a workaround with home-made attribute Type filter.
-                    var attributes = parameterInfo.GetCustomAttributes()
-                        .OfType<UserAnnotationAttribute>();
-                    
-                    osParam.Annotations = GetAnnotations(attributes);
-                    osParams[i] = osParam;
-                }
-                dest.Add(osMethod);
-            }
-
-            return dest;
-        }
-
-        private static AnnotationDefinition[] GetAnnotations(IEnumerable<UserAnnotationAttribute> attributes)
-        {
-            return attributes.Select(x => x.Annotation).ToArray();
-        }
-
         private static void FillPropertiesTableForType(BslTypeValue type, ValueTable result)
         {
             var clrType = GetReflectableClrType(type);

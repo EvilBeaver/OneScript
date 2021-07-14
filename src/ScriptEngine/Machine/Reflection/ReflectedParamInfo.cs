@@ -42,11 +42,6 @@ namespace ScriptEngine.Machine.Contexts
             PositionImpl = index;
         }
 
-        public void AddAnnotation(AnnotationDefinition annotation)
-        {
-            _attributes.Add(new UserAnnotationAttribute(annotation));
-        }
-
         public void SetDefaultValue(IValue val)
         {
             DefaultValueImpl = val;
