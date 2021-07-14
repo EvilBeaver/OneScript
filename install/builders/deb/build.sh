@@ -11,6 +11,13 @@ if [ -d "$DEBBUILDROOT" ]; then
     mkdir -p $DEBBUILDROOT
 fi
 
+ls /
+ls /built
+ls /built/tmp
+ls /built/tmp/bin
+ls BINPATH=${SRCPATH}
+ls BINPATH=${SRCPATH}/bin
+
 VERSION=$(cat ${DATAROOT}/VERSION | grep -oE '([[:digit:]]+\.){2}[[:digit:]]+')
 PAKNAME=onescript-engine
 DSTPATH=${DEBBUILDROOT}${PAKNAME}
