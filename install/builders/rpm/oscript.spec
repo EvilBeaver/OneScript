@@ -13,6 +13,7 @@ BuildRequires:	wget
 Requires:		mono-core
 Requires:		mono-locale-extras
 
+%define _binaries_in_noarch_packages_terminate_build 0
 %define _empty_manifest_terminate_build 0
 %define _subdir OneScript-%{version}
 
