@@ -20,4 +20,5 @@ RUN cd / \
     && cp /src/proxy/*.so built/tmp/bin \
     && cp /src/tests/*.so built/tmp/tests \
     && ls -lh built/tmp/bin/*.so \
-    && ls -lh built/tmp/tests/*.so
+    && ls -lh built/tmp/tests/*.so \
+    && chmod -x built/tmp/bin/*.so
