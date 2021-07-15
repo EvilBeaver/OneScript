@@ -145,8 +145,6 @@ namespace OneScript.Language.LexicalAnalysis
             }
             else if (cs == SpecialChars.Annotation)
             {
-                _iterator.GetContents();
-                _iterator.MoveNext();
                 _state = _annotationState;
             }
             else

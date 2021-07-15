@@ -47,6 +47,7 @@ static const wchar_t* g_MethodNames[] = {
 	L"LoadPicture",
 	L"ShowMessageBox",
 	L"Exchange",
+	L"Concatenate",
 	L"Loopback"
 };
 
@@ -58,6 +59,7 @@ static const wchar_t* g_MethodNamesRu[] = {
 	L"ЗагрузитьКартинку",
 	L"ПоказатьСообщение",
 	L"ОбменПараметров",
+	L"КонкатенацияСтрок",
 	L"Петля",
 };
 
@@ -345,6 +347,8 @@ long CAddInNative::GetNParams(const long lMethodNum)
 		return 1;
 	case eMethExchange:
 		return 2;
+	case eMethConcatenate:
+		return 2;
 	case eMethLoopback:
 		return 1;
 	default:
@@ -387,6 +391,7 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 	case eMethDefaultParam:
 		return true;
 	case eMethLoadPicture:
+	case eMethConcatenate:
 	case eMethLoopback:
 		return true;
 	default:
@@ -480,6 +485,24 @@ bool CAddInNative::CallAsFunc(const long lMethodNum,
 		TV_BOOL(pvarRetValue) = TV_BOOL(paParams);
 		return true;
 		// Method acceps one argument of type BinaryData ant returns its copy
+	case eMethConcatenate: 
+	{
+		tVariant* str1 = paParams;
+		tVariant* str2 = paParams + 1;
+		if (TV_VT(str1) != VTYPE_PWSTR) return false;
+		if (TV_VT(str2) != VTYPE_PWSTR) return false;
+		TV_VT(pvarRetValue) = VTYPE_PWSTR;
+		TV_WSTR(pvarRetValue) = NULL;
+		int iActualSize = str1->strLen + str2->strLen + 1;
+		if (m_iMemory && m_iMemory->AllocMemory((void**)&pvarRetValue->pwstrVal, iActualSize * sizeof(WCHAR_T))) {
+			memset((void*)pvarRetValue->pstrVal, 0, sizeof(WCHAR_T) * iActualSize);
+			memcpy((void*)pvarRetValue->pstrVal, (void*)str1->pstrVal, str1->strLen * sizeof(WCHAR_T));
+			memcpy((void*)(pvarRetValue->pstrVal + str1->strLen * sizeof(WCHAR_T)), (void*)str2->pstrVal, str2->strLen * sizeof(WCHAR_T));
+			pvarRetValue->strLen = paParams->strLen + (paParams + 1)->strLen;
+			return true;
+		}
+		return false;
+	}
 	case eMethLoopback:
 	{
 		if (lSizeArray != 1 || !paParams)

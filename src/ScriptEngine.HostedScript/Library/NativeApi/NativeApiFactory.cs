@@ -8,8 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using ScriptEngine.Machine;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.InteropServices;
 
 namespace ScriptEngine.HostedScript.Library.NativeApi
 {
@@ -17,7 +15,7 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
     /// Фабрика, осуществляющая регистрацию библиотеки внешних 
     /// компонент Native API и создания экземпляров компонент.
     /// </summary>
-    class NativeApiFactory : NativeApiKernel
+    class NativeApiFactory
     {
         public static bool Register(String filepath, String identifier)
         {
