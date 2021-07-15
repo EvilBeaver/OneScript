@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 
 namespace ScriptEngine.HostedScript.Library.Http
 {
@@ -20,154 +21,151 @@ namespace ScriptEngine.HostedScript.Library.Http
     [ContextClass("ИнтернетПрокси", "InternetProxy")]
     public class InternetProxyContext : AutoContext<InternetProxyContext>
     {
+        private Dictionary<string, IWebProxy> _proxies = new Dictionary<string, IWebProxy>();
+        private const string LINUX_ENV_HTTP = "http_proxy";
+        private const string LINUX_ENV_HTTPS = "https_proxy";
+
         private ArrayImpl _bypassProxyOnAddresses;
         private bool _bypassLocal;
 
-        private Dictionary<string, ProxySettings> _proxies = new Dictionary<string, ProxySettings>();
-
-        private class ProxySettings
-        {
-            public string server;
-            public int port;
-            public bool useOSAuthentication;
-            public IWebProxy proxy;
-            public NetworkCredential creds;
-        }
-
-        private const string PROTO_HTTP = "http";
-        private const string PROTO_HTTPS = "https";
-
         public InternetProxyContext(bool useDefault)
         {
-            var settings = new ProxySettings();
+            var emptyProxy = new WebProxy();
+            _bypassLocal = false;
+            _bypassProxyOnAddresses = new ArrayImpl();
+            
             if (useDefault)
             {
-                settings.proxy = WebRequest.GetSystemWebProxy();
-                settings.creds = (NetworkCredential)System.Net.CredentialCache.DefaultCredentials;
-                if (settings.creds != null)
-                    settings.proxy.Credentials = settings.creds;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    var httpEnv = System.Environment.GetEnvironmentVariable(LINUX_ENV_HTTP);
+                    _proxies[Uri.UriSchemeHttp] = httpEnv == null ? emptyProxy :
+                        _proxies[Uri.UriSchemeHttp] = GetProxyFromEnvironmentVariable(httpEnv);
+                    
+                    var httpsEnv = System.Environment.GetEnvironmentVariable(LINUX_ENV_HTTPS);
+                    _proxies[Uri.UriSchemeHttps] = httpsEnv == null ? emptyProxy :
+                        _proxies[Uri.UriSchemeHttps] = GetProxyFromEnvironmentVariable(httpEnv);
+                }
                 else
-                    settings.creds = new NetworkCredential();
+                {
+                    var defaultProxy = WebRequest.GetSystemWebProxy();
+                    defaultProxy.Credentials = CredentialCache.DefaultNetworkCredentials;
 
-                _proxies[PROTO_HTTP]  = settings;
-                _proxies[PROTO_HTTPS] = settings;
+                    _proxies[Uri.UriSchemeHttp] = defaultProxy;
+                    _proxies[Uri.UriSchemeHttps] = defaultProxy;
+                }
             }
             else
             {
-                _bypassLocal = false;
-                settings.server = String.Empty;
-                settings.creds = new NetworkCredential();
-
-                _proxies[PROTO_HTTP] = settings;
-                _proxies[PROTO_HTTPS] = settings;
+                _proxies[Uri.UriSchemeHttp] = emptyProxy;
+                _proxies[Uri.UriSchemeHttps] = emptyProxy;
             }
+        }
 
-            _bypassProxyOnAddresses = new ArrayImpl();
+        private static WebProxy GetProxyFromEnvironmentVariable(string envVariable)
+        {
+            var proxyBuilder = new UriBuilder(envVariable);
+            var proxyUri = new Uri(proxyBuilder.Uri.GetComponents(UriComponents.HttpRequestUrl, UriFormat.UriEscaped));
+            var proxyCredentials = proxyBuilder.UserName.Equals(string.Empty)
+                ? CredentialCache.DefaultNetworkCredentials
+                : GetBasicCredential(proxyUri, proxyBuilder.UserName, proxyBuilder.Password);
+            return new WebProxy(proxyUri, true, new string[]{}, proxyCredentials);
+        }
+
+        private static ICredentials GetBasicCredential(Uri uri, string username, string password)
+        {
+            var credential = new NetworkCredential(username, password);
+            var cache = new CredentialCache {{uri, "Basic", credential}};
+            return cache;
         }
 
         public IWebProxy GetProxy(string protocol)
         {
-            var settings = GetSettings(protocol);
-            IWebProxy returnProxy;
-
-            if (settings.proxy == null)
-            {
-                if (String.IsNullOrEmpty(settings.server))
-                    throw new RuntimeException("Не заданы настройки прокси-сервера для протокола, используемого в запросе");
-
-                var wp = new WebProxy(settings.server, settings.port);
-                wp.Credentials = settings.creds;
-                wp.BypassList = _bypassProxyOnAddresses.Select(x => x.AsString()).ToArray();
-                wp.BypassProxyOnLocal = _bypassLocal;
-                settings.proxy = wp;
-                returnProxy = wp;
-            }
-            else
-            {
-                returnProxy = _proxies[protocol].proxy;
-            }
-            
-            return returnProxy;
+            if(!ProtocolNameIsValid(protocol))
+                throw RuntimeException.InvalidArgumentValue();
+            return _proxies[protocol];
         }
 
         [ContextMethod("Пользователь","User")]
         public string User(string protocol)
         {
-            return GetSettings(protocol).creds.UserName;
+            var proxy = GetProxy(protocol) as WebProxy;
+            return proxy?.Credentials.GetCredential(proxy.Address, "Basic").UserName ?? string.Empty;
         }
 
         [ContextMethod("Пароль", "Password")]
         public string Password(string protocol)
         {
-            return GetSettings(protocol).creds.Password;
+            var proxy = GetProxy(protocol) as WebProxy;
+            return proxy?.Credentials.GetCredential(proxy.Address, "Basic").Password ?? string.Empty;
         }
 
         [ContextMethod("Сервер", "Server")]
         public string Server(string protocol)
         {
-            return GetSettings(protocol).server;
+            const UriComponents serverComponents = UriComponents.Scheme | UriComponents.Host | UriComponents.PathAndQuery;
+            var proxy = GetProxy(protocol) as WebProxy;
+            return proxy?.Address.GetComponents(serverComponents, UriFormat.UriEscaped) ?? string.Empty;
         }
 
         [ContextMethod("Порт", "Password")]
         public int Port(string protocol)
         {
-            return GetSettings(protocol).port;
+            var proxy = GetProxy(protocol) as WebProxy;
+            return proxy?.Address.Port ?? 0;
         }
 
         [ContextMethod("Установить", "Set")]
         public void Set(string protocol, string server, int port = 0, string username = "", string password = "", bool useOSAuthentication = true)
         {
+            protocol = protocol.ToLower();
             if(!ProtocolNameIsValid(protocol))
                 throw RuntimeException.InvalidArgumentValue();
+            
+            var builderServer = new UriBuilder(server);
+            if (builderServer.Scheme.Equals(string.Empty))
+                builderServer.Scheme = protocol;
+            
+            if (port != 0)
+                builderServer.Port = port;
+            
+            var proxyCredentials = useOSAuthentication ? CredentialCache.DefaultNetworkCredentials :
+               GetBasicCredential(builderServer.Uri, username, password);
 
-            var settings = new ProxySettings
-            {
-                server = server,
-                port = port,
-                creds = new NetworkCredential(username, password),
-                useOSAuthentication = useOSAuthentication
-            };
-
-            _proxies[protocol] = settings;
+            _proxies[protocol] = new WebProxy(builderServer.Uri, _bypassLocal,
+                _bypassProxyOnAddresses?.Select(x => x.AsString()).ToArray() ?? new string[] {}, proxyCredentials);
         }
 
         [ContextProperty("НеИспользоватьПроксиДляАдресов","BypassProxyOnAddresses")]
         public ArrayImpl BypassProxyList
         {
-            get
-            {
-                return _bypassProxyOnAddresses;
-            }
+            get => _bypassProxyOnAddresses;
             set
             {
                 _bypassProxyOnAddresses = value;
+                var bypassList = _bypassProxyOnAddresses?.Select(x => x.AsString()).ToArray() ?? new string[] {};
+                foreach (var kv in _proxies)
+                    if (kv.Value is WebProxy proxy)
+                        proxy.BypassList = bypassList;
             }
         }
 
         [ContextProperty("НеИспользоватьПроксиДляЛокальныхАдресов", "BypassProxyOnLocal")]
         public bool BypassProxyOnLocal
         {
-            get
-            {
-                return _bypassLocal;
-            }
+            get => _bypassLocal;
             set
             {
                 _bypassLocal = value;
+                foreach (var kv in _proxies)
+                    if (kv.Value is WebProxy proxy)
+                        proxy.BypassProxyOnLocal = _bypassLocal;
             }
-        }
-
-        private ProxySettings GetSettings(string protocol)
-        {
-            if (!ProtocolNameIsValid(protocol))
-                throw RuntimeException.InvalidArgumentValue();
-
-            return _proxies[protocol];
         }
 
         private static bool ProtocolNameIsValid(string protocol)
         {
-            return StringComparer.OrdinalIgnoreCase.Compare(protocol, PROTO_HTTP) == 0 || StringComparer.OrdinalIgnoreCase.Compare(protocol, PROTO_HTTPS) == 0;
+            return Uri.UriSchemeHttp.Equals(protocol) || Uri.UriSchemeHttps.Equals(protocol);
         }
 
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
