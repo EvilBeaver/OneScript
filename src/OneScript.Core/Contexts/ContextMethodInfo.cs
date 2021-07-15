@@ -31,7 +31,7 @@ namespace OneScript.Contexts
         public ContextMethodInfo(MethodInfo realMethod, ContextMethodAttribute binding)
         {
             _realMethod = realMethod;
-            _scriptMark = (ContextMethodAttribute)GetCustomAttributes(typeof(ContextMethodAttribute), false).First();
+            _scriptMark = binding;
         }
 
         public override Type ReturnType => _realMethod.ReturnType;

@@ -13,7 +13,7 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public class DefaultAstBuilder : IAstBuilder
     {
-        private Stack<BslSyntaxNode> _nodeContext { get; } = new Stack<BslSyntaxNode>();
+        private readonly Stack<BslSyntaxNode> _nodeContext = new Stack<BslSyntaxNode>();
         
         public virtual BslSyntaxNode CreateNode(NodeKind kind, in Lexem startLexem)
         {

@@ -6,8 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using System.Reflection;
-using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.Types;
 using OneScript.Values;

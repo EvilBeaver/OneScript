@@ -38,7 +38,7 @@ namespace OneScript.Values
 
         public static explicit operator bool(BslStringValue value) => (bool)BslBooleanValue.Parse(value._value);
 
-        public static string operator +(BslStringValue value, object other) => value._value + other.ToString();
+        public static string operator +(BslStringValue value, object other) => value._value + other;
 
         public override bool Equals(BslValue other)
         {

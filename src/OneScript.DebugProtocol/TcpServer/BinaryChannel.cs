@@ -14,7 +14,7 @@ using OneScript.DebugProtocol.Abstractions;
 
 namespace OneScript.DebugProtocol
 {
-    public class BinaryChannel : ICommunicationChannel, IDisposable
+    public class BinaryChannel : ICommunicationChannel
     {
         private readonly TcpClient _client;
         private readonly NetworkStream _clientStream;

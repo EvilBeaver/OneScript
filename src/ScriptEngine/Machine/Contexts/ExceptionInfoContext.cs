@@ -109,11 +109,6 @@ namespace ScriptEngine.Machine.Contexts
             return ValueFactory.Create();
         }
 
-        private static string SafeMarshallingNullString(string src)
-        {
-            return src ?? "";
-        }
-
         /// <summary>
         /// Содержит вложенное исключение, если таковое было. Эквивалент Exception.InnerException в C#
         /// </summary>

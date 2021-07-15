@@ -69,14 +69,12 @@ namespace OneScript.Commons
 
         public static Encoding SystemSpecificEncoding()
         {
-            if(System.Environment.OSVersion.Platform == PlatformID.Unix || System.Environment.OSVersion.Platform == PlatformID.MacOSX)
+            if(Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX)
             {
                 return Encoding.UTF8;
             }
-            else
-            {
-                return Encoding.Default;
-            }
+
+            return Encoding.Default;
         }
 
         public static Encoding AssumeEncoding(Stream inputStream, Encoding fallbackEncoding)

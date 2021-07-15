@@ -10,7 +10,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Contexts;
-using ScriptEngine.Machine.Reflection;
 
 namespace ScriptEngine.Machine.Contexts
 {

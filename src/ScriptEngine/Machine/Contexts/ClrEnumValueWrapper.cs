@@ -12,18 +12,10 @@ namespace ScriptEngine.Machine.Contexts
     public class ClrEnumValueWrapper<T> : EnumerationValue, IObjectWrapper where T :struct
     {
         private readonly T _realValue;
-        private DataType _redefinedDataType;
 
         public ClrEnumValueWrapper(EnumerationContext owner, T realValue):base(owner)
         {
             _realValue = realValue;
-            _redefinedDataType = DataType.GenericValue;
-        }
-
-        public ClrEnumValueWrapper (EnumerationContext owner, T realValue, DataType newDataType) : base (owner)
-        {
-            _realValue = realValue;
-            _redefinedDataType = newDataType;
         }
 
         public object UnderlyingObject
@@ -41,14 +33,6 @@ namespace ScriptEngine.Machine.Contexts
                 return _realValue;
             }
         }
-
-        public override DataType DataType
-        {
-            get
-            {
-                return _redefinedDataType;
-            }
-         }
 
         public override bool Equals(IValue other)
         {

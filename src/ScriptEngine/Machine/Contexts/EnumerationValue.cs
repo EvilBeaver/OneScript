@@ -35,11 +35,6 @@ namespace ScriptEngine.Machine.Contexts
 
         public bool IsFilled() => true;
 
-        public virtual DataType DataType
-        {
-            get { return Machine.DataType.GenericValue; }
-        }
-
         public override TypeDescriptor SystemType => _owner.ValuesType;
 
         public override string ToString()
@@ -75,7 +70,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override bool Equals(BslValue other)
         {
-            return other?.GetRawValue() == this;
+            return ReferenceEquals(other?.GetRawValue(), this);
         }
     }
 }

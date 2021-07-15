@@ -21,7 +21,7 @@ namespace OneScript.DebugServices
     {
         private readonly IBreakpointManager _breakpointManager;
         private readonly IVariableVisualizer _visualizer;
-        private ThreadManager _threadManager { get; }
+        private readonly ThreadManager _threadManager;
 
         public DefaultDebugService(IBreakpointManager breakpointManager, ThreadManager threads, IVariableVisualizer visualizer)
         {

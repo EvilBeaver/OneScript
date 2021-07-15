@@ -12,7 +12,6 @@ using System.Runtime.CompilerServices;
 using OneScript.Contexts;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
-using OneScript.Native.Runtime;
 using OneScript.Values;
 
 namespace OneScript.Native.Compiler

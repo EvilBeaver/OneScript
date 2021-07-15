@@ -13,7 +13,7 @@ namespace OneScript.Language.SyntaxAnalysis
     {
         private readonly ILexer _importClauseLexer;
 
-        public ImportDirectivesHandler(IAstBuilder NodeBuilder, IErrorSink errorSink) : base(NodeBuilder, errorSink)
+        public ImportDirectivesHandler(IAstBuilder nodeBuilder, IErrorSink errorSink) : base(nodeBuilder, errorSink)
         {
             var builder = new LexerBuilder();
             builder.Detect((cs, i) => !char.IsWhiteSpace(cs))

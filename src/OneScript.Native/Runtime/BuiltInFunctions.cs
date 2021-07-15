@@ -282,7 +282,6 @@ namespace OneScript.Native.Runtime
         public static DateTime BegOfQuarter(DateTime date)
         {
             //1,4,7,10
-            var month = date.Month;
             int quarterMonth;
             if (date.Month >= 1 && date.Month <= 3)
             {
@@ -340,7 +339,6 @@ namespace OneScript.Native.Runtime
         public static DateTime EndOfQuarter(DateTime date)
         {
             //1,4,7,10
-            var month = date.Month;
             int quarterMonth;
             if (date.Month >= 1 && date.Month <= 3)
             {

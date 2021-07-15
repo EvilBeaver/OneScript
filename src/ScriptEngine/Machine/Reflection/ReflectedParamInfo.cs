@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using OneScript.Contexts;
-using ScriptEngine.Machine.Reflection;
 
 namespace ScriptEngine.Machine.Contexts
 {

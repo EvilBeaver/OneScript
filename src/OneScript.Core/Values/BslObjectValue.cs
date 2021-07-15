@@ -6,7 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Commons;
-using OneScript.Contexts;
 using OneScript.Localization;
 
 namespace OneScript.Values
