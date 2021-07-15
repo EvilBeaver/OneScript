@@ -22,6 +22,6 @@ namespace OneScript.Runtime
         
         IList<BslMethodInfo> Methods { get; }
         
-        ICodeSource Source { get; }
+        SourceCode Source { get; }
     }
 }

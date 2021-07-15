@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using OneScript.Commons;
 using OneScript.Contexts;
-using ScriptEngine.Environment;
+using OneScript.Sources;
 
 namespace ScriptEngine.Machine.Contexts
 {

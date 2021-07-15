@@ -9,8 +9,8 @@ using System.Collections.Generic;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
-using ScriptEngine.Environment;
 using ScriptEngine.Machine;
+using OneScript.Sources;
 
 namespace ScriptEngine
 {
@@ -115,8 +115,8 @@ namespace ScriptEngine
             var mi = new ModuleInformation();
             mi.CodeIndexer = parser.Iterator;
             // пока у модулей нет собственных имен, будет совпадать с источником модуля
-            mi.ModuleName = source.SourceDescription;
-            mi.Origin = source.SourceDescription;
+            mi.ModuleName = source.Location;
+            mi.Origin = source.Location;
             return mi;
         }
     }

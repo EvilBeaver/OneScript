@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Text;
-using ScriptEngine.Environment;
+using OneScript.Sources;
 using System.Security.Cryptography;
 using OneScript.Commons;
 using OneScript.Types;
@@ -96,7 +96,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 using (MD5 md5Hash = MD5.Create())
                 {
-                    string moduleCode = code.Code;
+                    string moduleCode = code.GetSourceCode();
                     string hash = GetMd5Hash(md5Hash, moduleCode);
                     string storedHash = _fileHashes[typeName];
 
@@ -109,7 +109,7 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private void LoadAndRegister(Type type, ICompilerService compiler, string typeName, Environment.ICodeSource code)
+        private void LoadAndRegister(Type type, ICompilerService compiler, string typeName, ICodeSource code)
         {
             if(_loadedModules.ContainsKey(typeName))
             {
@@ -122,7 +122,7 @@ namespace ScriptEngine.Machine.Contexts
             _loadedModules.Add(typeName, loaded);
             using(var md5Hash = MD5.Create())
             {
-                var hash = GetMd5Hash(md5Hash, code.Code);
+                var hash = GetMd5Hash(md5Hash, code.GetSourceCode());
                 _fileHashes.Add(typeName, hash);
             }
 
@@ -150,14 +150,14 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private IRuntimeContextInstance LoadAndCreate(ICompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
+        private IRuntimeContextInstance LoadAndCreate(ICompilerService compiler, ICodeSource code, ExternalContextData externalContext)
         {
             var module = CompileModuleFromSource(compiler, code, externalContext);
             var loadedHandle = new LoadedModule(module);
             return _engine.NewObject(loadedHandle, externalContext);
         }
 
-        public ModuleImage CompileModuleFromSource(ICompilerService compiler, Environment.ICodeSource code, ExternalContextData externalContext)
+        public ModuleImage CompileModuleFromSource(ICompilerService compiler, ICodeSource code, ExternalContextData externalContext)
         {
             UserScriptContextInstance.PrepareCompilation(compiler);
                 

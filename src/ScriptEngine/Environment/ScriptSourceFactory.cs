@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Text;
+using OneScript.Sources;
 
 namespace ScriptEngine.Environment
 {
@@ -18,12 +19,12 @@ namespace ScriptEngine.Environment
         
         public ICodeSource FromString(string code)
         {
-            return new StringBasedSource(code);
+            return new StringCodeSource(code);
         }
 
         public ICodeSource FromFile(string path)
         {
-            return new FileBasedSource(path, ReaderEncoding);
+            return new FileCodeSource(path, ReaderEncoding);
         }
 
         public Encoding ReaderEncoding { get; set; }

@@ -11,7 +11,7 @@ using OneScript.Contexts;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
-using ScriptEngine.Environment;
+using OneScript.Sources;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

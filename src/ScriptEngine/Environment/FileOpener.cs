@@ -10,6 +10,7 @@ using System.Text;
 
 namespace ScriptEngine.Environment
 {
+    [Obsolete]
     public static class FileOpener
     {
         public static StreamReader OpenReader(string filename)

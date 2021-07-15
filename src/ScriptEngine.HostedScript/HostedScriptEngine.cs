@@ -6,7 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using ScriptEngine.Environment;
+using OneScript.Sources;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using System.Collections.Generic;
@@ -100,7 +100,7 @@ namespace ScriptEngine.HostedScript
             _env.InjectObject(obj, asDynamicScope);
         }
 
-        public ScriptSourceFactory Loader => _engine.Loader;
+        public Environment.ScriptSourceFactory Loader => _engine.Loader;
 
         public IDebugController DebugController
         {

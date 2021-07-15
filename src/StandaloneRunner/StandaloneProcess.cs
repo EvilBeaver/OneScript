@@ -41,14 +41,10 @@ namespace StandaloneRunner
         }
     }
 
-    internal class BinaryCodeSource : ICodeSource
+    internal class BinaryCodeSource : OneScript.Sources.ICodeSource
     {
-        #region ICodeSource Members
-
-        public string SourceDescription => Assembly.GetExecutingAssembly().Location;
-
-        public string Code => "<Source is not available>";
-
-        #endregion
+        public string Location => Assembly.GetExecutingAssembly().Location;
+        
+        public string GetSourceCode() => "<Source is not available>";
     }
 }

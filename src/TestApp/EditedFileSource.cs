@@ -6,7 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.IO;
-using ScriptEngine.Environment;
+using OneScript.Sources;
 
 namespace TestApp
 {
@@ -23,17 +23,11 @@ namespace TestApp
 			_code = code;
 		}
 
-		private string GetCodeString()
+		public string GetSourceCode()
 		{
 			return _code;
 		}
 
-		#region ICodeSource Members
-
-		string ICodeSource.Code => GetCodeString();
-
-		string ICodeSource.SourceDescription => _path != "" ? _path : "<string>";
-
-		#endregion
+		public string Location => _path != "" ? _path : "<string>";
 	}
 }

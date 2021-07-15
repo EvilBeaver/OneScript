@@ -11,7 +11,7 @@ using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
-using ScriptEngine.Environment;
+using OneScript.Sources;
 
 namespace ScriptEngine.Compiler
 {
@@ -58,7 +58,7 @@ namespace ScriptEngine.Compiler
             var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = new DefaultLexer
             {
-                Iterator = new SourceCodeIterator(source.Code)
+                Iterator = new SourceCodeIterator(source.GetSourceCode())
             };
 
             var mi = new ModuleInformation
@@ -129,7 +129,7 @@ namespace ScriptEngine.Compiler
         {
             var baseLexer = new DefaultLexer
             {
-                Iterator = new SourceCodeIterator(source.Code)
+                Iterator = new SourceCodeIterator(source.GetSourceCode())
             };
 
             var conditionals = handlers?.Get<ConditionalDirectiveHandler>();

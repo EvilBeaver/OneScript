@@ -6,8 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using ScriptEngine.Compiler;
-using ScriptEngine.Environment;
 using ScriptEngine.Machine;
+using OneScript.Sources;
 
 namespace ScriptEngine
 {

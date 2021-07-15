@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using OneScript.Language;
 using OneScript.Types;
-using ScriptEngine.Environment;
+using OneScript.Sources;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -26,7 +26,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public ScriptInformationContext(ICodeSource codeSrc)
         {
-            _origin = codeSrc.SourceDescription;
+            _origin = codeSrc.Location;
         }
 
         /// <summary>

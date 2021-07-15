@@ -13,12 +13,13 @@ namespace OneScript.Sources
     {
         private readonly ICodeSource _textSource;
 
-        public SourceCode(ICodeSource textSource)
+        public SourceCode(ICodeSource textSource, string moduleName = "$unknown$")
         {
             _textSource = textSource;
+            ModuleName = moduleName;
         }
 
-        public string ModuleName => _textSource.ModuleName;
+        public string ModuleName { get; set; }
 
         public string Location => _textSource.Location;
 

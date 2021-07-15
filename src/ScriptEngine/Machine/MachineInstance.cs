@@ -2597,9 +2597,9 @@ namespace ScriptEngine.Machine
         {
             var ctx = ExtractCompilerContext();
 
-            ICodeSource stringSource = new StringBasedSource(expression);
+            var stringSource = new OneScript.Sources.StringCodeSource(expression);
             var parser = new DefaultLexer();
-            parser.Iterator = new SourceCodeIterator(stringSource.Code);
+            parser.Iterator = new SourceCodeIterator(stringSource.GetSourceCode());
             ctx.PushScope(new SymbolScope()); // скоуп выражения
 
             var compiler = new AstBasedCompilerService(new CompilerOptions(), ctx);
@@ -2613,7 +2613,7 @@ namespace ScriptEngine.Machine
             var ctx = ExtractCompilerContext();
             var entryId = CurrentCodeEntry().ToString();
 
-            ICodeSource stringSource = new StringBasedSource(execBatch);
+            var stringSource = new OneScript.Sources.StringCodeSource(execBatch);
             
             var compiler = new AstBasedCompilerService(new CompilerOptions(), ctx);
             ctx.PushScope(new SymbolScope()); // скоуп выражения

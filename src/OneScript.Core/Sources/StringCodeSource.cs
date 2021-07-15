@@ -7,10 +7,20 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace OneScript.Sources
 {
-    public interface ICodeSource
+    public class StringCodeSource : ICodeSource
     {
-        string Location { get; }
+        private readonly string _src;
 
-        string GetSourceCode();
+        public StringCodeSource(string src)
+        {
+            _src = src;
+        }
+        
+        public string Location => $"<string {_src.GetHashCode():X8}>" ;
+        
+        public string GetSourceCode()
+        {
+            return _src;
+        }
     }
 }
