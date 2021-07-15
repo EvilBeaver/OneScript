@@ -18,7 +18,6 @@ using OneScript.Language.LexicalAnalysis;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Compiler;
-using ScriptEngine.Environment;
 
 namespace ScriptEngine.Machine
 {

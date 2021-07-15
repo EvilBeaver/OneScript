@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using OneScript.DependencyInjection;
 using OneScript.Types;
-using ScriptEngine.Environment;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Compiler;
