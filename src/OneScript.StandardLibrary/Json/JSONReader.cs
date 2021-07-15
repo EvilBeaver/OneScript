@@ -278,9 +278,9 @@ namespace OneScript.StandardLibrary.Json
             try
             {
                 if (encoding != null)
-                    _fileReader = ScriptEngine.Environment.FileOpener.OpenReader(JSONFileName, TextEncodingEnum.GetEncoding(encoding));
+                    _fileReader = FileOpener.OpenReader(JSONFileName, TextEncodingEnum.GetEncoding(encoding));
                 else
-                    _fileReader = ScriptEngine.Environment.FileOpener.OpenReader(JSONFileName);
+                    _fileReader = FileOpener.OpenReader(JSONFileName);
             }
             catch (Exception e)
             {

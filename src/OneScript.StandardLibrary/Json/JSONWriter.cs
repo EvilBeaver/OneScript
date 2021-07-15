@@ -488,9 +488,9 @@ namespace OneScript.StandardLibrary.Json
             try
             {
                 if (encoding != null)
-                    streamWriter = ScriptEngine.Environment.FileOpener.OpenWriter(fileName, TextEncodingEnum.GetEncodingByName(encoding, bAddBOM));
+                    streamWriter = FileOpener.OpenWriter(fileName, TextEncodingEnum.GetEncodingByName(encoding, bAddBOM));
                 else
-                    streamWriter = ScriptEngine.Environment.FileOpener.OpenWriter(fileName, TextEncodingEnum.GetEncodingByName("UTF-8", bAddBOM));
+                    streamWriter = FileOpener.OpenWriter(fileName, TextEncodingEnum.GetEncodingByName("UTF-8", bAddBOM));
             }
             catch (Exception e)
             {

@@ -292,9 +292,9 @@ namespace OneScript.StandardLibrary.Text
         {
             StreamReader reader;
             if (encoding == null)
-                reader = ScriptEngine.Environment.FileOpener.OpenReader(path);
+                reader = FileOpener.OpenReader(path);
             else
-                reader = ScriptEngine.Environment.FileOpener.OpenReader(path, TextEncodingEnum.GetEncoding(encoding));
+                reader = FileOpener.OpenReader(path, TextEncodingEnum.GetEncoding(encoding));
 
             return reader;
         }
@@ -303,9 +303,9 @@ namespace OneScript.StandardLibrary.Text
         {
             StreamWriter writer;
             if (encoding == null)
-                writer = ScriptEngine.Environment.FileOpener.OpenWriter(path, new UTF8Encoding(true));
+                writer = FileOpener.OpenWriter(path, new UTF8Encoding(true));
             else
-                writer = ScriptEngine.Environment.FileOpener.OpenWriter(path, TextEncodingEnum.GetEncoding(encoding));
+                writer = FileOpener.OpenWriter(path, TextEncodingEnum.GetEncoding(encoding));
 
             return writer;
         }

@@ -59,12 +59,12 @@ namespace OneScript.StandardLibrary.Text
             TextReader imReader;
             if (encoding == null)
             {
-                imReader = ScriptEngine.Environment.FileOpener.OpenReader(streamObj.GetUnderlyingStream());
+                imReader = FileOpener.OpenReader(streamObj.GetUnderlyingStream());
             }
             else
             {
                 var enc = TextEncodingEnum.GetEncoding(encoding);
-                imReader = ScriptEngine.Environment.FileOpener.OpenReader(streamObj.GetUnderlyingStream(), enc);
+                imReader = FileOpener.OpenReader(streamObj.GetUnderlyingStream(), enc);
             }
             _reader = GetCustomLineFeedReader(imReader, lineDelimiter, eolDelimiter, AnalyzeDefaultLineFeed);
         }
@@ -76,12 +76,12 @@ namespace OneScript.StandardLibrary.Text
             var shareMode = (monopoly ?? true) ? FileShare.None : FileShare.ReadWrite;
             if (encoding == null)
             {
-                imReader = ScriptEngine.Environment.FileOpener.OpenReader(path, shareMode);
+                imReader = FileOpener.OpenReader(path, shareMode);
             }
             else
             {
                 var enc = TextEncodingEnum.GetEncoding(encoding);
-                imReader = ScriptEngine.Environment.FileOpener.OpenReader(path, shareMode, enc);
+                imReader = FileOpener.OpenReader(path, shareMode, enc);
             }
             _reader = GetCustomLineFeedReader(imReader, lineDelimiter, eolDelimiter, AnalyzeDefaultLineFeed);
         }

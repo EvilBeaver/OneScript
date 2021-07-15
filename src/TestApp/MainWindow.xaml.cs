@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using OneScript.StandardLibrary;
 using ScriptEngine;
 using ScriptEngine.Compiler;
-using ScriptEngine.Environment;
+using OneScript.Commons;
 using ScriptEngine.HostedScript.Extensions;
 using ScriptEngine.Hosting;
 
@@ -296,8 +296,8 @@ namespace TestApp
             dlg.DefaultExt = ".os";
             if (!String.IsNullOrEmpty(_currentDocPath))
             {
-                dlg.InitialDirectory = System.IO.Path.GetDirectoryName(_currentDocPath);
-                dlg.FileName = System.IO.Path.GetFileName(_currentDocPath);
+                dlg.InitialDirectory = Path.GetDirectoryName(_currentDocPath);
+                dlg.FileName = Path.GetFileName(_currentDocPath);
             }
 
             if (dlg.ShowDialog() == true )
