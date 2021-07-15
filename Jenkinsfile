@@ -23,6 +23,9 @@ pipeline {
                             docker push oscript/onescript-builder:deb
                             docker push oscript/onescript-builder:rpm
                             docker push oscript/onescript-builder:gcc
+                            docker create --name gcc-$BUILD_NUMBER oscript/onescript-builder:gcc
+                            docker cp gcc-$BUILD_NUMBER:/built .
+                            docker rm gcc-$BUILD_NUMBER
                             """.stripIndent()
                         }
                         script {
@@ -159,6 +162,7 @@ pipeline {
                             }
                             
                             unstash 'buildResults'
+                            unstash 'builtNativeApi'
                             script
                             {
                                 if (env.BRANCH_NAME == "preview") {
