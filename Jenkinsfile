@@ -162,6 +162,7 @@ pipeline {
                             }
                             
                             unstash 'buildResults'
+                            unstash 'builtNativeApi'
                             script
                             {
                                 if (env.BRANCH_NAME == "preview") {
