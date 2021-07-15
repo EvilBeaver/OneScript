@@ -76,7 +76,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
                 var obj = dataSource.AsObject();
                 Stream stream;
                 if (obj is BinaryDataContext)
-                    stream = new MemoryStream(((BinaryDataContext)obj).Buffer);
+                    stream = ((BinaryDataContext)obj).GetStream();
                 else if (obj is IStreamWrapper)
                     stream = ((IStreamWrapper) obj).GetUnderlyingStream();
                 else

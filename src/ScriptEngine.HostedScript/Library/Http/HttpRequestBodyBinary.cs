@@ -25,7 +25,7 @@ namespace ScriptEngine.HostedScript.Library.Http
 
         public HttpRequestBodyBinary(BinaryDataContext data)
         {
-            _memoryStream.Write(data.Buffer, 0, data.Size());
+            data.CopyTo(_memoryStream);
         }
 
         public HttpRequestBodyBinary(string body, IValue encoding = null,
@@ -51,7 +51,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         public IValue GetAsBinary()
         {
             _memoryStream.Seek(0, SeekOrigin.Begin);
-            return new BinaryDataContext(_memoryStream.ToArray());
+            return new BinaryDataContext(_memoryStream);
         }
 
         public IValue GetAsFilename()

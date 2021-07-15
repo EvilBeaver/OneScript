@@ -101,7 +101,7 @@ namespace ScriptEngine.HostedScript.Library.Hash
                     AddStream(new MemoryStream(buffer));
                     break;
                 case DataType.Object when toAddRawValue is BinaryDataContext binaryData:
-                    AddStream(new MemoryStream(binaryData.Buffer));
+                    AddStream(binaryData.GetStream());
                     break;
                 default:
                     throw RuntimeException.InvalidArgumentType(nameof(toAdd));
