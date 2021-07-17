@@ -9,6 +9,7 @@ using System;
 using System.Text;
 
 using ScriptEngine.HostedScript.Library.Binary;
+using ScriptEngine.HostedScript.Serialization;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript.Library
@@ -16,6 +17,18 @@ namespace ScriptEngine.HostedScript.Library
     [GlobalContext(Category="Прочие функции")]
     public class MiscGlobalFunctions : GlobalContextBase<MiscGlobalFunctions>
     {
+        [ContextMethod("ЗначениеВСтрокуВнутр")]
+        public string SerializeInner(IValue value)
+        {
+            return InnerSerializer.Serialize(value);
+        }
+        
+        [ContextMethod("ЗначениеИзСтрокиВнутр")]
+        public IValue DeserializeInner(string value)
+        {
+            return InnerSerializer.Deserialize(value);
+        }
+        
         [ContextMethod("Base64Строка", "Base64String")]
         public string Base64String(BinaryDataContext data)
         {
