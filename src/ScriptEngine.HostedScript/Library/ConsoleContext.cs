@@ -5,8 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.IO;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.HostedScript.Library.Binary;
 
 namespace ScriptEngine.HostedScript.Library
 {
@@ -17,6 +19,13 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("Консоль", "Console")]
     public class ConsoleContext : AutoContext<ConsoleContext>
     {
+
+        private static ConsoleContext _console;
+
+        private static readonly object _lock = new object();
+
+        private static MemoryStreamContext _stdin;
+
         [ContextProperty("НажатаКлавиша", "KeyPressed")]
         public bool HasKey
         {
@@ -50,6 +59,24 @@ namespace ScriptEngine.HostedScript.Library
             {
                 Console.CursorTop = Math.Min(value, Console.WindowHeight-1);
             }
+        }
+
+        [ContextMethod("ПолучитьСтандартныйПотокВвода", "OpenStandartInput")]
+        public IValue OpenStandartInput()
+        {
+            if (_stdin == null)
+            {
+                _stdin = MemoryStreamContext.Constructor();
+            }
+
+            if (Console.IsInputRedirected)
+            {
+                GenericStream ConsoleInput = new GenericStream(Console.OpenStandardInput(), true);
+                ConsoleInput.CopyTo(_stdin);
+                ConsoleInput.Close();
+            }
+
+            return _stdin;
         }
 
         [ContextMethod("ПрочитатьСтроку", "ReadLine")]
@@ -168,7 +195,7 @@ namespace ScriptEngine.HostedScript.Library
                 Console.InputEncoding = TextEncodingEnum.GetEncoding(value);                
             }
         }
-
+        
         /// <summary>
         /// Воспроизводит звуковой сигнал.
         /// </summary>
@@ -181,9 +208,18 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor]
         public static ConsoleContext Constructor()
         {
-            return new ConsoleContext();
+            if (_console == null)
+            {
+                lock (_lock)
+                {
+                    if (_console == null)
+                    {
+                        _console = new ConsoleContext();
+                    }
+                }
+            }
+            return _console;
         }
     }
-
     
 }
