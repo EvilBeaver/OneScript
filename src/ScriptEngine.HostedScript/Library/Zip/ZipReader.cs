@@ -27,14 +27,9 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
         }
 	    
-        public ZipReader(string filename, string password = null)
+        public ZipReader(IValue filenameOrStream, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
-            Open(filename, password);
-        }
-
-        public ZipReader(IStreamWrapper stream, string password = null)
-        {
-            Open(stream, password);
+            Open(filenameOrStream, password, encoding);
         }
 
         private void CheckIfOpened()
@@ -46,33 +41,30 @@ namespace ScriptEngine.HostedScript.Library.Zip
         /// <summary>
         /// Открывает архив для чтения.
         /// </summary>
-        /// <param name="filename">Имя ZIP файла, который требуется открыть для чтения.</param>
+        /// <param name="filenameOrStream">Имя ZIP файла или Поток, который требуется открыть для чтения.</param>
         /// <param name="password">Пароль к файлу, если он зашифрован.</param>
         /// <param name="encoding">Кодировка имен файлов в архиве.</param>
         [ContextMethod("Открыть","Open")]
-        public void Open(string filename, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
+        public void Open(IValue filenameOrStream, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
-            ZipFile.DefaultEncoding = Encoding.GetEncoding(866);
             // fuck non-russian encodings on non-ascii files
-            _zip = ZipFile.Read(filename, new ReadOptions() { Encoding = ChooseEncoding(encoding) });
+            ZipFile.DefaultEncoding = Encoding.GetEncoding(866);
+            
+            if (filenameOrStream.DataType == DataType.String)
+            {
+                _zip = ZipFile.Read(filenameOrStream.AsString(), new ReadOptions { Encoding = ChooseEncoding(encoding) });
+            } 
+            else if (filenameOrStream.AsObject() is IStreamWrapper stream)
+            {
+                _zip = ZipFile.Read(stream.GetUnderlyingStream(), new ReadOptions { Encoding = ChooseEncoding(encoding) });
+            } 
+            else 
+            {
+                throw RuntimeException.InvalidArgumentType(nameof(filenameOrStream));
+            }
+            
             _zip.Password = password;
         }
-
-        /// <summary>
-        /// Открывает архив для чтения.
-        /// </summary>
-        /// <param name="stream">Поток, который требуется открыть для чтения.</param>
-        /// <param name="password">Пароль к файлу, если он зашифрован.</param>
-        /// <param name="encoding">Кодировка имен файлов в архиве.</param>
-        [ContextMethod("Открыть", "Open")]
-        public void Open(IStreamWrapper stream, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
-        {
-            ZipFile.DefaultEncoding = Encoding.GetEncoding(866);
-            // fuck non-russian encodings on non-ascii files
-            _zip = ZipFile.Read(stream.GetUnderlyingStream(), new ReadOptions() { Encoding = ChooseEncoding(encoding) });
-            _zip.Password = password;
-        }
-
 
         private Encoding ChooseEncoding(FileNamesEncodingInZipFile encoding)
         {
@@ -82,7 +74,6 @@ namespace ScriptEngine.HostedScript.Library.Zip
             return Encoding.UTF8;
 
         }
-
 
         /// <summary>
         /// Извлечение всех файлов из архива
@@ -168,18 +159,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         {
             var dataSourceRawValue = dataSource.GetRawValue();
 
-            if (dataSourceRawValue.DataType == DataType.String)
-            {
-                return new ZipReader(dataSourceRawValue.AsString(), password?.AsString());
-            } 
-            else if (dataSourceRawValue is IStreamWrapper)
-            {
-                return new ZipReader((IStreamWrapper)dataSourceRawValue.AsObject(), password?.AsString());
-            } 
-            else 
-            {
-                throw RuntimeException.InvalidArgumentType(nameof(dataSource));
-            }
+            return new ZipReader(dataSourceRawValue, password?.AsString());
         }
 
         public void Dispose()
