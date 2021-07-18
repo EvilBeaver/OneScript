@@ -23,6 +23,7 @@ namespace ScriptEngine.HostedScript.Library.Http
         private Dictionary<string, IWebProxy> _proxies = new Dictionary<string, IWebProxy>();
         private const string LINUX_ENV_HTTP = "http_proxy";
         private const string LINUX_ENV_HTTPS = "https_proxy";
+        private const string LINUX_ENV_NO_PROXY = "no_proxy";
 
         private ArrayImpl _bypassProxyOnAddresses;
         private bool _bypassLocal;
@@ -44,6 +45,14 @@ namespace ScriptEngine.HostedScript.Library.Http
                     var httpsEnv = System.Environment.GetEnvironmentVariable(LINUX_ENV_HTTPS);
                     _proxies[Uri.UriSchemeHttps] = httpsEnv == null ? emptyProxy :
                         _proxies[Uri.UriSchemeHttps] = GetProxyFromEnvironmentVariable(httpEnv);
+                    
+                    var noProxy = System.Environment.GetEnvironmentVariable(LINUX_ENV_NO_PROXY) ?? string.Empty;
+                    var separator = new[] {',', ' '};
+                    var byPassList = noProxy.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var uri in byPassList)
+                        _bypassProxyOnAddresses.Add(ValueFactory.Create(uri));
+                    foreach (var proxy in _proxies.Values.Cast<WebProxy>())
+                        proxy.BypassList = byPassList;
                 }
                 else
                 {
