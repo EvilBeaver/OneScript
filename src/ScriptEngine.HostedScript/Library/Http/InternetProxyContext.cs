@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
 
 namespace ScriptEngine.HostedScript.Library.Http
 {
@@ -36,7 +35,7 @@ namespace ScriptEngine.HostedScript.Library.Http
             
             if (useDefault)
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                if (System.Environment.OSVersion.Platform == System.PlatformID.Unix)
                 {
                     var httpEnv = System.Environment.GetEnvironmentVariable(LINUX_ENV_HTTP);
                     _proxies[Uri.UriSchemeHttp] = httpEnv == null ? emptyProxy :
