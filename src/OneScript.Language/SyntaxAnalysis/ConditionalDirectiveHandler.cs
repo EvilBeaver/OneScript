@@ -380,6 +380,8 @@ namespace OneScript.Language.SyntaxAnalysis
 
                 if (!iterator.MoveNext())
                     break;
+
+                iterator.SkipSpaces();
             }
 
             return false;

@@ -29,7 +29,7 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             if (_regionsNesting != 0)
             {
-                ErrorSink.AddError(LocalizedErrors.EndOfDirectiveExpected("Область"));
+                AddError(LocalizedErrors.EndOfDirectiveExpected("Область"), new ErrorPositionInfo());
             }
         }
 
@@ -41,13 +41,13 @@ namespace OneScript.Language.SyntaxAnalysis
                 var regionName = lexer.NextLexemOnSameLine();
                 if (regionName.Type == LexemType.EndOfText)
                 {
-                    ErrorSink.AddError(LocalizedErrors.RegionNameExpected());
+                    AddError(LocalizedErrors.RegionNameExpected(), lexer.GetErrorPosition());
                     return true;
                 }
 
-                if (!LanguageDef.IsValidIdentifier(lastExtractedLexem.Content))
+                if (!LanguageDef.IsValidIdentifier(regionName.Content))
                 {
-                    ErrorSink.AddError(LocalizedErrors.InvalidRegionName(lastExtractedLexem.Content));
+                    AddError(LocalizedErrors.InvalidRegionName(regionName.Content), lexer.GetErrorPosition());
                     return true;
                 }
 
@@ -60,7 +60,7 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 if (_regionsNesting == 0)
                 {
-                    ErrorSink.AddError(LocalizedErrors.DirectiveIsMissing("Область"));
+                    AddError(LocalizedErrors.DirectiveIsMissing("Область"), lexer.GetErrorPosition());
                     return true;
                 }
 
@@ -72,7 +72,13 @@ namespace OneScript.Language.SyntaxAnalysis
 
             return result;
         }
-        
+
+        private void AddError(ParseError err, ErrorPositionInfo position)
+        {
+            err.Position ??= position;
+            ErrorSink.AddError(err);
+        }
+
         private Lexem LexemFromNewLine(ILexer lexer)
         {
             var lex = lexer.NextLexem();

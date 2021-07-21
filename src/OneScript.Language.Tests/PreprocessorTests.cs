@@ -392,7 +392,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_SimpleRegion()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new RegionsLexer();
 
             var code = @"
             #Область reg1
@@ -408,7 +408,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_MultipleNestedRegions()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new RegionsLexer();
 
             var code = @"
             #Region reg1
@@ -434,7 +434,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_NoEndRegion()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new RegionsLexer();
 
             var code = @"
             #Область reg1
@@ -449,7 +449,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_ExtraEndRegion()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new RegionsLexer();
 
             var code = @"
             #Область reg1
@@ -481,7 +481,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_NoRegionName()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new RegionsLexer();
 
             var code = @"
             #Область
@@ -495,7 +495,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_NoRegionNameWithComment()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new RegionsLexer();
 
             var code = @"
             #Область // no name
@@ -509,7 +509,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_SymbolsAfterName()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new RegionsLexer();
 
             var code = @"
             #Область reg 00
@@ -523,7 +523,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_SymbolsAfterEndRegion()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new RegionsLexer();
 
             var code = @"
             #Область reg
@@ -675,26 +675,53 @@ namespace OneScript.Language.Tests
             };
         }
 
-        private class PreprocessingLexer : ILexer
+        private abstract class DirectiveHandlingLexer : ILexer
         {
-            private ConditionalDirectiveHandler _handler = new ConditionalDirectiveHandler(new ThrowingErrorSink());
-            private ILexer _lexer = new DefaultLexer();
+            protected ILexer _lexer = new FullSourceLexer();
+            private IDirectiveHandler _handler;
 
+            protected abstract IDirectiveHandler GetHandler();
+            
             public Lexem NextLexem()
             {
                 var lex = _lexer.NextLexem();
                 
                 if(lex.Type == LexemType.PreprocessorDirective)
-                    _handler.HandleDirective(ref lex, _lexer);
+                {
+                    while (_handler.HandleDirective(ref lex, _lexer) && lex.Type == LexemType.PreprocessorDirective)
+                    {
+                        ;
+                    }
+                }
 
+                if(lex.Type == LexemType.EndOfText)
+                    _handler.OnModuleLeave();
+                
                 return lex;
             }
-
+            
             public SourceCodeIterator Iterator
             {
                 get => _lexer.Iterator;
-                set => _lexer.Iterator = value;
+                set
+                {
+                    _lexer.Iterator = value;
+                    _handler = GetHandler();
+                    _handler.OnModuleEnter();
+                }
             }
+            
+            public string Code
+            {
+                set => Iterator = new SourceCodeIterator(value);
+            }
+        }
+        
+        private class PreprocessingLexer : DirectiveHandlingLexer
+        {
+            private ConditionalDirectiveHandler _handler = new ConditionalDirectiveHandler(new ThrowingErrorSink());
+
+            protected override IDirectiveHandler GetHandler() => _handler;
 
             public void Define(string item)
             {
@@ -705,11 +732,11 @@ namespace OneScript.Language.Tests
             {
                 _handler.Undef(item);
             }
-
-            public string Code
-            {
-                set => Iterator = new SourceCodeIterator(value);
-            }
+        }
+        
+        private class RegionsLexer : DirectiveHandlingLexer
+        {
+            protected override IDirectiveHandler GetHandler() => new RegionDirectiveHandler(new ThrowingErrorSink());
         }
     }
 }
