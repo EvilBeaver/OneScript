@@ -5,8 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Commons;
 using OneScript.Language.LexicalAnalysis;
+using OneScript.Localization;
 using Xunit;
 using Xunit.Sdk;
 
@@ -40,7 +40,7 @@ namespace OneScript.Language.Tests
             }
             catch (SyntaxErrorException e)
             {
-                var localeString = Locale.NStr("ru = 'Неизвестный символ'; en = 'Unexpected character");
+                var localeString = BilingualString.Localize("Неизвестный символ", "Unexpected character");
                 Assert.Contains(localeString, e.Message);
             }
             

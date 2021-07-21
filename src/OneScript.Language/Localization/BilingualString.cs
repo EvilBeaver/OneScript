@@ -11,7 +11,7 @@ namespace OneScript.Localization
 {
     public class BilingualString
     {
-        private static CultureInfo RussianCulture;
+        private static readonly CultureInfo RussianCulture;
 
         static BilingualString()
         {
@@ -46,13 +46,7 @@ namespace OneScript.Localization
 
         public override string ToString()
         {
-            var currentCulture = CultureInfo.CurrentCulture;
-            if (!Equals(currentCulture.Parent, RussianCulture))
-            {
-                return English ?? Russian;
-            }
-
-            return Russian;
+            return Localize(Russian, English);
         }
 
         public static bool UseRussianLocale => CultureInfo.CurrentCulture.Parent.Equals(RussianCulture);
@@ -60,6 +54,17 @@ namespace OneScript.Localization
         public static implicit operator string(BilingualString str)
         {
             return str.ToString();
+        }
+
+        public static string Localize(string russian, string english)
+        {
+            var currentCulture = CultureInfo.CurrentCulture;
+            if (!Equals(currentCulture.Parent, RussianCulture))
+            {
+                return english ?? russian;
+            }
+
+            return russian;
         }
     }
 }

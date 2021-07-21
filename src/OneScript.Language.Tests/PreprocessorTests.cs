@@ -464,15 +464,18 @@ namespace OneScript.Language.Tests
         [Fact]
         public void PreprocessingLexer_BadRegionName()
         {
-            var pp = new PreprocessingLexer();
+            var pp = new RegionDirectiveHandler(new ThrowingErrorSink());
+            var lexer = new DefaultLexer();
 
             var code = @"
             #Область -reg
             #КонецОбласти
             F";
 
-            pp.Code = code;
-            Assert.Throws<SyntaxErrorException>(() => pp.NextLexem());
+            lexer.Iterator = new SourceCodeIterator(code);
+            var lexem = lexer.NextLexem();
+            
+            Assert.Throws<SyntaxErrorException>(() => pp.HandleDirective(ref lexem, lexer));
         }
 
         [Fact]
@@ -676,11 +679,12 @@ namespace OneScript.Language.Tests
         {
             private ConditionalDirectiveHandler _handler = new ConditionalDirectiveHandler(new ThrowingErrorSink());
             private ILexer _lexer = new DefaultLexer();
-            
+
             public Lexem NextLexem()
             {
-                Lexem lex;
-                while ((lex = _lexer.NextLexem()).Type == LexemType.Comment)
+                var lex = _lexer.NextLexem();
+                
+                if(lex.Type == LexemType.PreprocessorDirective)
                     _handler.HandleDirective(ref lex, _lexer);
 
                 return lex;
