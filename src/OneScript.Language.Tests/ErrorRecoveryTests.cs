@@ -24,7 +24,7 @@ namespace OneScript.Language.Tests
 
             var testLexer = BuildLexer();
             
-            testLexer.Iterator = new SourceCodeIterator(code);
+            testLexer.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
             var strategy = new NextLineRecoveryStrategy();
             Lexem lex;
 
@@ -57,7 +57,7 @@ namespace OneScript.Language.Tests
 
             var testLexer = BuildLexer();
             
-            testLexer.Iterator = new SourceCodeIterator(code);
+            testLexer.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
             var strategy = new NextStatementRecoveryStrategy();
             Lexem lex;
 

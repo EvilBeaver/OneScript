@@ -30,7 +30,7 @@ namespace OneScript.Language.LexicalAnalysis
         {
             _iterator = new SourceCodeIterator();
         }
-
+        
         public SourceCodeIterator Iterator
         {
             get => _iterator;

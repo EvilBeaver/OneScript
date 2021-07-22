@@ -22,6 +22,12 @@ namespace OneScript.Sources
             _noBomEncoding = defaultEncoding;
         }
 
+        public FileCodeSource(string path)
+        {
+            _path = path;
+            _noBomEncoding = Encoding.UTF8;
+        }
+
         public string GetSourceCode()
         {
             using (var fStream = new FileStream(_path, FileMode.Open, FileAccess.Read))

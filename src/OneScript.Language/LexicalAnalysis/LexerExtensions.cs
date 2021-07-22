@@ -23,17 +23,18 @@ namespace OneScript.Language.LexicalAnalysis
             {
                 return Lexem.EndOfText();
             }
-            
-            var currentLine = lexer.Iterator.CurrentLine;
-            if (lexer.Iterator.MoveToContent())
+
+            try
             {
-                if (currentLine == lexer.Iterator.CurrentLine)
-                    return lexer.NextLexem();
+                lexer.Iterator.StayOnSameLine = true;
+                return lexer.Iterator.MoveToContent() ? lexer.NextLexem() : Lexem.EndOfText();
             }
-
-            return Lexem.EndOfText();
+            finally
+            {
+                lexer.Iterator.StayOnSameLine = false;
+            }
         }
-
+        
         public static void SkipTillLineEnd(this ILexer lexer)
         {
             lexer.ReadToLineEnd();

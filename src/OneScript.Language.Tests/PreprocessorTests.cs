@@ -472,7 +472,7 @@ namespace OneScript.Language.Tests
             #КонецОбласти
             F";
 
-            lexer.Iterator = new SourceCodeIterator(code);
+            lexer.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
             var lexem = lexer.NextLexem();
             
             Assert.Throws<SyntaxErrorException>(() => pp.HandleDirective(ref lexem, lexer));
@@ -651,7 +651,7 @@ namespace OneScript.Language.Tests
 
         private string GetPreprocessedContent(ILexer pp, string code)
         {
-            pp.Iterator = new SourceCodeIterator(code);
+            pp.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
             Lexem lex = Lexem.Empty();
 
             StringBuilder builder = new StringBuilder();
@@ -671,13 +671,13 @@ namespace OneScript.Language.Tests
         {
             return new FullSourceLexer
             {
-                Iterator = new SourceCodeIterator(code)
+                Iterator = SourceCodeHelper.FromString(code).CreateIterator()
             };
         }
 
         private abstract class DirectiveHandlingLexer : ILexer
         {
-            protected ILexer _lexer = new FullSourceLexer();
+            protected ILexer _lexer = new DefaultLexer();
             private IDirectiveHandler _handler;
 
             protected abstract IDirectiveHandler GetHandler();
@@ -713,7 +713,7 @@ namespace OneScript.Language.Tests
             
             public string Code
             {
-                set => Iterator = new SourceCodeIterator(value);
+                set => Iterator = SourceCodeHelper.FromString(value).CreateIterator();
             }
         }
         

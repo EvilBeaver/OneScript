@@ -15,7 +15,8 @@ namespace OneScript.Language.LexicalAnalysis
             {
                 LineNumber = iterator.CurrentLine,
                 ColumnNumber = iterator.CurrentColumn,
-                Code = iterator.GetCodeLine(iterator.CurrentLine)
+                Code = iterator.GetCodeLine(iterator.CurrentLine),
+                ModuleName = iterator.Source.Name
             };
         }
         

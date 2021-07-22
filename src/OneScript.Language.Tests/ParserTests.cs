@@ -820,7 +820,7 @@ namespace OneScript.Language.Tests
         private static DefaultBslParser PrepareParser(string code)
         {
             var defaultLex = new DefaultLexer();
-            defaultLex.Iterator = new SourceCodeIterator(code);
+            defaultLex.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
             
             var lexer = new PreprocessingLexer(defaultLex);
             var treeBuilder = new DefaultAstBuilder();

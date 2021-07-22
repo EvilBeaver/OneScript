@@ -34,7 +34,7 @@ namespace OneScript.Language.Tests
         public void IteratorReturnsCorrectLine()
         {
             var code = "\r\nF = 1;\r\nD = 2;\r\nX = 3;\r\n";
-            var iterator = new SourceCodeIterator(code);
+            var iterator = SourceCodeHelper.FromString(code).CreateIterator();
 
             Assert.Equal(1, iterator.CurrentLine);
             Assert.Equal(-1, iterator.CurrentColumn);

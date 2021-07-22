@@ -25,7 +25,7 @@ namespace OneScript.Language.Tests
         public void SourceCode_Iterator_Basics()
         {
             string code = "Б = 1;";
-            var iterator = new SourceCodeIterator(code);
+            var iterator = SourceCodeHelper.FromString(code).CreateIterator();
 
             Assert.True(iterator.CurrentLine == 1);
             Assert.True(iterator.CurrentSymbol == '\0');
@@ -79,7 +79,7 @@ namespace OneScript.Language.Tests
         {
             string code = "Б \t\t=\n 1; ";
             string check = "Б=1;";
-            var iterator = new SourceCodeIterator(code);
+            var iterator = SourceCodeHelper.FromString(code).CreateIterator();
 
             for (int i = 0; i < check.Length; i++)
             {
@@ -102,7 +102,7 @@ namespace OneScript.Language.Tests
             В = 7-11;
             Г = 8";
 
-            var iterator = new SourceCodeIterator(code);
+            var iterator = SourceCodeHelper.FromString(code).CreateIterator();
             while(iterator.CurrentLine<4)
             {
                 if (!iterator.MoveNext())
@@ -124,7 +124,7 @@ namespace OneScript.Language.Tests
             В = 7-11;
             Г = 8";
 
-            var iterator = new SourceCodeIterator(code);
+            var iterator = SourceCodeHelper.FromString(code).CreateIterator();
             while (iterator.CurrentLine < 3)
             {
                 if (!iterator.MoveNext())
@@ -141,7 +141,7 @@ namespace OneScript.Language.Tests
         public void Identifier_LexerState_Works_Fine()
         {
             string code = "  \ndddddd-";
-            var iterator = new SourceCodeIterator(code);
+            var iterator = SourceCodeHelper.FromString(code).CreateIterator();
             var state = new WordLexerState();
             iterator.MoveToContent();
             var lexem = state.ReadNextLexem(iterator);
@@ -153,7 +153,7 @@ namespace OneScript.Language.Tests
         public void Word_Lexer_State_BuiltIn_Tokens_As_Usual_Words()
         {
             string code = "Лев СтрДлина Прав";
-            var iterator = new SourceCodeIterator(code);
+            var iterator = SourceCodeHelper.FromString(code).CreateIterator();
             var state = new WordLexerState();
             iterator.MoveToContent();
             var lexem = state.ReadNextLexem(iterator);
@@ -183,7 +183,7 @@ namespace OneScript.Language.Tests
             StringLexerState state = new StringLexerState();
 
             code = " \"-just string \"";
-            iterator = new SourceCodeIterator(code);
+            iterator = SourceCodeHelper.FromString(code).CreateIterator();
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.StringLiteral);
@@ -191,14 +191,14 @@ namespace OneScript.Language.Tests
 
             code = @" ""-just
             |string """;
-            iterator = new SourceCodeIterator(code);
+            iterator = SourceCodeHelper.FromString(code).CreateIterator();
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.StringLiteral);
             Assert.Equal("-just\nstring ", lex.Content);
 
             code = @" ""-just "" ""string"" ""123""";
-            iterator = new SourceCodeIterator(code);
+            iterator = SourceCodeHelper.FromString(code).CreateIterator();
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.StringLiteral);
@@ -208,7 +208,7 @@ namespace OneScript.Language.Tests
             |second line
             // comment
             |third line""";
-            iterator = new SourceCodeIterator(code);
+            iterator = SourceCodeHelper.FromString(code).CreateIterator();
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.True(lex.Type == LexemType.StringLiteral);
@@ -224,7 +224,7 @@ namespace OneScript.Language.Tests
             WordLexerState state = new WordLexerState();
 
             code = " Истина  Ложь  Неопределено  Null  True False Undefined";
-            iterator = new SourceCodeIterator(code);
+            iterator = SourceCodeHelper.FromString(code).CreateIterator();
             iterator.MoveToContent();
             lex = state.ReadNextLexem(iterator);
             Assert.Equal(LexemType.BooleanLiteral, lex.Type);
@@ -268,7 +268,7 @@ namespace OneScript.Language.Tests
             string code = @"#Если
                 #КонецЕсли";
 
-            var iterator = new SourceCodeIterator(code);
+            var iterator = SourceCodeHelper.FromString(code).CreateIterator();
             var wordParser = new PreprocessorDirectiveLexerState();
             Lexem lex;
 
@@ -294,7 +294,7 @@ namespace OneScript.Language.Tests
             StringLexerState state = new StringLexerState();
 
             code = " \"-just string ";
-            iterator = new SourceCodeIterator(code);
+            iterator = SourceCodeHelper.FromString(code).CreateIterator();
             iterator.MoveToContent();
             Assert.Throws<SyntaxErrorException>(() => state.ReadNextLexem(iterator));
         }
@@ -308,7 +308,7 @@ namespace OneScript.Language.Tests
 
             code = @" ""-just 
             d|string """;
-            iterator = new SourceCodeIterator(code);
+            iterator = SourceCodeHelper.FromString(code).CreateIterator();
             iterator.MoveToContent();
             Assert.Throws<SyntaxErrorException>(() => state.ReadNextLexem(iterator));
         }
@@ -317,7 +317,7 @@ namespace OneScript.Language.Tests
         public void NumberLiteral_State_Works_Fine()
         {
             string code = " 123.45 ";
-            var iterator = new SourceCodeIterator(code);
+            var iterator = SourceCodeHelper.FromString(code).CreateIterator();
             iterator.MoveToContent();
             var state = new NumberLexerState();
             var lex = state.ReadNextLexem(iterator);
@@ -329,14 +329,14 @@ namespace OneScript.Language.Tests
         public void Wrong_Number_Literal()
         {
             string code = " 123.45.45 ";
-            var iterator = new SourceCodeIterator(code);
+            var iterator = SourceCodeHelper.FromString(code).CreateIterator();
             iterator.MoveToContent();
             var state = new NumberLexerState();
 
             Assert.Throws<SyntaxErrorException>(() => state.ReadNextLexem(iterator));
 
             code = " 12jk";
-            iterator = new SourceCodeIterator(code);
+            iterator = SourceCodeHelper.FromString(code).CreateIterator();
             iterator.MoveToContent();
             Assert.Throws<SyntaxErrorException>(() => state.ReadNextLexem(iterator));
 
@@ -346,7 +346,7 @@ namespace OneScript.Language.Tests
         public void Date_LexerState_Works_With_8_Numbers()
         {
             string code = " '12341212' ";
-            var iterator = new SourceCodeIterator(code);
+            var iterator = SourceCodeHelper.FromString(code).CreateIterator();
             iterator.MoveToContent();
             var state = new DateLexerState();
             var lex = state.ReadNextLexem(iterator);
@@ -358,7 +358,7 @@ namespace OneScript.Language.Tests
         public void Date_LexerState_Works_With_14_Numbers()
         {
             string code = " '12341212020202' ";
-            var iterator = new SourceCodeIterator(code);
+            var iterator = SourceCodeHelper.FromString(code).CreateIterator();
             iterator.MoveToContent();
             var state = new DateLexerState();
             var lex = state.ReadNextLexem(iterator);
@@ -370,7 +370,7 @@ namespace OneScript.Language.Tests
         public void Operators_Lexer_State()
         {
             string code = " + - * / < > <= >= <> % ,.()[]";
-            var iterator = new SourceCodeIterator(code);
+            var iterator = SourceCodeHelper.FromString(code).CreateIterator();
             var state = new OperatorLexerState();
 
             Lexem lex;
@@ -466,7 +466,7 @@ namespace OneScript.Language.Tests
 
             var lexer = lb.Build();
 
-            lexer.Iterator = new SourceCodeIterator(code);
+            lexer.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
             
             var lex = lexer.NextLexem();
             
@@ -492,7 +492,7 @@ namespace OneScript.Language.Tests
 
             var lexer = lb.Build();
 
-            lexer.Iterator = new SourceCodeIterator(code);
+            lexer.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
             
             var lex = lexer.NextLexem();
             
@@ -515,7 +515,7 @@ namespace OneScript.Language.Tests
 
             var lexer = lb.Build();
 
-            lexer.Iterator = new SourceCodeIterator(code);
+            lexer.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
             var lex = lexer.NextLexem();
             Assert.Equal("\"Quoted space //and comment\"", lex.Content);
             
@@ -534,7 +534,7 @@ namespace OneScript.Language.Tests
             '20100207' - ""ffff""";
 
             var lexer = new DefaultLexer();
-            lexer.Iterator = new SourceCodeIterator(code);
+            lexer.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
 
             Lexem lex;
             lex = lexer.NextLexem();
@@ -573,7 +573,7 @@ namespace OneScript.Language.Tests
             А$Б";
 
             var lexer = new DefaultLexer();
-            lexer.Iterator = new SourceCodeIterator(code);
+            lexer.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
             lexer.UnexpectedCharacterFound += (s, e) =>
                 {
                     e.Iterator.MoveNext();
@@ -620,7 +620,7 @@ namespace OneScript.Language.Tests
         {
             string code = "a //comment\r\n// another comment\r\nvalue";
             var lexer = new DefaultLexer();
-            lexer.Iterator = new SourceCodeIterator(code);
+            lexer.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
             Lexem lex;
 
             lex = lexer.NextLexem();
@@ -637,7 +637,7 @@ namespace OneScript.Language.Tests
         {
             return new FullSourceLexer
             {
-                Iterator = new SourceCodeIterator(code)
+                Iterator = SourceCodeHelper.FromString(code).CreateIterator()
             };
         }
     }

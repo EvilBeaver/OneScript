@@ -7,8 +7,10 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using Moq;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
+using OneScript.Sources;
 using ScriptEngine;
 using Xunit;
 
@@ -25,7 +27,7 @@ namespace OneScript.Core.Tests
                 {
                     Origin = "AAA",
                     ModuleName = "BBB",
-                    CodeIndexer = new SourceCodeIterator()
+                    CodeIndexer = Mock.Of<ISourceCodeIndexer>()
                 }
             };
 

@@ -11,6 +11,7 @@ using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
+using OneScript.Sources;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using Xunit;
@@ -64,7 +65,7 @@ namespace OneScript.Core.Tests
         public static DefaultBslParser PrepareParser(string code)
         {
             var lexer = new DefaultLexer();
-            lexer.Iterator = new SourceCodeIterator(code);
+            lexer.Iterator = SourceCodeBuilder.Create().FromString(code).Build().CreateIterator();
             var treeBuilder = new DefaultAstBuilder();
             var parser = new DefaultBslParser(
                 lexer,

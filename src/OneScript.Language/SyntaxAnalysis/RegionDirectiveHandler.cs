@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Data;
 using System.Runtime.CompilerServices;
 using OneScript.Language.LexicalAnalysis;
 
@@ -72,7 +73,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
             return result;
         }
-
+        
         private void AddError(ParseError err, ErrorPositionInfo position)
         {
             err.Position ??= position;

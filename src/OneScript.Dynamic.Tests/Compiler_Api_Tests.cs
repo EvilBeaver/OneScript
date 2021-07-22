@@ -14,6 +14,7 @@ using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Compiler;
+using OneScript.Sources;
 using Xunit;
 
 namespace OneScript.Dynamic.Tests
@@ -44,7 +45,7 @@ namespace OneScript.Dynamic.Tests
             public BslSyntaxNode Parse(string code)
             {
                 var lexer = new DefaultLexer();
-                lexer.Iterator = new SourceCodeIterator(code);
+                lexer.Iterator = SourceCodeBuilder.Create().FromString(code).Build().CreateIterator();
                 _codeIndexer = lexer.Iterator;
            
                 var parser = new DefaultBslParser(lexer, new DefaultAstBuilder(), _errors, new PreprocessorHandlers());

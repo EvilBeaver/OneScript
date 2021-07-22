@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using OneScript.Sources;
 
 namespace OneScript.Language.LexicalAnalysis
 {
@@ -22,18 +23,35 @@ namespace OneScript.Language.LexicalAnalysis
         private bool _onNewLine;
 
         public bool OnNewLine { get; private set; }
+        
+        public bool StayOnSameLine { get; set; }
 
         private const int OUT_OF_TEXT = -1;
 
-        public SourceCodeIterator() : this(string.Empty)
+        public SourceCodeIterator(SourceCode code)
         {
+            Source = code;
+            InitOnString(code.GetSourceCode());
         }
 
+        internal SourceCodeIterator()
+        {
+            InitOnString(String.Empty);
+        }
+        
+        [Obsolete]
         public SourceCodeIterator(string code)
         {
             if (code == null)
                 throw new ArgumentNullException(nameof(code));
+            
+            InitOnString(code);
+        }
 
+        public SourceCode Source { get; }
+
+        private void InitOnString(string code)
+        {
             _code = code;
             int cap = code.Length < 512 ? 32 : 512;
             _lineBounds = new List<int>(cap);
@@ -134,6 +152,9 @@ namespace OneScript.Language.LexicalAnalysis
             {
                 if (_currentSymbol == '\n')
                 {
+                    if (StayOnSameLine)
+                        return false;
+                    
                     _onNewLine = true;
                 }
 
@@ -185,7 +206,7 @@ namespace OneScript.Language.LexicalAnalysis
         {
             return _lineBounds[lineNumber - 1];
         }
-
+        
         public ReadOnlyMemory<char> GetContentSpan()
         {
             int len;
