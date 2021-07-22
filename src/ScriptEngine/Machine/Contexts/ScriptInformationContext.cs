@@ -24,7 +24,7 @@ namespace ScriptEngine.Machine.Contexts
             _origin = info.Origin;
         }
 
-        public ScriptInformationContext(ICodeSource codeSrc)
+        public ScriptInformationContext(SourceCode codeSrc)
         {
             _origin = codeSrc.Location;
         }

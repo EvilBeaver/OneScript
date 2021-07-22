@@ -135,7 +135,7 @@ namespace ScriptEngine.HostedScript
             }
         }
 
-        public Process CreateProcess(IHostApplication host, ICodeSource src)
+        public Process CreateProcess(IHostApplication host, SourceCode src)
         {
             Initialize();
             SetGlobalEnvironment(host, src);
@@ -186,14 +186,14 @@ namespace ScriptEngine.HostedScript
             }
         }
 
-        public Process CreateProcess(IHostApplication host, ModuleImage moduleImage, ICodeSource src)
+        public Process CreateProcess(IHostApplication host, ModuleImage moduleImage, SourceCode src)
         {
             SetGlobalEnvironment(host, src);
             var module = _engine.LoadModuleImage(moduleImage);
             return InitProcess(host, module);
         }
 
-        public void SetGlobalEnvironment(IHostApplication host, ICodeSource src)
+        public void SetGlobalEnvironment(IHostApplication host, SourceCode src)
         {
             _globalCtx.ApplicationHost = host;
             _globalCtx.CodeSource = src;

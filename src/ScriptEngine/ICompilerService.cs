@@ -25,9 +25,6 @@ namespace ScriptEngine
         
         void DefinePreprocessorValue(string name);
         
-        [Obsolete]
-        ModuleImage Compile(ICodeSource source);
-        
         ModuleImage Compile(SourceCode source);
         
         ModuleImage CompileExpression(SourceCode source);

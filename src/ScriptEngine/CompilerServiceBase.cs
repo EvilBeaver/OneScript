@@ -75,14 +75,7 @@ namespace ScriptEngine
                 _scope = null;
             }
         }
-        
-        [Obsolete]
-        public ModuleImage Compile(ICodeSource source)
-        {
-            var newApi = SourceCodeBuilder.Create().FromSource(source).Build();
-            return Compile(newApi);
-        }
-        
+
         public ModuleImage CompileExpression(SourceCode source)
         {
             return CompileExpressionInternal(source, _currentContext);

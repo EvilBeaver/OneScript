@@ -141,7 +141,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
         
-        public static ModuleImage CompileModule(ICompilerService compiler, ICodeSource src)
+        public static ModuleImage CompileModule(ICompilerService compiler, SourceCode src)
         {
             ThisAwareScriptedObjectBase.RegisterSymbols(compiler);
             RegisterSymbols(compiler);

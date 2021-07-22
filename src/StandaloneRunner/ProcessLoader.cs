@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using OneScript.Commons;
+using OneScript.Sources;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
 using ScriptEngine.Compiler;
@@ -35,7 +36,10 @@ namespace StandaloneRunner
                 .SetupConfiguration(p => p.UseEnvironmentVariableConfig("OSCRIPT_CONFIG"));
 
             var engine = new HostedScriptEngine(engineBuilder.Build());
-            var src = new BinaryCodeSource();
+            var src = SourceCodeBuilder.Create()
+                .FromSource(new BinaryCodeSource())
+                .WithName("Compiler source")
+                .Build();
             
             engine.SetGlobalEnvironment(host, src);
             engine.InitializationCallback = (e, env) =>

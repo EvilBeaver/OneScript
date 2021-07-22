@@ -19,6 +19,7 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Compiler;
 using OneScript.Native.Runtime;
+using OneScript.Sources;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using OneScript.Values;
@@ -60,7 +61,12 @@ namespace OneScript.StandardLibrary.Native
         private void ParseCode()
         {
             var lexer = new DefaultLexer();
-            lexer.Iterator = new SourceCodeIterator(CodeBlock);
+            var source = SourceCodeBuilder.Create()
+                .FromString(CodeBlock)
+                .WithName($"Compiled source {CodeBlock.GetHashCode():X8}")
+                .Build();
+            
+            lexer.Iterator = source.CreateIterator();
 
             _codeLinesReferences = lexer.Iterator;
             _errors = new ListErrorSink();

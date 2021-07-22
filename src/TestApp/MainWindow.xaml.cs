@@ -16,6 +16,7 @@ using OneScript.StandardLibrary;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using OneScript.Commons;
+using OneScript.Sources;
 using ScriptEngine.HostedScript.Extensions;
 using ScriptEngine.Hosting;
 
@@ -164,7 +165,7 @@ namespace TestApp
                     if(GenerateDebugCode.IsChecked)
                         cs.ProduceExtraCode |= CodeGenerationFlags.DebugCode;
 
-                    var moduleWriter = new ScriptEngine.Compiler.ModuleWriter(cs);
+                    var moduleWriter = new ModuleWriter(cs);
                     moduleWriter.Write(writer, src);
                     result.Text = writer.GetStringBuilder().ToString();
                 }
@@ -200,7 +201,10 @@ namespace TestApp
             SystemLogger.SetWriter(host);
             var hostedScript = CreateEngine();
             
-            var src = new EditedFileSource(txtCode.Text, _currentDocPath);
+            var src = SourceCodeBuilder.Create()
+                .FromSource(new EditedFileSource(txtCode.Text, _currentDocPath))
+                .WithName(_currentDocPath)
+                .Build();
 
             Process process = null;
             try

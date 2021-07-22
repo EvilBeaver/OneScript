@@ -90,7 +90,7 @@ namespace ScriptEngine.Machine.Contexts
         }
 
 
-        private void ThrowIfTypeExist(string typeName, ICodeSource code)
+        private void ThrowIfTypeExist(string typeName, SourceCode code)
         {
             if (TypeManager.IsKnownType(typeName) && _loadedModules.ContainsKey(typeName))
             {
@@ -109,7 +109,7 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private void LoadAndRegister(Type type, ICompilerService compiler, string typeName, ICodeSource code)
+        private void LoadAndRegister(Type type, ICompilerService compiler, string typeName, SourceCode code)
         {
             if(_loadedModules.ContainsKey(typeName))
             {
@@ -150,14 +150,14 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private IRuntimeContextInstance LoadAndCreate(ICompilerService compiler, ICodeSource code, ExternalContextData externalContext)
+        private IRuntimeContextInstance LoadAndCreate(ICompilerService compiler, SourceCode code, ExternalContextData externalContext)
         {
             var module = CompileModuleFromSource(compiler, code, externalContext);
             var loadedHandle = new LoadedModule(module);
             return _engine.NewObject(loadedHandle, externalContext);
         }
 
-        public ModuleImage CompileModuleFromSource(ICompilerService compiler, ICodeSource code, ExternalContextData externalContext)
+        public ModuleImage CompileModuleFromSource(ICompilerService compiler, SourceCode code, ExternalContextData externalContext)
         {
             UserScriptContextInstance.PrepareCompilation(compiler);
                 

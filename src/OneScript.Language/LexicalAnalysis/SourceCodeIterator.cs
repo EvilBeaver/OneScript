@@ -39,15 +39,6 @@ namespace OneScript.Language.LexicalAnalysis
             InitOnString(String.Empty);
         }
         
-        [Obsolete]
-        public SourceCodeIterator(string code)
-        {
-            if (code == null)
-                throw new ArgumentNullException(nameof(code));
-            
-            InitOnString(code);
-        }
-
         public SourceCode Source { get; }
 
         private void InitOnString(string code)

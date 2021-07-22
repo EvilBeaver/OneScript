@@ -21,7 +21,7 @@ namespace ScriptEngine.Compiler
             _compiler = compilerService;
         }
 
-        public void Write(TextWriter output, ICodeSource source)
+        public void Write(TextWriter output, SourceCode source)
         {
             var module = _compiler.Compile(source);
 

@@ -60,7 +60,7 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         public IHostApplication ApplicationHost { get; set; }
-        public ICodeSource CodeSource { get; set; }
+        public SourceCode CodeSource { get; set; }
 
         /// <summary>
         /// Выдает сообщение в консоль.

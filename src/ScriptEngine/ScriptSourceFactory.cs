@@ -17,14 +17,19 @@ namespace ScriptEngine
             ReaderEncoding = Encoding.UTF8;
         }
         
-        public ICodeSource FromString(string code)
+        public SourceCode FromString(string code)
         {
-            return new StringCodeSource(code);
+            return SourceCodeBuilder.Create()
+                .FromString(code)
+                .Build();
         }
 
-        public ICodeSource FromFile(string path)
+        public SourceCode FromFile(string path)
         {
-            return new FileCodeSource(path, ReaderEncoding);
+            return SourceCodeBuilder
+                .Create()
+                .FromFile(path, ReaderEncoding)
+                .Build();
         }
 
         public Encoding ReaderEncoding { get; set; }
