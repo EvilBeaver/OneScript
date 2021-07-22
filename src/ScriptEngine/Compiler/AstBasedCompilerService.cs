@@ -25,7 +25,7 @@ namespace ScriptEngine.Compiler
             _сompilerOptions = сompilerOptions;
         }
         
-        protected override ModuleImage CompileInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
+        protected override ModuleImage CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
@@ -39,7 +39,7 @@ namespace ScriptEngine.Compiler
             return BuildModule(context, moduleNode, mi);
         }
 
-        protected override ModuleImage CompileBatchInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
+        protected override ModuleImage CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
@@ -53,12 +53,13 @@ namespace ScriptEngine.Compiler
             return BuildModule(context, moduleNode, mi);
         }
 
-        protected override ModuleImage CompileExpressionInternal(ICodeSource source, ICompilerContext context)
+        protected override ModuleImage CompileExpressionInternal(SourceCode source, ICompilerContext context)
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
+            
             var lexer = new DefaultLexer
             {
-                Iterator = new SourceCodeIterator(source.GetSourceCode())
+                Iterator = source.CreateIterator()
             };
 
             var mi = new ModuleInformation
@@ -123,13 +124,13 @@ namespace ScriptEngine.Compiler
         }
 
         private PreprocessingLexer CreatePreprocessor(
-            ICodeSource source,
+            SourceCode source,
             IEnumerable<string> preprocessorConstants,
             PreprocessorHandlers handlers)
         {
             var baseLexer = new DefaultLexer
             {
-                Iterator = new SourceCodeIterator(source.GetSourceCode())
+                Iterator = source.CreateIterator()
             };
 
             var conditionals = handlers?.Get<ConditionalDirectiveHandler>();

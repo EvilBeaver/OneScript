@@ -15,6 +15,7 @@ using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
+using OneScript.Sources;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Compiler;
@@ -2596,9 +2597,11 @@ namespace ScriptEngine.Machine
         {
             var ctx = ExtractCompilerContext();
 
-            var stringSource = new OneScript.Sources.StringCodeSource(expression);
-            var parser = new DefaultLexer();
-            parser.Iterator = new SourceCodeIterator(stringSource.GetSourceCode());
+            var stringSource = SourceCodeBuilder.Create()
+                .FromString(expression)
+                .WithName("<expression>")
+                .Build();
+            
             ctx.PushScope(new SymbolScope()); // скоуп выражения
 
             var compiler = new AstBasedCompilerService(new CompilerOptions(), ctx);
@@ -2612,14 +2615,14 @@ namespace ScriptEngine.Machine
             var ctx = ExtractCompilerContext();
             var entryId = CurrentCodeEntry().ToString();
 
-            var stringSource = new OneScript.Sources.StringCodeSource(execBatch);
+            var stringSource = SourceCodeBuilder.Create()
+                .FromString(execBatch)
+                .WithName($"{entryId}:<exec>")
+                .Build();
             
             var compiler = new AstBasedCompilerService(new CompilerOptions(), ctx);
             ctx.PushScope(new SymbolScope()); // скоуп выражения
             var modImg = compiler.CompileBatch(stringSource);
-            modImg.ModuleInfo = new ModuleInformation();
-            modImg.ModuleInfo.Origin = $"{entryId}:<exec>";
-            modImg.ModuleInfo.ModuleName = $"{entryId}:<exec>";
             var code = new LoadedModule(modImg);
             return code;
         }

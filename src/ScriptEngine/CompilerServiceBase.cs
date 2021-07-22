@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
@@ -61,7 +62,7 @@ namespace ScriptEngine
             _preprocessorVariables.Add(name);
         }
 
-        public ModuleImage Compile(ICodeSource source)
+        public ModuleImage Compile(SourceCode source)
         {
             try
             {
@@ -74,13 +75,20 @@ namespace ScriptEngine
                 _scope = null;
             }
         }
-
-        public ModuleImage CompileExpression(ICodeSource source)
+        
+        [Obsolete]
+        public ModuleImage Compile(ICodeSource source)
+        {
+            var newApi = SourceCodeBuilder.Create().FromSource(source).Build();
+            return Compile(newApi);
+        }
+        
+        public ModuleImage CompileExpression(SourceCode source)
         {
             return CompileExpressionInternal(source, _currentContext);
         }
-
-        public ModuleImage CompileBatch(ICodeSource source)
+        
+        public ModuleImage CompileBatch(SourceCode source)
         {
             try
             {
@@ -94,11 +102,11 @@ namespace ScriptEngine
             }
         }
 
-        protected abstract ModuleImage CompileInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
+        protected abstract ModuleImage CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
         
-        protected abstract ModuleImage CompileBatchInternal(ICodeSource source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
+        protected abstract ModuleImage CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
         
-        protected abstract ModuleImage CompileExpressionInternal(ICodeSource source, ICompilerContext context);
+        protected abstract ModuleImage CompileExpressionInternal(SourceCode source, ICompilerContext context);
         
 
         private void RegisterScopeIfNeeded()
@@ -110,12 +118,11 @@ namespace ScriptEngine
             }
         }
 
-        protected static ModuleInformation CreateModuleInformation(ICodeSource source, ILexer parser)
+        protected static ModuleInformation CreateModuleInformation(SourceCode source, ILexer parser)
         {
             var mi = new ModuleInformation();
             mi.CodeIndexer = parser.Iterator;
-            // пока у модулей нет собственных имен, будет совпадать с источником модуля
-            mi.ModuleName = source.Location;
+            mi.ModuleName = source.Name;
             mi.Origin = source.Location;
             return mi;
         }

@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 using OneScript.Sources;
@@ -24,10 +25,13 @@ namespace ScriptEngine
         
         void DefinePreprocessorValue(string name);
         
+        [Obsolete]
         ModuleImage Compile(ICodeSource source);
         
-        ModuleImage CompileExpression(ICodeSource source);
+        ModuleImage Compile(SourceCode source);
         
-        ModuleImage CompileBatch(ICodeSource source);
+        ModuleImage CompileExpression(SourceCode source);
+        
+        ModuleImage CompileBatch(SourceCode source);
     }
 }

@@ -10,6 +10,7 @@ using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language
 {
+    [Obsolete("Use SourceCode")]
     [Serializable]
     public class ModuleInformation
     {
