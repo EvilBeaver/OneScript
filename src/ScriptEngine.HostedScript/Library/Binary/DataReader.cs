@@ -185,8 +185,16 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// </returns>
         ///
         [ContextMethod("Пропустить", "Skip")]
-        public long Skip(long number)
+        public long Skip(IValue value)
         {
+            if (value.DataType != DataType.Number)
+                throw RuntimeException.InvalidArgumentType();
+
+            long number = (long)value.AsNumber();
+
+            if (number < 0 || number != value.AsNumber())
+                throw RuntimeException.InvalidArgumentValue();
+            
             var stream = _reader.BaseStream;
             if (stream.CanSeek)
             {
