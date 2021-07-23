@@ -6,9 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.IO;
+using ScriptEngine.HostedScript.Library.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.HostedScript.Library.Binary;
 
 namespace ScriptEngine.HostedScript.Library
 {
@@ -19,13 +19,6 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("Консоль", "Console")]
     public class ConsoleContext : AutoContext<ConsoleContext>
     {
-
-        private static ConsoleContext _console;
-
-        private static readonly object _lock = new object();
-
-        private static MemoryStreamContext _stdin;
-
         [ContextProperty("НажатаКлавиша", "KeyPressed")]
         public bool HasKey
         {
@@ -59,24 +52,6 @@ namespace ScriptEngine.HostedScript.Library
             {
                 Console.CursorTop = Math.Min(value, Console.WindowHeight-1);
             }
-        }
-
-        [ContextMethod("ПолучитьСтандартныйПотокВвода", "OpenStandartInput")]
-        public IValue OpenStandartInput()
-        {
-            if (_stdin == null)
-            {
-                _stdin = MemoryStreamContext.Constructor();
-            }
-
-            if (Console.IsInputRedirected)
-            {
-                GenericStream ConsoleInput = new GenericStream(Console.OpenStandardInput(), true);
-                ConsoleInput.CopyTo(_stdin);
-                ConsoleInput.Close();
-            }
-
-            return _stdin;
         }
 
         [ContextMethod("ПрочитатьСтроку", "ReadLine")]
@@ -195,7 +170,7 @@ namespace ScriptEngine.HostedScript.Library
                 Console.InputEncoding = TextEncodingEnum.GetEncoding(value);                
             }
         }
-        
+
         /// <summary>
         /// Воспроизводит звуковой сигнал.
         /// </summary>
@@ -205,21 +180,70 @@ namespace ScriptEngine.HostedScript.Library
             Console.Beep();
         }
 
+        /// <summary>
+        /// Получает системный поток ввода stdin
+        /// </summary>
+        /// <returns>Поток</returns>
+        [ContextMethod("ОткрытьСтандартныйПотокВвода", "OpenStandardInput")]
+        public GenericStream OpenStandardInput()
+        {
+            var stream = Console.OpenStandardInput();
+            return new GenericStream(stream, true);
+        }
+        
+        /// <summary>
+        /// Получает системный поток вывода ошибок stderr
+        /// </summary>
+        /// <returns>Поток</returns>
+        [ContextMethod("ОткрытьСтандартныйПотокОшибок", "OpenStandardError")]
+        public GenericStream OpenStandardError()
+        {
+            var stream = Console.OpenStandardError();
+            return new GenericStream(stream);
+        }
+        
+        /// <summary>
+        /// Получает системный поток вывода stdout
+        /// </summary>
+        /// <returns>Поток</returns>
+        [ContextMethod("ОткрытьСтандартныйПотокВывода", "OpenStandardOutput")]
+        public GenericStream OpenStandardOutput()
+        {
+            var stream = Console.OpenStandardOutput();
+            return new GenericStream(stream);
+        }
+
+        /// <summary>
+        /// Глобально переопределяет стандартный вывод и направляет в другой поток
+        /// </summary>
+        /// <param name="stream">Поток назначения</param>
+        [ContextMethod("УстановитьПотокВывода", "SetOutput")]
+        public void SetOutput(IStreamWrapper stream)
+        {
+            var writer = new StreamWriter(stream.GetUnderlyingStream());
+            Console.SetOut(writer);
+        }
+        
+        /// <summary>
+        /// Глобально переопределяет стандартный поток ошибок и направляет в другой поток
+        /// </summary>
+        /// <param name="stream">Поток назначения</param>
+        [ContextMethod("УстановитьПотокОшибок", "SetError")]
+        public void SetError(IStreamWrapper stream)
+        {
+            var writer = new StreamWriter(stream.GetUnderlyingStream());
+            Console.SetError(writer);
+        }
+
         [ScriptConstructor]
         public static ConsoleContext Constructor()
         {
-            if (_console == null)
-            {
-                lock (_lock)
-                {
-                    if (_console == null)
-                    {
-                        _console = new ConsoleContext();
-                    }
-                }
-            }
-            return _console;
+            var provider = GlobalsManager.GetGlobalContext<ConsoleProvider>();
+            SystemLogger.Write("WARNING: Constructor of Console is obsolete. Use global property Консоль/Console");
+
+            return provider.Console;
         }
     }
+
     
 }
