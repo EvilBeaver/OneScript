@@ -17,8 +17,11 @@ namespace ScriptEngine.HostedScript.Library
     /// Предназначен для низкоуровнего манипулирования выводом в консоль.
     /// </summary>
     [ContextClass("Консоль", "Console")]
-    public class ConsoleContext : AutoContext<ConsoleContext>
+    public class ConsoleContext : AutoContext<ConsoleContext>, IEventSourceNotify
     {
+        private int _cancelKeyHandlers;
+        private IEventProcessor _eventProcessor;
+        
         [ContextProperty("НажатаКлавиша", "KeyPressed")]
         public bool HasKey
         {
@@ -269,6 +272,45 @@ namespace ScriptEngine.HostedScript.Library
             SystemLogger.Write("WARNING: Constructor of Console is obsolete. Use global property Консоль/Console");
 
             return provider.Console;
+        }
+
+        public void OnSubscribe(string eventName, IRuntimeContextInstance target)
+        {
+            if (_cancelKeyHandlers == 0)
+            {
+                Console.CancelKeyPress += CancelKeyHandler;
+                _eventProcessor = MachineInstance.Current.EventProcessor;
+            }
+
+            ++_cancelKeyHandlers;
+        }
+
+        public void OnUnsubscribe(string eventName, IRuntimeContextInstance target)
+        {
+            if(_cancelKeyHandlers == 0)
+                return;
+
+            if (--_cancelKeyHandlers == 0)
+            {
+                Console.CancelKeyPress -= CancelKeyHandler;
+                _eventProcessor = null;
+            }
+        }
+
+        private void CancelKeyHandler(object sender, ConsoleCancelEventArgs args)
+        {
+            if(_eventProcessor == null)
+                return;
+            
+            var cancelVariable = Variable.Create(ValueFactory.Create(false), "Отказ"); 
+            var scriptArgs = new IValue[] { cancelVariable };
+            
+            _eventProcessor.HandleEvent(this, "CancelKeyPress", scriptArgs);
+
+            if (cancelVariable.DataType == DataType.Boolean)
+            {
+                args.Cancel = cancelVariable.AsBoolean();
+            }
         }
     }
 

@@ -76,6 +76,10 @@ namespace ScriptEngine.HostedScript
             }
             
             handlers[eventName].Add(handlerScript, handlerMethod);
+            if (eventSource is IEventSourceNotify notify)
+            {
+                notify.OnSubscribe(eventName, handlerScript);
+            }
         }
 
         public void RemoveHandler(
@@ -90,6 +94,10 @@ namespace ScriptEngine.HostedScript
             if (_registeredHandlers.TryGetValue(eventSource, out var handlers))
             {
                 handlers[eventName].Remove(handlerScript, handlerMethod);
+                if (eventSource is IEventSourceNotify notify)
+                {
+                    notify.OnUnsubscribe(eventName, handlerScript);
+                }
             }
         }
 
