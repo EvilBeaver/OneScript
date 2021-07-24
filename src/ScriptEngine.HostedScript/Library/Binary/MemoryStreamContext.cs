@@ -41,8 +41,6 @@ namespace ScriptEngine.HostedScript.Library.Binary
             _underlyingStream = new MemoryStream(capacity);
             _commonImpl = new GenericStreamImpl(_underlyingStream);
         }
-
-        public object UnderlyingObject => _underlyingStream;
         
         /// <summary>
         /// 

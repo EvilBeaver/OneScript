@@ -11,7 +11,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript.Library.Binary
 {
-    public interface IStreamWrapper : IObjectWrapper
+    public interface IStreamWrapper
     {
         Stream GetUnderlyingStream();
 
@@ -47,8 +47,6 @@ namespace ScriptEngine.HostedScript.Library.Binary
 
         public bool IsReadOnly => !CanWrite;
         
-        public object UnderlyingObject => _underlyingStream;
-
         /// <summary>
         /// 
         /// Признак доступности записи в поток.

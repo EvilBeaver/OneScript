@@ -297,7 +297,5 @@ namespace ScriptEngine.HostedScript.Library.Binary
                 ContextValuesMarshaller.ConvertParam<FileAccessEnum>(access),
                 ContextValuesMarshaller.ConvertParam<int>(bufferSize));
         }
-
-        public object UnderlyingObject => _underlyingStream;
     }
 }

@@ -170,6 +170,24 @@ namespace ScriptEngine.HostedScript.Library
                 Console.InputEncoding = TextEncodingEnum.GetEncoding(value);                
             }
         }
+        
+        /// <summary>
+        /// Возвращает или задает кодировку консоли, используемую при чтении входных данных.
+        /// </summary>
+        /// <returns>КодировкаТекста</returns>
+        [ContextProperty("КодировкаВыходногоПотока", "InputEncoding")]
+        public IValue OutputEncoding 
+        {
+            get
+            {
+                var encodingEnum = GlobalsManager.GetEnum<TextEncodingEnum>();
+                return encodingEnum.GetValue(Console.OutputEncoding);
+            }
+            set 
+            {
+                Console.OutputEncoding = TextEncodingEnum.GetEncoding(value);                
+            }
+        }
 
         /// <summary>
         /// Воспроизводит звуковой сигнал.
@@ -216,21 +234,30 @@ namespace ScriptEngine.HostedScript.Library
         /// <summary>
         /// Глобально переопределяет стандартный вывод и направляет в другой поток
         /// </summary>
-        /// <param name="stream">Поток назначения</param>
+        /// <param name="target">Поток назначения</param>
         [ContextMethod("УстановитьПотокВывода", "SetOutput")]
-        public void SetOutput(IStreamWrapper stream)
+        public void SetOutput(IValue target)
         {
-            var writer = new StreamWriter(stream.GetUnderlyingStream());
+            if (!(target.AsObject() is IStreamWrapper stream))
+                throw RuntimeException.InvalidArgumentType(nameof(target));
+            
+            var writer = new StreamWriter(stream.GetUnderlyingStream(), Console.OutputEncoding)
+            {
+                AutoFlush = true,
+            };
             Console.SetOut(writer);
         }
         
         /// <summary>
         /// Глобально переопределяет стандартный поток ошибок и направляет в другой поток
         /// </summary>
-        /// <param name="stream">Поток назначения</param>
+        /// <param name="target">Поток назначения</param>
         [ContextMethod("УстановитьПотокОшибок", "SetError")]
-        public void SetError(IStreamWrapper stream)
+        public void SetError(IValue target)
         {
+            if (!(target.AsObject() is IStreamWrapper stream))
+                throw RuntimeException.InvalidArgumentType(nameof(target));
+            
             var writer = new StreamWriter(stream.GetUnderlyingStream());
             Console.SetError(writer);
         }
