@@ -116,11 +116,11 @@ namespace ScriptEngine.HostedScript.Library.Net
         [ContextMethod("ОтправитьДвоичныеДанные", "SendBinaryData")]
         public void SendString(BinaryDataContext data)
         {
-            if (data.Buffer.Length == 0)
+            if (data.Size() == 0)
                 return;
 
             var stream = _client.GetStream();
-            stream.Write(data.Buffer, 0, data.Buffer.Length);
+            data.CopyTo(stream);
             stream.Flush();
 
         }

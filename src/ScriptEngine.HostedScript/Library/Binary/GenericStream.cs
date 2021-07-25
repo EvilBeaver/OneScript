@@ -14,8 +14,9 @@ namespace ScriptEngine.HostedScript.Library.Binary
     public interface IStreamWrapper
     {
         Stream GetUnderlyingStream();
-
+        
         bool IsReadOnly { get; }
+
     }
     
     /// <summary>

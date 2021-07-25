@@ -162,6 +162,9 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             _bodyStream = new MemoryStream();
             _bodyStream.Write(binaryData.Buffer, 0, binaryData.Buffer.Length);
             _bodyStream.Seek(0, SeekOrigin.Begin);
+            _bodyStream = new MemoryStream();
+            binaryData.CopyTo(_bodyStream);
+            _bodyStream.Seek(0, SeekOrigin.Begin);
         }
 
         [ContextMethod("УстановитьТелоИзСтроки", "SetBodyFromString")]
@@ -172,7 +175,7 @@ namespace ScriptEngine.HostedScript.Library.HTTPService
             // Из синтаксис-помощника в режиме совместимости Использовать
             // Из синтаксис помощника если кодировка не задана используем UTF8
 
-            System.Text.Encoding enc = System.Text.Encoding.UTF8;
+            Encoding enc = Encoding.UTF8;
             if (encoding != null)
                 enc = TextEncodingEnum.GetEncoding(encoding);
 
