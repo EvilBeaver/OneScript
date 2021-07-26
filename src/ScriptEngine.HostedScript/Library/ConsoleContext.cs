@@ -206,6 +206,11 @@ namespace ScriptEngine.HostedScript.Library
         public GenericStream OpenStandardInput()
         {
             var stream = Console.OpenStandardInput();
+            var genericStream = new GenericStream(stream, true);
+
+            var reader = new StreamReader(stream);
+            Console.WriteLine("stdin:" + reader.ReadLine());
+            
             return new GenericStream(stream, true);
         }
         
