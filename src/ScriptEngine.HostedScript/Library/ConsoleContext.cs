@@ -206,16 +206,7 @@ namespace ScriptEngine.HostedScript.Library
         public GenericStream OpenStandardInput()
         {
             var stream = Console.OpenStandardInput();
-
-            MemoryStream tmpStream = new MemoryStream();
-            stream.CopyTo(tmpStream);
-            tmpStream.Position = 0;
-            var reader = new StreamReader(tmpStream);
-
-            Console.WriteLine("stdin (" + tmpStream.Length + ", " + tmpStream.Position + "): " + reader.ReadLine());
-            tmpStream.Position = 0;
-
-            return new GenericStream(tmpStream, true);
+            return new GenericStream(stream, true);
         }
         
         /// <summary>
