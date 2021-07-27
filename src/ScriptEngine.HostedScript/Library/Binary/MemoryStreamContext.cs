@@ -41,7 +41,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             _underlyingStream = new MemoryStream(capacity);
             _commonImpl = new GenericStreamImpl(_underlyingStream);
         }
-
+        
         /// <summary>
         /// 
         /// Создает поток, в качестве нижележащего хранилища для которого используется заданный байтовый буфер. Ёмкость потока ограничена размером буфера. При выходе за границы буфера будет сгенерировано исключение.

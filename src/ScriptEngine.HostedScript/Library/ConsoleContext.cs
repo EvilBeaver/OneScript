@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.IO;
+using ScriptEngine.HostedScript.Library.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -168,6 +170,24 @@ namespace ScriptEngine.HostedScript.Library
                 Console.InputEncoding = TextEncodingEnum.GetEncoding(value);                
             }
         }
+        
+        /// <summary>
+        /// Возвращает или задает кодировку консоли, используемую при чтении входных данных.
+        /// </summary>
+        /// <returns>КодировкаТекста</returns>
+        [ContextProperty("КодировкаВыходногоПотока", "InputEncoding")]
+        public IValue OutputEncoding 
+        {
+            get
+            {
+                var encodingEnum = GlobalsManager.GetEnum<TextEncodingEnum>();
+                return encodingEnum.GetValue(Console.OutputEncoding);
+            }
+            set 
+            {
+                Console.OutputEncoding = TextEncodingEnum.GetEncoding(value);                
+            }
+        }
 
         /// <summary>
         /// Воспроизводит звуковой сигнал.
@@ -178,10 +198,77 @@ namespace ScriptEngine.HostedScript.Library
             Console.Beep();
         }
 
+        /// <summary>
+        /// Получает системный поток ввода stdin
+        /// </summary>
+        /// <returns>Поток</returns>
+        [ContextMethod("ОткрытьСтандартныйПотокВвода", "OpenStandardInput")]
+        public GenericStream OpenStandardInput()
+        {
+            var stream = Console.OpenStandardInput();
+            return new GenericStream(stream, true);
+        }
+        
+        /// <summary>
+        /// Получает системный поток вывода ошибок stderr
+        /// </summary>
+        /// <returns>Поток</returns>
+        [ContextMethod("ОткрытьСтандартныйПотокОшибок", "OpenStandardError")]
+        public GenericStream OpenStandardError()
+        {
+            var stream = Console.OpenStandardError();
+            return new GenericStream(stream);
+        }
+        
+        /// <summary>
+        /// Получает системный поток вывода stdout
+        /// </summary>
+        /// <returns>Поток</returns>
+        [ContextMethod("ОткрытьСтандартныйПотокВывода", "OpenStandardOutput")]
+        public GenericStream OpenStandardOutput()
+        {
+            var stream = Console.OpenStandardOutput();
+            return new GenericStream(stream);
+        }
+
+        /// <summary>
+        /// Глобально переопределяет стандартный вывод и направляет в другой поток
+        /// </summary>
+        /// <param name="target">Поток назначения</param>
+        [ContextMethod("УстановитьПотокВывода", "SetOutput")]
+        public void SetOutput(IValue target)
+        {
+            if (!(target.AsObject() is IStreamWrapper stream))
+                throw RuntimeException.InvalidArgumentType(nameof(target));
+            
+            var writer = new StreamWriter(stream.GetUnderlyingStream(), Console.OutputEncoding)
+            {
+                AutoFlush = true,
+            };
+            Console.SetOut(writer);
+        }
+        
+        /// <summary>
+        /// Глобально переопределяет стандартный поток ошибок и направляет в другой поток
+        /// </summary>
+        /// <param name="target">Поток назначения</param>
+        [ContextMethod("УстановитьПотокОшибок", "SetError")]
+        public void SetError(IValue target)
+        {
+            if (!(target.AsObject() is IStreamWrapper stream))
+                throw RuntimeException.InvalidArgumentType(nameof(target));
+            
+            var writer = new StreamWriter(stream.GetUnderlyingStream());
+            Console.SetError(writer);
+        }
+
         [ScriptConstructor]
         public static ConsoleContext Constructor()
         {
-            return new ConsoleContext();
+            var provider = GlobalsManager.GetGlobalContext<ConsoleProvider>();
+            SystemLogger.Write("WARNING: Constructor of Console is obsolete. Use global property Консоль/Console");
+
+            return provider.Console;
         }
     }
 

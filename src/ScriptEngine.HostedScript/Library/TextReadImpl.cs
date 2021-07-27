@@ -56,7 +56,7 @@ namespace ScriptEngine.HostedScript.Library
             TextReader imReader;
             if (encoding == null)
             {
-                imReader = Environment.FileOpener.OpenReader(streamObj.GetUnderlyingStream());
+                imReader = Environment.FileOpener.OpenReader(streamObj.GetUnderlyingStream(), Encoding.Default);
             }
             else
             {

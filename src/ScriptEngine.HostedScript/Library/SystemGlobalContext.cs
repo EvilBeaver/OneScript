@@ -38,7 +38,7 @@ namespace ScriptEngine.HostedScript.Library
             RegisterProperty("ФайловыеПотоки", () => FileStreams);
             RegisterProperty("FileStreams", () => FileStreams);
 
-			RegisterProperty("Символы", () => (IValue)Chars);
+            RegisterProperty("Символы", () => (IValue)Chars);
 			RegisterProperty("Chars", () => (IValue)Chars);
         }
 

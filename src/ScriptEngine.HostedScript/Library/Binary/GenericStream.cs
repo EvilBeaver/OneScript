@@ -47,7 +47,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         }
 
         public bool IsReadOnly => !CanWrite;
-
+        
         /// <summary>
         /// 
         /// Признак доступности записи в поток.
