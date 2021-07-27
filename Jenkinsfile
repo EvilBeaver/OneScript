@@ -4,7 +4,7 @@ pipeline {
     agent none
 
     environment {
-        ReleaseNumber = '1.6.0'
+        ReleaseNumber = '1.7.0'
         outputEnc = '65001'
     }
 
@@ -22,7 +22,17 @@ pipeline {
                             docker login -p $dockerpassword -u $dockeruser
                             docker push oscript/onescript-builder:deb
                             docker push oscript/onescript-builder:rpm
+                            docker push oscript/onescript-builder:gcc
+							
+							# TODO: Немного через жопу собираются .so для NativеApi
+							# при сборке образа, а не при его запуске
+                            docker create --name gcc-$BUILD_NUMBER oscript/onescript-builder:gcc
+                            docker cp gcc-$BUILD_NUMBER:/built .
+                            docker rm gcc-$BUILD_NUMBER
                             """.stripIndent()
+                        }
+                        script {
+                            stash includes: 'built/** ', name: 'builtNativeApi'
                         }
                     }
                 }
@@ -119,6 +129,7 @@ pipeline {
                         }
                         
                         unstash 'buildResults'
+                        unstash 'builtNativeApi'
 
                         sh '''\
                         if [ ! -d lintests ]; then
@@ -154,6 +165,7 @@ pipeline {
                             }
                             
                             unstash 'buildResults'
+                            unstash 'builtNativeApi'
                             script
                             {
                                 if (env.BRANCH_NAME == "preview") {
@@ -180,6 +192,7 @@ pipeline {
 
                     steps {
                         unstash 'buildResults'
+                        unstash 'builtNativeApi'
                         sh '/bld/build.sh'
                         archiveArtifacts artifacts: 'out/deb/*', fingerprint: true
                         stash includes: 'out/deb/*', name: 'debian'
@@ -196,6 +209,7 @@ pipeline {
 
                     steps {
                         unstash 'buildResults'
+                        unstash 'builtNativeApi'
                         sh '/bld/build.sh'
                         archiveArtifacts artifacts: 'out/rpm/*', fingerprint: true
                         stash includes: 'out/rpm/*', name: 'redhat'

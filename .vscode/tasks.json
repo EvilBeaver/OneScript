@@ -1,24 +1,20 @@
 {
-    "version": "0.1.0",
+    "version": "2.0.0",
     "command": "oscript",
-    "isShellCommand": true,
-    "showOutput": "silent",
     "args": [
         "-encoding=utf-8"
     ],
     "tasks": [
         {
-            "taskName": "Testing project",
+            "label": "Testing project",
+            "type": "shell",
+            "command": "oscript",
             "args": [
+                "-encoding=utf-8",
                 "${workspaceRoot}/tests/testrunner.os",
                 "-runall",
                 "${workspaceRoot}/tests"
             ],
-            "echoCommand": true,
-            "showOutput": "always",
-            "suppressTaskName": true,
-            // "isBuildCommand": false,
-            "isTestCommand": false,
             "problemMatcher": {
                 "fileLocation": "absolute",
                 "pattern": {
@@ -30,17 +26,15 @@
             }
         },
         {
-            "taskName": "Test current test-file",
+            "label": "Test current test-file",
+            "type": "shell",
+            "command": "oscript",
             "args": [
+                "-encoding=utf-8",
                 "${workspaceRoot}/tests/testrunner.os",
                 "-run",
                 "${file}"
             ],
-            "echoCommand": true,
-            "showOutput": "always",
-            "suppressTaskName": true,
-            // "isBuildCommand": false,
-            "isTestCommand": false,
             "problemMatcher": {
                 "fileLocation": "absolute",
                 "pattern": {
@@ -52,48 +46,47 @@
             }
         },
         {
-            "taskName": "OneScript: compile",
+            "label": "OneScript: compile",
+            "type": "shell",
+            "command": "oscript",
             "args": [
+                "-encoding=utf-8",
                 "-compile",
                 "${file}"
             ],
-            "echoCommand": true,
-            "showOutput": "always",
-            "suppressTaskName": true,
-            "isBuildCommand": false
+            "problemMatcher": []
         },
         {
-            "taskName": "OneScript: check",
+            "label": "OneScript: check",
+            "type": "shell",
+            "command": "oscript",
             "args": [
+                "-encoding=utf-8",
                 "-check",
                 "${file}"
             ],
-            "echoCommand": true,
-            "showOutput": "always",
-            "suppressTaskName": true,
-            "isBuildCommand": false
+            "problemMatcher": []
         },
         {
-            "taskName": "OneScript: make",
+            "label": "OneScript: make",
+            "type": "shell",
+            "command": "oscript",
             "args": [
+                "-encoding=utf-8",
                 "-make",
                 "${file}",
                 "${fileBasename}.exe"
             ],
-            "echoCommand": true,
-            "showOutput": "always",
-            "suppressTaskName": true,
-            "isBuildCommand": false
+            "problemMatcher": []
         },
         {
-            "taskName": "OneScript: run",
+            "label": "OneScript: run",
+            "type": "shell",
+            "command": "oscript",
             "args": [
+                "-encoding=utf-8",
                 "${file}"
             ],
-            "echoCommand": true,
-            "showOutput": "always",
-            "suppressTaskName": true,
-            "isBuildCommand": true,
             "problemMatcher": {
                 "fileLocation": "absolute",
                 "pattern": {
@@ -102,7 +95,8 @@
                     "location": 2,
                     "message": 3
                 }
-            }
+            },
+            "group": "build"
         }
     ]
 }

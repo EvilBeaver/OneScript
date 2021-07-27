@@ -522,7 +522,7 @@ namespace ScriptEngine.Machine
 
         private static string DefaultFormat(IValue value, FormatParametersList formatParameters)
         {
-            throw new NotImplementedException();
+            return value.AsString();
         }
 
         private static FormatParametersList ParseParameters(string format)

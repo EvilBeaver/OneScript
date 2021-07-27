@@ -29,6 +29,7 @@ public:
 		eMethLoadPicture,
 		eMethShowMsgBox,
 		eMethExchange,
+		eMethConcatenate,
 		eMethLoopback,
 		eMethLast      // Always last
 	};

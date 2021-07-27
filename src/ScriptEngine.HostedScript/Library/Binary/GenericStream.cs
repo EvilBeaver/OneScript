@@ -14,8 +14,9 @@ namespace ScriptEngine.HostedScript.Library.Binary
     public interface IStreamWrapper
     {
         Stream GetUnderlyingStream();
-
+        
         bool IsReadOnly { get; }
+
     }
     
     /// <summary>
@@ -46,7 +47,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         }
 
         public bool IsReadOnly => !CanWrite;
-
+        
         /// <summary>
         /// 
         /// Признак доступности записи в поток.

@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using ScriptEngine.Machine;
 using System;
-using System.Runtime.InteropServices;
 
 namespace ScriptEngine.HostedScript.Library.NativeApi
 {
@@ -70,16 +69,9 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
         {
             _host = host;
             _object = NativeApiProxy.GetClassObject(library.Module, componentName,
-                (wcode, source, descr, scode) =>
-                {
-                    _host.Echo("ОШИБКА: " + S(source) + " - " + S(descr), Status(wcode));
-                },
-                (source, message, data) => {
-                    _host.Echo("СОБЫТИЕ: " + S(source) + " - " + S(message) + " - " + S(data));
-                },
-                (status) => {
-                    _host.Echo("СТАТУС: " + S(status));
-                }
+                (wcode, source, descr, scode) => _host.Echo("ОШИБКА: " + S(source) + " - " + S(descr), Status(wcode)),
+                (source, message, data) => _host.Echo("СОБЫТИЕ: " + S(source) + " - " + S(message) + " - " + S(data)),
+                (status) => _host.Echo("СТАТУС: " + S(status))
             );
             DefineType(TypeManager.GetTypeByName(typeName));
         }
@@ -89,18 +81,20 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             try { NativeApiProxy.DestroyObject(_object); } catch (Exception) { }
         }
 
-        public bool IsIndexed => false;
+        public bool IsIndexed => true;
 
         public bool DynamicMethodSignatures => false;
 
         public IValue GetIndexedValue(IValue index)
         {
-            throw new NotImplementedException();
+            var propNum = FindProperty(index.AsString());
+            return GetPropValue(propNum);
         }
 
-        public void SetIndexedValue(IValue index, IValue val)
+        public void SetIndexedValue(IValue index, IValue value)
         {
-            throw new NotImplementedException();
+            var propNum = FindProperty(index.AsString());
+            SetPropValue(propNum, value);
         }
 
         public int FindProperty(string name)
@@ -137,19 +131,20 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public IValue GetPropValue(int propNum)
         {
-            var result = ValueFactory.Create();
+            IValue result = ValueFactory.Create();
             NativeApiProxy.GetPropVal(_object, propNum,
-                variant => result = NativeApiVariant.GetValue(variant)
+                variant => result = NativeApiVariant.Value(variant)
             );
             return result;
         }
 
-        public void SetPropValue(int propNum, IValue newVal)
+        public void SetPropValue(int propNum, IValue value)
         {
-            var variant = new NativeApiVariant();
-            variant.SetValue(newVal);
-            NativeApiProxy.SetPropVal(_object, propNum, ref variant);
-            variant.Clear();
+            using (var variant = new NativeApiVariant())
+            {
+                variant.Assign(value);
+                NativeApiProxy.SetPropVal(_object, propNum, variant.Ptr);
+            };
         }
 
         public int GetMethodsCount()
@@ -180,14 +175,11 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             var paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
             var paramArray = new ParameterDefinition[paramCount];
             for (int i = 0; i < paramCount; i++)
-                NativeApiProxy.GetParamDefValue(_object, methodNumber, i, variant =>
+                if (NativeApiProxy.HasParamDefValue(_object, methodNumber, i))
                 {
-                    if (NativeApiVariant.NotEmpty(variant))
-                    {
-                        paramArray[i].HasDefaultValue = true;
-                        paramArray[i].DefaultValueIndex = ParameterDefinition.UNDEFINED_VALUE_INDEX;
-                    }
-                });
+                    paramArray[i].HasDefaultValue = true;
+                    paramArray[i].DefaultValueIndex = ParameterDefinition.UNDEFINED_VALUE_INDEX;
+                };
 
             return new MethodInfo
             {
@@ -206,41 +198,38 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
             for (int i = 0; i < paramCount; i++)
                 if (arguments[i] == null)
                     NativeApiProxy.GetParamDefValue(_object, methodNumber, i,
-                        variant => arguments[i] = NativeApiVariant.GetValue(variant)
+                        variant => arguments[i] = NativeApiVariant.Value(variant)
                     );
         }
 
         public void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
-            var paramArray = IntPtr.Zero;
             int paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
-            if (paramCount > 0)
-                paramArray = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
-            SetDefValues(methodNumber, paramCount, arguments);
-            NativeApiVariant.SetValue(paramArray, arguments, paramCount);
-            NativeApiProxy.CallAsProc(_object, methodNumber, paramArray);
-            NativeApiVariant.GetValue(arguments, paramArray, paramCount);
-            NativeApiVariant.Clear(paramArray, paramCount);
-            Marshal.FreeHGlobal(paramArray);
+            using (var variant = new NativeApiVariant(paramCount))
+            {
+                SetDefValues(methodNumber, paramCount, arguments);
+                for (int i = 0; i < paramCount; i++)
+                    variant.Assign(arguments[i], i);
+
+                NativeApiProxy.CallAsProc(_object, methodNumber, variant.Ptr);
+            }
         }
 
         public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
         {
-            var paramArray = IntPtr.Zero;
+            var result = ValueFactory.Create();
             int paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
-            if (paramCount > 0)
-                paramArray = Marshal.AllocHGlobal(NativeApiVariant.Size * paramCount);
-            SetDefValues(methodNumber, paramCount, arguments);
-            NativeApiVariant.SetValue(paramArray, arguments, paramCount);
-            IValue result = retValue = ValueFactory.Create();
-            bool ok = NativeApiProxy.CallAsFunc(_object, methodNumber, paramArray,
-                variant => result = NativeApiVariant.GetValue(variant)
-            );
-            NativeApiVariant.GetValue(arguments, paramArray, paramCount);
-            NativeApiVariant.Clear(paramArray, paramCount);
-            Marshal.FreeHGlobal(paramArray);
-            if (ok)
-                retValue = result;
+            using (var variant = new NativeApiVariant(paramCount))
+            {
+                SetDefValues(methodNumber, paramCount, arguments);
+                for (int i = 0; i < paramCount; i++)
+                    variant.Assign(arguments[i], i);
+
+                NativeApiProxy.CallAsFunc(_object, methodNumber, variant.Ptr,
+                    res => result = NativeApiVariant.Value(res)
+                );
+            }
+            retValue = result;
         }
     }
 }
