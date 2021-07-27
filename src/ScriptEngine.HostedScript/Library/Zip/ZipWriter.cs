@@ -59,9 +59,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
             _zip.CompressionMethod = MakeZipCompressionMethod(compressionMethod);
             _zip.CompressionLevel = MakeZipCompressionLevel(compressionLevel);
             _zip.UseZip64WhenSaving = Zip64Option.AsNecessary;
-            
-            // Zlib падает с NullReferenceException, если задать шифрование
-            //_zip.Encryption = MakeZipEncryption(encryptionMethod);
+            _zip.Encryption = MakeZipEncryption(encryptionMethod);
         }
 
         private ZipOption ChooseEncodingMode(FileNamesEncodingInZipFile encoding)
@@ -296,7 +294,7 @@ namespace ScriptEngine.HostedScript.Library.Zip
         private EncryptionAlgorithm MakeZipEncryption(SelfAwareEnumValue<ZipEncryptionMethodEnum> encryptionMethod)
         {
             if (encryptionMethod == null)
-                return EncryptionAlgorithm.PkzipWeak;
+                return EncryptionAlgorithm.None;
             
             var enumOwner = (ZipEncryptionMethodEnum)encryptionMethod.Owner;
 
@@ -304,6 +302,8 @@ namespace ScriptEngine.HostedScript.Library.Zip
                 return EncryptionAlgorithm.PkzipWeak;
             if (encryptionMethod == enumOwner.Aes128)
                 return EncryptionAlgorithm.WinZipAes128;
+            if (encryptionMethod == enumOwner.Aes192)
+                return EncryptionAlgorithm.Unsupported;
             if (encryptionMethod == enumOwner.Aes256)
                 return EncryptionAlgorithm.WinZipAes256;
 

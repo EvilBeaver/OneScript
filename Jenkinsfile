@@ -23,6 +23,9 @@ pipeline {
                             docker push oscript/onescript-builder:deb
                             docker push oscript/onescript-builder:rpm
                             docker push oscript/onescript-builder:gcc
+							
+							# TODO: Немного через жопу собираются .so для NativеApi
+							# при сборке образа, а не при его запуске
                             docker create --name gcc-$BUILD_NUMBER oscript/onescript-builder:gcc
                             docker cp gcc-$BUILD_NUMBER:/built .
                             docker rm gcc-$BUILD_NUMBER

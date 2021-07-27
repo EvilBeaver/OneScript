@@ -14,42 +14,36 @@ namespace ScriptEngine.Machine.Contexts
     {
         public static T ConvertParam<T>(IValue value)
         {
-            var type = typeof(T);
-            object valueObj = ConvertParam(value, type);
-            if (valueObj == null)
-            {
-                return default(T);
-            }
-            
             try
             {
-                return (T)valueObj;
+                object valueObj = ConvertParam(value, typeof(T));
+                return valueObj != null ? (T)valueObj : default;
             }
             catch (InvalidCastException)
             {
                 throw RuntimeException.InvalidArgumentType();
             }
-           
+            catch (OverflowException)
+            {
+                throw RuntimeException.InvalidArgumentValue();
+            }
         }
 
         public static T ConvertParam<T>(IValue value, T defaultValue)
         {
-            var type = typeof(T);
-            object valueObj = ConvertParam(value, type);
-            if (valueObj == null)
-            {
-                return defaultValue;
-            }
-            
             try
             {
-                return (T)valueObj;
+                object valueObj = ConvertParam(value, typeof(T));
+                return valueObj != null ? (T)valueObj : defaultValue;
             }
             catch (InvalidCastException)
             {
                 throw RuntimeException.InvalidArgumentType();
             }
-           
+            catch (OverflowException)
+            {
+                throw RuntimeException.InvalidArgumentValue();
+            }
         }
 
         public static object ConvertParam(IValue value, Type type)

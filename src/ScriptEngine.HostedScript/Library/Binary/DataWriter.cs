@@ -379,7 +379,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Значение по умолчанию: Неопределено. </param>
         ///
         [ContextMethod("ЗаписатьЦелое16", "WriteInt16")]
-        public void WriteInt16(short number, IValue byteOrder = null)
+        public void WriteInt16(ushort number, IValue byteOrder = null)
         {
             var buffer = GetBytes(number, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
             _binaryWriter.Write(buffer, 0, buffer.Length);
@@ -397,7 +397,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Значение по умолчанию: Неопределено. </param>
         ///
         [ContextMethod("ЗаписатьЦелое32", "WriteInt32")]
-        public void WriteInt32(int number, IValue byteOrder = null)
+        public void WriteInt32(uint number, IValue byteOrder = null)
         {
             var buffer = GetBytes(number, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
             _binaryWriter.Write(buffer, 0, buffer.Length);
@@ -406,7 +406,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
 
         /// <summary>
         /// 
-        /// Записывает целое 16-битное число в целевой поток.
+        /// Записывает целое 64-битное число в целевой поток.
         /// </summary>
         ///
         /// <param name="number">
@@ -416,7 +416,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Значение по умолчанию: Неопределено. </param>
         ///
         [ContextMethod("ЗаписатьЦелое64", "WriteInt64")]
-        public void WriteInt64(long number, IValue byteOrder = null)
+        public void WriteInt64(ulong number, IValue byteOrder = null)
         {
             var buffer = GetBytes(number, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
             _binaryWriter.Write(buffer, 0, buffer.Length);
