@@ -78,7 +78,7 @@ namespace OneScript.StandardLibrary.Binary
                 var obj = dataSource.AsObject();
                 Stream stream;
                 if (obj is BinaryDataContext)
-                    stream = new MemoryStream(((BinaryDataContext)obj).Buffer);
+                    stream = ((BinaryDataContext)obj).GetStream();
                 else if (obj is IStreamWrapper)
                     stream = ((IStreamWrapper) obj).GetUnderlyingStream();
                 else
@@ -187,8 +187,16 @@ namespace OneScript.StandardLibrary.Binary
         /// </returns>
         ///
         [ContextMethod("Пропустить", "Skip")]
-        public long Skip(long number)
+        public long Skip(IValue value)
         {
+            if (value.SystemType != BasicTypes.Number)
+                throw RuntimeException.InvalidArgumentType();
+
+            long number = (long)value.AsNumber();
+
+            if (number < 0 || number != value.AsNumber())
+                throw RuntimeException.InvalidArgumentValue();
+            
             var stream = _reader.BaseStream;
             if (stream.CanSeek)
             {
@@ -466,10 +474,10 @@ namespace OneScript.StandardLibrary.Binary
         /// <returns name="Number"/>
         ///
         [ContextMethod("ПрочитатьЦелое16", "ReadInt16")]
-        public int ReadInt16(IValue byteOrder = null)
+        public uint ReadInt16(IValue byteOrder = null)
         {
-            var bytes = _reader.ReadBytes(sizeof(short));
-            return FromBytes(bytes, BitConversionFacility.LittleEndian.ToInt16, BitConversionFacility.BigEndian.ToInt16, byteOrder);
+            var bytes = _reader.ReadBytes(sizeof(ushort));
+            return FromBytes(bytes, BitConversionFacility.LittleEndian.ToUInt16, BitConversionFacility.BigEndian.ToUInt16, byteOrder);
         }
 
 

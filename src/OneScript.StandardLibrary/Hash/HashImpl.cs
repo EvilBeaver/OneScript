@@ -96,19 +96,18 @@ namespace OneScript.StandardLibrary.Hash
                 case BslStringValue s:
                     AddStream(new MemoryStream(Encoding.UTF8.GetBytes((string)s)));
                     break;
-                case BslObjectValue obj when obj is GenericStream stream:
-                    var length = Math.Min(count == 0 ? stream.Size() : count, stream.Size() - stream.CurrentPosition());
-                    var buffer = (stream.GetUnderlyingStream() as MemoryStream)?.GetBuffer();
-                    if (buffer == null)
-                        throw RuntimeException.InvalidArgumentValue();
-                    AddStream(new MemoryStream(buffer, (int) stream.CurrentPosition(), (int) length));
-                    stream.Seek((int) length, StreamPositionEnum.Current);
+                case BslObjectValue obj when obj is IStreamWrapper wrapper:
+                    var stream = wrapper.GetUnderlyingStream();
+                    var readByte = (int)Math.Min(count == 0 ? stream.Length : count, stream.Length - stream.Position);
+                    var buffer = new byte[readByte];
+                    stream.Read(buffer, 0, readByte);
+                    AddStream(new MemoryStream(buffer));
                     break;
                 case BslObjectValue obj when obj is BinaryDataContext binaryData:
-                    AddStream(new MemoryStream(binaryData.Buffer));
+                    AddStream(binaryData.GetStream());
                     break;
                 default:
-                    throw RuntimeException.InvalidArgumentType();
+                    throw RuntimeException.InvalidArgumentType(nameof(toAdd));
             }
         }
 

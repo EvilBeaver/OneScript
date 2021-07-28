@@ -63,30 +63,28 @@ namespace OneScript.StandardLibrary
                 return '\n';
             }
 
-            if (_eolDelimiter.Length > 0 && _buffer.Peek() == _eolDelimiter [0]) {
-                bool isEol = true;
+            if (_eolDelimiter.Length > 0 && _buffer.Peek() == _eolDelimiter [0])
+            {
                 UpdateCharQueue (_eolDelimiter.Length);
 
                 var eolIndex = 0;
-                foreach (var bufChar in _buffer) {
-                    
-                    if (eolIndex >= _eolDelimiter.Length)
+                foreach (var bufChar in _buffer)
+                {
+                    if (bufChar != _eolDelimiter[eolIndex])
                         break;
-                    
-                    if (bufChar != _eolDelimiter [eolIndex]) {
-                        isEol = false;
-                        break;
-                    }
 
                     ++eolIndex;
-                }
 
-                if (isEol) {
-                    
-                    foreach (var eolChar in _eolDelimiter)
-                        _buffer.Dequeue ();
-                    
-                    return '\n';
+                    if (eolIndex == _eolDelimiter.Length)
+                    {
+                        while (eolIndex > 0)
+                        {
+                            _buffer.Dequeue();
+                            --eolIndex;
+                        }
+
+                        return '\n';
+                    }
                 }
             }
 

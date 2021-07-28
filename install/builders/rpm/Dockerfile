@@ -1,5 +1,4 @@
 FROM fedora:26
-MAINTAINER Chmouel Boudjnah <chmouel@enovance.com>
 
 
 # Install various packages to get compile environment

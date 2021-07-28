@@ -59,7 +59,7 @@ namespace OneScript.StandardLibrary.Text
             TextReader imReader;
             if (encoding == null)
             {
-                imReader = FileOpener.OpenReader(streamObj.GetUnderlyingStream());
+                imReader = FileOpener.OpenReader(streamObj.GetUnderlyingStream(), Encoding.Default);
             }
             else
             {

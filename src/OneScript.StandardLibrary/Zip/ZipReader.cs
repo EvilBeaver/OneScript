@@ -12,6 +12,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.IO;
 using OneScript.Commons;
+using OneScript.StandardLibrary.Binary;
 using OneScript.Types;
 
 namespace OneScript.StandardLibrary.Zip
@@ -29,9 +30,9 @@ namespace OneScript.StandardLibrary.Zip
         {
         }
 	    
-        public ZipReader(string filename, string password = null)
+        public ZipReader(IValue filenameOrStream, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
-            Open(filename, password);
+            Open(filenameOrStream, password, encoding);
         }
 
         private void CheckIfOpened()
@@ -43,15 +44,28 @@ namespace OneScript.StandardLibrary.Zip
         /// <summary>
         /// Открывает архив для чтения.
         /// </summary>
-        /// <param name="filename">Имя ZIP файла, который требуется открыть для чтения.</param>
+        /// <param name="filenameOrStream">Имя ZIP файла или Поток, который требуется открыть для чтения.</param>
         /// <param name="password">Пароль к файлу, если он зашифрован.</param>
         /// <param name="encoding">Кодировка имен файлов в архиве.</param>
         [ContextMethod("Открыть","Open")]
-        public void Open(string filename, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
+        public void Open(IValue filenameOrStream, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
-            ZipFile.DefaultEncoding = Encoding.GetEncoding(866);
             // fuck non-russian encodings on non-ascii files
-            _zip = ZipFile.Read(filename, new ReadOptions() { Encoding = ChooseEncoding(encoding) });
+            ZipFile.DefaultEncoding = Encoding.GetEncoding(866);
+            
+            if (filenameOrStream.SystemType == BasicTypes.String)
+            {
+                _zip = ZipFile.Read(filenameOrStream.AsString(), new ReadOptions { Encoding = ChooseEncoding(encoding) });
+            } 
+            else if (filenameOrStream.AsObject() is IStreamWrapper stream)
+            {
+                _zip = ZipFile.Read(stream.GetUnderlyingStream(), new ReadOptions { Encoding = ChooseEncoding(encoding) });
+            } 
+            else 
+            {
+                throw RuntimeException.InvalidArgumentType(nameof(filenameOrStream));
+            }
+            
             _zip.Password = password;
         }
 
@@ -63,7 +77,6 @@ namespace OneScript.StandardLibrary.Zip
             return Encoding.UTF8;
 
         }
-
 
         /// <summary>
         /// Извлечение всех файлов из архива
@@ -132,10 +145,12 @@ namespace OneScript.StandardLibrary.Zip
             return new ZipReader();
         }
 
-        [ScriptConstructor(Name = "На основании имени файла")]
-        public static ZipReader ConstructByNameAndPassword(IValue filename, IValue password = null)
+        [ScriptConstructor(Name = "На основании имени файла или потока")]
+        public static ZipReader Constructor(IValue dataSource, IValue password = null)
         {
-            return new ZipReader(filename.AsString(), password?.AsString());
+            var dataSourceRawValue = dataSource.GetRawValue();
+
+            return new ZipReader(dataSourceRawValue, password?.AsString());
         }
 
         public void Dispose()

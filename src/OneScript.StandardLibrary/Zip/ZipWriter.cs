@@ -62,9 +62,7 @@ namespace OneScript.StandardLibrary.Zip
             _zip.CompressionMethod = MakeZipCompressionMethod(compressionMethod);
             _zip.CompressionLevel = MakeZipCompressionLevel(compressionLevel);
             _zip.UseZip64WhenSaving = Zip64Option.AsNecessary;
-            
-            // Zlib падает с NullReferenceException, если задать шифрование
-            //_zip.Encryption = MakeZipEncryption(encryptionMethod);
+            _zip.Encryption = MakeZipEncryption(encryptionMethod);
         }
 
         private ZipOption ChooseEncodingMode(FileNamesEncodingInZipFile encoding)
@@ -284,12 +282,14 @@ namespace OneScript.StandardLibrary.Zip
         private EncryptionAlgorithm MakeZipEncryption(ZipEncryptionMethod? encryptionMethod)
         {
             if (encryptionMethod == null)
-                return EncryptionAlgorithm.PkzipWeak;
+                return EncryptionAlgorithm.None;
             
             if(encryptionMethod == ZipEncryptionMethod.Zip20)
                 return EncryptionAlgorithm.PkzipWeak;
             if (encryptionMethod == ZipEncryptionMethod.Aes128)
                 return EncryptionAlgorithm.WinZipAes128;
+            if (encryptionMethod == ZipEncryptionMethod.Aes192)
+                return EncryptionAlgorithm.Unsupported;
             if (encryptionMethod == ZipEncryptionMethod.Aes256)
                 return EncryptionAlgorithm.WinZipAes256;
 

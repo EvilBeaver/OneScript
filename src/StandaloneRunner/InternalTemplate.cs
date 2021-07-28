@@ -44,7 +44,7 @@ namespace StandaloneRunner
                 _tempFileName = Path.GetTempFileName();
                 using (var fs = new FileStream(_tempFileName, FileMode.OpenOrCreate))
                 {
-                    fs.Write(_data.Buffer,0,_data.Buffer.Length);
+                    _data.CopyTo(fs);
                 }
             }
 
