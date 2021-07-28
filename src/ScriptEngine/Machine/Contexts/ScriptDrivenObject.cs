@@ -349,11 +349,11 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (PropDefinedInScript(propertyNumber))
             {
-                var variable = _module.Variables[propertyNumber-VARIABLE_COUNT];
+                var variable = _module.ExportedProperies[propertyNumber-VARIABLE_COUNT];
                 return BslPropertyBuilder.Create()
-                    .Name(variable.Identifier)
-                    .IsExported(_propertySearchCache.ContainsKey(variable.Identifier))
-                    .SetAnnotations(variable.Annotations.Select(x => x.MakeBslAttribute()))
+                    .Name(variable.SymbolicName)
+                    .IsExported(true)
+                    .SetAnnotations(_module.Variables[variable.Index-VARIABLE_COUNT].Annotations.Select(x => x.MakeBslAttribute()))
                     .Build();
             }
             else
