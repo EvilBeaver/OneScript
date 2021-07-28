@@ -325,7 +325,7 @@ namespace OneScript.StandardLibrary.Zip
                 ConvertParam<string>(comment),
                 ConvertParam<ZipCompressionMethod>(compressionMethod),
                 ConvertParam<ZipCompressionLevel>(compressionLevel),
-                ConvertParam<ZipEncryptionMethod>(encryptionMethod),
+                ConvertParam<ZipEncryptionMethod?>(encryptionMethod),
                     encoding);
             return zip;
         }
