@@ -10,21 +10,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-using ScriptEngine.Machine.Contexts;
-
-namespace ScriptEngine.Machine.Reflection
+namespace OneScript.Contexts
 {
+    /// <summary>
+    /// Обертка для типов 1Script, которая предоставляет рефлексию класса
+    /// как он виден в языке. С именами и составом полей, видимых из скриптового кода.
+    /// Позволяет представить тип 1Script как системный тип
+    /// </summary>
     public class ReflectedClassType : TypeDelegator
     {
         private string _typeName;
-        private PropertyInfo[] _properties;
-        private System.Reflection.MethodInfo[] _methods;
-        private FieldInfo[] _fields;
+        private BslPropertyInfo[] _properties;
+        private BslMethodInfo[] _methods;
+        private BslFieldInfo[] _fields;
         private ConstructorInfo[] _constructors;
         
         private readonly Type _underlyingType;
 
-        public ReflectedClassType(Type classType)
+        internal ReflectedClassType(Type classType)
             :base(classType)
         {
             _underlyingType = classType;
@@ -35,11 +38,11 @@ namespace ScriptEngine.Machine.Reflection
             _typeName = name;
         }
 
-        public void SetFields(IEnumerable<FieldInfo> source)
+        public void SetFields(IEnumerable<BslFieldInfo> source)
         {
             _fields = source.Select(x =>
             {
-                if (x is ReflectedFieldInfo refl)
+                if (x is IBuildableMember refl)
                 {
                     refl.SetDeclaringType(this);
                 }
@@ -48,16 +51,16 @@ namespace ScriptEngine.Machine.Reflection
             }).ToArray();
         }
 
-        public void SetProperties(IEnumerable<PropertyInfo> source)
+        public void SetProperties(IEnumerable<BslPropertyInfo> source)
         {
             _properties = source.ToArray();
         }
 
-        public void SetMethods(IEnumerable<System.Reflection.MethodInfo> source)
+        public void SetMethods(IEnumerable<BslMethodInfo> source)
         {
             _methods = source.Select(x =>
             {
-                if (x is ReflectedMethodInfo refl)
+                if (x is IBuildableMethod refl)
                 {
                     refl.SetDeclaringType(this);
                 }
@@ -66,11 +69,11 @@ namespace ScriptEngine.Machine.Reflection
             }).ToArray();
         }
 
-        public void SetConstructors(IEnumerable<System.Reflection.ConstructorInfo> source)
+        public void SetConstructors(IEnumerable<BslConstructorInfo> source)
         {
             _constructors = source.Select(x =>
             {
-                if(x is ReflectedConstructorInfo refl)
+                if(x is IBuildableMethod refl)
                     refl.SetDeclaringType(this);
                 return x;
 
@@ -128,11 +131,13 @@ namespace ScriptEngine.Machine.Reflection
             bool showPublic = bindingAttr.HasFlag(BindingFlags.Public);
 
             return _properties.Where(x =>
-            {
-                var isPublic = (x.GetMethod?.IsPublic) == true || (x.SetMethod?.IsPublic) == true;
-                return isPublic && showPublic || !isPublic && showPrivate;
+                {
+                    var isPublic = (x.GetMethod?.IsPublic) == true || (x.SetMethod?.IsPublic) == true;
+                    return isPublic && showPublic || !isPublic && showPrivate;
 
-            }).ToArray();
+                })
+                .Cast<PropertyInfo>()
+                .ToArray();
         }
 
         protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)

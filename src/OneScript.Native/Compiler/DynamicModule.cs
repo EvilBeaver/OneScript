@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.Native.Runtime;
 
@@ -13,7 +14,7 @@ namespace OneScript.Native.Compiler
 {
     public class DynamicModule
     {
-        public IList<BslNativeFieldInfo> Fields { get; } = new List<BslNativeFieldInfo>();
+        public IList<BslFieldInfo> Fields { get; } = new List<BslFieldInfo>();
         
         public IList<BslNativeMethodInfo> Methods { get; } = new List<BslNativeMethodInfo>();
         public ModuleInformation ModuleInformation { get; set; }

@@ -8,20 +8,20 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using OneScript.Contexts;
+using System.Reflection;
+using OneScript.Sources;
 using OneScript.Types;
-using SysReflection = System.Reflection;
-using ScriptEngine.Machine.Contexts;
+using OneScript.Values;
 
-namespace ScriptEngine.Machine.Reflection
+namespace OneScript.Contexts
 {
     public class ClassBuilder
     {
         private readonly Type _classType;
-        private List<SysReflection.MethodInfo> _methods = new List<SysReflection.MethodInfo>();
-        private List<SysReflection.PropertyInfo> _properties = new List<SysReflection.PropertyInfo>();
-        private List<SysReflection.FieldInfo> _fields = new List<SysReflection.FieldInfo>();
-        private List<SysReflection.ConstructorInfo> _constructors = new List<SysReflection.ConstructorInfo>();
+        private readonly List<BslMethodInfo> _methods = new List<BslMethodInfo>();
+        private readonly List<BslPropertyInfo> _properties = new List<BslPropertyInfo>();
+        private readonly List<BslFieldInfo> _fields = new List<BslFieldInfo>();
+        private readonly List<BslConstructorInfo> _constructors = new List<BslConstructorInfo>();
 
         public ClassBuilder(Type classType)
         {
@@ -29,7 +29,8 @@ namespace ScriptEngine.Machine.Reflection
         }
         
         public string TypeName { get; set; }
-        public LoadedModule Module { get; set; }
+        
+        public IExecutableModule Module { get; set; }
 
         public ClassBuilder SetTypeName(string typeName)
         {
@@ -37,7 +38,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public ClassBuilder SetModule(LoadedModule module)
+        public ClassBuilder SetModule(IExecutableModule module)
         {
             Module = module;
             return this;
@@ -53,7 +54,7 @@ namespace ScriptEngine.Machine.Reflection
             return this;
         }
 
-        public ClassBuilder ExportClassMethod(SysReflection.MethodInfo nativeMethod)
+        public ClassBuilder ExportClassMethod(MethodInfo nativeMethod)
         {
             if(nativeMethod == null)
                 throw new ArgumentNullException(nameof(nativeMethod));
@@ -61,10 +62,15 @@ namespace ScriptEngine.Machine.Reflection
             if (nativeMethod.ReflectedType != _classType)
                 throw new InvalidOperationException($"Method '{nativeMethod.Name}' not found in {_classType}");
 
-            if(MarkedAsContextMethod(nativeMethod, true))
+            if (MarkedAsContextMethod(nativeMethod, true))
+            {
                 _methods.Add(new ContextMethodInfo(nativeMethod));
+            }
             else
-                _methods.Add(nativeMethod);
+            {
+                var markup = new ContextMethodAttribute(nativeMethod.Name);
+                _methods.Add(new ContextMethodInfo(nativeMethod, markup));
+            }
 
             return this;
         }
@@ -93,35 +99,37 @@ namespace ScriptEngine.Machine.Reflection
         public ClassBuilder ExportProperties(bool includeDeprecations = false)
         {
             var props = _classType.GetProperties()
-                                   .Where(MarkedAsContextProperty);
+                                   .Where(prop => MarkedAsContextProperty(prop, includeDeprecations))
+                                   .Select(prop => new ContextPropertyInfo(prop));
+            
             _properties.AddRange(props);
             return this;
         }
 
-        private bool MarkedAsContextMethod(SysReflection.MemberInfo member, bool includeDeprecations)
+        private bool MarkedAsContextMethod(MemberInfo member, bool includeDeprecations)
         {
             return member
                   .GetCustomAttributes(typeof(ContextMethodAttribute), false)
                   .Any(x => includeDeprecations || (x as ContextMethodAttribute)?.IsDeprecated == false);
         }
 
-        private bool MarkedAsContextProperty(SysReflection.MemberInfo member)
+        private bool MarkedAsContextProperty(MemberInfo member, bool includeDeprecations = false)
         {
             return member.GetCustomAttributes(typeof(ContextPropertyAttribute), false).Any();
         }
 
-        public ClassBuilder ExportConstructor(SysReflection.ConstructorInfo info)
+        public ClassBuilder ExportConstructor(MethodInfo info)
         {
             if (info.DeclaringType != _classType)
             {
                 throw new ArgumentException("info must belong to the current class");
             }
 
-            _constructors.Add(info);
+            _constructors.Add(new ContextConstructorInfo(info));
             return this;
         }
 
-        public ClassBuilder ExportConstructor(Func<object[], IRuntimeContextInstance> creator)
+        public ClassBuilder ExportConstructor(InstanceConstructor creator)
         {
             var info = new ReflectedConstructorInfo(creator);
             info.SetDeclaringType(_classType);
@@ -134,23 +142,9 @@ namespace ScriptEngine.Machine.Reflection
             if(Module == null)
                 throw new InvalidOperationException("Module is not set");
 
-            foreach (var variable in Module.Variables)
+            foreach (var variable in Module.Fields)
             {
-                var exported = Module.ExportedProperies.FirstOrDefault(x => x.SymbolicName.Equals(variable.Identifier) || x.SymbolicName.Equals(variable.Alias));
-                bool exportFlag = exported.SymbolicName != null;
-                if(exportFlag)
-                    System.Diagnostics.Debug.Assert(variable.Index == exported.Index, "indices of vars and exports are equal");
-
-                var fieldInfo = new ReflectedFieldInfo(variable, exportFlag);
-                if (variable.Annotations != null)
-                {
-                    foreach (var annotation in variable.Annotations)
-                    {
-                        fieldInfo.AddAnnotation(annotation);
-                    }
-                }
-
-                _fields.Add(fieldInfo);
+                _fields.Add(variable);
             }
 
             return this;
@@ -158,16 +152,18 @@ namespace ScriptEngine.Machine.Reflection
 
         public ClassBuilder ExportScriptMethods()
         {
+            // TODO придумать как сделать это в одном месте
+            const string BODY_METHOD_NAME = "$entry";
+                
             if (Module == null)
                 throw new InvalidOperationException("Module is not set");
 
-            for (int i = 0; i < Module.Methods.Length; i++)
+            foreach (var methodDescriptor in Module.Methods)
             {
-                var methodDescriptor = Module.Methods[i];
-                if(methodDescriptor.Signature.Name == ModuleImage.BODY_METHOD_NAME)
+                if(methodDescriptor.Name == BODY_METHOD_NAME)
                     continue;
                 
-                _methods.Add(methodDescriptor.MethodInfo);
+                _methods.Add(methodDescriptor);
             }
 
             return this;

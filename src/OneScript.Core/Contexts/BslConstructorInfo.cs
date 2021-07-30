@@ -10,8 +10,10 @@ using System.Reflection;
 
 namespace OneScript.Contexts
 {
-    public abstract class BslFieldInfo : FieldInfo
+    public abstract class BslConstructorInfo : ConstructorInfo
     {
+        #region Attributes Infrastructure
+
         private AnnotationHolder _annotations;
         
         private AnnotationHolder Annotations
@@ -24,17 +26,17 @@ namespace OneScript.Contexts
                 return _annotations;
             }
         }
-        
+
+        protected void SetAnnotations(AnnotationHolder annotations)
+        {
+            _annotations = annotations;
+        }
+
         protected virtual AnnotationHolder RetrieveAnnotations()
         {
             return new AnnotationHolder(new object[0]);
         }
-
-        protected void SetAnnotations(AnnotationHolder holder)
-        {
-            _annotations = holder;
-        }
-
+        
         public override object[] GetCustomAttributes(bool inherit)
         {
             return Annotations.GetCustomAttributes(inherit);
@@ -49,5 +51,12 @@ namespace OneScript.Contexts
         {
             return Annotations.IsDefined(attributeType, inherit);
         }
+
+        #endregion
+
+        public override MethodImplAttributes GetMethodImplementationFlags() => MethodImplAttributes.Managed;
+
+        public override MethodAttributes Attributes => MethodAttributes.Public;
+        public override RuntimeMethodHandle MethodHandle => throw new NotImplementedException();
     }
 }

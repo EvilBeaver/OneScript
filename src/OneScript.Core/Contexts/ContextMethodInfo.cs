@@ -25,7 +25,15 @@ namespace OneScript.Contexts
         public ContextMethodInfo(MethodInfo realMethod)
         {
             _realMethod = realMethod;
-            _scriptMark = (ContextMethodAttribute)GetCustomAttributes(typeof(ContextMethodAttribute), false).First();
+            try
+            {
+                _scriptMark =
+                    (ContextMethodAttribute) GetCustomAttributes(typeof(ContextMethodAttribute), false).First();
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new ArgumentException("Method is not marked with ContextMethodAttribute", e);
+            }
         }
 
         public ContextMethodInfo(MethodInfo realMethod, ContextMethodAttribute binding)

@@ -120,9 +120,11 @@ namespace OneScript.Native.Compiler
         protected override void VisitModuleVariable(VariableDefinitionNode varNode)
         {
             var annotations = CompilerHelpers.GetAnnotations(varNode.Annotations);
-            var field = new BslNativeFieldInfo(varNode.Name);
-            field.SetExportFlag(varNode.IsExported);
-            field.SetAnnotations(annotations);
+            var field = BslFieldBuilder.Create()
+                .Name(varNode.Name)
+                .IsExported(varNode.IsExported)
+                .SetAnnotations(annotations)
+                .Build();
             
             _module.Fields.Add(field);
         }
