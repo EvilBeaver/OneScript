@@ -12,6 +12,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.IO;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
 using OneScript.Types;
 

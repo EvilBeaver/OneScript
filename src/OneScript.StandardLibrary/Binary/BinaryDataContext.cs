@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Types;
 using ScriptEngine;
 using ScriptEngine.Machine;

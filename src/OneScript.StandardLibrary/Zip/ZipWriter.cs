@@ -12,6 +12,7 @@ using System.Text;
 using Ionic.Zip;
 using Ionic.Zlib;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

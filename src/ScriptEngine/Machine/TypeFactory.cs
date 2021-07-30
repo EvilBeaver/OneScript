@@ -12,6 +12,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using OneScript.Types;
 using OneScript.Commons;
+using OneScript.Contexts;
 using ScriptEngine.Types;
 using Refl = System.Reflection;
 
@@ -258,20 +259,13 @@ namespace ScriptEngine.Machine
                 var injectContext = parameters.Length > 0 &&
                                     parameters[0].ParameterType == typeof(TypeActivationContext);
 
-#pragma warning disable 618
-                if (attribute.ParametrizeWithClassName)
-                {
-                    if(parameters.Length == 0 || parameters[0].ParameterType != typeof(string))
-                        throw new InvalidOperationException("Type parametrized constructor must have first argument of type String");
-                }
-
                 var definition = new ConstructorDefinition
                 {
                     CtorInfo = method,
-                    Parametrized = attribute.ParametrizeWithClassName || injectContext,
+                    Parametrized = injectContext,
                     InjectContext = injectContext
                 };
-#pragma warning restore 618
+
                 constructors.Add(definition);
             }
             

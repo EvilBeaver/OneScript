@@ -11,6 +11,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Schema;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.StandardLibrary.XDTO;
 using OneScript.StandardLibrary.Xml;
 using OneScript.StandardLibrary.XMLSchema.Collections;

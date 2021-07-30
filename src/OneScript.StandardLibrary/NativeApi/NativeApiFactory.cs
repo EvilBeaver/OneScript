@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using OneScript.Types;
+using OneScript.Contexts;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.NativeApi
@@ -37,7 +38,7 @@ namespace OneScript.StandardLibrary.NativeApi
             _libraries.Clear();
         }
 
-        [ScriptEngine.Machine.Contexts.ScriptConstructor]
+        [ScriptConstructor]
         public static IValue Constructor(TypeActivationContext context)
         {
             var typeName = context.TypeName;

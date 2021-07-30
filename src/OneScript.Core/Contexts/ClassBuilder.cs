@@ -131,9 +131,9 @@ namespace OneScript.Contexts
 
         public ClassBuilder ExportConstructor(InstanceConstructor creator)
         {
-            var info = new ReflectedConstructorInfo(creator);
+            IBuildableMember info = new BslLambdaConstructorInfo(creator);
             info.SetDeclaringType(_classType);
-            _constructors.Add(info);
+            _constructors.Add((BslLambdaConstructorInfo)info);
             return this;
         }
 
@@ -176,12 +176,7 @@ namespace OneScript.Contexts
 
             foreach (var staticConstructor in statics)
             {
-                var action = new Func<object[], IRuntimeContextInstance>((parameters) =>
-                {
-                    return (IRuntimeContextInstance)staticConstructor.Invoke(null, SysReflection.BindingFlags.InvokeMethod, null, parameters, CultureInfo.CurrentCulture);
-                });
-
-                ExportConstructor(action);
+                ExportConstructor(staticConstructor);
             }
 
             return this;
