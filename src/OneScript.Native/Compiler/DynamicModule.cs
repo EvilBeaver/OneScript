@@ -9,14 +9,22 @@ using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.Native.Runtime;
+using OneScript.Sources;
 
 namespace OneScript.Native.Compiler
 {
-    public class DynamicModule
+    public class DynamicModule : IExecutableModule
     {
-        public IList<BslFieldInfo> Fields { get; } = new List<BslFieldInfo>();
+        public IList<BslAnnotationAttribute> ModuleAttributes { get; } = new List<BslAnnotationAttribute>();
         
-        public IList<BslNativeMethodInfo> Methods { get; } = new List<BslNativeMethodInfo>();
+        public IList<BslFieldInfo> Fields { get; } = new List<BslFieldInfo>();
+
+        public IList<BslPropertyInfo> Properties { get; } = new List<BslPropertyInfo>();
+
+        public IList<BslMethodInfo> Methods { get; } = new List<BslMethodInfo>();
+        
+        public SourceCode Source { get; set; }
+        
         public ModuleInformation ModuleInformation { get; set; }
     }
 }

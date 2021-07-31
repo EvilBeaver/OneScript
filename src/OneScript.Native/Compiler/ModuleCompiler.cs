@@ -9,6 +9,7 @@ using System.Linq;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Language;
+using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Runtime;
@@ -27,7 +28,7 @@ namespace OneScript.Native.Compiler
         }
         
         public DynamicModule Compile(
-            ModuleInformation moduleInfo,
+            SourceCodeIterator moduleInfo,
             BslSyntaxNode moduleNode,
             SymbolTable symbols
             )
@@ -36,7 +37,7 @@ namespace OneScript.Native.Compiler
             
             _module = new DynamicModule
             {
-                ModuleInformation = ModuleInfo
+                Source = moduleInfo.Source
             };
 
             Visit(moduleNode);

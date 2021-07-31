@@ -35,7 +35,7 @@ namespace OneScript.StandardLibrary.Native
         private string _codeBlock;
         private BslSyntaxNode _ast;
         private IErrorSink _errors;
-        private ISourceCodeIndexer _codeLinesReferences;
+        private SourceCodeIterator _codeLinesReferences;
 
         public CompiledBlock(IServiceContainer services)
         {
@@ -177,6 +177,7 @@ namespace OneScript.StandardLibrary.Native
             {
                 Errors = _errors,
                 Module = moduleInfo,
+                CodeIterator = _codeLinesReferences,
                 Symbols = Symbols,
                 Services = _services
             }, methodInfo);

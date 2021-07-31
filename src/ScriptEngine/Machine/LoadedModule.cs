@@ -5,12 +5,16 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using OneScript.Contexts;
 using OneScript.Language;
+using OneScript.Sources;
 
 namespace ScriptEngine.Machine
 {
-    public class LoadedModule
+    public class LoadedModule: IExecutableModule
     {
         public LoadedModule(ModuleImage image)
         {
@@ -76,6 +80,7 @@ namespace ScriptEngine.Machine
         public Command[] Code { get; }
         public SymbolBinding[] VariableRefs { get; }
         public SymbolBinding[] MethodRefs { get; }
+
         public MethodDescriptor[] Methods { get; }
         public IValue[] Constants { get; }
         public ExportedSymbol[] ExportedProperies { get; }
@@ -83,6 +88,17 @@ namespace ScriptEngine.Machine
         public AnnotationDefinition[] Annotations { get; }
         public ModuleInformation ModuleInfo { get; }
         public int LoadAddress { get; }
+
+        IList<BslAnnotationAttribute> IExecutableModule.ModuleAttributes =>
+            Annotations.Select(x => x.MakeBslAttribute()).ToList();
+
+        IList<BslFieldInfo> IExecutableModule.Fields => throw new NotImplementedException();
+
+        IList<BslPropertyInfo> IExecutableModule.Properties => throw new NotImplementedException();
+
+        IList<BslMethodInfo> IExecutableModule.Methods => throw new NotImplementedException();
+
+        SourceCode IExecutableModule.Source => throw new NotImplementedException();
     }
 
     

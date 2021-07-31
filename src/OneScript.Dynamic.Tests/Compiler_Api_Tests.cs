@@ -39,13 +39,17 @@ namespace OneScript.Dynamic.Tests
         private class CompileHelper
         {
             private IErrorSink _errors = new ListErrorSink();
-            private ISourceCodeIndexer _codeIndexer;
+            private SourceCodeIterator _codeIndexer;
             private BslSyntaxNode _module;
 
             public BslSyntaxNode Parse(string code)
             {
                 var lexer = new DefaultLexer();
-                lexer.Iterator = SourceCodeBuilder.Create().FromString(code).Build().CreateIterator();
+                lexer.Iterator = SourceCodeBuilder.Create()
+                    .FromString(code)
+                    .WithName("<text>")
+                    .Build()
+                    .CreateIterator();
                 _codeIndexer = lexer.Iterator;
            
                 var parser = new DefaultBslParser(lexer, new DefaultAstBuilder(), _errors, new PreprocessorHandlers());
@@ -64,12 +68,7 @@ namespace OneScript.Dynamic.Tests
             public DynamicModule Compile(SymbolTable scopes)
             {
                 var compiler = new ModuleCompiler(_errors, null);
-                return compiler.Compile(new ModuleInformation()
-                {
-                    CodeIndexer = _codeIndexer,
-                    Origin = "<text>",
-                    ModuleName = "<test>"
-                }, _module, scopes);
+                return compiler.Compile(_codeIndexer, _module, scopes);
             }
         }
         

@@ -15,7 +15,7 @@ namespace OneScript.Native.Compiler
     public abstract class ExpressionTreeGeneratorBase : BslSyntaxWalker
     {
         private IErrorSink _errors;
-        private ModuleInformation _moduleInfo;
+        private SourceCodeIterator _lineInfo;
         private SymbolTable _ctx;
 
         protected ExpressionTreeGeneratorBase()
@@ -34,19 +34,17 @@ namespace OneScript.Native.Compiler
         
         protected void InitContext(BslWalkerContext context)
         {
-            InitContext(context.Errors, context.Module, context.Symbols);
+            InitContext(context.Errors, context.CodeIterator, context.Symbols);
         }
         
-        protected void InitContext(IErrorSink errors, ModuleInformation moduleInfo, SymbolTable symbols)
+        protected void InitContext(IErrorSink errors, SourceCodeIterator lineInfo, SymbolTable symbols)
         {
             _errors = errors;
-            _moduleInfo = moduleInfo;
+            _lineInfo = lineInfo;
             _ctx = symbols;
         }
         
         protected IErrorSink Errors => _errors;
-
-        protected ModuleInformation ModuleInfo => _moduleInfo;
 
         protected SymbolTable Symbols => _ctx;
         
@@ -56,7 +54,7 @@ namespace OneScript.Native.Compiler
             {
                 Symbols = _ctx,
                 Errors = _errors,
-                Module = _moduleInfo
+                CodeIterator = _lineInfo
             };
         }
 
@@ -78,10 +76,10 @@ namespace OneScript.Native.Compiler
         {
             return new ErrorPositionInfo
             {
-                Code = _moduleInfo.CodeIndexer.GetCodeLine(range.LineNumber),
+                Code = _lineInfo.GetCodeLine(range.LineNumber),
                 LineNumber = range.LineNumber,
                 ColumnNumber = range.ColumnNumber,
-                ModuleName = _moduleInfo.ModuleName
+                ModuleName = _lineInfo.Source.Name
             };
         }
     }
