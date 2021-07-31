@@ -24,7 +24,5 @@ namespace OneScript.Native.Compiler
         public IList<BslMethodInfo> Methods { get; } = new List<BslMethodInfo>();
         
         public SourceCode Source { get; set; }
-        
-        public ModuleInformation ModuleInformation { get; set; }
     }
 }

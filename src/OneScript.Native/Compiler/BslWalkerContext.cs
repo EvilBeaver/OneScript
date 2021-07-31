@@ -22,9 +22,6 @@ namespace OneScript.Native.Compiler
         
         public SourceCodeIterator CodeIterator { get; set; }
         
-        [Obsolete]
-        public ModuleInformation Module { get; set; }
-        
         public IServiceContainer Services { get; set; }
     }
 }

@@ -162,21 +162,14 @@ namespace OneScript.StandardLibrary.Native
             // пробежать по аст 1С и превратить в BlockExpression<IValue>
 
             if (Symbols == null)
-                Symbols = new OneScript.Native.Compiler.SymbolTable();
+                Symbols = new SymbolTable();
             
             Symbols.AddScope(SymbolScope.FromContext(new StandardGlobalContext()));
             
             var methodInfo = CreateMethodInfo();
-            var moduleInfo = new ModuleInformation
-            {
-                Origin = "<compiled code>",
-                ModuleName = "<compiled code>",
-                CodeIndexer = _codeLinesReferences
-            };
             var methodCompiler = new MethodCompiler(new BslWalkerContext
             {
                 Errors = _errors,
-                Module = moduleInfo,
                 CodeIterator = _codeLinesReferences,
                 Symbols = Symbols,
                 Services = _services

@@ -29,7 +29,6 @@ namespace ScriptEngine.Compiler
         private readonly ICompilerContext _ctx;
         private readonly List<CompilerException> _errors = new List<CompilerException>();
         private SourceCodeIterator _sourceCodeIterator;
-        private ModuleInformation _moduleInfo;
 
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
@@ -52,19 +51,6 @@ namespace ScriptEngine.Compiler
         
         public IDependencyResolver DependencyResolver { get; set; }
         
-        [Obsolete]
-        public ModuleImage CreateImage(ModuleNode moduleNode, ModuleInformation moduleInfo)
-        {
-            if (moduleNode.Kind != NodeKind.Module)
-            {
-                throw new ArgumentException($"Node must be a Module node");
-            }
-
-            _moduleInfo = moduleInfo;
-
-            return CreateImageInternal(moduleNode);
-        }
-        
         public ModuleImage CreateImage(ModuleNode moduleNode, SourceCodeIterator source)
         {
             if (moduleNode.Kind != NodeKind.Module)
@@ -82,7 +68,6 @@ namespace ScriptEngine.Compiler
             VisitModule(moduleNode);
             CheckForwardedDeclarations();
             _module.LoadAddress = _ctx.TopIndex();
-            _module.ModuleInfo = _moduleInfo;
             _module.Source = _sourceCodeIterator.Source;
             return _module;
         }
