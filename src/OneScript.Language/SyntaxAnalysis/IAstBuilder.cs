@@ -20,6 +20,6 @@ namespace OneScript.Language.SyntaxAnalysis
 
         BslSyntaxNode PopContext();
         
-        BslSyntaxNode CurrentNode { get; }
+        BslSyntaxNode ContextNode { get; }
     }
 }

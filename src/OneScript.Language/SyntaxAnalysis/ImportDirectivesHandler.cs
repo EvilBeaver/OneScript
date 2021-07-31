@@ -39,7 +39,7 @@ namespace OneScript.Language.SyntaxAnalysis
             NodeBuilder.AddChild(argumentNode, value);
             
             NodeBuilder.AddChild(node, argumentNode);
-            NodeBuilder.AddChild(NodeBuilder.CurrentNode, node);
+            NodeBuilder.AddChild(NodeBuilder.ContextNode, node);
 
             lex = _importClauseLexer.NextLexemOnSameLine();
             if (lex.Type != LexemType.EndOfText)

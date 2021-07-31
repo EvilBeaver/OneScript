@@ -111,7 +111,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private BslSyntaxNode PopContext() => _builder.PopContext();
 
-        private BslSyntaxNode CurrentParent => _builder.CurrentNode;
+        private BslSyntaxNode CurrentParent => _builder.ContextNode;
 
         private void ParseModuleAnnotation()
         {

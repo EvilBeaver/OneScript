@@ -108,6 +108,6 @@ namespace OneScript.Language.SyntaxAnalysis
             return _nodeContext.Pop();
         }
 
-        public BslSyntaxNode CurrentNode => _nodeContext.Count == 0? default : _nodeContext.Peek();
+        public BslSyntaxNode ContextNode => _nodeContext.Count == 0? default : _nodeContext.Peek();
     }
 }

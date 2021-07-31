@@ -41,7 +41,7 @@ namespace OneScript.Language.Tests
             }
 
             lastExtractedLexem = lexer.NextLexem();
-            NodeBuilder.AddChild(NodeBuilder.CurrentNode, node);
+            NodeBuilder.AddChild(NodeBuilder.ContextNode, node);
         }
     }
 }
