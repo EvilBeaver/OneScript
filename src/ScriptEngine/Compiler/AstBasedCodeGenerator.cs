@@ -17,6 +17,7 @@ using OneScript.Language.Extensions;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
+using OneScript.Sources;
 using OneScript.Values;
 using ScriptEngine.Machine;
 
@@ -27,6 +28,7 @@ namespace ScriptEngine.Compiler
         private readonly ModuleImage _module;
         private readonly ICompilerContext _ctx;
         private readonly List<CompilerException> _errors = new List<CompilerException>();
+        private SourceCodeIterator _sourceCodeIterator;
         private ModuleInformation _moduleInfo;
 
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
@@ -50,6 +52,7 @@ namespace ScriptEngine.Compiler
         
         public IDependencyResolver DependencyResolver { get; set; }
         
+        [Obsolete]
         public ModuleImage CreateImage(ModuleNode moduleNode, ModuleInformation moduleInfo)
         {
             if (moduleNode.Kind != NodeKind.Module)
@@ -61,6 +64,18 @@ namespace ScriptEngine.Compiler
 
             return CreateImageInternal(moduleNode);
         }
+        
+        public ModuleImage CreateImage(ModuleNode moduleNode, SourceCodeIterator source)
+        {
+            if (moduleNode.Kind != NodeKind.Module)
+            {
+                throw new ArgumentException($"Node must be a Module node");
+            }
+
+            _sourceCodeIterator = source;
+
+            return CreateImageInternal(moduleNode);
+        }
 
         private ModuleImage CreateImageInternal(ModuleNode moduleNode)
         {
@@ -68,6 +83,7 @@ namespace ScriptEngine.Compiler
             CheckForwardedDeclarations();
             _module.LoadAddress = _ctx.TopIndex();
             _module.ModuleInfo = _moduleInfo;
+            _module.Source = _sourceCodeIterator.Source;
             return _module;
         }
 
@@ -96,7 +112,7 @@ namespace ScriptEngine.Compiler
             
             try
             {
-                DependencyResolver.Resolve(_moduleInfo, libName);
+                DependencyResolver.Resolve(_sourceCodeIterator.Source, libName);
                 if(_ctx is ModuleCompilerContext moduleContext)
                     moduleContext.Update();
             }
@@ -267,7 +283,7 @@ namespace ScriptEngine.Compiler
                 
                 methodCtx.DefineVariable(paramNode.Name);
             }
-
+            
             _ctx.PushScope(methodCtx);
             var entryPoint = _module.Code.Count;
             try
@@ -1209,12 +1225,18 @@ namespace ScriptEngine.Compiler
             AddError(error);
         }
 
-        protected ErrorPositionInfo MakeCodePosition(CodeRange range)
+        private ErrorPositionInfo MakeCodePosition(CodeRange range)
         {
-            return range.ToCodePosition(_moduleInfo);
+            return new ErrorPositionInfo()
+            {
+                Code = _sourceCodeIterator.GetCodeLine(range.LineNumber),
+                LineNumber = range.LineNumber,
+                ColumnNumber = range.ColumnNumber,
+                ModuleName = _sourceCodeIterator.Source.Name
+            };
         }
-        
-        protected int AddCommand(OperationCode code, int arg = 0)
+
+        private int AddCommand(OperationCode code, int arg = 0)
         {
             var addr = _module.Code.Count;
             _module.Code.Add(new Command() { Code = code, Argument = arg });

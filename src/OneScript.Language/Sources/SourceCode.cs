@@ -14,19 +14,27 @@ namespace OneScript.Sources
     public class SourceCode
     {
         private readonly ICodeSource _source;
-        
+
         internal SourceCode(string sourceName, ICodeSource source)
         {
             _source = source;
             Name = sourceName;
         }
 
-        public SourceCodeIterator CreateIterator() => new SourceCodeIterator(this); 
-        
+        public SourceCodeIterator CreateIterator()
+        {
+            var newIterator = new SourceCodeIterator(this); 
+            //Indexer ??= newIterator;
+
+            return newIterator;
+        }
+
         public string Location => _source.Location;
         
         public string Name { get; }
 
         public string GetSourceCode() => _source.GetSourceCode();
+
+        //public ISourceCodeIndexer Indexer { get; private set; }
     }
 }

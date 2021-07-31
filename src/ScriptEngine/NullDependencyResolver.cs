@@ -6,13 +6,14 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Language;
+using OneScript.Sources;
 
 namespace ScriptEngine
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     internal class NullDependencyResolver : IDependencyResolver
     {
-        public ExternalLibraryDef Resolve(ModuleInformation module, string libraryName)
+        public ExternalLibraryDef Resolve(SourceCode module, string libraryName)
         {
             return new ExternalLibraryDef(libraryName);
         }

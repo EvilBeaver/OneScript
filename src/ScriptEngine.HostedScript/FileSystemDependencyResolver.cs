@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using OneScript.Commons;
 using OneScript.Language;
+using OneScript.Sources;
 using ScriptEngine.Compiler;
 
 namespace ScriptEngine.HostedScript
@@ -56,7 +57,7 @@ namespace ScriptEngine.HostedScript
             Engine = engine;
         }
         
-        public ExternalLibraryDef Resolve(ModuleInformation module, string libraryName)
+        public ExternalLibraryDef Resolve(SourceCode module, string libraryName)
         {
             bool quoted = PrepareQuoted(ref libraryName);
             bool loaded;
@@ -90,13 +91,13 @@ namespace ScriptEngine.HostedScript
             return false;
         }
 
-        private bool LoadByRelativePath(ModuleInformation module, string libraryPath)
+        private bool LoadByRelativePath(SourceCode module, string libraryPath)
         {
             string realPath;
 
-            if (!Path.IsPathRooted(libraryPath) && module.Origin != null)
+            if (!Path.IsPathRooted(libraryPath) && module.Location != null)
             {
-                var currentPath = module.Origin;
+                var currentPath = module.Location;
                 // Загружаем относительно текущего скрипта, однако,
                 // если CurrentScript не файловый (TestApp или другой хост), то загружаем относительно рабочего каталога.
                 // немного костыльно, ага ((

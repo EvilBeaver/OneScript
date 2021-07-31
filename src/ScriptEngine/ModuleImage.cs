@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Language;
+using OneScript.Sources;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine
@@ -39,7 +40,11 @@ namespace ScriptEngine
         public IList<ExportedSymbol> ExportedProperties { get; set; }
         public IList<ExportedSymbol> ExportedMethods { get; set; }
         public int LoadAddress { get; set; }
+        
+        [Obsolete("Use Source")]
         public ModuleInformation ModuleInfo { get; set; }
+
+        public SourceCode Source { get; set; }
         public IList<AnnotationDefinition> Annotations { get; set; }
         
         public const string BODY_METHOD_NAME = "$entry";

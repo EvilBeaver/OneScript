@@ -6,12 +6,13 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Language;
+using OneScript.Sources;
 
 namespace ScriptEngine
 {
     public interface IDependencyResolver
     {
-        ExternalLibraryDef Resolve(ModuleInformation module, string libraryName);
+        ExternalLibraryDef Resolve(SourceCode module, string libraryName);
 
         void Initialize(ScriptingEngine engine);
     }
