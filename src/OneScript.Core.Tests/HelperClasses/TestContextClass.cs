@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Contexts;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -42,17 +43,6 @@ namespace OneScript.Core.Tests
 			return new TestContextClass
 			{
 				CreatedViaMethod = "Constructor0"
-			};
-		}
-		
-#pragma warning disable 618
-		[ScriptConstructor(ParametrizeWithClassName = true)]
-#pragma warning restore 618
-		public static TestContextClass Constructor(string typeName, IValue ctorParam)
-		{
-			return new TestContextClass
-			{
-				CreatedViaMethod = $"Constructor1-{typeName}"
 			};
 		}
 		

@@ -10,6 +10,7 @@ using ScriptEngine.Machine.Contexts;
 using System;
 using System.IO;
 using System.Text;
+using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;

@@ -182,12 +182,6 @@ namespace OneScript.Contexts
             return this;
         }
 
-        public ClassBuilder ExportIndexer()
-        {
-            _properties.Add(new IndexerPropertyInfo(_classType));
-            return this;
-        }
-
         public ClassBuilder ExportDefaults()
         {
             ExportMethods();

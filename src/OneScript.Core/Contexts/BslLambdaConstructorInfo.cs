@@ -79,6 +79,8 @@ namespace OneScript.Contexts
 
         void IBuildableMethod.SetParameters(IEnumerable<BslParameterInfo> parameters)
         {
+            Parameters.Clear();
+            Parameters.AddRange(parameters);
         }
     }
 }

@@ -11,7 +11,6 @@ using ScriptEngine;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Reflection;
 using Xunit;
 
 namespace OneScript.Core.Tests
@@ -157,7 +156,7 @@ namespace OneScript.Core.Tests
             cb.SetTypeName("testDrive")            
                 .SetModule(module)
                 .ExportDefaults()
-                .ExportConstructor((parameters => new UserScriptContextInstance(module)));
+                .ExportConstructor((c, p) => new UserScriptContextInstance(module));
             var type = cb.Build();
 
             var instance = type.GetConstructors()[0].Invoke(new object[0]);
@@ -170,9 +169,8 @@ namespace OneScript.Core.Tests
             var cb = new ClassBuilder(typeof(UserScriptContextInstance));
             var module = LoadFromString("");
             cb.SetTypeName("testDrive")
-              .SetModule(module)
-              .ExportClassMethod("GetMethodsCount")
-              .ExportConstructor((parameters => new UserScriptContextInstance(module)));
+                .SetModule(module)
+                .ExportClassMethod("GetMethodsCount");
             var type = cb.Build();
 
             Assert.NotNull(type.GetMethod("GetMethodsCount"));
@@ -183,18 +181,18 @@ namespace OneScript.Core.Tests
         {
             var cb = new ClassBuilder(typeof(UserScriptContextInstance));
             var module = LoadFromString("");
-            var nativeMethod = typeof(UserScriptContextInstance).GetMethod("AddProperty",
-                                                                           BindingFlags.Public | BindingFlags.Instance,
-                                                                           null,
-                                                                           new Type[]
-                                                                           {
-                                                                               typeof(string),
-                                                                               typeof(IValue)
-                                                                           }, null);
+            var nativeMethod = typeof(UserScriptContextInstance)
+                .GetMethod("AddProperty",
+                    BindingFlags.Public | BindingFlags.Instance,
+                    null,
+                    new Type[]
+                    {
+                        typeof(string),
+                        typeof(IValue)
+                    }, null);
             cb.SetTypeName("testDrive")
               .SetModule(module)
-              .ExportClassMethod(nativeMethod)
-              .ExportConstructor((parameters => new UserScriptContextInstance(module)));
+              .ExportClassMethod(nativeMethod);
             var type = cb.Build();
 
             Assert.NotNull(type.GetMethod("AddProperty"));
