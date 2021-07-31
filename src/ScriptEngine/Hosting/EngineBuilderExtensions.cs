@@ -36,7 +36,6 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<ITypeManager, DefaultTypeManager>();
             services.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
             services.RegisterSingleton<RuntimeEnvironment>();
-            services.RegisterSingleton<IAstBuilder, DefaultAstBuilder>();
             services.RegisterSingleton<ICompilerServiceFactory, AstBasedCompilerFactory>();
             services.RegisterSingleton<BslSyntaxWalker, AstBasedCodeGenerator>();
             services.RegisterSingleton<IErrorSink, ThrowingErrorSink>();
@@ -64,7 +63,6 @@ namespace ScriptEngine.Hosting
                 {
                     DependencyResolver = sp.TryResolve<IDependencyResolver>(),
                     ErrorSink = sp.Resolve<IErrorSink>(),
-                    NodeBuilder = sp.Resolve<IAstBuilder>(),
                     PreprocessorHandlers = sp.Resolve<PreprocessorHandlers>()
                 };
                 

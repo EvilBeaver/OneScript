@@ -110,14 +110,5 @@ namespace ScriptEngine
                 _currentContext.PushScope(_scope);
             }
         }
-
-        protected static ModuleInformation CreateModuleInformation(SourceCode source, ILexer parser)
-        {
-            var mi = new ModuleInformation();
-            mi.CodeIndexer = parser.Iterator;
-            mi.ModuleName = source.Name;
-            mi.Origin = source.Location;
-            return mi;
-        }
     }
 }

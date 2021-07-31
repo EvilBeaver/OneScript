@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
+using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.Tests
 {
@@ -14,7 +15,7 @@ namespace OneScript.Language.Tests
     {
         private readonly ILexer _allLineContentLexer;
         
-        public AstNodeAppendingHandler(IAstBuilder nodeBuilder, IErrorSink errorSink) : base(nodeBuilder, errorSink)
+        public AstNodeAppendingHandler(IErrorSink errorSink) : base(errorSink)
         {
             var builder = new LexerBuilder();
             builder.Detect((cs, i) => !char.IsWhiteSpace(cs))
@@ -28,20 +29,23 @@ namespace OneScript.Language.Tests
             return true;
         }
 
-        protected override void ParseAnnotationInternal(ref Lexem lastExtractedLexem, ILexer lexer)
+        protected override void ParseAnnotationInternal(
+            ref Lexem lastExtractedLexem, 
+            ILexer lexer,
+            ParserContext parserContext)
         {
-            var node = NodeBuilder.CreateNode(NodeKind.Preprocessor, lastExtractedLexem);
+            var node = new PreprocessorDirectiveNode(lastExtractedLexem);
             _allLineContentLexer.Iterator = lexer.Iterator;
 
             lastExtractedLexem = _allLineContentLexer.NextLexemOnSameLine();
             if (lastExtractedLexem.Type != LexemType.EndOfText)
             {
-                var child = NodeBuilder.CreateNode(NodeKind.Unknown, lastExtractedLexem);
-                NodeBuilder.AddChild(node, child);
+                var child = new TerminalNode(NodeKind.Unknown, lastExtractedLexem);
+                node.AddChild(child);
             }
 
             lastExtractedLexem = lexer.NextLexem();
-            NodeBuilder.AddChild(NodeBuilder.ContextNode, node);
+            parserContext.AddChild(node);
         }
     }
 }

@@ -1,21 +1,21 @@
-/*----------------------------------------------------------
+﻿/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System.Collections.Generic;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
-    public class DefaultAstBuilder : IAstBuilder
+    /// <summary>
+    /// helper for creating ast nodes of different types
+    /// </summary>
+    internal static class NodeBuilder
     {
-        private readonly Stack<BslSyntaxNode> _nodeContext = new Stack<BslSyntaxNode>();
-        
-        public virtual BslSyntaxNode CreateNode(NodeKind kind, in Lexem startLexem)
+        public static BslSyntaxNode CreateNode(NodeKind kind, in Lexem startLexem)
         {
             switch (kind)
             {
@@ -45,10 +45,7 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 case NodeKind.Annotation:
                 case NodeKind.Import:
-                    return new AnnotationNode(kind, startLexem)
-                    {
-                        Name = startLexem.Content
-                    };
+                    return new AnnotationNode(kind, startLexem);
                 case NodeKind.AnnotationParameter:
                     return new AnnotationParameterNode();
                 case NodeKind.VariableDefinition:
@@ -88,26 +85,5 @@ namespace OneScript.Language.SyntaxAnalysis
                     return new NonTerminalNode(kind, startLexem);
             }
         }
-
-        public virtual void AddChild(BslSyntaxNode parent, BslSyntaxNode child)
-        {
-            if(child == default)
-                child = new NonTerminalNode(NodeKind.Unknown);
-            
-            var parentNonTerm = (NonTerminalNode) parent;
-            parentNonTerm.AddChild(child);
-        }
-
-        public void PushContext(BslSyntaxNode node)
-        {
-            _nodeContext.Push(node);
-        }
-
-        public BslSyntaxNode PopContext()
-        {
-            return _nodeContext.Pop();
-        }
-
-        public BslSyntaxNode ContextNode => _nodeContext.Count == 0? default : _nodeContext.Peek();
     }
 }

@@ -16,12 +16,9 @@ namespace OneScript.Language.SyntaxAnalysis
     {
         private bool _enabled;
         
-        protected ModuleAnnotationDirectiveHandler(IAstBuilder nodeBuilder, IErrorSink errorSink) : base(errorSink)
+        protected ModuleAnnotationDirectiveHandler(IErrorSink errorSink) : base(errorSink)
         {
-            NodeBuilder = nodeBuilder;
         }
-        
-        protected IAstBuilder NodeBuilder { get; }
         
         public override void OnModuleEnter()
         {
@@ -58,16 +55,19 @@ namespace OneScript.Language.SyntaxAnalysis
         
         protected abstract bool DirectiveSupported(string directive);
         
-        protected abstract void ParseAnnotationInternal(ref Lexem lastExtractedLexem, ILexer lexer);
+        protected abstract void ParseAnnotationInternal(
+            ref Lexem lastExtractedLexem,
+            ILexer lexer,
+            ParserContext parserContext);
 
-        public bool ParseAnnotation(ref Lexem lastExtractedLexem, ILexer lexer)
+        public bool ParseAnnotation(ref Lexem lastExtractedLexem, ILexer lexer, ParserContext context)
         {
             if (!DirectiveSupported(lastExtractedLexem.Content))
             {
                 return false;
             }
 
-            ParseAnnotationInternal(ref lastExtractedLexem, lexer);
+            ParseAnnotationInternal(ref lastExtractedLexem, lexer, context);
             return true;
         }
     }

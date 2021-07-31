@@ -29,28 +29,26 @@ namespace ScriptEngine.Compiler
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
-            var mi = CreateModuleInformation(source, lexer);
             var moduleNode = ParseSyntaxConstruction(
                 lexer,
                 handlers,
-                mi,
+                source,
                 p => p.ParseStatefulModule());
 
-            return BuildModule(context, moduleNode, mi);
+            return BuildModule(context, moduleNode, lexer.Iterator);
         }
 
         protected override ModuleImage CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
-            var mi = CreateModuleInformation(source, lexer);
             var moduleNode = ParseSyntaxConstruction(
                 lexer,
                 handlers,
-                mi,
+                source,
                 p => p.ParseCodeBatch());
 
-            return BuildModule(context, moduleNode, mi);
+            return BuildModule(context, moduleNode, lexer.Iterator);
         }
 
         protected override ModuleImage CompileExpressionInternal(SourceCode source, ICompilerContext context)
@@ -61,31 +59,24 @@ namespace ScriptEngine.Compiler
             {
                 Iterator = source.CreateIterator()
             };
-
-            var mi = new ModuleInformation
-            {
-                Origin = "<expression>",
-                ModuleName = "<expression>"
-            };
             
             var moduleNode = ParseSyntaxConstruction(
                 lexer,
                 handlers,
-                mi,
+                source,
                 p => p.ParseExpression());
 
-            return BuildModule(context, moduleNode, mi);
+            return BuildModule(context, moduleNode, lexer.Iterator);
         }
         
         private ModuleNode ParseSyntaxConstruction(
             ILexer lexer,
             PreprocessorHandlers handlers,
-            ModuleInformation mi,
+            SourceCode source,
             Func<DefaultBslParser, BslSyntaxNode> action)
         {
             var parser = new DefaultBslParser(
                 lexer,
-                _сompilerOptions.NodeBuilder,
                 _сompilerOptions.ErrorSink,
                 handlers);
 
@@ -99,7 +90,7 @@ namespace ScriptEngine.Compiler
             {
                 if (e.ModuleName == default)
                 {
-                    e.ModuleName = mi.ModuleName;
+                    e.ModuleName = source.Name;
                 }
 
                 throw;
@@ -108,14 +99,14 @@ namespace ScriptEngine.Compiler
             return moduleNode;
         }
 
-        private ModuleImage BuildModule(ICompilerContext context, ModuleNode moduleNode, ModuleInformation mi)
+        private ModuleImage BuildModule(ICompilerContext context, ModuleNode moduleNode, SourceCodeIterator src)
         {
             var codeGen = GetCodeGenerator(context);
             codeGen.ThrowErrors = true;
             codeGen.ProduceExtraCode = ProduceExtraCode;
             codeGen.DependencyResolver = _сompilerOptions.DependencyResolver;
 
-            return codeGen.CreateImage(moduleNode, mi);
+            return codeGen.CreateImage(moduleNode, src);
         }
 
         protected virtual AstBasedCodeGenerator GetCodeGenerator(ICompilerContext context)

@@ -16,8 +16,10 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         {
             if(Kind != NodeKind.Annotation && Kind != NodeKind.Import)
                 throw new ArgumentException(nameof(kind));
+
+            Name = startLexem.Content;
         }
         
-        public string Name { get; set; }
+        public string Name { get; }
     }
 }

@@ -17,7 +17,7 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public class DefaultBslParser
     {
-        private readonly IAstBuilder _builder;
+        private readonly ParserContext _nodeContext;
         private readonly ILexer _lexer;
         private readonly PreprocessorHandlers _preprocessorHandlers;
 
@@ -37,14 +37,13 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public DefaultBslParser(
             ILexer lexer,
-            IAstBuilder astBuilder,
             IErrorSink errorSink,
             PreprocessorHandlers preprocessorHandlers)
         {
             _lexer = lexer;
-            _builder = astBuilder;
             _preprocessorHandlers = preprocessorHandlers;
             ErrorSink = errorSink;
+            _nodeContext = new ParserContext();
         }
 
         private IErrorSink ErrorSink { get; }
@@ -53,14 +52,14 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public BslSyntaxNode ParseStatefulModule()
         {
-            BslSyntaxNode node;
+            ModuleNode node;
             
             _preprocessorHandlers.OnModuleEnter();
             NextLexem();
             
             try
             {
-                node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
+                node = new ModuleNode(_lastExtractedLexem);
                 PushContext(node);
                 ParseModuleSections();
             }
@@ -77,7 +76,7 @@ namespace OneScript.Language.SyntaxAnalysis
         public BslSyntaxNode ParseCodeBatch(bool allowReturns = false)
         {
             NextLexem();
-            var node = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
+            var node = new ModuleNode(_lastExtractedLexem);
             PushContext(node);
             try
             {
@@ -101,17 +100,17 @@ namespace OneScript.Language.SyntaxAnalysis
         public BslSyntaxNode ParseExpression()
         {
             NextLexem();
-            var module = _builder.CreateNode(NodeKind.Module, _lastExtractedLexem);
-            var parent = CreateChild(module, NodeKind.TopLevelExpression, _lastExtractedLexem);
+            var module = new ModuleNode(_lastExtractedLexem);
+            var parent = module.AddNode(new NonTerminalNode(NodeKind.TopLevelExpression, _lastExtractedLexem));
             BuildExpression(parent, Token.EndOfText);
             return module;
         }
 
-        private void PushContext(BslSyntaxNode node) => _builder.PushContext(node);
+        private void PushContext(NonTerminalNode node) => _nodeContext.PushContext(node);
         
-        private BslSyntaxNode PopContext() => _builder.PopContext();
+        private NonTerminalNode PopContext() => _nodeContext.PopContext();
 
-        private BslSyntaxNode CurrentParent => _builder.ContextNode;
+        private NonTerminalNode CurrentParent => _nodeContext.CurrentParent;
 
         private void ParseModuleAnnotation()
         {
@@ -132,7 +131,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 var directive = _lastExtractedLexem.Content;
                 foreach (var handler in annotationParser)
                 {
-                    handled = handler.ParseAnnotation(ref _lastExtractedLexem, _lexer);
+                    handled = handler.ParseAnnotation(ref _lastExtractedLexem, _lexer, _nodeContext);
                     if(handled)
                         break;
                 }
@@ -172,7 +171,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
 
             var parent = CurrentParent;
-            var allVarsSection = _builder.CreateNode(NodeKind.VariablesSection, _lastExtractedLexem);
+            var allVarsSection = new NonTerminalNode(NodeKind.VariablesSection, _lastExtractedLexem);
             PushContext(allVarsSection);
             bool hasVars = false;
             try
@@ -185,7 +184,7 @@ namespace OneScript.Language.SyntaxAnalysis
                         if (!hasVars)
                         {
                             hasVars = true;
-                            _builder.AddChild(parent, allVarsSection);
+                            parent.AddChild(allVarsSection);
                         }
 
                         BuildVariableDefinition();
@@ -206,11 +205,8 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             while (true)
             {
-                var variable = CreateChild(
-                    CurrentParent,
-                    NodeKind.VariableDefinition,
-                    _lastExtractedLexem);
-
+                var variable = _nodeContext.AddChild(new VariableDefinitionNode(_lastExtractedLexem));
+                
                 ApplyAnnotations(variable);
 
                 NextLexem();
@@ -272,11 +268,11 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        private void ApplyAnnotations(BslSyntaxNode annotatable)
+        private void ApplyAnnotations(AnnotatableNode annotatable)
         {
             foreach (var astNode in _annotations)
             {
-                _builder.AddChild(annotatable, astNode);
+                annotatable.AddChild(astNode);
             }
             _annotations.Clear();
         }
@@ -295,7 +291,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
 
             var parent = CurrentParent;
-            var allMethodsSection = _builder.CreateNode(NodeKind.MethodsSection, _lastExtractedLexem);
+            var allMethodsSection = new NonTerminalNode(NodeKind.MethodsSection, _lastExtractedLexem);
             var sectionExist = false;
             PushContext(allMethodsSection);
 
@@ -310,7 +306,7 @@ namespace OneScript.Language.SyntaxAnalysis
                         {
                             sectionExist = true;
                             _isMethodsDefined = true;
-                            _builder.AddChild(parent, allMethodsSection);
+                            parent.AddChild(allMethodsSection);
                         }
 
                         BuildMethod();
@@ -331,10 +327,7 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             Debug.Assert(_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function);
 
-            var method = CreateChild(
-                CurrentParent,
-                NodeKind.Method,
-                _lastExtractedLexem);
+            var method = _nodeContext.AddChild(new MethodNode());
             
             ApplyAnnotations(method);
             PushContext(method);
@@ -358,7 +351,7 @@ namespace OneScript.Language.SyntaxAnalysis
         private void BuildMethodBody()
         {
             var body = CreateChild(CurrentParent, NodeKind.CodeBatch, _lastExtractedLexem);
-            PushContext(body);
+            PushContext((NonTerminalNode)body);
             try
             {
                 BuildCodeBatch(_isInFunctionScope ? Token.EndFunction : Token.EndProcedure);
@@ -376,9 +369,8 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             var isFunction = _lastExtractedLexem.Token == Token.Function;
 
-            var signature = CreateChild(CurrentParent, NodeKind.MethodSignature, _lastExtractedLexem);
+            var signature = _nodeContext.AddChild(new MethodSignatureNode(_lastExtractedLexem));
             CreateChild(signature, isFunction? NodeKind.Function : NodeKind.Procedure, _lastExtractedLexem);
-
             _isInFunctionScope = isFunction;
             NextLexem();
             if (!IsUserSymbol(_lastExtractedLexem))
@@ -396,7 +388,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        private void BuildMethodParameters(BslSyntaxNode node)
+        private void BuildMethodParameters(MethodSignatureNode signature)
         {
             if (!NextExpected(Token.OpenPar))
             {
@@ -404,15 +396,17 @@ namespace OneScript.Language.SyntaxAnalysis
                 return;
             }
 
-            var paramList = CreateChild(
-                node, NodeKind.MethodParameters, _lastExtractedLexem);
+            var paramList = new NonTerminalNode(NodeKind.MethodParameters, _lastExtractedLexem);
+            signature.AddChild(paramList);
+                
             NextLexem(); // (
 
             var expectParameter = false;
             while (_lastExtractedLexem.Token != Token.ClosePar)
             {
                 BuildAnnotations();
-                var param = CreateChild(paramList, NodeKind.MethodParameter, _lastExtractedLexem);
+                var param = new MethodParameterNode();
+                paramList.AddChild(param);
                 ApplyAnnotations(param);
                 // [Знач] Identifier [= Literal],...
                 if (_lastExtractedLexem.Token == Token.ByValParam)
@@ -452,7 +446,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         }
 
-        private bool BuildDefaultParameterValue(BslSyntaxNode param)
+        private bool BuildDefaultParameterValue(NonTerminalNode param)
         {
             bool hasSign = false;
             bool signIsMinus = _lastExtractedLexem.Token == Token.Minus;
@@ -499,8 +493,8 @@ namespace OneScript.Language.SyntaxAnalysis
             if (!_lexer.Iterator.MoveToContent())
                 return;
             
-            var parent = _builder.CreateNode(NodeKind.ModuleBody, _lastExtractedLexem);
-            var node = CreateChild(parent, NodeKind.CodeBatch, _lastExtractedLexem);
+            var moduleBody = new NonTerminalNode(NodeKind.ModuleBody, _lastExtractedLexem);
+            var node = moduleBody.AddNode(new CodeBatchNode(_lastExtractedLexem));
             PushContext(node);
             try
             {
@@ -510,7 +504,7 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 PopContext();
             }
-            _builder.AddChild(CurrentParent, parent);
+            CurrentParent.AddChild(moduleBody);
         }
 
         #region Annotations
@@ -518,7 +512,7 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             while (_lastExtractedLexem.Type == LexemType.Annotation)
             {
-                var node = _builder.CreateNode(NodeKind.Annotation, _lastExtractedLexem);
+                var node = new AnnotationNode(NodeKind.Annotation, _lastExtractedLexem);
                 _annotations.Add(node);
                 NextLexem();
                 if (_lastExtractedLexem.Token == Token.OpenPar)
@@ -529,7 +523,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
         
-        private void BuildAnnotationParameters(BslSyntaxNode annotation)
+        private void BuildAnnotationParameters(AnnotationNode annotation)
         {
             while (_lastExtractedLexem.Token != Token.EndOfText)
             {
@@ -551,10 +545,10 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
         
-        private bool BuildAnnotationParameter(BslSyntaxNode annotation)
+        private bool BuildAnnotationParameter(AnnotationNode annotation)
         {
             bool success = true;
-            var node = CreateChild(annotation, NodeKind.AnnotationParameter, _lastExtractedLexem);
+            var node = annotation.AddNode(new AnnotationParameterNode());
             // id | id = value | value
             if (_lastExtractedLexem.Type == LexemType.Identifier)
             {
@@ -574,7 +568,7 @@ namespace OneScript.Language.SyntaxAnalysis
             return success;
         }
 
-        private bool BuildAnnotationParamValue(BslSyntaxNode annotationParam)
+        private bool BuildAnnotationParamValue(AnnotationParameterNode annotationParam)
         {
             if (LanguageDef.IsLiteral(ref _lastExtractedLexem))
             {
@@ -688,14 +682,16 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void BuildIfStatement()
         {
-            var condition = CreateChild(CurrentParent, NodeKind.Condition, _lastExtractedLexem);
+            var condition = _nodeContext.AddChild(new ConditionNode(_lastExtractedLexem)); 
+
             NextLexem();
             BuildExpressionUpTo(condition, Token.Then);
             BuildBatchWithContext(condition, Token.Else, Token.ElseIf, Token.EndIf);
             
             while (_lastExtractedLexem.Token == Token.ElseIf)
             {
-                var elif = CreateChild(condition, NodeKind.Condition, _lastExtractedLexem);
+                var elif = new ConditionNode(_lastExtractedLexem);
+                condition.AddChild(elif);
                 NextLexem();
                 BuildExpressionUpTo(elif, Token.Then);
                 BuildBatchWithContext(elif, Token.Else, Token.ElseIf, Token.EndIf);
@@ -712,9 +708,10 @@ namespace OneScript.Language.SyntaxAnalysis
             NextLexem();
         }
 
-        private void BuildBatchWithContext(BslSyntaxNode context, params Token[] stopTokens)
+        private void BuildBatchWithContext(NonTerminalNode context, params Token[] stopTokens)
         {
-            var batch = CreateChild(context, NodeKind.CodeBatch, _lastExtractedLexem);
+            var batch = new CodeBatchNode(_lastExtractedLexem);
+            context.AddChild(batch);
             PushContext(batch);
             try
             {
@@ -728,11 +725,11 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void BuildWhileStatement()
         {
-            var loopNode = CreateChild(CurrentParent, NodeKind.WhileLoop, _lastExtractedLexem);
+            var loopNode = _nodeContext.AddChild(new WhileLoopNode(_lastExtractedLexem));
             NextLexem();
             BuildExpressionUpTo(loopNode, Token.Loop);
             var body = CreateChild(loopNode, NodeKind.CodeBatch, _lastExtractedLexem);
-            PushContext(body);
+            PushContext((NonTerminalNode)body);
             var loopState = _isInLoopScope;
             try
             {
@@ -753,15 +750,25 @@ namespace OneScript.Language.SyntaxAnalysis
             var lexem = _lastExtractedLexem;
             NextLexem();
 
-            var nodeType = _lastExtractedLexem.Token == Token.Each ? NodeKind.ForEachLoop : NodeKind.ForLoop;
-            var loopNode = CreateChild(CurrentParent, nodeType, lexem);
+            NodeKind loopKind;
+            NonTerminalNode loopNode;
+            if (_lastExtractedLexem.Token == Token.Each)
+            {
+                loopKind = NodeKind.ForEachLoop;
+                loopNode = _nodeContext.AddChild(new ForEachLoopNode(_lastExtractedLexem));
+            }
+            else
+            {
+                loopKind = NodeKind.ForLoop;
+                loopNode = _nodeContext.AddChild(new ForLoopNode(_lastExtractedLexem));
+            }
             
             PushContext(loopNode);
             var loopState = _isInLoopScope;
             try
             {
                 _isInLoopScope = true;
-                if (nodeType == NodeKind.ForEachLoop)
+                if (loopKind == NodeKind.ForEachLoop)
                     BuildForEachStatement(loopNode);
                 else
                     BuildCountableForStatement(loopNode);
@@ -773,7 +780,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        private void BuildCountableForStatement(BslSyntaxNode loopNode)
+        private void BuildCountableForStatement(NonTerminalNode loopNode)
         {
             if (!IsUserSymbol(_lastExtractedLexem))
             {
@@ -790,17 +797,17 @@ namespace OneScript.Language.SyntaxAnalysis
                 return;
             }
             
-            var assignment = _builder.CreateNode(NodeKind.ForInitializer, _lastExtractedLexem);
+            var assignment = new NonTerminalNode(NodeKind.ForInitializer, _lastExtractedLexem);
             
             NextLexem();
 
             CreateChild(assignment, NodeKind.Identifier, counter);
             BuildExpressionUpTo(assignment, Token.To);
-            _builder.AddChild(loopNode, assignment);
+            loopNode.AddChild(assignment);
             
-            var limit = _builder.CreateNode(NodeKind.ForLimit, _lastExtractedLexem);
+            var limit = new NonTerminalNode(NodeKind.ForLimit, _lastExtractedLexem);
             BuildExpressionUpTo(limit, Token.Loop);
-            _builder.AddChild(loopNode, limit);
+            loopNode.AddChild(limit);
             
             BuildBatchWithContext(loopNode, Token.EndLoop);
 
@@ -809,7 +816,7 @@ namespace OneScript.Language.SyntaxAnalysis
             NextLexem();
         }
 
-        private void BuildForEachStatement(BslSyntaxNode loopNode)
+        private void BuildForEachStatement(NonTerminalNode loopNode)
         {
             NextLexem();
             if (!IsUserSymbol(_lastExtractedLexem))
@@ -830,9 +837,9 @@ namespace OneScript.Language.SyntaxAnalysis
             NextLexem();
             TryParseNode(() =>
             {
-                var collection = _builder.CreateNode(NodeKind.ForEachCollection, _lastExtractedLexem);
+                var collection = new NonTerminalNode(NodeKind.ForEachCollection, _lastExtractedLexem);
                 BuildExpressionUpTo(collection, Token.Loop);
-                _builder.AddChild(loopNode, collection);
+                loopNode.AddChild(collection);
             });
 
             BuildBatchWithContext(loopNode, Token.EndLoop);
@@ -865,7 +872,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private void BuildReturnStatement()
         {
-            var returnNode = _builder.CreateNode(NodeKind.ReturnStatement, _lastExtractedLexem);
+            var returnNode = new NonTerminalNode(NodeKind.ReturnStatement, _lastExtractedLexem);
             if (_isInFunctionScope)
             {
                 NextLexem();
@@ -893,12 +900,12 @@ namespace OneScript.Language.SyntaxAnalysis
                 AddError(LocalizedErrors.ReturnOutsideOfMethod());
             }
 
-            _builder.AddChild(CurrentParent, returnNode);
+            CurrentParent.AddChild(returnNode);
         }
 
         private void BuildTryExceptStatement()
         {
-            var node = _builder.CreateNode(NodeKind.TryExcept, _lastExtractedLexem);
+            var node = new TryExceptNode(_lastExtractedLexem);
             NextLexem();
             BuildBatchWithContext(node, Token.Exception);
             
@@ -908,12 +915,12 @@ namespace OneScript.Language.SyntaxAnalysis
             BuildBatchWithContext(node, Token.EndTry);
             CreateChild(node, NodeKind.BlockEnd, _lastExtractedLexem);
             NextLexem();
-            _builder.AddChild(CurrentParent, node);
+            CurrentParent.AddChild(node);
         }
         
         private void BuildRaiseExceptionStatement()
         {
-            var node = _builder.CreateNode(NodeKind.RaiseException, _lastExtractedLexem);
+            var node = new NonTerminalNode(NodeKind.RaiseException, _lastExtractedLexem);
             NextLexem();
             if (_lastExtractedLexem.Token == Token.Semicolon)
             {
@@ -928,23 +935,23 @@ namespace OneScript.Language.SyntaxAnalysis
                 BuildExpression(node, Token.Semicolon);
             }
             
-            _builder.AddChild(CurrentParent, node);
+            CurrentParent.AddChild(node);
         }
 
         private void BuildExecuteStatement()
         {
-            var node = _builder.CreateNode(NodeKind.ExecuteStatement, _lastExtractedLexem);
+            var node = new NonTerminalNode(NodeKind.ExecuteStatement, _lastExtractedLexem);
             NextLexem();
             BuildExpression(node, Token.Semicolon);
-            _builder.AddChild(CurrentParent, node);
+            CurrentParent.AddChild(node);
         }
 
         private void BuildEventHandlerOperation(Token token)
         {
-            var node = _builder.CreateNode(
+            var node = new NonTerminalNode(
                 token == Token.AddHandler ? NodeKind.AddHandler : NodeKind.RemoveHandler,
                 _lastExtractedLexem);
-            
+
             NextLexem();
             
             var source = BuildExpression(node, Token.Comma);
@@ -964,7 +971,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 return;
             }
             
-            _builder.AddChild(CurrentParent, node);
+            CurrentParent.AddChild(node);
         }
         
         private void BuildSimpleStatement()
@@ -973,7 +980,7 @@ namespace OneScript.Language.SyntaxAnalysis
             TryParseNode(() => BuildAssignment(CurrentParent));
         }
 
-        private void BuildAssignment(BslSyntaxNode batch)
+        private void BuildAssignment(NonTerminalNode batch)
         {
             var call = BuildGlobalCall(_lastExtractedLexem);
             
@@ -981,8 +988,8 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 if (_lastDereferenceIsWritable)
                 {
-                    var node = CreateChild(batch, NodeKind.Assignment, _lastExtractedLexem);
-                    _builder.AddChild(node, call);
+                    var node = batch.AddNode(new NonTerminalNode(NodeKind.Assignment, _lastExtractedLexem));
+                    node.AddChild(call);
                     NextLexem();
                     BuildExpression(node, Token.Semicolon);
                 }
@@ -993,14 +1000,14 @@ namespace OneScript.Language.SyntaxAnalysis
             }
             else
             {
-                _builder.AddChild(batch, call);
+                batch.AddChild(call);
             }
         }
 
         private BslSyntaxNode BuildGlobalCall(Lexem identifier)
         {
             _lastDereferenceIsWritable = true;
-            var target = _builder.CreateNode(NodeKind.Identifier, identifier);
+            var target = NodeBuilder.CreateNode(NodeKind.Identifier, identifier);
             NextLexem();
             var callNode = BuildCall(target, NodeKind.GlobalCall);
             return BuildDereference(callNode);
@@ -1008,19 +1015,18 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private BslSyntaxNode BuildCall(BslSyntaxNode target, NodeKind callKind)
         {
-            BslSyntaxNode callNode = default;
-            if (_lastExtractedLexem.Token == Token.OpenPar)
-            {
-                callNode = _builder.CreateNode(callKind, _lastExtractedLexem);
-                _builder.AddChild(callNode, target);
-                BuildCallParameters(callNode);
-            }
-            return callNode ?? target;
+            if (_lastExtractedLexem.Token != Token.OpenPar) 
+                return target;
+            
+            var callNode = new CallNode(callKind, _lastExtractedLexem);
+            callNode.AddChild(target);
+            BuildCallParameters(callNode);
+            return callNode;
         }
 
-        private void BuildCallParameters(BslSyntaxNode callNode)
+        private void BuildCallParameters(NonTerminalNode callNode)
         {
-            var node = CreateChild(callNode, NodeKind.CallArgumentList, _lastExtractedLexem);
+            var node = callNode.AddNode(new NonTerminalNode(NodeKind.CallArgumentList, _lastExtractedLexem));
             PushStructureToken(Token.ClosePar);
             try
             {
@@ -1035,7 +1041,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        private int WalkCallArguments(BslSyntaxNode node)
+        private int WalkCallArguments(NonTerminalNode node)
         {
             int argCount = 0;
             while (_lastExtractedLexem.Token != Token.ClosePar)
@@ -1053,7 +1059,7 @@ namespace OneScript.Language.SyntaxAnalysis
             return argCount;
         }
 
-        private void BuildCallArgument(BslSyntaxNode argsList)
+        private void BuildCallArgument(NonTerminalNode argsList)
         {
             if (_lastExtractedLexem.Token == Token.Comma)
             {
@@ -1063,7 +1069,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
             else if (_lastExtractedLexem.Token != Token.ClosePar)
             {
-                var node = CreateChild(argsList, NodeKind.CallArgument, _lastExtractedLexem);
+                var node = argsList.AddNode(new NonTerminalNode(NodeKind.CallArgument, _lastExtractedLexem));
                 BuildOptionalExpression(node, Token.Comma);
                 if (_lastExtractedLexem.Token == Token.Comma)
                 {
@@ -1073,7 +1079,7 @@ namespace OneScript.Language.SyntaxAnalysis
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void BuildLastDefaultArg(BslSyntaxNode argsList)
+        private void BuildLastDefaultArg(NonTerminalNode argsList)
         {
             NextLexem();
             if (_lastExtractedLexem.Token == Token.ClosePar)
@@ -1086,7 +1092,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         #region Expression
 
-        private BslSyntaxNode BuildExpression(BslSyntaxNode parent, Token stopToken)
+        private BslSyntaxNode BuildExpression(NonTerminalNode parent, Token stopToken)
         {
             if (_lastExtractedLexem.Token == stopToken)
             {
@@ -1095,7 +1101,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
 
             var op = BuildBinaryOperation(LanguageDef.GetPriority(Token.Or));
-            _builder.AddChild(parent, op);
+            parent.AddChild(op);
             return op;
         }
 
@@ -1150,12 +1156,12 @@ namespace OneScript.Language.SyntaxAnalysis
             var operation = _lastExtractedLexem;
             NextLexem();
             var argument = BuildBinaryOperation(unaryPriority);
-            var op = _builder.CreateNode(NodeKind.UnaryOperation, operation);
-            _builder.AddChild(op, argument);
+            var op = new UnaryOperationNode(operation);
+            op.AddChild(argument);
             return op;
         }
         
-        private BslSyntaxNode BuildExpressionUpTo(BslSyntaxNode parent, Token stopToken)
+        private BslSyntaxNode BuildExpressionUpTo(NonTerminalNode parent, Token stopToken)
         {
             var node = BuildExpression(parent, stopToken);
             if (_lastExtractedLexem.Token == stopToken)
@@ -1166,7 +1172,7 @@ namespace OneScript.Language.SyntaxAnalysis
             return node;
         }
         
-        private void BuildOptionalExpression(BslSyntaxNode parent, Token stopToken)
+        private void BuildOptionalExpression(NonTerminalNode parent, Token stopToken)
         {
             if (_lastExtractedLexem.Token == stopToken)
             {
@@ -1174,17 +1180,17 @@ namespace OneScript.Language.SyntaxAnalysis
             }
 
             var op = BuildBinaryOperation(LanguageDef.GetPriority(Token.Or));
-            _builder.AddChild(parent, op);
+            parent.AddChild(op);
         }
 
         #region Operators
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private BslSyntaxNode MakeBinaryOperationNode(BslSyntaxNode firstArg, BslSyntaxNode secondArg, in Lexem lexem)
+        private static BslSyntaxNode MakeBinaryOperationNode(BslSyntaxNode firstArg, BslSyntaxNode secondArg, in Lexem lexem)
         {
-            var node = _builder.CreateNode(NodeKind.BinaryOperation, lexem);
-            _builder.AddChild(node, firstArg);
-            _builder.AddChild(node, secondArg);
+            var node = new BinaryOperationNode(lexem);
+            node.AddChild(firstArg);
+            node.AddChild(secondArg);
             return node;
         }
         
@@ -1214,7 +1220,7 @@ namespace OneScript.Language.SyntaxAnalysis
             BslSyntaxNode node = default;
             if (LanguageDef.IsLiteral(ref _lastExtractedLexem))
             {
-                node = _builder.CreateNode(NodeKind.Constant, _lastExtractedLexem);
+                node = NodeBuilder.CreateNode(NodeKind.Constant, _lastExtractedLexem);
                 NextLexem();
             }
             else if (LanguageDef.IsUserSymbol(in _lastExtractedLexem))
@@ -1243,7 +1249,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private BslSyntaxNode BuildQuestionOperator()
         {
-            var node = _builder.CreateNode(NodeKind.TernaryOperator, _lastExtractedLexem);
+            var node = new NonTerminalNode(NodeKind.TernaryOperator, _lastExtractedLexem);
             if(!NextExpected(Token.OpenPar))
                 AddError(LocalizedErrors.TokenExpected(Token.OpenPar));
 
@@ -1275,8 +1281,8 @@ namespace OneScript.Language.SyntaxAnalysis
             var activeTarget = BuildIndexerAccess(target);
             if (_lastExtractedLexem.Token == Token.Dot)
             {
-                var dotNode = _builder.CreateNode(NodeKind.DereferenceOperation, _lastExtractedLexem);
-                _builder.AddChild(dotNode, activeTarget);
+                var dotNode = new NonTerminalNode(NodeKind.DereferenceOperation, _lastExtractedLexem);
+                dotNode.AddChild(activeTarget);
                 NextLexem();
                 if (!LanguageDef.IsValidPropertyName(_lastExtractedLexem))
                 {
@@ -1289,9 +1295,9 @@ namespace OneScript.Language.SyntaxAnalysis
                 if (_lastExtractedLexem.Token == Token.OpenPar)
                 {
                     _lastDereferenceIsWritable = false;
-                    var ident = _builder.CreateNode(NodeKind.Identifier, identifier);
+                    var ident = NodeBuilder.CreateNode(NodeKind.Identifier, identifier);
                     var call = BuildCall(ident, NodeKind.MethodCall);
-                    _builder.AddChild(dotNode, call);
+                    dotNode.AddChild(call);
                 }
                 else
                 {
@@ -1309,8 +1315,8 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             if (_lastExtractedLexem.Token == Token.OpenBracket)
             {
-                var node = _builder.CreateNode(NodeKind.IndexAccess, _lastExtractedLexem);
-                _builder.AddChild(node, target);
+                var node = new NonTerminalNode(NodeKind.IndexAccess, _lastExtractedLexem);
+                node.AddChild(target);
                 NextLexem();
                 var expression = BuildExpression(node, Token.CloseBracket);
                 if (expression == default)
@@ -1328,7 +1334,7 @@ namespace OneScript.Language.SyntaxAnalysis
         
         private BslSyntaxNode BuildNewObjectCreation()
         {
-            var node = _builder.CreateNode(NodeKind.NewObject, _lastExtractedLexem);
+            var node = new NewObjectNode(_lastExtractedLexem);
             NextLexem();
             if (_lastExtractedLexem.Token == Token.OpenPar)
             {
@@ -1348,7 +1354,7 @@ namespace OneScript.Language.SyntaxAnalysis
             return BuildDereference(node);
         }
         
-        private void NewObjectDynamicConstructor(BslSyntaxNode node)
+        private void NewObjectDynamicConstructor(NonTerminalNode node)
         {
             NextLexem();
             if (_lastExtractedLexem.Token == Token.ClosePar)
@@ -1357,15 +1363,15 @@ namespace OneScript.Language.SyntaxAnalysis
                 return;
             }
 
-            var nameArg = _builder.CreateNode(NodeKind.CallArgument, _lastExtractedLexem);
+            var nameArg = new NonTerminalNode(NodeKind.CallArgument, _lastExtractedLexem);
             PushStructureToken(Token.ClosePar);
             try
             {
                 BuildExpressionUpTo(nameArg, Token.Comma);
-                _builder.AddChild(node, nameArg);
-                var callArgs = _builder.CreateNode(NodeKind.CallArgumentList, _lastExtractedLexem);
+                node.AddChild(nameArg);
+                var callArgs = new NonTerminalNode(NodeKind.CallArgumentList, _lastExtractedLexem);
                 WalkCallArguments(callArgs);
-                _builder.AddChild(node, callArgs);
+                node.AddChild(callArgs);
                 NextLexem();
             }
             finally
@@ -1374,7 +1380,7 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        private void NewObjectStaticConstructor(BslSyntaxNode node)
+        private void NewObjectStaticConstructor(NonTerminalNode node)
         {
             CreateChild(node, NodeKind.Identifier, _lastExtractedLexem);
             
@@ -1442,10 +1448,10 @@ namespace OneScript.Language.SyntaxAnalysis
             return tok;
         }
 
-        private BslSyntaxNode CreateChild(BslSyntaxNode parent, NodeKind kind, in Lexem lex)
+        private BslSyntaxNode CreateChild(NonTerminalNode parent, NodeKind kind, in Lexem lex)
         {
-            var child = _builder.CreateNode(kind, lex);
-            _builder.AddChild(parent, child);
+            var child = NodeBuilder.CreateNode(kind, lex);
+            parent.AddChild(child);
             return child;
         }
 

@@ -52,7 +52,7 @@ namespace OneScript.Dynamic.Tests
                     .CreateIterator();
                 _codeIndexer = lexer.Iterator;
            
-                var parser = new DefaultBslParser(lexer, new DefaultAstBuilder(), _errors, new PreprocessorHandlers());
+                var parser = new DefaultBslParser(lexer, _errors, new PreprocessorHandlers());
 
                 _module = parser.ParseCodeBatch(true);
                 if (_errors.HasErrors)

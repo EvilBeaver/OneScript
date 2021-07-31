@@ -11,8 +11,6 @@ namespace OneScript.Language.SyntaxAnalysis
     {
         public IErrorSink ErrorSink { get; set; } = new ThrowingErrorSink();
         
-        public IAstBuilder NodeBuilder { get; set; } = new DefaultAstBuilder();
-
         public PreprocessorHandlers PreprocessorHandlers { get; set; }
     }
 }

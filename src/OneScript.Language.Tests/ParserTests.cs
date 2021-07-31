@@ -823,14 +823,12 @@ namespace OneScript.Language.Tests
             defaultLex.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
             
             var lexer = new PreprocessingLexer(defaultLex);
-            var treeBuilder = new DefaultAstBuilder();
-        
+            
             lexer.Handlers = new PreprocessorHandlers(
-                new[] {new AstNodeAppendingHandler(treeBuilder, Mock.Of<IErrorSink>())});
+                new[] {new AstNodeAppendingHandler(Mock.Of<IErrorSink>())});
             
             var parser = new DefaultBslParser(
                 lexer,
-                treeBuilder,
                 new ListErrorSink(),
                 lexer.Handlers);
 

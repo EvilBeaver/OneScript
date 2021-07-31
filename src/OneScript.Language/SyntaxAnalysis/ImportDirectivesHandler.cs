@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Language.LexicalAnalysis;
+using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace OneScript.Language.SyntaxAnalysis
 {
@@ -13,7 +14,7 @@ namespace OneScript.Language.SyntaxAnalysis
     {
         private readonly ILexer _importClauseLexer;
 
-        public ImportDirectivesHandler(IAstBuilder nodeBuilder, IErrorSink errorSink) : base(nodeBuilder, errorSink)
+        public ImportDirectivesHandler(IErrorSink errorSink) : base(errorSink)
         {
             var builder = new LexerBuilder();
             builder.Detect((cs, i) => !char.IsWhiteSpace(cs))
@@ -22,9 +23,12 @@ namespace OneScript.Language.SyntaxAnalysis
             _importClauseLexer = builder.Build();
         }
 
-        protected override void ParseAnnotationInternal(ref Lexem lastExtractedLexem, ILexer lexer)
+        protected override void ParseAnnotationInternal(
+            ref Lexem lastExtractedLexem, 
+            ILexer lexer,
+            ParserContext parserContext)
         {
-            var node = NodeBuilder.CreateNode(NodeKind.Import, lastExtractedLexem);
+            var node = new AnnotationNode(NodeKind.Import, lastExtractedLexem);
             _importClauseLexer.Iterator = lexer.Iterator;
             
             var lex = _importClauseLexer.NextLexem();
@@ -34,12 +38,12 @@ namespace OneScript.Language.SyntaxAnalysis
                 return;
             }
 
-            var argumentNode = NodeBuilder.CreateNode(NodeKind.AnnotationParameter, lex);
-            var value = NodeBuilder.CreateNode(NodeKind.AnnotationParameterValue, lex);
-            NodeBuilder.AddChild(argumentNode, value);
+            var argumentNode = new AnnotationParameterNode();
+            var value = new TerminalNode(NodeKind.AnnotationParameterValue, lex);
+            argumentNode.AddChild(value);
             
-            NodeBuilder.AddChild(node, argumentNode);
-            NodeBuilder.AddChild(NodeBuilder.ContextNode, node);
+            node.AddChild(argumentNode);
+            parserContext.AddChild(node);
 
             lex = _importClauseLexer.NextLexemOnSameLine();
             if (lex.Type != LexemType.EndOfText)

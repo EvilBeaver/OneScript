@@ -44,7 +44,13 @@ namespace ScriptEngine
         [Obsolete("Use Source")]
         public ModuleInformation ModuleInfo { get; set; }
 
-        public SourceCode Source { get; set; }
+        [NonSerialized] private SourceCode _sourceBackField;
+
+        public SourceCode Source
+        {
+            get => _sourceBackField;
+            set => _sourceBackField = value;
+        }
         public IList<AnnotationDefinition> Annotations { get; set; }
         
         public const string BODY_METHOD_NAME = "$entry";

@@ -70,7 +70,7 @@ namespace OneScript.StandardLibrary.Native
 
             _codeLinesReferences = lexer.Iterator;
             _errors = new ListErrorSink();
-            var parser = new DefaultBslParser(lexer, new DefaultAstBuilder(), _errors, new PreprocessorHandlers());
+            var parser = new DefaultBslParser(lexer, _errors, new PreprocessorHandlers());
 
             try
             {
