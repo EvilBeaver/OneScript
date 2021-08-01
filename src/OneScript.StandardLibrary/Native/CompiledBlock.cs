@@ -35,7 +35,7 @@ namespace OneScript.StandardLibrary.Native
         private string _codeBlock;
         private BslSyntaxNode _ast;
         private IErrorSink _errors;
-        private SourceCodeIterator _codeLinesReferences;
+        private SourceCode _codeLinesReferences;
 
         public CompiledBlock(IServiceContainer services)
         {
@@ -68,7 +68,7 @@ namespace OneScript.StandardLibrary.Native
             
             lexer.Iterator = source.CreateIterator();
 
-            _codeLinesReferences = lexer.Iterator;
+            _codeLinesReferences = source;
             _errors = new ListErrorSink();
             var parser = new DefaultBslParser(lexer, _errors, new PreprocessorHandlers());
 
@@ -170,7 +170,7 @@ namespace OneScript.StandardLibrary.Native
             var methodCompiler = new MethodCompiler(new BslWalkerContext
             {
                 Errors = _errors,
-                CodeIterator = _codeLinesReferences,
+                Source = _codeLinesReferences,
                 Symbols = Symbols,
                 Services = _services
             }, methodInfo);

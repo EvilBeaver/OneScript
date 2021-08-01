@@ -65,7 +65,7 @@ namespace OneScript.Core.Tests
             var node = parser.ParseStatefulModule() as ModuleNode;
 
             var compiler = new AstBasedCodeGenerator(Mock.Of<ICompilerContext>());
-            return compiler.CreateImage(node, lexer.Iterator);
+            return compiler.CreateImage(node, lexer.Iterator.Source);
         }
     }
 }

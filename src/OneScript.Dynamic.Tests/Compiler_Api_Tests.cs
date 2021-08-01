@@ -39,7 +39,7 @@ namespace OneScript.Dynamic.Tests
         private class CompileHelper
         {
             private IErrorSink _errors = new ListErrorSink();
-            private SourceCodeIterator _codeIndexer;
+            private SourceCode _codeIndexer;
             private BslSyntaxNode _module;
 
             public BslSyntaxNode Parse(string code)
@@ -50,7 +50,7 @@ namespace OneScript.Dynamic.Tests
                     .WithName("<text>")
                     .Build()
                     .CreateIterator();
-                _codeIndexer = lexer.Iterator;
+                _codeIndexer = lexer.Iterator.Source;
            
                 var parser = new DefaultBslParser(lexer, _errors, new PreprocessorHandlers());
 

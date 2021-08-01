@@ -20,7 +20,7 @@ namespace OneScript.Native.Compiler
         
         public IErrorSink Errors { get; set; }
         
-        public SourceCodeIterator CodeIterator { get; set; }
+        public SourceCode Source { get; set; }
         
         public IServiceContainer Services { get; set; }
     }

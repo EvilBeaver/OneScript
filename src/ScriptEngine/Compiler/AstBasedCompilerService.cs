@@ -35,7 +35,7 @@ namespace ScriptEngine.Compiler
                 source,
                 p => p.ParseStatefulModule());
 
-            return BuildModule(context, moduleNode, lexer.Iterator);
+            return BuildModule(context, moduleNode, source);
         }
 
         protected override ModuleImage CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
@@ -48,7 +48,7 @@ namespace ScriptEngine.Compiler
                 source,
                 p => p.ParseCodeBatch());
 
-            return BuildModule(context, moduleNode, lexer.Iterator);
+            return BuildModule(context, moduleNode, source);
         }
 
         protected override ModuleImage CompileExpressionInternal(SourceCode source, ICompilerContext context)
@@ -66,7 +66,7 @@ namespace ScriptEngine.Compiler
                 source,
                 p => p.ParseExpression());
 
-            return BuildModule(context, moduleNode, lexer.Iterator);
+            return BuildModule(context, moduleNode, source);
         }
         
         private ModuleNode ParseSyntaxConstruction(
@@ -99,7 +99,7 @@ namespace ScriptEngine.Compiler
             return moduleNode;
         }
 
-        private ModuleImage BuildModule(ICompilerContext context, ModuleNode moduleNode, SourceCodeIterator src)
+        private ModuleImage BuildModule(ICompilerContext context, ModuleNode moduleNode, SourceCode src)
         {
             var codeGen = GetCodeGenerator(context);
             codeGen.ThrowErrors = true;

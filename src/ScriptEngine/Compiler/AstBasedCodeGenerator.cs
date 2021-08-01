@@ -28,7 +28,7 @@ namespace ScriptEngine.Compiler
         private readonly ModuleImage _module;
         private readonly ICompilerContext _ctx;
         private readonly List<CompilerException> _errors = new List<CompilerException>();
-        private SourceCodeIterator _sourceCodeIterator;
+        private SourceCode _sourceCode;
 
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
@@ -51,14 +51,14 @@ namespace ScriptEngine.Compiler
         
         public IDependencyResolver DependencyResolver { get; set; }
         
-        public ModuleImage CreateImage(ModuleNode moduleNode, SourceCodeIterator source)
+        public ModuleImage CreateImage(ModuleNode moduleNode, SourceCode source)
         {
             if (moduleNode.Kind != NodeKind.Module)
             {
                 throw new ArgumentException($"Node must be a Module node");
             }
 
-            _sourceCodeIterator = source;
+            _sourceCode = source;
 
             return CreateImageInternal(moduleNode);
         }
@@ -68,7 +68,7 @@ namespace ScriptEngine.Compiler
             VisitModule(moduleNode);
             CheckForwardedDeclarations();
             _module.LoadAddress = _ctx.TopIndex();
-            _module.Source = _sourceCodeIterator.Source;
+            _module.Source = _sourceCode;
             return _module;
         }
 
@@ -97,7 +97,7 @@ namespace ScriptEngine.Compiler
             
             try
             {
-                DependencyResolver.Resolve(_sourceCodeIterator.Source, libName);
+                DependencyResolver.Resolve(_sourceCode, libName);
                 if(_ctx is ModuleCompilerContext moduleContext)
                     moduleContext.Update();
             }
@@ -1214,10 +1214,10 @@ namespace ScriptEngine.Compiler
         {
             return new ErrorPositionInfo()
             {
-                Code = _sourceCodeIterator.GetCodeLine(range.LineNumber),
+                Code = _sourceCode.GetCodeLine(range.LineNumber),
                 LineNumber = range.LineNumber,
                 ColumnNumber = range.ColumnNumber,
-                ModuleName = _sourceCodeIterator.Source.Name
+                ModuleName = _sourceCode.Name
             };
         }
 

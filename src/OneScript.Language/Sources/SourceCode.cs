@@ -11,9 +11,10 @@ using OneScript.Language.LexicalAnalysis;
 // ReSharper disable once CheckNamespace
 namespace OneScript.Sources
 {
-    public class SourceCode
+    public class SourceCode : ISourceCodeIndexer
     {
         private readonly ICodeSource _source;
+        private ISourceCodeIndexer _indexer;
 
         internal SourceCode(string sourceName, ICodeSource source)
         {
@@ -23,8 +24,8 @@ namespace OneScript.Sources
 
         public SourceCodeIterator CreateIterator()
         {
-            var newIterator = new SourceCodeIterator(this); 
-            //Indexer ??= newIterator;
+            var newIterator = new SourceCodeIterator(this);
+            _indexer = newIterator;
 
             return newIterator;
         }
@@ -35,6 +36,12 @@ namespace OneScript.Sources
 
         public string GetSourceCode() => _source.GetSourceCode();
 
-        //public ISourceCodeIndexer Indexer { get; private set; }
+        public string GetCodeLine(int index)
+        {
+            if (_indexer == null)
+                throw new InvalidOperationException("Source is not indexed yet");
+
+            return _indexer.GetCodeLine(index);
+        }
     }
 }
