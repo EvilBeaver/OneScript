@@ -116,74 +116,101 @@ namespace ScriptEngine.HostedScript.Library.Json
 
             }
             else
-                _writer.WriteRawValue(EscapeCharacters(val, true));
+                _writer.WriteRawValue(EscapeCharacters(val, _settings.EscapeSlash));
         }
 
-        string EscapeCharacters(string sval, bool EscapeBackSlash)
+        string EscapeCharacters(string sval, bool EscapeSlash)
         {
-            int Length = sval.Length;
-            var sb = new StringBuilder(Length + 2);
-            sb.Append(_writer.QuoteChar);
+            var sb = new StringBuilder(sval);
 
+            int Length = sval.Length;
             for (var i = 0; i < Length; i++)
             {
-                var c = sval[i];
-                switch (c)
+                char c = sb[i];
+                if (EscapeSlash && c == '/')
                 {
-                    case '\b': sb.Append("\\b"); break;
-                    case '\t': sb.Append("\\t"); break;
-                    case '\n': sb.Append("\\n"); break;
-                    case '\f': sb.Append("\\f"); break;
-                    case '\r': sb.Append("\\r"); break;
-
-                    case '"':  sb.Append("\\\""); break;
-
-                    case '\\' when EscapeBackSlash:
-                        sb.Append("\\\\");
-                        break;
-
-                    case '/' when _settings.EscapeSlash:
-                        sb.Append("\\/"); 
-                        break;
-
-                    case '&' when _settings.EscapeAmpersand:
-                        sb.Append("\\u0026");
-                        break;
-
-                    case '\'' when _settings.EscapeSingleQuotes || !_settings.UseDoubleQuotes:
-                        sb.Append("\\u0027");
-                        break;
-
-                    case '<' when _settings.EscapeAngleBrackets:
-                        sb.Append("\\u003C");
-                        break;
-
-                    case '>' when _settings.EscapeAngleBrackets:
-                        sb.Append("\\u003E");
-                        break;
-
-                    case '\x2028' when _settings.EscapeLineTerminators:
-                        sb.Append("\\u2028");
-                        break;
-
-                    case '\x2029' when _settings.EscapeLineTerminators:
-                        sb.Append("\\u2029");
-                        break;
-
-                    default:
-                        if (c >= 0 && c <= 31)
-                        {
-                            string unicode = "\\u" + ((int)c).ToString("X4");
-                            sb.Append(unicode);
-                        }
-                        else
-                        {
-                            sb.Append(c);
-                        }
-                        break;
+                    sb.Replace("/", "\\/", i, 1);
+                    Length++;
+                    i++;
                 }
-            }
+                else if (_settings.EscapeAmpersand && c == '&')
+                {
+                    sb.Replace("&", "\\&", i, 1);
+                    Length++;
+                    i++;
+                }
+                else if ((_settings.EscapeSingleQuotes || !_settings.UseDoubleQuotes) && c == '\'')
+                {
+                    sb.Replace("'", "\\u0027", i, 1);
+                    Length = Length + 5;
+                    i = i + 5;
+                }
+                else if (_settings.EscapeAngleBrackets && c == '<')
+                {
+                    sb.Replace("<", "\\u003C", i, 1);
+                    Length = Length + 5;
+                    i = i + 5;
+                }
+                else if (_settings.EscapeAngleBrackets && c == '>')
+                {
+                    sb.Replace(">", "\\u003E", i, 1);
+                    Length = Length + 5;
+                    i = i + 5;
+                }
+                else if (c == '\r')
+                {
+                    sb.Replace("\r", "\\r", i, 1);
+                    Length++;
+                    i++;
+                }
+                else if (c == '\n')
+                {
+                    sb.Replace("\n", "\\n", i, 1);
+                    Length++;
+                    i++;
+                }
+                else if (c == '\f')
+                {
+                    sb.Replace("\f", "\\f", i, 1);
+                    Length++;
+                    i++;
+                }
+                else if (c == '\"')
+                {
+                    sb.Replace("\"", "\\\"", i, 1);
+                    Length++;
+                    i++;
+                }
+                else if (c == '\b')
+                {
+                    sb.Replace("\b", "\\b", i, 1);
+                    Length++;
+                    i++;
+                }
+                else if (c == '\t')
+                {
+                    sb.Replace("\t", "\\t", i, 1);
+                    Length++;
+                    i++;
+                }
+                else if (c == '\\')
+                {
+                    sb.Replace("\\", "\\\\", i, 1);
+                    Length++;
+                    i++;
+                }
 
+                // Спец. символы: \u0000, \u0001, \u0002, ... , \u001e, \u001f;
+                else if ((int)c >= 0 && (int)c <= 31)
+                {
+                    string unicode = "\\u" + ((int)c).ToString("X4").ToLower();
+                    sb.Replace(c.ToString(), unicode, i, 1);
+                    Length = Length + 5;
+                    i = i + 5;
+                }
+
+            }
+            sb.Insert(0, _writer.QuoteChar);
             sb.Append(_writer.QuoteChar);
             return sb.ToString();
         }
@@ -244,17 +271,14 @@ namespace ScriptEngine.HostedScript.Library.Json
 
         /// <summary>
         /// 
-        /// Показывает, будет ли проводиться проверка правильности структуры записываемого JSON объекта.
-        /// В случае обнаружения ошибки будет сгенерировано исключение. Например: при попытке записать значение без имени вне массива или записать окончание объекта без начала.
-        /// Установка данного свойства не имеет немедленного эффекта. Установленное значение свойства будет использовано только после открытия файла или установки строки.
-        /// После создания объекта данное свойство имеет значение Ложь. (Несовместимо! Должно быть - Истина).
-        /// Установка свойства не реализована.
+        /// Показывает, будет ли проводиться проверка правильности структуры записываемого JSON объекта. В случае обнаружение ошибки, будет сгенерировано исключение. Например: при попытке записать значение без имени вне массива или записать окончание объекта без начала. Установка данного свойства не имеет немедленного эффекта. Установленное значение свойства будет использовано только после открытия файла или установки строки.
+        /// После создания объекта данное свойство имеет значение Истина.
         /// </summary>
         /// <value>Булево (Boolean)</value>
         [ContextProperty("ПроверятьСтруктуру", "ValidateStructure")]
         public bool ValidateStructure
         {
-            get { return false; }
+            get { throw new NotImplementedException(); }
             set { throw new NotImplementedException(); }
         }
 
