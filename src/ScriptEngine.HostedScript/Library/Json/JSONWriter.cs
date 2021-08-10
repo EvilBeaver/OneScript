@@ -116,10 +116,10 @@ namespace ScriptEngine.HostedScript.Library.Json
 
             }
             else
-                _writer.WriteRawValue(EscapeCharacters(val, _settings.EscapeSlash));
+                _writer.WriteRawValue(EscapeCharacters(val, true));
         }
 
-        string EscapeCharacters(string sval, bool EscapeSlash)
+        string EscapeCharacters(string sval, bool EscapeBackSlash)
         {
             int Length = sval.Length;
             var sb = new StringBuilder(Length + 2);
@@ -136,10 +136,13 @@ namespace ScriptEngine.HostedScript.Library.Json
                     case '\f': sb.Append("\\f"); break;
                     case '\r': sb.Append("\\r"); break;
 
-                    case '\\': sb.Append("\\\\"); break;
                     case '"':  sb.Append("\\\""); break;
 
-                    case '/' when EscapeSlash:
+                    case '\\' when EscapeBackSlash:
+                        sb.Append("\\\\");
+                        break;
+
+                    case '/' when _settings.EscapeSlash:
                         sb.Append("\\/"); 
                         break;
 
@@ -157,6 +160,14 @@ namespace ScriptEngine.HostedScript.Library.Json
 
                     case '>' when _settings.EscapeAngleBrackets:
                         sb.Append("\\u003E");
+                        break;
+
+                    case '\x2028' when _settings.EscapeLineTerminators:
+                        sb.Append("\\u2028");
+                        break;
+
+                    case '\x2029' when _settings.EscapeLineTerminators:
+                        sb.Append("\\u2029");
                         break;
 
                     default:
