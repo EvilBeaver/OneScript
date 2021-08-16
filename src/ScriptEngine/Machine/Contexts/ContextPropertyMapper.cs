@@ -178,27 +178,6 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public VariableInfo GetPropertyInfo(int propNum)
-        {
-            var prop = _properties[propNum];
-            return new VariableInfo
-            {
-                Identifier = prop.Name,
-                Alias = prop.Alias,
-                Type = SymbolType.ContextProperty,
-                Index = propNum
-            };
-        }
-
-        public IEnumerable<VariableInfo> GetProperties()
-        {
-            Init();
-            for (int i = 0; i < Count; i++)
-            {
-                yield return GetPropertyInfo(i);
-            }
-        }
-
         private int GetPropertyIndex(string name)
         {
             Init();
