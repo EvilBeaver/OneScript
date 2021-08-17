@@ -190,6 +190,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                     switch (_reader.TokenType)
                     {
                         case JsonToken.Null:
+                        case JsonToken.Undefined:
                             JSONValueType = "Null";
                             break;
                         case JsonToken.StartObject:
@@ -205,8 +206,6 @@ namespace ScriptEngine.HostedScript.Library.Json
                             JSONValueType = "Comment";
                             break;
                         case JsonToken.Integer:
-                            JSONValueType = "Number";
-                            break;
                         case JsonToken.Float:
                             JSONValueType = "Number";
                             break;
@@ -215,9 +214,6 @@ namespace ScriptEngine.HostedScript.Library.Json
                             break;
                         case JsonToken.Boolean:
                             JSONValueType = "Boolean";
-                            break;
-                        case JsonToken.Undefined:
-                            JSONValueType = "Null";
                             break;
                         case JsonToken.EndObject:
                             JSONValueType = "ObjectEnd";

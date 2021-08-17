@@ -68,7 +68,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public void Delete(string namespaceUri)
         {
             XMLSchema item = _items.Find(x => x.TargetNamespace.Equals(namespaceUri));
-            if (item is XMLSchema)
+            if (item != null)
             {
                 _items.Remove(item);
                 _schemaSet.Remove(item.SchemaObject);

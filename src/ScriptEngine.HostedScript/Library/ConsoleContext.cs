@@ -127,8 +127,10 @@ namespace ScriptEngine.HostedScript.Library
             }
             set
             {
-                var typed = value.GetRawValue() as CLREnumValueWrapper<ConsoleColor>;
-                Console.ForegroundColor = typed.UnderlyingValue;
+                if (value.GetRawValue() is CLREnumValueWrapper<ConsoleColor> typed)
+                {
+                    Console.ForegroundColor = typed.UnderlyingValue;
+                }
             }
         }
 
@@ -148,8 +150,10 @@ namespace ScriptEngine.HostedScript.Library
             }
             set
             {
-                var typed = value.GetRawValue() as CLREnumValueWrapper<ConsoleColor>;
-                Console.BackgroundColor = typed.UnderlyingValue;
+                if (value.GetRawValue() is CLREnumValueWrapper<ConsoleColor> typed)
+                {
+                    Console.BackgroundColor = typed.UnderlyingValue;
+                }
             }
         }
 

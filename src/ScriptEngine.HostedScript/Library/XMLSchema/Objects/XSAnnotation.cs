@@ -45,7 +45,7 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         }
 
         internal static void SetComponentAnnotation(XSAnnotation annotation, XmlSchemaAnnotated annotatedObject)
-            => annotatedObject.Annotation = annotation is XSAnnotation ? annotation.SchemaObject : null;
+            => annotatedObject.Annotation = annotation?.SchemaObject;
 
         #region OneScript
 

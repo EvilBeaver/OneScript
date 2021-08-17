@@ -155,11 +155,11 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
             set
             {
                 _reference = value;
-                if (_reference is XMLExpandedName)
+                if (_reference != null)
                 {
                     _attributeGroup = new XmlSchemaAttributeGroupRef
                     {
-                        RefName = _reference?.NativeValue
+                        RefName = _reference.NativeValue
                     };
                     Content.Clear();
                 }
