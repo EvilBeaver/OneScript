@@ -20,6 +20,7 @@ namespace OneScript.Contexts
         internal ContextConstructorInfo(MethodInfo staticConstructor)
         {
             CheckMethod(staticConstructor);
+            _factoryMethod = staticConstructor;
         }
 
         private void CheckMethod(MethodInfo staticConstructor)
