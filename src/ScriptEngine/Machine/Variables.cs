@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using OneScript.Contexts;
 using OneScript.Types;
 
 namespace ScriptEngine.Machine
@@ -35,6 +36,7 @@ namespace ScriptEngine.Machine
             };
         }
 
+        [Obsolete]
         public static IVariable Create(IValue val, VariableInfo metadata)
         {
             return new Variable()

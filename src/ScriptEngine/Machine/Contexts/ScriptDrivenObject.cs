@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Sources;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -56,38 +57,35 @@ namespace ScriptEngine.Machine.Contexts
             VARIABLE_COUNT = GetOwnVariableCount();
             METHOD_COUNT = GetOwnMethodCount();
 
-            int stateSize = VARIABLE_COUNT + _module.Variables.Count;
+            int stateSize = VARIABLE_COUNT + NewModule.Fields.Count;
             _state = new IVariable[stateSize];
             for (int i = 0; i < stateSize; i++)
             {
                 if (i < VARIABLE_COUNT)
                     _state[i] = Variable.CreateContextPropertyReference(this, i, GetOwnPropName(i));
                 else
-                    _state[i] = Variable.Create(ValueFactory.Create(), _module.Variables[i-VARIABLE_COUNT]);
+                    _state[i] = Variable.Create(ValueFactory.Create(), NewModule.Fields[i-VARIABLE_COUNT].Name);
             }
 
-            ReadExportedSymbols(_module.ExportedMethods, _methodSearchCache);
-            ReadExportedSymbols(_module.ExportedProperies, _propertySearchCache);
-            ReadVariables(_module.Variables, _allPropertiesSearchCache);
-
-        }
-
-        private void ReadVariables(VariablesFrame vars, Dictionary<string, int> searchCache)
-        {
-            for (int i = 0; i < vars.Count; i++)
+            for (var i = 0; i < _module.Fields.Count; i++)
             {
-                var variable = vars[i];
-                searchCache[variable.Identifier] = variable.Index;
+                var variable = _module.Fields[i];
+                _allPropertiesSearchCache.Add(variable.Name, i);
             }
-        }
 
-        private void ReadExportedSymbols(ExportedSymbol[] exportedSymbols, Dictionary<string, int> searchCache)
-        {
-            for (int i = 0; i < exportedSymbols.Length; i++)
+            for (int i = 0; i < _module.Properties.Count; i++)
             {
-                var es = exportedSymbols[i];
-                searchCache[es.SymbolicName] = es.Index;
+                var prop = _module.Properties[i];
+                _propertySearchCache.Add(prop.Name, i);
             }
+
+            for (int i = 0; i < _module.Methods.Count; i++)
+            {
+                var method = _module.Methods[i];
+                if(method.IsPublic)
+                    _methodSearchCache.Add(method.Name, i);
+            }
+
         }
 
         protected abstract int GetOwnVariableCount();
@@ -133,11 +131,11 @@ namespace ScriptEngine.Machine.Contexts
         {
             int index = -1;
 
-            for (int i = 0; i < _module.Methods.Length; i++)
+            for (int i = 0; i < _module.Methods.Count; i++)
             {
                 var item = _module.Methods[i];
-                if (StringComparer.OrdinalIgnoreCase.Compare(item.Signature.Name, methodName) == 0
-                    || (alias != null && StringComparer.OrdinalIgnoreCase.Compare(item.Signature.Name, alias) == 0))
+                if (StringComparer.OrdinalIgnoreCase.Compare(item.Name, methodName) == 0
+                    || (alias != null && StringComparer.OrdinalIgnoreCase.Compare(item.Name, alias) == 0))
                 {
                     index = i;
                     break;
@@ -237,16 +235,16 @@ namespace ScriptEngine.Machine.Contexts
             if (_attachableMethods != null)
                 return _attachableMethods;
 
-            int totalMethods = METHOD_COUNT + _module.Methods.Length;
+            int totalMethods = METHOD_COUNT + _module.Methods.Count;
             _attachableMethods = new MethodSignature[totalMethods];
 
-            var moduleMethods = _module.Methods.Select(x => x.Signature).ToArray();
+            var moduleMethods = _module.Methods;
 
             for (int i = 0; i < totalMethods; i++)
             {
                 if (MethodDefinedInScript(i))
                 {
-                    _attachableMethods[i] = moduleMethods[i - METHOD_COUNT];
+                    _attachableMethods[i] = moduleMethods[i - METHOD_COUNT].MakeSignature();
                 }
                 else
                 {
@@ -349,12 +347,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (PropDefinedInScript(propertyNumber))
             {
-                var variable = _module.ExportedProperies[propertyNumber-VARIABLE_COUNT];
-                return BslPropertyBuilder.Create()
-                    .Name(variable.SymbolicName)
-                    .IsExported(true)
-                    .SetAnnotations(_module.Variables[variable.Index-VARIABLE_COUNT].Annotations.Select(x => x.MakeBslAttribute()))
-                    .Build();
+                return NewModule.Properties[propertyNumber-VARIABLE_COUNT];
             }
             else
             {
@@ -366,7 +359,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (MethodDefinedInScript(methodNumber))
             {
-                return _module.Methods[methodNumber-METHOD_COUNT].MethodInfo;
+                return _module.Methods[methodNumber-METHOD_COUNT];
             }
             else
             {
@@ -441,5 +434,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _module.ExportedMethods.Select(x => x.SymbolicName).ToArray();
         }
+
+        private IExecutableModule NewModule => (IExecutableModule)_module;
     }
 }

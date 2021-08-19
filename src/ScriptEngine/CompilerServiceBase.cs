@@ -62,7 +62,7 @@ namespace ScriptEngine
             _preprocessorVariables.Add(name);
         }
 
-        public ModuleImage Compile(SourceCode source)
+        public ExecutableModule Compile(SourceCode source)
         {
             try
             {
@@ -76,12 +76,12 @@ namespace ScriptEngine
             }
         }
 
-        public ModuleImage CompileExpression(SourceCode source)
+        public ExecutableModule CompileExpression(SourceCode source)
         {
             return CompileExpressionInternal(source, _currentContext);
         }
         
-        public ModuleImage CompileBatch(SourceCode source)
+        public ExecutableModule CompileBatch(SourceCode source)
         {
             try
             {
@@ -95,11 +95,11 @@ namespace ScriptEngine
             }
         }
 
-        protected abstract ModuleImage CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
+        protected abstract ExecutableModule CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
         
-        protected abstract ModuleImage CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
+        protected abstract ExecutableModule CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
         
-        protected abstract ModuleImage CompileExpressionInternal(SourceCode source, ICompilerContext context);
+        protected abstract ExecutableModule CompileExpressionInternal(SourceCode source, ICompilerContext context);
         
 
         private void RegisterScopeIfNeeded()

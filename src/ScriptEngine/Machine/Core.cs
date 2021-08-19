@@ -235,9 +235,6 @@ namespace ScriptEngine.Machine
         public string Alias;
         public SymbolType Type;
         
-        public bool CanGet;
-        public bool CanSet;
-        
         public AnnotationDefinition[] Annotations;
 
         public int AnnotationsCount => Annotations?.Length ?? 0;

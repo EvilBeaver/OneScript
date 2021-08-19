@@ -25,7 +25,7 @@ namespace ScriptEngine.Compiler
             _сompilerOptions = сompilerOptions;
         }
         
-        protected override ModuleImage CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
+        protected override ExecutableModule CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
@@ -38,7 +38,7 @@ namespace ScriptEngine.Compiler
             return BuildModule(context, moduleNode, source);
         }
 
-        protected override ModuleImage CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
+        protected override ExecutableModule CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
@@ -51,7 +51,7 @@ namespace ScriptEngine.Compiler
             return BuildModule(context, moduleNode, source);
         }
 
-        protected override ModuleImage CompileExpressionInternal(SourceCode source, ICompilerContext context)
+        protected override ExecutableModule CompileExpressionInternal(SourceCode source, ICompilerContext context)
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
             
@@ -99,14 +99,14 @@ namespace ScriptEngine.Compiler
             return moduleNode;
         }
 
-        private ModuleImage BuildModule(ICompilerContext context, ModuleNode moduleNode, SourceCode src)
+        private ExecutableModule BuildModule(ICompilerContext context, ModuleNode moduleNode, SourceCode src)
         {
             var codeGen = GetCodeGenerator(context);
             codeGen.ThrowErrors = true;
             codeGen.ProduceExtraCode = ProduceExtraCode;
             codeGen.DependencyResolver = _сompilerOptions.DependencyResolver;
 
-            return codeGen.CreateImage(moduleNode, src);
+            return codeGen.CreateModule(moduleNode, src);
         }
 
         protected virtual AstBasedCodeGenerator GetCodeGenerator(ICompilerContext context)

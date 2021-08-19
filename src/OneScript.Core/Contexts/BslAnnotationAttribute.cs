@@ -19,6 +19,12 @@ namespace OneScript.Contexts
             Name = name;
         }
         
+        public BslAnnotationAttribute(string name, IEnumerable<BslAnnotationParameter> parameters)
+        {
+            Name = name;
+            Parameters = parameters;
+        }
+        
         public string Name { get; }
 
         public IEnumerable<BslAnnotationParameter> Parameters { get; private set; }

@@ -25,18 +25,19 @@ namespace ScriptEngine.Compiler
 {
     public partial class AstBasedCodeGenerator : BslSyntaxWalker
     {
-        private readonly ModuleImage _module;
+        private readonly ExecutableModule _module;
         private readonly ICompilerContext _ctx;
         private readonly List<CompilerException> _errors = new List<CompilerException>();
         private SourceCode _sourceCode;
-
+        private List<ConstDefinition> _constMap = new List<ConstDefinition>();
+        
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
 
         public AstBasedCodeGenerator(ICompilerContext context)
         {
             _ctx = context;
-            _module = new ModuleImage();
+            _module = new ExecutableModule();
         }
 
         public bool ThrowErrors { get; set; }
@@ -45,13 +46,13 @@ namespace ScriptEngine.Compiler
 
         public IReadOnlyList<CompilerException> Errors => _errors;
 
-        protected ModuleImage Module => _module;
+        protected ExecutableModule Module => _module;
 
         protected ICompilerContext CompilerContext => _ctx;
         
         public IDependencyResolver DependencyResolver { get; set; }
         
-        public ModuleImage CreateImage(ModuleNode moduleNode, SourceCode source)
+        public LoadedModule CreateModule(ModuleNode moduleNode, SourceCode source)
         {
             if (moduleNode.Kind != NodeKind.Module)
             {
@@ -63,25 +64,25 @@ namespace ScriptEngine.Compiler
             return CreateImageInternal(moduleNode);
         }
 
-        private ModuleImage CreateImageInternal(ModuleNode moduleNode)
+        private LoadedModule CreateImageInternal(ModuleNode moduleNode)
         {
             VisitModule(moduleNode);
             CheckForwardedDeclarations();
+            
             _module.LoadAddress = _ctx.TopIndex();
             _module.Source = _sourceCode;
-            return _module;
+            
+            return _module.BuildExecutable();
         }
 
         protected override void VisitModuleAnnotation(AnnotationNode node)
         {
             if (node.Kind == NodeKind.Import)
                 HandleImportClause(node);
-            
-            _module.Annotations.Add(new AnnotationDefinition
-            {
-                Name = node.Name,
-                Parameters = GetAnnotationParameters(node)
-            });
+
+            var classAnnotation = new BslAnnotationAttribute(node.Name);
+            classAnnotation.SetParameters(GetAnnotationParameters(node));
+            _module.ModuleAttributes.Add(classAnnotation);
         }
 
         private void HandleImportClause(AnnotationNode node)
@@ -155,26 +156,30 @@ namespace ScriptEngine.Compiler
         protected override void VisitModuleVariable(VariableDefinitionNode varNode)
         {
             var symbolicName = varNode.Name;
-            var annotations = _GetAnnotations(varNode);
-            var definition = _ctx.DefineVariable(symbolicName);
-            _module.VariableRefs.Add(definition);
-            _module.Variables.Add(new VariableInfo
-            {
-                Identifier = symbolicName,
-                Annotations = annotations,
-                CanGet = true,
-                CanSet = true,
-                Index = definition.CodeIndex
-            });
+            var annotations = GetAnnotations(varNode).ToList();
+            var binding = _ctx.DefineVariable(symbolicName);
+            _module.VariableRefs.Add(binding);
 
+            var fieldBuilder = BslFieldBuilder.Create()
+                .Name(symbolicName)
+                .SetAnnotations(annotations)
+                .SetDispatchingIndex(binding.CodeIndex)
+                .DeclaringType(_module.ClassType);
+            
             if (varNode.IsExported)
             {
-                _module.ExportedProperties.Add(new ExportedSymbol
-                {
-                    SymbolicName = symbolicName,
-                    Index = definition.CodeIndex
-                });
+                fieldBuilder.IsExported(true);
+                var propertyView = BslPropertyBuilder.Create()
+                    .Name(symbolicName)
+                    .IsExported(true)
+                    .DeclaringType(_module.ClassType)
+                    .SetAnnotations(annotations)
+                    .SetDispatchingIndex(binding.CodeIndex);
+                
+                _module.Properties.Add(propertyView.Build());
             }
+            
+            _module.Fields.Add(fieldBuilder.Build());
         }
 
         protected override void VisitModuleBody(BslSyntaxNode child)
@@ -201,18 +206,13 @@ namespace ScriptEngine.Compiler
 
             if (entry != _module.Code.Count)
             {
-                var bodyMethod = new MethodSignature
-                {
-                    Name = ModuleImage.BODY_METHOD_NAME
-                };
-
                 var descriptor = new MethodDescriptor
                 {
                     EntryPoint = entry,
-                    Signature = bodyMethod,
                     MethodInfo = BslMethodBuilder
                         .Create()
-                        .Name(bodyMethod.Name)
+                        .Name(ModuleImage.BODY_METHOD_NAME)
+                        .DeclaringType(_module.ClassType)
                         .Build()
                 };
                 FillVariablesFrame(ref descriptor, localCtx);
@@ -223,7 +223,9 @@ namespace ScriptEngine.Compiler
                     ContextIndex = topIdx,
                     CodeIndex = _module.Methods.Count
                 };
-                _module.Methods.Add(descriptor);
+                
+                _module.RuntimeMethods.Add(descriptor);
+                _module.Methods.Add(descriptor.MethodInfo);
                 _module.MethodRefs.Add(bodyBinding);
                 _module.EntryMethodIndex = entryRefNumber;
             }
@@ -253,18 +255,18 @@ namespace ScriptEngine.Compiler
             
             foreach (var paramNode in signature.GetParameters())
             {
-                int defValueIndex = AstBasedCodeGenerator.DUMMY_ADDRESS;
+                var parameter = methodBuilder.NewParameter()
+                    .Name(paramNode.Name)
+                    .ByValue(paramNode.IsByValue)
+                    .SetAnnotations(GetAnnotationAttributes(paramNode));
+                
                 if (paramNode.HasDefaultValue)
                 {
                     var constDef = CreateConstDefinition(paramNode.DefaultValue);
-                    defValueIndex = GetConstNumber(constDef);
+                    var defValueIndex = GetConstNumber(constDef);
+                    
+                    parameter.DefaultValue(_module.Constants[defValueIndex]);
                 }
-
-                methodBuilder.NewParameter()
-                    .Name(paramNode.Name)
-                    .ByValue(paramNode.IsByValue)
-                    .CompileTimeBslConstant(defValueIndex)
-                    .SetAnnotations(GetAnnotationAttributes(paramNode));
                 
                 methodCtx.DefineVariable(paramNode.Name);
             }
@@ -284,7 +286,6 @@ namespace ScriptEngine.Compiler
             
             var descriptor = new MethodDescriptor();
             descriptor.EntryPoint = entryPoint;
-            descriptor.Signature = methodInfo.MakeSignature();
             descriptor.MethodInfo = methodInfo;
             FillVariablesFrame(ref descriptor, methodCtx);
 
@@ -301,17 +302,8 @@ namespace ScriptEngine.Compiler
                 binding = default;
             }
             _module.MethodRefs.Add(binding);
-            _module.Methods.Add(descriptor);
-
-            // TODO: deprecate?
-            if (signature.IsExported)
-            {
-                _module.ExportedMethods.Add(new ExportedSymbol()
-                {
-                    SymbolicName = methodInfo.Name,
-                    Index = binding.CodeIndex
-                });
-            }
+            _module.RuntimeMethods.Add(descriptor);
+            _module.Methods.Add(descriptor.MethodInfo);
         }
 
         protected override void VisitMethodBody(MethodNode methodNode)
@@ -1058,14 +1050,14 @@ namespace ScriptEngine.Compiler
             foreach (var annotation in node.Annotations)
             {
                 var anno = new BslAnnotationAttribute(annotation.Name);
-                anno.SetParameters(GetAnnotationAtrParameters(annotation));
+                anno.SetParameters(GetAnnotationParameters(annotation));
                 mappedAnnotations.Add(anno);
             }
 
             return mappedAnnotations;
         }
         
-        private IEnumerable<BslAnnotationParameter> GetAnnotationAtrParameters(AnnotationNode node)
+        private IEnumerable<BslAnnotationParameter> GetAnnotationParameters(AnnotationNode node)
         {
             return node.Children.Cast<AnnotationParameterNode>()
                 .Select(MakeAnnotationParameter)
@@ -1079,7 +1071,7 @@ namespace ScriptEngine.Compiler
             {
                 var constDef = CreateConstDefinition(param.Value);
                 var constNumber = GetConstNumber(constDef);
-                var runtimeValue = (BslPrimitiveValue)ValueFactory.Parse(constDef.Presentation, constDef.Type);
+                var runtimeValue = _module.Constants[constNumber];
                 result = new BslAnnotationParameter(param.Name, runtimeValue)
                 {
                     ConstantValueIndex = constNumber
@@ -1092,46 +1084,15 @@ namespace ScriptEngine.Compiler
 
             return result;
         }
+
+        private IEnumerable<BslAnnotationAttribute> GetAnnotations(AnnotatableNode parent)
+        {
+            return parent.Annotations.Select(a =>
+                new BslAnnotationAttribute(
+                    a.Name,
+                    GetAnnotationParameters(a)));
+        }
         
-        [Obsolete]
-        private AnnotationDefinition[] _GetAnnotations(AnnotatableNode parent)
-        {
-            var annotations = new List<AnnotationDefinition>();
-            foreach (var node in parent.Annotations)
-            {
-                annotations.Add(new AnnotationDefinition
-                {
-                    Name = node.Name,
-                    Parameters = GetAnnotationParameters(node)
-                });
-            }
-
-            return annotations.ToArray();
-        }
-
-        private AnnotationParameter[] GetAnnotationParameters(AnnotationNode node)
-        {
-            var parameters = new List<AnnotationParameter>();
-            foreach (var param in node.Children.Cast<AnnotationParameterNode>())
-            {
-                var paramDef = new AnnotationParameter();
-                paramDef.Name = param.Name;
-                
-                if (param.Value.Type != LexemType.NotALexem)
-                {
-                    var constDef = CreateConstDefinition(param.Value);
-                    paramDef.ValueIndex = GetConstNumber(constDef);
-                }
-                else
-                {
-                    paramDef.ValueIndex = AnnotationParameter.UNDEFINED_VALUE_INDEX;
-                }
-                parameters.Add(paramDef);
-            }
-
-            return parameters.ToArray();
-        }
-
         private static ConstDefinition CreateConstDefinition(in Lexem lex)
         {
             DataType constType = DataType.Undefined;
@@ -1164,11 +1125,12 @@ namespace ScriptEngine.Compiler
         
         private int GetConstNumber(in ConstDefinition cDef)
         {
-            var idx = _module.Constants.IndexOf(cDef);
+            var idx = _constMap.IndexOf(cDef);
             if (idx < 0)
             {
-                idx = _module.Constants.Count;
-                _module.Constants.Add(cDef);
+                idx = _constMap.Count;
+                _constMap.Add(cDef);
+                _module.Constants.Add((BslPrimitiveValue)ValueFactory.Parse(cDef.Presentation, cDef.Type));
             }
             return idx;
         }

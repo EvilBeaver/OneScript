@@ -1016,7 +1016,7 @@ namespace ScriptEngine.Machine
                     // заранее переведем указатель на адрес возврата. В опкоде Return инкремента нет.
                     NextInstruction();
 
-                    var methDescr = _module.Methods[sdo.GetMethodDescriptorIndex(methodRef.CodeIndex)];
+                    var methDescr = _module.RuntimeMethods[sdo.GetMethodDescriptorIndex(methodRef.CodeIndex)];
                     var frame = CreateNewFrame();
                     frame.Module = _module;
                     frame.ModuleScope = TopScope;
