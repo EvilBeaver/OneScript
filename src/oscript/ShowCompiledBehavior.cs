@@ -30,7 +30,7 @@ namespace oscript
 			var source = hostedScript.Loader.FromFile(_path);
 			var compiler = hostedScript.GetCompilerService();
 			hostedScript.SetGlobalEnvironment(new DoNothingHost(), source);
-			var writer = new ModuleWriter(compiler);
+			var writer = new ModuleDumpWriter(compiler);
 			try
 			{
 				writer.Write(Console.Out, source);

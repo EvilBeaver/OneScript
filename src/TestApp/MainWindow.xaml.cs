@@ -165,7 +165,7 @@ namespace TestApp
                     if(GenerateDebugCode.IsChecked)
                         cs.ProduceExtraCode |= CodeGenerationFlags.DebugCode;
 
-                    var moduleWriter = new ModuleWriter(cs);
+                    var moduleWriter = new ModuleDumpWriter(cs);
                     moduleWriter.Write(writer, src);
                     result.Text = writer.GetStringBuilder().ToString();
                 }
