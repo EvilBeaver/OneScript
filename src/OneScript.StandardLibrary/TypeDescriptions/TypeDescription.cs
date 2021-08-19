@@ -52,7 +52,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 		[ContextMethod("Типы", "Types")]
 		public ArrayImpl Types()
 		{
-			var result = ArrayImpl.Constructor() as ArrayImpl;
+			var result = ArrayImpl.Constructor();
 
 			foreach (var type in _types)
 			{

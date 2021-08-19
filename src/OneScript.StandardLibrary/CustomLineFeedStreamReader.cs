@@ -45,10 +45,11 @@ namespace OneScript.StandardLibrary
         public int Read ()
         {
             if (_buffer.Count == 0)
+            {
                 UpdateCharQueue ();
-
-            if (_buffer.Count == 0)
-                return -1;
+                if (_buffer.Count == 0)
+                    return -1;
+            }
 
             if (_analyzeDefaults && _buffer.Peek () == '\r') {
 

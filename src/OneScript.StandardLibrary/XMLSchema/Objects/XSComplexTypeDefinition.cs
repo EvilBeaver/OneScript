@@ -260,7 +260,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
                 xmlParticle = groupDefinition.SchemaObject as XmlSchemaGroupRef;
 
             else if (_content is XSModelGroup group)
-                xmlParticle = group.SchemaObject as XmlSchemaGroupBase;
+                xmlParticle = group.SchemaObject;
 
             else
                 xmlParticle = null;

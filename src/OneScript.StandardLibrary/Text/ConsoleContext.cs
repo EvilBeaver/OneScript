@@ -131,8 +131,10 @@ namespace OneScript.StandardLibrary.Text
             }
             set
             {
-                var typed = value.GetRawValue() as ClrEnumValueWrapper<ConsoleColor>;
-                Console.ForegroundColor = typed.UnderlyingValue;
+                if (value.GetRawValue() is ClrEnumValueWrapper<ConsoleColor> typed)
+                {
+                    Console.ForegroundColor = typed.UnderlyingValue;
+                }
             }
         }
 
@@ -152,8 +154,10 @@ namespace OneScript.StandardLibrary.Text
             }
             set
             {
-                var typed = value.GetRawValue() as ClrEnumValueWrapper<ConsoleColor>;
-                Console.BackgroundColor = typed.UnderlyingValue;
+                if (value.GetRawValue() is ClrEnumValueWrapper<ConsoleColor> typed)
+                {
+                    Console.BackgroundColor = typed.UnderlyingValue;
+                }
             }
         }
 

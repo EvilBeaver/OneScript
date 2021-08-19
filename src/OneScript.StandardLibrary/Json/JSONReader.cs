@@ -195,6 +195,7 @@ namespace OneScript.StandardLibrary.Json
                     switch (_reader.TokenType)
                     {
                         case JsonToken.Null:
+                        case JsonToken.Undefined:
                             JSONValueType = "Null";
                             break;
                         case JsonToken.StartObject:
@@ -210,8 +211,6 @@ namespace OneScript.StandardLibrary.Json
                             JSONValueType = "Comment";
                             break;
                         case JsonToken.Integer:
-                            JSONValueType = "Number";
-                            break;
                         case JsonToken.Float:
                             JSONValueType = "Number";
                             break;
@@ -220,9 +219,6 @@ namespace OneScript.StandardLibrary.Json
                             break;
                         case JsonToken.Boolean:
                             JSONValueType = "Boolean";
-                            break;
-                        case JsonToken.Undefined:
-                            JSONValueType = "Null";
                             break;
                         case JsonToken.EndObject:
                             JSONValueType = "ObjectEnd";

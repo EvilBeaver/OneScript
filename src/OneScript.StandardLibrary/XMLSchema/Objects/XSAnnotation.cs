@@ -50,7 +50,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         internal static void SetComponentAnnotation(XSAnnotation annotation, XmlSchemaAnnotated annotatedObject)
-            => annotatedObject.Annotation = annotation is XSAnnotation ? annotation.SchemaObject : null;
+            => annotatedObject.Annotation = annotation?.SchemaObject;
 
         #region OneScript
 

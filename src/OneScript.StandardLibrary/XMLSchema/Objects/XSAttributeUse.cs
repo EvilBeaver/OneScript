@@ -84,7 +84,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
             set
             {
                 _attributeDeclaration = value;
-                if (_attributeDeclaration is XSAttributeDeclaration)
+                if (_attributeDeclaration != null)
                 {
                     _attributeDeclaration.BindToContainer(RootContainer, this);
                     var attribute = _attributeDeclaration.SchemaObject;

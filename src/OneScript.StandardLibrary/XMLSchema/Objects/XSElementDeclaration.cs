@@ -204,7 +204,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public bool IsGlobal => Container is XMLSchema;
 
         [ContextProperty("ЭтоСсылка", "IsReference")]
-        public bool IsReference => _refName is XMLExpandedName;
+        public bool IsReference => _refName != null;
 
         [ContextProperty("Абстрактный", "Abstract")]
         public bool Abstract
