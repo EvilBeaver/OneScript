@@ -46,7 +46,8 @@ namespace ScriptEngine.HostedScript.Library
             if (_buffer.Count == 0)
             {
                 UpdateCharQueue ();
-                return -1;
+                if (_buffer.Count == 0)
+                    return -1;
             }
 
             if (_analyzeDefaults && _buffer.Peek () == '\r') {
