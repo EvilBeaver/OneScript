@@ -57,14 +57,14 @@ namespace ScriptEngine.Machine.Contexts
             VARIABLE_COUNT = GetOwnVariableCount();
             METHOD_COUNT = GetOwnMethodCount();
 
-            int stateSize = VARIABLE_COUNT + NewModule.Fields.Count;
+            int stateSize = VARIABLE_COUNT + _module.Fields.Count;
             _state = new IVariable[stateSize];
             for (int i = 0; i < stateSize; i++)
             {
                 if (i < VARIABLE_COUNT)
                     _state[i] = Variable.CreateContextPropertyReference(this, i, GetOwnPropName(i));
                 else
-                    _state[i] = Variable.Create(ValueFactory.Create(), NewModule.Fields[i-VARIABLE_COUNT].Name);
+                    _state[i] = Variable.Create(ValueFactory.Create(), _module.Fields[i-VARIABLE_COUNT].Name);
             }
 
             for (var i = 0; i < _module.Fields.Count; i++)
@@ -289,7 +289,7 @@ namespace ScriptEngine.Machine.Contexts
                 if (_methodSearchCache.TryGetValue(name, out index))
                     return index;
                 else
-                    throw RuntimeException.MethodNotFoundException(name, _module.ModuleInfo.ModuleName);
+                    throw RuntimeException.MethodNotFoundException(name, _module.Source.Name);
             }
         }
 
@@ -347,7 +347,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (PropDefinedInScript(propertyNumber))
             {
-                return NewModule.Properties[propertyNumber-VARIABLE_COUNT];
+                return _module.Properties[propertyNumber-VARIABLE_COUNT];
             }
             else
             {
@@ -394,19 +394,19 @@ namespace ScriptEngine.Machine.Contexts
 
         public override int GetPropCount()
         {
-            return VARIABLE_COUNT + _module.ExportedProperies.Length;
+            return VARIABLE_COUNT + _module.Properties.Count;
         }
         
         public override int GetMethodsCount()
         {
-            return METHOD_COUNT + _module.ExportedMethods.Length;
+            return METHOD_COUNT + _module.Methods.Count(x => x.IsPublic);
         }
 
         public override string GetPropName(int propNum)
         {
             if(PropDefinedInScript(propNum))
             {
-                return _module.ExportedProperies[propNum - VARIABLE_COUNT].SymbolicName;
+                return _module.Properties[propNum - VARIABLE_COUNT].Name;
             }
             else
             {
@@ -424,17 +424,5 @@ namespace ScriptEngine.Machine.Contexts
             else
                 throw PropertyAccessException.PropNotFoundException(name);
         }
-
-        public string[] GetExportedProperties()
-        {
-            return _module.ExportedProperies.Select(x => x.SymbolicName).ToArray();
-        }
-
-        public string[] GetExportedMethods()
-        {
-            return _module.ExportedMethods.Select(x => x.SymbolicName).ToArray();
-        }
-
-        private IExecutableModule NewModule => (IExecutableModule)_module;
     }
 }

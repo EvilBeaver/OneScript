@@ -66,8 +66,7 @@ namespace ScriptEngine.HostedScript
                 compiler.DefineMethod(mi);
             }
 
-            var module = compiler.Compile(code);
-            var loadedModule = engine.LoadModuleImage(module);
+            var loadedModule = compiler.Compile(code);
 
             return new LibraryLoader(loadedModule, engine.Environment, engine);
 
@@ -272,21 +271,21 @@ namespace ScriptEngine.HostedScript
 
             library.Modules.ForEach(moduleFile =>
             {
-                var image = CompileFile(moduleFile.FilePath);
-                moduleFile.Image = image;
+                var module = CompileFile(moduleFile.FilePath);
+                moduleFile.Module = module;
             });
             
             library.Classes.ForEach(classFile =>
             {
-                var image = CompileFile(classFile.FilePath);
-                _engine.AttachedScriptsFactory.LoadAndRegister(classFile.Symbol, image);
-                classFile.Image = image;
+                var module = CompileFile(classFile.FilePath);
+                _engine.AttachedScriptsFactory.RegisterTypeModule(classFile.Symbol, module);
+                classFile.Module = module;
             });
 
             _env.InitExternalLibrary(_engine, library);
         }
 
-        private ModuleImage CompileFile(string path)
+        private LoadedModule CompileFile(string path)
         {
             var compiler = _engine.GetCompilerService();
             

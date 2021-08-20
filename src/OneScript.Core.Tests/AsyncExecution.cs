@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Threading.Tasks;
 using OneScript.StandardLibrary;
 using ScriptEngine;
+using ScriptEngine.Compiler;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using Xunit;
@@ -53,7 +54,7 @@ namespace OneScript.Core.Tests
         {
             var codeSource = engine.Loader.FromString(code);
             var compiler = engine.GetCompilerService();
-            return engine.LoadModuleImage(compiler.Compile(codeSource));
+            return compiler.Compile(codeSource);
         }
         
         private ScriptingEngine MakeTestEngine()

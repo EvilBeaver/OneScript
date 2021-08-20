@@ -14,6 +14,7 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Sources;
 using ScriptEngine;
 using ScriptEngine.Compiler;
+using ScriptEngine.Machine;
 using Xunit;
 using AstBasedCodeGenerator = ScriptEngine.Compiler.AstBasedCodeGenerator;
 
@@ -25,12 +26,12 @@ namespace OneScript.Core.Tests
         public void EmptyImageIsReturnedWithNoCode()
         {
             var code = "";
-            var image = BuildImage(code);
+            var image = BuildModule(code);
             image.Should().NotBeNull();
             image.Code.Should().BeEmpty();
             image.Constants.Should().BeEmpty();
             image.Methods.Should().BeEmpty();
-            image.Variables.Should().BeEmpty();
+            image.Fields.Should().BeEmpty();
         }
 
         [Fact]
@@ -39,7 +40,7 @@ namespace OneScript.Core.Tests
             var code = "Procedure Foo() EndProcedure\n" +
                        "Function Bar() EndFunction";
 
-            var image = BuildImage(code);
+            var image = BuildModule(code);
             image.Methods.Should().HaveCount(2);
         }
         
@@ -49,11 +50,11 @@ namespace OneScript.Core.Tests
             var code = "Var A;\n" +
                        "Var B;";
 
-            var image = BuildImage(code);
-            image.Variables.Should().HaveCount(2);
+            var image = BuildModule(code);
+            image.Fields.Should().HaveCount(2);
         }
 
-        private static ModuleImage BuildImage(string code)
+        private static LoadedModule BuildModule(string code)
         {
             var lexer = new DefaultLexer();
             lexer.Iterator = SourceCodeBuilder.Create().FromString(code).Build().CreateIterator();
@@ -65,7 +66,7 @@ namespace OneScript.Core.Tests
             var node = parser.ParseStatefulModule() as ModuleNode;
 
             var compiler = new AstBasedCodeGenerator(Mock.Of<ICompilerContext>());
-            return compiler.CreateImage(node, lexer.Iterator.Source);
+            return compiler.CreateModule(node, lexer.Iterator.Source);
         }
     }
 }

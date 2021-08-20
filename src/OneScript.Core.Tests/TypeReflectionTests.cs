@@ -33,10 +33,7 @@ namespace OneScript.Core.Tests
         {
             var codeSrc = host.Loader.FromString(code);
             var cmp = host.GetCompilerService();
-            var image = cmp.Compile(codeSrc);
-            var module = host.LoadModuleImage(image);
-
-            return module;
+            return cmp.Compile(codeSrc);
         }
 
         [Fact]

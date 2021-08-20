@@ -12,6 +12,7 @@ using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Sources;
+using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
@@ -25,7 +26,7 @@ namespace ScriptEngine.Compiler
             _сompilerOptions = сompilerOptions;
         }
         
-        protected override ExecutableModule CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
+        protected override LoadedModule CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
@@ -38,7 +39,7 @@ namespace ScriptEngine.Compiler
             return BuildModule(context, moduleNode, source);
         }
 
-        protected override ExecutableModule CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
+        protected override LoadedModule CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
@@ -51,7 +52,7 @@ namespace ScriptEngine.Compiler
             return BuildModule(context, moduleNode, source);
         }
 
-        protected override ExecutableModule CompileExpressionInternal(SourceCode source, ICompilerContext context)
+        protected override LoadedModule CompileExpressionInternal(SourceCode source, ICompilerContext context)
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
             
@@ -99,7 +100,7 @@ namespace ScriptEngine.Compiler
             return moduleNode;
         }
 
-        private ExecutableModule BuildModule(ICompilerContext context, ModuleNode moduleNode, SourceCode src)
+        private LoadedModule BuildModule(ICompilerContext context, ModuleNode moduleNode, SourceCode src)
         {
             var codeGen = GetCodeGenerator(context);
             codeGen.ThrowErrors = true;

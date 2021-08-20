@@ -121,11 +121,12 @@ namespace ScriptEngine.HostedScript
             return _env.GetUserAddedScripts();
         }
 
+        [Obsolete]
         public void LoadUserScript(UserAddedScript script)
         {
             if (script.Type == UserAddedScriptType.Class)
             {
-                _engine.AttachedScriptsFactory.LoadAndRegister(script.Symbol, script.Image);
+                _engine.AttachedScriptsFactory.LoadImageAndRegister(script.Symbol, script.Image);
             }
             else
             {
@@ -151,8 +152,7 @@ namespace ScriptEngine.HostedScript
             LoadedModule module;
             try
             {
-                var image = compilerSvc.Compile(src);
-                module = _engine.LoadModuleImage(image);
+                module = compilerSvc.Compile(src);
             }
             catch (CompilerException)
             {
@@ -186,6 +186,7 @@ namespace ScriptEngine.HostedScript
             }
         }
 
+        [Obsolete]
         public Process CreateProcess(IHostApplication host, ModuleImage moduleImage, SourceCode src)
         {
             SetGlobalEnvironment(host, src);

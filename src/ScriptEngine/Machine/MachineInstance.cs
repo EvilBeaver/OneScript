@@ -204,35 +204,36 @@ namespace ScriptEngine.Machine
         internal IValue ExecuteMethod(IRunnable sdo, int methodIndex, IValue[] arguments)
         {
             PrepareReentrantMethodExecution(sdo, methodIndex);
-            var method = _module.Methods[methodIndex];
-            var parameters = method.Signature.Params;
+            var methodInfo = (MachineMethodInfo)_module.Methods[methodIndex];
+            var method = methodInfo.GetRuntimeMethod();
+            var parameters = methodInfo.GetBslParameters();
             for (int i = 0; i < parameters.Length; i++)
             {
                 if (i >= arguments.Length)
-                    _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
+                    _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(parameters[i]), parameters[i].Name);
                 else if (arguments[i] is IVariable)
                 {
-                    if (parameters[i].IsByValue)
+                    if (parameters[i].ExplicitByVal)
                     {
                         var value = ((IVariable)arguments[i]).Value;
-                        _currentFrame.Locals[i] = Variable.Create(value, method.Variables[i]);
+                        _currentFrame.Locals[i] = Variable.Create(value, parameters[i].Name);
                     }
                     else
                     {
                         // TODO: Alias ?
                         _currentFrame.Locals[i] =
-                        Variable.CreateReference((IVariable)arguments[i], method.Variables[i].Identifier);
+                        Variable.CreateReference((IVariable)arguments[i], parameters[i].Name);
                     }
                 }
                 else if (arguments[i] == null || arguments[i].IsSkippedArgument())
-                    _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(methodIndex, i), method.Variables[i]);
+                    _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(parameters[i]), parameters[i].Name);
                 else
-                    _currentFrame.Locals[i] = Variable.Create(arguments[i], method.Variables[i]);
+                    _currentFrame.Locals[i] = Variable.Create(arguments[i], parameters[i].Name);
             }
             ExecuteCode();
 
             IValue methodResult = null;
-            if (_module.Methods[methodIndex].Signature.IsFunction)
+            if (method.Signature.IsFunction)
             {
                 methodResult = _operationStack.Pop();
             }
@@ -313,7 +314,7 @@ namespace ScriptEngine.Machine
             try
             {
                 frame = new ExecutionFrame();
-                frame.MethodName = code.ModuleInfo.ModuleName;
+                frame.MethodName = code.Source.Name;
                 frame.Locals = new IVariable[0];
                 frame.InstructionPointer = 0;
                 frame.Module = code;
@@ -369,23 +370,18 @@ namespace ScriptEngine.Machine
         {
             get
             {
-                if (_module.ModuleInfo != null)
-                    return new ScriptInformationContext(_module.ModuleInfo);
+                if (_module.Source != null)
+                    return new ScriptInformationContext(_module.Source);
                 else
                     return null;
             }
         }
 
-        private IValue GetDefaultArgValue(int methodIndex, int paramIndex)
+        private static IValue GetDefaultArgValue(BslParameterInfo parameter)
         {
-            var meth = _module.Methods[methodIndex].Signature;
-            var param = meth.Params[paramIndex];
-            if (!param.IsDefaultValueDefined())
-            {
-                return ValueFactory.Create();
-            }
-
-            return _module.Constants[param.DefaultValueIndex];
+            return parameter.HasDefaultValue
+                ? (IValue)parameter.DefaultValue
+                : ValueFactory.Create();
         }
 
         private void SetModule(LoadedModule module)
@@ -446,17 +442,18 @@ namespace ScriptEngine.Machine
         private void PrepareReentrantMethodExecution(IRunnable sdo, int methodIndex)
         {
             var module = sdo.Module;
-            var methDescr = module.Methods[methodIndex];
+            var methInfo = (MachineMethodInfo)module.Methods[methodIndex];
+            var methDescr = methInfo.GetRuntimeMethod();
             var frame = CreateNewFrame();
             frame.MethodName = methDescr.Signature.Name;
-            frame.Locals = new IVariable[methDescr.Variables.Count];
+            frame.Locals = new IVariable[methDescr.LocalVariables.Length];
             frame.Module = module;
             frame.ModuleScope = CreateModuleScope(sdo);
             frame.ModuleLoadIndex = module.LoadAddress;
             frame.IsReentrantCall = true;
             for (int i = 0; i < frame.Locals.Length; i++)
             {
-                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
+                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.LocalVariables[i]);
             }
 
             frame.InstructionPointer = methDescr.EntryPoint;
@@ -466,20 +463,22 @@ namespace ScriptEngine.Machine
         private void PrepareCodeStatisticsData(LoadedModule _module)
         {
             if (_codeStatCollector == null
-                || _codeStatCollector.IsPrepared(_module.ModuleInfo.Origin))
+                || _codeStatCollector.IsPrepared(_module.Source.Location))
             {
                 return;
             }
             
-            foreach (var method in _module.Methods)
+            foreach (var method in _module.Methods
+                .Cast<MachineMethodInfo>()
+                .Select(x => x.GetRuntimeMethod()))
             {
                 var instructionPointer = method.EntryPoint;
-                while (instructionPointer < _module.Code.Length)
+                while (instructionPointer < _module.Code.Count)
                 {
                     if (_module.Code[instructionPointer].Code == OperationCode.LineNum)
                     {
                         var entry = new CodeStatEntry(
-                            _module.ModuleInfo.Origin,
+                            _module.Source.Location,
                             method.Signature.Name,
                             _module.Code[instructionPointer].Argument
                         );
@@ -494,7 +493,7 @@ namespace ScriptEngine.Machine
                     instructionPointer++;
                 }
             }
-            _codeStatCollector.MarkPrepared(_module.ModuleInfo.Origin);
+            _codeStatCollector.MarkPrepared(_module.Source.Location);
         }
 
         private void ExecuteCode()
@@ -595,7 +594,7 @@ namespace ScriptEngine.Machine
             try
             {
                 while (_currentFrame.InstructionPointer >= 0
-                       && _currentFrame.InstructionPointer < _module.Code.Length)
+                       && _currentFrame.InstructionPointer < _module.Code.Count)
                 {
                     var command = _module.Code[_currentFrame.InstructionPointer];
                     _commands[(int) command.Code](command.Argument);
@@ -625,10 +624,10 @@ namespace ScriptEngine.Machine
         {
             var epi = new ErrorPositionInfo();
             epi.LineNumber = _currentFrame.LineNumber;
-            if (_module.ModuleInfo != null)
+            if (_module.Source != null)
             {
-                epi.ModuleName = _module.ModuleInfo.ModuleName;
-                epi.Code = _module.ModuleInfo.CodeIndexer?.GetCodeLine(epi.LineNumber) ?? "<исходный код недоступен>";
+                epi.ModuleName = _module.Source.Name;
+                epi.Code = _module.Source.GetCodeLine(epi.LineNumber) ?? "<исходный код недоступен>";
             }
             else
             {
@@ -994,7 +993,7 @@ namespace ScriptEngine.Machine
         {
             var methodRef = _module.MethodRefs[arg];
             var scope = _scopes[methodRef.ContextIndex];
-            var methInfo = scope.Methods[methodRef.CodeIndex];
+            var methodSignature = scope.Methods[methodRef.CodeIndex];
 
             var isLocalCall = scope.Instance == this.TopScope.Instance;
             
@@ -1002,7 +1001,7 @@ namespace ScriptEngine.Machine
             IValue[] argValues = new IValue[argCount];
 
             // fact args
-            PrepareCallActualArguments(methInfo.Params, isLocalCall, argValues);
+            PrepareCallActualArguments(methodSignature.Params, isLocalCall, argValues);
 
             bool needsDiscarding;
 
@@ -1016,54 +1015,55 @@ namespace ScriptEngine.Machine
                     // заранее переведем указатель на адрес возврата. В опкоде Return инкремента нет.
                     NextInstruction();
 
-                    var methDescr = _module.RuntimeMethods[sdo.GetMethodDescriptorIndex(methodRef.CodeIndex)];
+                    var methodInfo = (MachineMethodInfo)_module.Methods[sdo.GetMethodDescriptorIndex(methodRef.CodeIndex)];
+                    var methDescr = methodInfo.GetRuntimeMethod();
                     var frame = CreateNewFrame();
                     frame.Module = _module;
                     frame.ModuleScope = TopScope;
-                    frame.MethodName = methInfo.Name;
-                    frame.Locals = new IVariable[methDescr.Variables.Count];
+                    frame.MethodName = methodSignature.Name;
+                    frame.Locals = new IVariable[methDescr.LocalVariables.Length];
                     for (int i = 0; i < frame.Locals.Length; i++)
                     {
                         if (i < argValues.Length)
                         {
-                            var paramDef = methInfo.Params[i];
+                            var paramDef = methodSignature.Params[i];
                             if (argValues[i] is IVariable)
                             {
                                 if (paramDef.IsByValue)
                                 {
                                     var value = ((IVariable)argValues[i]).Value;
-                                    frame.Locals[i] = Variable.Create(value, methDescr.Variables[i]);
+                                    frame.Locals[i] = Variable.Create(value, methDescr.LocalVariables[i]);
                                 }
                                 else
                                 {
                                     // TODO: Alias ?
                                     frame.Locals[i] = Variable.CreateReference((IVariable) argValues[i],
-                                        methDescr.Variables[i].Identifier);
+                                        methDescr.LocalVariables[i]);
                                 }
                             }
                             else if (argValues[i] == null)
                             {
-                                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
+                                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.LocalVariables[i]);
                             }
                             else
                             {
-                                frame.Locals[i] = Variable.Create(argValues[i], methDescr.Variables[i]);
+                                frame.Locals[i] = Variable.Create(argValues[i], methDescr.LocalVariables[i]);
                             }
 
                         }
-                        else if (i < methInfo.Params.Length)
+                        else if (i < methodSignature.Params.Length)
                         {
-                            if (!methInfo.Params[i].IsDefaultValueDefined())
+                            if (!methodSignature.Params[i].IsDefaultValueDefined())
                             {
-                                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
+                                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.LocalVariables[i]);
                             }
                             else
                             {
-                                frame.Locals[i] = Variable.Create(_module.Constants[methInfo.Params[i].DefaultValueIndex], methDescr.Variables[i]);
+                                frame.Locals[i] = Variable.Create(_module.Constants[methodSignature.Params[i].DefaultValueIndex], methDescr.LocalVariables[i]);
                             }
                         }
                         else
-                            frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
+                            frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.LocalVariables[i]);
 
                     }
 
@@ -1074,12 +1074,12 @@ namespace ScriptEngine.Machine
                         //_stopManager.OnFrameEntered(frame);
                     }
 
-                    needsDiscarding = methInfo.IsFunction && !asFunc;
+                    needsDiscarding = methodSignature.IsFunction && !asFunc;
                 }
                 else
                 {
                     needsDiscarding = _currentFrame.DiscardReturnValue;
-                    CallContext(scope.Instance, methodRef.CodeIndex, ref methInfo, argValues, asFunc);
+                    CallContext(scope.Instance, methodRef.CodeIndex, ref methodSignature, argValues, asFunc);
                 }
 
             }
@@ -1089,7 +1089,7 @@ namespace ScriptEngine.Machine
                 // статус вызова текущего frames не должен изменяться.
                 //
                 needsDiscarding = _currentFrame.DiscardReturnValue;
-                CallContext(scope.Instance, methodRef.CodeIndex, ref methInfo, argValues, asFunc);
+                CallContext(scope.Instance, methodRef.CodeIndex, ref methodSignature, argValues, asFunc);
             }
 
             return needsDiscarding;
@@ -1572,7 +1572,7 @@ namespace ScriptEngine.Machine
 
         private void EmitStopEventIfNecessary()
         {
-            if (MachineStopped != null && _stopManager != null && _stopManager.ShouldStopAtThisLine(_module.ModuleInfo.Origin, _currentFrame))
+            if (MachineStopped != null && _stopManager != null && _stopManager.ShouldStopAtThisLine(_module.Source.Location, _currentFrame))
             {
                 CreateFullCallstack();
                 MachineStopped?.Invoke(this, new MachineStoppedEventArgs(_stopManager.LastStopReason));
@@ -1623,14 +1623,14 @@ namespace ScriptEngine.Machine
             PrepareCodeStatisticsData(module);
             
             var frame = new ExecutionFrame();
-            var method = module.Methods[0];
+            var method = ((MachineMethodInfo)module.Methods[0]).GetRuntimeMethod();
             frame.MethodName = method.Signature.Name;
-            frame.Locals = new IVariable[method.Variables.Count];
+            frame.Locals = new IVariable[method.LocalVariables.Length];
             frame.InstructionPointer = 0;
             frame.Module = module;
             for (int i = 0; i < frame.Locals.Length; i++)
             {
-                frame.Locals[i] = Variable.Create(ValueFactory.Create(), method.Variables[i]);
+                frame.Locals[i] = Variable.Create(ValueFactory.Create(), method.LocalVariables[i]);
             }
 
             var mlocals = new Scope();
@@ -2605,9 +2605,9 @@ namespace ScriptEngine.Machine
             ctx.PushScope(new SymbolScope()); // скоуп выражения
 
             var compiler = new AstBasedCompilerService(new CompilerOptions(), ctx);
-            var modImg = compiler.CompileExpression(stringSource);
-            var code = new LoadedModule(modImg);
-            return code;
+            var module = compiler.CompileExpression(stringSource);
+            
+            return module;
         }
 
         private LoadedModule CompileExecutionBatchModule(string execBatch)
@@ -2622,9 +2622,9 @@ namespace ScriptEngine.Machine
             
             var compiler = new AstBasedCompilerService(new CompilerOptions(), ctx);
             ctx.PushScope(new SymbolScope()); // скоуп выражения
-            var modImg = compiler.CompileBatch(stringSource);
-            var code = new LoadedModule(modImg);
-            return code;
+            var module = compiler.CompileBatch(stringSource);
+            
+            return module;
         }
 
         private CompilerContext ExtractCompilerContext()
@@ -2686,7 +2686,7 @@ namespace ScriptEngine.Machine
             {
                 LineNumber = frame.LineNumber,
                 MethodName = frame.MethodName,
-                Source = module.ModuleInfo.Origin,
+                Source = module.Source.Location,
                 FrameObject = frame
             };
         }

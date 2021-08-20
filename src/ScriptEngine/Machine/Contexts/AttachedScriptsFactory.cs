@@ -61,7 +61,7 @@ namespace ScriptEngine.Machine.Contexts
             
             ThrowIfTypeExist(typeName, code);
 
-            LoadAndRegister(typeof(AttachedScriptsFactory), compiler, typeName, code);
+            CompileAndRegister(typeof(AttachedScriptsFactory), compiler, typeName, code);
 
         }
 
@@ -70,7 +70,7 @@ namespace ScriptEngine.Machine.Contexts
             var code = _engine.Loader.FromString(text);
             ThrowIfTypeExist(typeName, code);
             
-            LoadAndRegister(typeof(AttachedScriptsFactory), compiler, typeName, code);
+            CompileAndRegister(typeof(AttachedScriptsFactory), compiler, typeName, code);
         }
 
         public IRuntimeContextInstance LoadFromPath(ICompilerService compiler, string path)
@@ -110,7 +110,7 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private void LoadAndRegister(Type type, ICompilerService compiler, string typeName, SourceCode code)
+        private void CompileAndRegister(Type type, ICompilerService compiler, string typeName, SourceCode code)
         {
             if(_loadedModules.ContainsKey(typeName))
             {
@@ -118,9 +118,7 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             var module = CompileModuleFromSource(compiler, code, null);
-            var loaded = new LoadedModule(module);
-
-            _loadedModules.Add(typeName, loaded);
+            _loadedModules.Add(typeName, module);
             using(var md5Hash = MD5.Create())
             {
                 var hash = GetMd5Hash(md5Hash, code.GetSourceCode());
@@ -131,12 +129,29 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        public void LoadAndRegister(string typeName, ModuleImage moduleImage)
+        public void RegisterTypeModule(string typeName, LoadedModule module)
         {
             if (_loadedModules.ContainsKey(typeName))
             {
                 var alreadyLoadedSrc = ((IExecutableModule)_loadedModules[typeName]).Source.Location;
-                var currentSrc = moduleImage.Source.Location;
+                var currentSrc = module.Source.Location;
+
+                if(alreadyLoadedSrc != currentSrc)
+                    throw new RuntimeException("Type «" + typeName + "» already registered");
+
+                return;
+            }
+            
+            _loadedModules.Add(typeName, module);
+            _engine.TypeManager.RegisterType(typeName, default, typeof(AttachedScriptsFactory));
+        }
+        
+        public void LoadImageAndRegister(string typeName, ModuleImage module)
+        {
+            if (_loadedModules.ContainsKey(typeName))
+            {
+                var alreadyLoadedSrc = ((IExecutableModule)_loadedModules[typeName]).Source.Location;
+                var currentSrc = module.Source.Location;
 
                 if(alreadyLoadedSrc != currentSrc)
                     throw new RuntimeException("Type «" + typeName + "» already registered");
@@ -144,21 +159,21 @@ namespace ScriptEngine.Machine.Contexts
                 return;
             }
 
-            var loadedModule = new LoadedModule(moduleImage);
-            _loadedModules.Add(typeName, loadedModule);
-            
-            _engine.TypeManager.RegisterType(typeName, default, typeof(AttachedScriptsFactory));
+            throw new NotImplementedException("Deserialization of module not implemented");
+            // var loadedModule = new LoadedModule(module);
+            // _loadedModules.Add(typeName, loadedModule);
+            //
+            // _engine.TypeManager.RegisterType(typeName, default, typeof(AttachedScriptsFactory));
 
         }
 
         private IRuntimeContextInstance LoadAndCreate(ICompilerService compiler, SourceCode code, ExternalContextData externalContext)
         {
             var module = CompileModuleFromSource(compiler, code, externalContext);
-            var loadedHandle = new LoadedModule(module);
-            return _engine.NewObject(loadedHandle, externalContext);
+            return _engine.NewObject(module, externalContext);
         }
 
-        public ModuleImage CompileModuleFromSource(ICompilerService compiler, SourceCode code, ExternalContextData externalContext)
+        public LoadedModule CompileModuleFromSource(ICompilerService compiler, SourceCode code, ExternalContextData externalContext)
         {
             UserScriptContextInstance.PrepareCompilation(compiler);
                 

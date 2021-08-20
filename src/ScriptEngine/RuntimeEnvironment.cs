@@ -122,8 +122,7 @@ namespace ScriptEngine
             int i = 0;
             foreach (var module in library.Modules)
             {
-                var loaded = runtime.LoadModuleImage(module.Image);
-                var instance = runtime.CreateUninitializedSDO(loaded);
+                var instance = runtime.CreateUninitializedSDO(module.Module);
                 
                 var propId = _injectedProperties.FindProperty(module.Symbol);
                 _injectedProperties.SetPropValue(propId, instance);

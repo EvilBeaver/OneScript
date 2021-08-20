@@ -25,10 +25,10 @@ namespace ScriptEngine
         
         void DefinePreprocessorValue(string name);
         
-        ExecutableModule Compile(SourceCode source);
+        LoadedModule Compile(SourceCode source);
         
-        ExecutableModule CompileExpression(SourceCode source);
+        LoadedModule CompileExpression(SourceCode source);
         
-        ExecutableModule CompileBatch(SourceCode source);
+        LoadedModule CompileBatch(SourceCode source);
     }
 }

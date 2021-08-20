@@ -290,7 +290,7 @@ namespace ScriptEngine.Machine.Contexts
         
         public override int GetMethodsCount()
         {
-            return GetOwnMethodCount() + _module.Methods.Length;
+            return GetOwnMethodCount() + _module.Methods.Count;
         }
 
         protected override string ConvertToString()

@@ -69,10 +69,10 @@ namespace OneScript.Core.Tests
 
             var source = engine.Loader.FromString(code);
             engine.Initialize();
-            var image = engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, context);
+            var module = engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, context);
             
             UserScriptContextInstance.PrepareCompilation(compiler);
-            var instance = engine.NewObject(engine.LoadModuleImage(image), context);
+            var instance = engine.NewObject(module, context);
             return instance;
         }
     }

@@ -25,7 +25,7 @@ namespace ScriptEngine.Compiler
 {
     public partial class AstBasedCodeGenerator : BslSyntaxWalker
     {
-        private readonly ExecutableModule _module;
+        private readonly LoadedModule _module;
         private readonly ICompilerContext _ctx;
         private readonly List<CompilerException> _errors = new List<CompilerException>();
         private SourceCode _sourceCode;
@@ -37,7 +37,7 @@ namespace ScriptEngine.Compiler
         public AstBasedCodeGenerator(ICompilerContext context)
         {
             _ctx = context;
-            _module = new ExecutableModule();
+            _module = new LoadedModule();
         }
 
         public bool ThrowErrors { get; set; }
@@ -46,7 +46,7 @@ namespace ScriptEngine.Compiler
 
         public IReadOnlyList<CompilerException> Errors => _errors;
 
-        protected ExecutableModule Module => _module;
+        protected LoadedModule Module => _module;
 
         protected ICompilerContext CompilerContext => _ctx;
         
@@ -72,7 +72,7 @@ namespace ScriptEngine.Compiler
             _module.LoadAddress = _ctx.TopIndex();
             _module.Source = _sourceCode;
             
-            return _module.BuildExecutable();
+            return _module;
         }
 
         protected override void VisitModuleAnnotation(AnnotationNode node)
@@ -206,45 +206,42 @@ namespace ScriptEngine.Compiler
 
             if (entry != _module.Code.Count)
             {
-                var descriptor = new MethodDescriptor
-                {
-                    EntryPoint = entry,
-                    MethodInfo = BslMethodBuilder
-                        .Create()
-                        .Name(ModuleImage.BODY_METHOD_NAME)
-                        .DeclaringType(_module.ClassType)
-                        .Build()
-                };
-                FillVariablesFrame(ref descriptor, localCtx);
-
+                var methodInfo = NewMethod()
+                    .Name(ModuleImage.BODY_METHOD_NAME)
+                    .DeclaringType(_module.ClassType)
+                    .Build();
+                
+                methodInfo.SetRuntimeParameters(entry, GetVariableNames(localCtx));
+                
                 var entryRefNumber = _module.MethodRefs.Count;
-                var bodyBinding = new SymbolBinding()
+                var bodyBinding = new SymbolBinding
                 {
                     ContextIndex = topIdx,
                     CodeIndex = _module.Methods.Count
                 };
                 
-                _module.RuntimeMethods.Add(descriptor);
-                _module.Methods.Add(descriptor.MethodInfo);
+                _module.Methods.Add(methodInfo);
                 _module.MethodRefs.Add(bodyBinding);
                 _module.EntryMethodIndex = entryRefNumber;
             }
         }
 
-        private static void FillVariablesFrame(ref MethodDescriptor descriptor, SymbolScope localCtx)
+        private static string[] GetVariableNames(SymbolScope localCtx)
         {
-            descriptor.Variables = new VariablesFrame();
+            var names = new string[localCtx.VariableCount];
 
             for (int i = 0; i < localCtx.VariableCount; i++)
             {
-                descriptor.Variables.Add(localCtx.GetVariable(i));
+                names[i] = localCtx.GetVariable(i).Identifier;
             }
+
+            return names;
         }
 
         protected override void VisitMethod(MethodNode methodNode)
         {
             var signature = methodNode.Signature;
-            var methodBuilder = BslMethodBuilder.Create();
+            var methodBuilder = NewMethod();
 
             methodBuilder.Name(signature.MethodName)
                 .ReturnType(signature.IsFunction ? typeof(BslValue) : typeof(void))
@@ -283,16 +280,12 @@ namespace ScriptEngine.Compiler
             }
 
             var methodInfo = methodBuilder.Build();
+            methodInfo.SetRuntimeParameters(entryPoint, GetVariableNames(methodCtx));
             
-            var descriptor = new MethodDescriptor();
-            descriptor.EntryPoint = entryPoint;
-            descriptor.MethodInfo = methodInfo;
-            FillVariablesFrame(ref descriptor, methodCtx);
-
             SymbolBinding binding;
             try
             {
-                binding = _ctx.DefineMethod(descriptor.Signature);
+                binding = _ctx.DefineMethod(methodInfo.GetRuntimeMethod().Signature);
             }
             catch (CompilerException)
             {
@@ -302,8 +295,7 @@ namespace ScriptEngine.Compiler
                 binding = default;
             }
             _module.MethodRefs.Add(binding);
-            _module.RuntimeMethods.Add(descriptor);
-            _module.Methods.Add(descriptor.MethodInfo);
+            _module.Methods.Add(methodInfo);
         }
 
         protected override void VisitMethodBody(MethodNode methodNode)
@@ -1092,6 +1084,10 @@ namespace ScriptEngine.Compiler
                     a.Name,
                     GetAnnotationParameters(a)));
         }
+
+        private static BslMethodBuilder<MachineMethodInfo> NewMethod() =>
+            new BslMethodInfoFactory<MachineMethodInfo>(() => new MachineMethodInfo())
+                .NewMethod();
         
         private static ConstDefinition CreateConstDefinition(in Lexem lex)
         {

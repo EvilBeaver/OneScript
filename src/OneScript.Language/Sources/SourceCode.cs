@@ -38,10 +38,7 @@ namespace OneScript.Sources
 
         public string GetCodeLine(int index)
         {
-            if (_indexer == null)
-                throw new InvalidOperationException("Source is not indexed yet");
-
-            return _indexer.GetCodeLine(index);
+            return _indexer?.GetCodeLine(index);
         }
     }
 }

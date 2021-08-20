@@ -29,7 +29,7 @@ namespace ScriptEngine.Machine
 
         public override string ToString()
         {
-            return $"{MethodName}: {LineNumber} ({Module.ModuleInfo.ModuleName})";
+            return $"{MethodName}: {LineNumber} ({Module.Source.Name})";
         }
     }
 
