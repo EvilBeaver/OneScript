@@ -184,16 +184,16 @@ namespace ScriptEngine.HostedScript.Library
 
         public void OnAttach(MachineInstance machine, 
             out IVariable[] variables, 
-            out MethodSignature[] methods)
+            out BslMethodInfo[] methods)
         {
             if (_state == null)
                 InitContextVariables();
 
             variables = _state;
-            methods = new MethodSignature[_methods.Count];
+            methods = new BslMethodInfo[_methods.Count];
             for (int i = 0; i < _methods.Count; i++)
             {
-                methods[i] = _methods.GetMethodSignature(i);
+                methods[i] = _methods.GetRuntimeMethod(i);
             }
         }
 

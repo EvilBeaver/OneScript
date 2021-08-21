@@ -20,7 +20,7 @@ namespace ScriptEngine.Machine.Contexts
         private IVariable[] _state;
         private int VARIABLE_COUNT;
         private int METHOD_COUNT;
-        private MethodSignature[] _attachableMethods;
+        private BslMethodInfo[] _attachableMethods;
         private readonly Dictionary<string, int> _methodSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _allPropertiesSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -230,7 +230,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext Members
 
-        public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodSignature[] methods)
+        public void OnAttach(MachineInstance machine, out IVariable[] variables, out BslMethodInfo[] methods)
         {
             UpdateState();
 
@@ -238,13 +238,13 @@ namespace ScriptEngine.Machine.Contexts
             methods = AttachMethods();
         }
 
-        private MethodSignature[] AttachMethods()
+        private BslMethodInfo[] AttachMethods()
         {
             if (_attachableMethods != null)
                 return _attachableMethods;
 
             int totalMethods = METHOD_COUNT + _module.Methods.Count;
-            _attachableMethods = new MethodSignature[totalMethods];
+            _attachableMethods = new BslMethodInfo[totalMethods];
 
             var moduleMethods = _module.Methods;
 
@@ -252,11 +252,11 @@ namespace ScriptEngine.Machine.Contexts
             {
                 if (MethodDefinedInScript(i))
                 {
-                    _attachableMethods[i] = moduleMethods[i - METHOD_COUNT].MakeSignature();
+                    _attachableMethods[i] = moduleMethods[i - METHOD_COUNT];
                 }
                 else
                 {
-                    _attachableMethods[i] = GetOwnMethod(i).MakeSignature();
+                    _attachableMethods[i] = GetOwnMethod(i);
                 }
             }
 

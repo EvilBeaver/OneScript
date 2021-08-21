@@ -95,10 +95,10 @@ namespace oscript
 			return exitCode;
 		}
 
-		public void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodSignature[] methods)
+		public void OnAttach(MachineInstance machine, out IVariable[] variables, out BslMethodInfo[] methods)
 		{
-			variables = new IVariable[0];
-			methods = this.GetMethods().Select(x=>x.MakeSignature()).ToArray();
+			variables = Array.Empty<IVariable>();
+			methods = this.GetMethods().ToArray();
 		}
 
 		#region CGIHost

@@ -115,7 +115,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext members
 
-        public virtual void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodSignature[] methods)
+        public virtual void OnAttach(MachineInstance machine, out IVariable[] variables, out BslMethodInfo[] methods)
         {
             variables = new IVariable[GetPropCount()];
             for (int i = 0; i < variables.Length; i++)
@@ -123,9 +123,7 @@ namespace ScriptEngine.Machine.Contexts
                 variables[i] = Variable.CreateContextPropertyReference(this, i, GetPropName(i));
             }
             
-            methods = this.GetMethods()
-                .Select(x => x.MakeSignature())
-                .ToArray();
+            methods = this.GetMethods().ToArray();
         }
         
         public virtual int GetMethodsCount()

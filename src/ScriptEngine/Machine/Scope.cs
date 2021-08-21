@@ -5,12 +5,14 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Contexts;
+
 namespace ScriptEngine.Machine
 {
     struct Scope
     {
         public IVariable[] Variables;
-        public MethodSignature[] Methods;
+        public BslMethodInfo[] Methods;
         public IRuntimeContextInstance Instance;
     }
 

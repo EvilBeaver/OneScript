@@ -70,7 +70,7 @@ namespace ScriptEngine
         
         public string ModuleName()
         {
-            return Image.ModuleInfo.ModuleName;
+            return Image.Source.Name;
         }
     }
 

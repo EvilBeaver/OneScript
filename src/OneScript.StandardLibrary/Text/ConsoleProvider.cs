@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Reflection;
+using OneScript.Contexts;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -22,10 +23,10 @@ namespace OneScript.StandardLibrary.Text
         {
         }
 
-        public override void OnAttach(MachineInstance machine, out IVariable[] variables, out MethodSignature[] methods)
+        public override void OnAttach(MachineInstance machine, out IVariable[] variables, out BslMethodInfo[] methods)
         {
             variables = new [] {Variable.CreateContextPropertyReference(this, 0, GetPropName(0))};
-            methods = new MethodSignature[0];
+            methods = Array.Empty<BslMethodInfo>();
         }
 
         [ContextProperty("Консоль", "Console")]
