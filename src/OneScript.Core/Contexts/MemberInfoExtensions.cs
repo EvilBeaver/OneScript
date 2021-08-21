@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace OneScript.Contexts
 {
@@ -19,6 +20,7 @@ namespace OneScript.Contexts
             return parameter.ParameterType.IsByRef || parameter.IsDefined(typeof(ByRefAttribute)); 
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsFunction(this MethodInfo method)
         {
             return method.ReturnType != typeof(void);

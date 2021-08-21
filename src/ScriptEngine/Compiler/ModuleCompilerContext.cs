@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Contexts;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
@@ -25,7 +26,7 @@ namespace ScriptEngine.Compiler
         
         #region ICompilerContext Members
 
-        public SymbolBinding DefineMethod(MethodSignature method)
+        public SymbolBinding DefineMethod(BslMethodInfo method)
         {
             var sb = _moduleCtx.DefineMethod(method);
             ShiftIndex(ref sb);

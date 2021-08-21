@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
@@ -50,7 +51,7 @@ namespace ScriptEngine
             }
         }
 
-        public int DefineMethod(MethodSignature methodSignature)
+        public int DefineMethod(BslMethodInfo methodSignature)
         {
             RegisterScopeIfNeeded();
 
@@ -62,7 +63,7 @@ namespace ScriptEngine
             _preprocessorVariables.Add(name);
         }
 
-        public LoadedModule Compile(SourceCode source)
+        public LoadedModule Compile(SourceCode source, Type classType = null)
         {
             try
             {

@@ -6,24 +6,36 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using OneScript.Contexts;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine
 {
     public static class BuiltinFunctions
     {
-        static readonly Dictionary<OperationCode, ParameterDefinition[]> _paramInfoCache = new Dictionary<OperationCode,ParameterDefinition[]>();
+        static readonly Dictionary<OperationCode, ParameterInfo[]> _paramInfoCache = new Dictionary<OperationCode,ParameterInfo[]>();
 
-        private static readonly ParameterDefinition MANDATORY_BYVAL = new ParameterDefinition { IsByValue = true };
-        private static readonly ParameterDefinition OPTIONAL_BYVAL = new ParameterDefinition { IsByValue = true, HasDefaultValue = true };
+        private static readonly ParameterInfo MANDATORY_BYVAL;
+        private static readonly ParameterInfo OPTIONAL_BYVAL;
         
         private const int BUILTIN_OPCODES_INDEX = (int)OperationCode.Eval;
 
         static BuiltinFunctions()
         {
+            MANDATORY_BYVAL = new BslParameterBuilder()
+                .ByValue(true)
+                .Build();
+
+            OPTIONAL_BYVAL = new BslParameterBuilder()
+                .ByValue(true)
+                .DefaultValue(BslUndefinedValue.Instance)
+                .Build();
+            
             InitParametersInfo();
         }
 
-        public static ParameterDefinition[] ParametersInfo(OperationCode funcOpcode)
+        public static ParameterInfo[] ParametersInfo(OperationCode funcOpcode)
         {
             return _paramInfoCache[funcOpcode];
         }
@@ -120,7 +132,7 @@ namespace ScriptEngine.Machine
             AddFunc(OperationCode.ModuleInfo);
         }
 
-        private static void AddFunc(OperationCode opCode, params ParameterDefinition[] parameters)
+        private static void AddFunc(OperationCode opCode, params ParameterInfo[] parameters)
         {
             _paramInfoCache[opCode] = parameters;
         }

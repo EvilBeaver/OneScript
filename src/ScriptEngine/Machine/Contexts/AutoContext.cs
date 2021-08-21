@@ -100,12 +100,15 @@ namespace ScriptEngine.Machine.Contexts
 
         private void CheckIfCallIsPossible(int methodNumber, IValue[] arguments)
         {
-            var methodInfo = _methods.GetMethodSignature(methodNumber);
+            var methodInfo = _methods.GetRuntimeMethod(methodNumber) as ContextMethodInfo;
+            if(methodInfo == null)
+                return;
+
             if (!methodInfo.IsDeprecated)
             {
                 return;
             }
-            if (methodInfo.ThrowOnUseDeprecated)
+            if (methodInfo.IsForbiddenToUse)
             {
                 throw RuntimeException.DeprecatedMethodCall(methodInfo.Name);
             }

@@ -137,7 +137,7 @@ namespace ScriptEngine.Machine.Contexts
 
             for (int i = 0; i < _ownMethods.Count; i++)
             {
-                compiler.DefineMethod(_ownMethods.GetMethodSignature(i));
+                compiler.DefineMethod(_ownMethods.GetRuntimeMethod(i));
             }
         }
         

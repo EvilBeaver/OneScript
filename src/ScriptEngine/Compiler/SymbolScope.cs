@@ -18,16 +18,16 @@ namespace ScriptEngine.Compiler
         private readonly IndexedNameValueCollection<VariableInfo> _variables =
             new IndexedNameValueCollection<VariableInfo>();
 
-        private readonly IndexedNameValueCollection<MethodSignature> _methods =
-            new IndexedNameValueCollection<MethodSignature>();
+        private readonly IndexedNameValueCollection<BslMethodInfo> _methods =
+            new IndexedNameValueCollection<BslMethodInfo>();
 
-        public MethodSignature GetMethod(string name)
+        public BslMethodInfo GetMethod(string name)
         {
             var num = GetMethodNumber(name);
             return _methods[num];
         }
 
-        public MethodSignature GetMethod(int number)
+        public BslMethodInfo GetMethod(int number)
         {
             return _methods[number];
         }
@@ -101,7 +101,7 @@ namespace ScriptEngine.Compiler
             return newIdx;
         }
         
-        public int DefineMethod(MethodSignature method)
+        public int DefineMethod(BslMethodInfo method)
         {
             if (!IsMethodDefined(method.Name))
             {

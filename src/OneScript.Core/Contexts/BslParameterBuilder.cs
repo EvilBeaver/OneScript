@@ -19,6 +19,11 @@ namespace OneScript.Contexts
         {
             _parameter = info;
         }
+        
+        public BslParameterBuilder()
+        {
+            _parameter = new BslParameterInfo();
+        }
 
         public BslParameterBuilder Name(string name)
         {
@@ -56,7 +61,7 @@ namespace OneScript.Contexts
             return this;
         }
         
-        internal BslParameterInfo Build()
+        public BslParameterInfo Build()
         {
             return _parameter;
         }

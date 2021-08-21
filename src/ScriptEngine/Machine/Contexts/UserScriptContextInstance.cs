@@ -201,7 +201,7 @@ namespace ScriptEngine.Machine.Contexts
         public static void PrepareCompilation(ICompilerService compiler)
         {
             RegisterSymbols(compiler);
-            GetOwnMethodsDefinition().ForEach(x => compiler.DefineMethod(x.MakeSignature()));
+            GetOwnMethodsDefinition().ForEach(x => compiler.DefineMethod(x));
         }
         
         private static BslMethodInfo[] GetOwnMethodsDefinition()

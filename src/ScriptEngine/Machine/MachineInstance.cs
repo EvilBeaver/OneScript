@@ -233,7 +233,7 @@ namespace ScriptEngine.Machine
             ExecuteCode();
 
             IValue methodResult = null;
-            if (method.Signature.IsFunction)
+            if (methodInfo.IsFunction())
             {
                 methodResult = _operationStack.Pop();
             }
@@ -445,7 +445,7 @@ namespace ScriptEngine.Machine
             var methInfo = (MachineMethodInfo)module.Methods[methodIndex];
             var methDescr = methInfo.GetRuntimeMethod();
             var frame = CreateNewFrame();
-            frame.MethodName = methDescr.Signature.Name;
+            frame.MethodName = methInfo.Name;
             frame.Locals = new IVariable[methDescr.LocalVariables.Length];
             frame.Module = module;
             frame.ModuleScope = CreateModuleScope(sdo);
@@ -469,17 +469,16 @@ namespace ScriptEngine.Machine
             }
             
             foreach (var method in _module.Methods
-                .Cast<MachineMethodInfo>()
-                .Select(x => x.GetRuntimeMethod()))
+                .Cast<MachineMethodInfo>())
             {
-                var instructionPointer = method.EntryPoint;
+                var instructionPointer = method.GetRuntimeMethod().EntryPoint;
                 while (instructionPointer < _module.Code.Count)
                 {
                     if (_module.Code[instructionPointer].Code == OperationCode.LineNum)
                     {
                         var entry = new CodeStatEntry(
                             _module.Source.Location,
-                            method.Signature.Name,
+                            method.Name,
                             _module.Code[instructionPointer].Argument
                         );
                         _codeStatCollector.MarkEntryReached(entry, count: 0);
@@ -1584,8 +1583,9 @@ namespace ScriptEngine.Machine
             PrepareCodeStatisticsData(module);
             
             var frame = new ExecutionFrame();
-            var method = ((MachineMethodInfo)module.Methods[0]).GetRuntimeMethod();
-            frame.MethodName = method.Signature.Name;
+            var mi = (MachineMethodInfo)module.Methods[0];
+            var method = mi.GetRuntimeMethod();
+            frame.MethodName = mi.Name;
             frame.Locals = new IVariable[method.LocalVariables.Length];
             frame.InstructionPointer = 0;
             frame.Module = module;
@@ -2596,7 +2596,7 @@ namespace ScriptEngine.Machine
                 var symbolScope = new SymbolScope();
                 foreach (var methodInfo in scope.Methods)
                 {
-                    symbolScope.DefineMethod(methodInfo.MakeSignature());
+                    symbolScope.DefineMethod(methodInfo);
                 }
                 foreach (var variable in scope.Variables)
                 {

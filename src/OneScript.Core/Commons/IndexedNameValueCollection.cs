@@ -37,7 +37,10 @@ namespace OneScript.Commons
         {
             var index = _values.Count;
             Add(item, name);
-            AddName(index, alias);
+            
+            if(!string.IsNullOrEmpty(alias))
+                AddName(index, alias);
+            
             return index;
         }
 

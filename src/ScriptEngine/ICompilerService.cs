@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Contexts;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 using OneScript.Sources;
@@ -21,11 +22,11 @@ namespace ScriptEngine
         
         int DefineVariable(string name, string alias, SymbolType type);
         
-        int DefineMethod(MethodSignature methodSignature);
+        int DefineMethod(BslMethodInfo methodSignature);
         
         void DefinePreprocessorValue(string name);
         
-        LoadedModule Compile(SourceCode source);
+        LoadedModule Compile(SourceCode source, Type classType = null);
         
         LoadedModule CompileExpression(SourceCode source);
         

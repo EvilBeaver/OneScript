@@ -5,13 +5,14 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Contexts;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
     public interface ICompilerContext
     {
-        SymbolBinding DefineMethod(ScriptEngine.Machine.MethodSignature method);
+        SymbolBinding DefineMethod(BslMethodInfo method);
         SymbolBinding DefineProperty(string name, string alias = null);
         SymbolBinding DefineVariable(string name, string alias = null);
         SymbolBinding GetMethod(string name);

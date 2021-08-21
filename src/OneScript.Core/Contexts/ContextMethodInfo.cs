@@ -46,6 +46,10 @@ namespace OneScript.Contexts
 
         public override ParameterInfo ReturnParameter => _realMethod.ReturnParameter;
 
+        public bool IsDeprecated => _scriptMark.IsDeprecated;
+
+        public bool IsForbiddenToUse => _scriptMark.ThrowOnUse;
+        
         public override object[] GetCustomAttributes(bool inherit)
         {
             return _realMethod.GetCustomAttributes(inherit);

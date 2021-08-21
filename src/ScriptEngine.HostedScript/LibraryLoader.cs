@@ -62,11 +62,11 @@ namespace ScriptEngine.HostedScript
             
             for (int i = 0; i < _methods.Count; i++)
             {
-                var mi = _methods.GetMethodSignature(i);
+                var mi = _methods.GetRuntimeMethod(i);
                 compiler.DefineMethod(mi);
             }
 
-            var loadedModule = compiler.Compile(code);
+            var loadedModule = compiler.Compile(code, typeof(LibraryLoader));
 
             return new LibraryLoader(loadedModule, engine.Environment, engine);
 

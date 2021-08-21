@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using OneScript.Contexts;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
@@ -158,7 +159,7 @@ namespace ScriptEngine.Compiler
             return _scopeStack.IndexOf(scope);
         }
 
-        public SymbolBinding DefineMethod(MethodSignature method)
+        public SymbolBinding DefineMethod(BslMethodInfo method)
         {
             if (_scopeStack.Count > 0)
             {

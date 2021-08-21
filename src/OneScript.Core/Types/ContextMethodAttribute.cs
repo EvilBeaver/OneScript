@@ -54,7 +54,5 @@ namespace OneScript.Types
         public bool IsDeprecated { get; set; }
 
         public bool ThrowOnUse { get; set; }
-
-        public bool IsFunction { get; set; }
     }
 }

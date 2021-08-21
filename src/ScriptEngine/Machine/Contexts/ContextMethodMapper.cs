@@ -58,12 +58,6 @@ namespace ScriptEngine.Machine.Contexts
             return _methodPtrs[number].Method;
         }
 
-        public MethodSignature GetMethodSignature(int number)
-        {
-            Init();
-            return _methodPtrs[number].MethodSignature;
-        }
-
         public BslMethodInfo GetRuntimeMethod(int number)
         {
             Init();

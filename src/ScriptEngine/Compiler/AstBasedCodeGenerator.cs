@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using OneScript.Commons;
 using OneScript.Contexts;
@@ -130,7 +131,7 @@ namespace ScriptEngine.Compiler
 
                     var methInfo = scope.GetMethod(methN.CodeIndex);
                     Debug.Assert(StringComparer.OrdinalIgnoreCase.Compare(methInfo.Name, item.identifier) == 0);
-                    if (item.asFunction && !methInfo.IsFunction)
+                    if (item.asFunction && !methInfo.IsFunction())
                     {
                         AddError(
                             CompilerException.UseProcAsFunction(),
@@ -140,7 +141,7 @@ namespace ScriptEngine.Compiler
 
                     try
                     {
-                        CheckFactArguments(methInfo.Params, item.factArguments);
+                        CheckFactArguments(methInfo.GetParameters(), item.factArguments);
                     }
                     catch (CompilerException exc)
                     {
@@ -288,7 +289,7 @@ namespace ScriptEngine.Compiler
             SymbolBinding binding;
             try
             {
-                binding = _ctx.DefineMethod(methodInfo.GetRuntimeMethod().Signature);
+                binding = _ctx.DefineMethod(methodInfo);
             }
             catch (CompilerException)
             {
@@ -631,7 +632,7 @@ namespace ScriptEngine.Compiler
             AddCommand(funcId, argsPassed);
         }
 
-        private void CheckFactArguments(ParameterDefinition[] parameters, BslSyntaxNode argList)
+        private void CheckFactArguments(ParameterInfo[] parameters, BslSyntaxNode argList)
         {
             var argsPassed = argList.Children.Count;
             if (argsPassed > parameters.Length)
@@ -646,9 +647,9 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private void CheckFactArguments(MethodSignature method, BslSyntaxNode argList)
+        private void CheckFactArguments(BslMethodInfo method, BslSyntaxNode argList)
         {
-            CheckFactArguments(method.Params, argList);
+            CheckFactArguments(method.GetParameters(), argList);
         }
         
         protected override void VisitGlobalProcedureCall(CallNode node)
@@ -745,7 +746,7 @@ namespace ScriptEngine.Compiler
                 if (!scope.IsDynamicScope)
                 {
                     var methInfo = scope.GetMethod(methBinding.CodeIndex);
-                    if (asFunction && !methInfo.IsFunction)
+                    if (asFunction && !methInfo.IsFunction())
                     {
                         AddError(CompilerException.UseProcAsFunction(), identifierNode.Location);
                         return;
