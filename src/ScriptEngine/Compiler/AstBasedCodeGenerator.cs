@@ -246,6 +246,7 @@ namespace ScriptEngine.Compiler
             methodBuilder.Name(signature.MethodName)
                 .ReturnType(signature.IsFunction ? typeof(BslValue) : typeof(void))
                 .IsExported(signature.IsExported)
+                .SetDispatchingIndex(_ctx.GetScope(_ctx.TopIndex()).MethodCount)
                 .SetAnnotations(GetAnnotationAttributes(methodNode));
             
             var methodCtx = new SymbolScope();
@@ -262,7 +263,9 @@ namespace ScriptEngine.Compiler
                     var constDef = CreateConstDefinition(paramNode.DefaultValue);
                     var defValueIndex = GetConstNumber(constDef);
                     
-                    parameter.DefaultValue(_module.Constants[defValueIndex]);
+                    parameter
+                        .DefaultValue(_module.Constants[defValueIndex])
+                        .CompileTimeBslConstant(defValueIndex);
                 }
                 
                 methodCtx.DefineVariable(paramNode.Name);

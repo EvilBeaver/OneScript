@@ -26,10 +26,10 @@ namespace ScriptEngine.Machine
         }
 
         public Type ClassType { get; }
-        
-        public int LoadAddress { get; set; }
-        
-        public int EntryMethodIndex { get; set; }
+
+        public int LoadAddress { get; set; } = -1;
+
+        public int EntryMethodIndex { get; set; } = -1;
 
         public List<BslPrimitiveValue> Constants { get; } = new List<BslPrimitiveValue>();
         
@@ -45,10 +45,6 @@ namespace ScriptEngine.Machine
 
         public IList<BslMethodInfo> Methods { get; } = new List<BslMethodInfo>();
 
-        internal List<MethodDescriptor> RuntimeMethods { get; } = new List<MethodDescriptor>();
-
-        //internal IList<MachineBslMethodInfo> RuntimeMethods { get; } = new List<MachineBslMethodInfo>();
-        
         public IList<Command> Code { get; } = new List<Command>(512);
 
         public SourceCode Source { get; set; }

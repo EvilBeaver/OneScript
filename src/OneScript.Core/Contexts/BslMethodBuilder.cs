@@ -81,6 +81,12 @@ namespace OneScript.Contexts
             return this;
         }
         
+        public BslMethodBuilder<T> SetDispatchingIndex(int dispId)
+        {
+            _member.SetDispatchIndex(dispId);
+            return this;
+        }
+        
         public BslParameterBuilder NewParameter()
         {
             var parameter = _parameterFactory();

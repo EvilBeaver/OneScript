@@ -45,7 +45,16 @@ namespace OneScript.Contexts
 
         public override object Invoke(BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            if (parameters.Length > 1)
+            {
+                if (parameters[0] is TypeActivationContext activationContext)
+                {
+                    return _implementation(activationContext, parameters.Skip(1).Cast<BslValue>().ToArray());
+                }
+            }
+
+            var context = new TypeActivationContext();
+            return _implementation(context, parameters.Cast<BslValue>().ToArray());
         }
 
         void IBuildableMember.SetDeclaringType(Type type)

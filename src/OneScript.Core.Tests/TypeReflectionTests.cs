@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Reflection;
 using OneScript.Contexts;
+using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine.Contexts;
@@ -43,7 +44,7 @@ namespace OneScript.Core.Tests
 
             var reflected = CreateDummyType(script);
             Assert.Equal("Dummy", reflected.Name);
-            Assert.Equal("ScriptEngine.Machine.Reflection.dyn.Dummy", reflected.FullName);
+            Assert.Equal("OneScript.Contexts.dyn.Dummy", reflected.FullName);
 
         }
 
@@ -69,7 +70,7 @@ namespace OneScript.Core.Tests
             var props = reflected.GetFields(BindingFlags.NonPublic);
             Assert.Single(props);
             Assert.Equal("А", props[0].Name);
-            Assert.Equal(typeof(IValue), props[0].FieldType);
+            Assert.Equal(typeof(BslValue), props[0].FieldType);
         }
 
         [Fact]
@@ -82,10 +83,10 @@ namespace OneScript.Core.Tests
             var props = reflected.GetFields(BindingFlags.Public);
             Assert.Single(props);
             Assert.Equal("Б", props[0].Name);
-            Assert.Equal(typeof(IValue), props[0].FieldType);
+            Assert.Equal(typeof(BslValue), props[0].FieldType);
 
         }
-
+  
         [Fact]
         public void CheckDefaultGetMethodsArePublic()
         {

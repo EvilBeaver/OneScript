@@ -11,7 +11,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    class CompilerContext : ICompilerContext
+    public class CompilerContext : ICompilerContext
     {
         readonly List<SymbolScope> _scopeStack = new List<SymbolScope>();
 

@@ -40,5 +40,7 @@ namespace OneScript.Sources
         {
             return _indexer?.GetCodeLine(index);
         }
+
+        public override string ToString() => Name ?? Location;
     }
 }

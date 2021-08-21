@@ -63,28 +63,28 @@ namespace ScriptEngine.Machine.Contexts
             for (int i = 0; i < stateSize; i++)
             {
                 if (i < VARIABLE_COUNT)
-                    _state[i] = Variable.CreateContextPropertyReference(this, i, GetOwnPropName(i));
+                {
+                    var name = GetOwnPropName(i);
+                    _state[i] = Variable.CreateContextPropertyReference(this, i, name);
+                    _allPropertiesSearchCache.Add(name, i);
+                }
                 else
-                    _state[i] = Variable.Create(ValueFactory.Create(), _module.Fields[i-VARIABLE_COUNT].Name);
+                {
+                    var name = _module.Fields[i - VARIABLE_COUNT].Name;
+                    _state[i] = Variable.Create(ValueFactory.Create(), name);
+                    _allPropertiesSearchCache.Add(name, i);
+                }
             }
 
-            for (var i = 0; i < _module.Fields.Count; i++)
+            foreach (var prop in _module.Properties.Cast<BslScriptPropertyInfo>())
             {
-                var variable = _module.Fields[i];
-                _allPropertiesSearchCache.Add(variable.Name, i);
+                _propertySearchCache.Add(prop.Name, prop.DispatchId);
             }
 
-            for (int i = 0; i < _module.Properties.Count; i++)
+            foreach (var method in _module.Methods.Cast<BslScriptMethodInfo>())
             {
-                var prop = _module.Properties[i];
-                _propertySearchCache.Add(prop.Name, i);
-            }
-
-            for (int i = 0; i < _module.Methods.Count; i++)
-            {
-                var method = _module.Methods[i];
                 if(method.IsPublic)
-                    _methodSearchCache.Add(method.Name, i);
+                    _methodSearchCache.Add(method.Name, method.DispatchId);
             }
 
         }
