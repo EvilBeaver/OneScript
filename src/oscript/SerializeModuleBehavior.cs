@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
@@ -23,44 +24,45 @@ namespace oscript
 
         public override int Execute()
         {
-            var builder = ConsoleHostBuilder.Create(_path);
-            var engine = ConsoleHostBuilder.Build(builder);
-            
-            engine.Initialize();
-            ScriptFileHelper.OnBeforeScriptRead(engine);
-            var source = engine.Loader.FromFile(_path);
-            var compiler = engine.GetCompilerService();
-            engine.SetGlobalEnvironment(new DoNothingHost(), source);
-            var entry = compiler.Compile(source);
-            var embeddedContext = engine.GetExternalLibraries();
-
-            var serializer = new JsonSerializer();
-            var sb = new StringBuilder();
-            using (var textWriter = new StringWriter(sb))
-            {
-                var writer = new JsonTextWriter(textWriter);
-                writer.WriteStartArray();
-                
-                WriteImage(new UserAddedScript
-                {
-                    Type = UserAddedScriptType.Module,
-                    Symbol = "$entry",
-                    Image = entry
-                }, writer, serializer);
-
-                foreach (var item in embeddedContext)
-                {
-                    item.Classes.ForEach(x => WriteImage(x, writer, serializer));
-                    item.Modules.ForEach(x => WriteImage(x, writer, serializer));
-                }
-
-                writer.WriteEndArray();
-            }
-
-            string result = sb.ToString();
-            Output.WriteLine(result);
-
-            return 0;
+            throw new NotImplementedException();
+            // var builder = ConsoleHostBuilder.Create(_path);
+            // var engine = ConsoleHostBuilder.Build(builder);
+            //
+            // engine.Initialize();
+            // ScriptFileHelper.OnBeforeScriptRead(engine);
+            // var source = engine.Loader.FromFile(_path);
+            // var compiler = engine.GetCompilerService();
+            // engine.SetGlobalEnvironment(new DoNothingHost(), source);
+            // var entry = compiler.Compile(source);
+            // var embeddedContext = engine.GetExternalLibraries();
+            //
+            // var serializer = new JsonSerializer();
+            // var sb = new StringBuilder();
+            // using (var textWriter = new StringWriter(sb))
+            // {
+            //     var writer = new JsonTextWriter(textWriter);
+            //     writer.WriteStartArray();
+            //     
+            //     WriteImage(new UserAddedScript
+            //     {
+            //         Type = UserAddedScriptType.Module,
+            //         Symbol = "$entry",
+            //         Image = entry
+            //     }, writer, serializer);
+            //
+            //     foreach (var item in embeddedContext)
+            //     {
+            //         item.Classes.ForEach(x => WriteImage(x, writer, serializer));
+            //         item.Modules.ForEach(x => WriteImage(x, writer, serializer));
+            //     }
+            //
+            //     writer.WriteEndArray();
+            // }
+            //
+            // string result = sb.ToString();
+            // Output.WriteLine(result);
+            //
+            // return 0;
         }
 
         private void WriteImage(UserAddedScript script, JsonTextWriter writer, JsonSerializer serializer)

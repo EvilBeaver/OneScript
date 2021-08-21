@@ -31,6 +31,8 @@ namespace OneScript.Contexts
         public override Type DeclaringType => _declaringType;
         public override string Name => _name;
         public override Type ReflectedType => _declaringType;
+
+        public int DispatchId => _dispId;
         
         public override object GetValue(object obj)
         {

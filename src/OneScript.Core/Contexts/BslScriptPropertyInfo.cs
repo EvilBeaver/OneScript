@@ -37,7 +37,10 @@ namespace OneScript.Contexts
         public override string Name => _name;
         public override string Alias => _alias;
         public override Type ReflectedType => _declaringType;
+        
         public int DispatchId { get; private set; } = -1;
+
+        public bool IsExported => !_isPrivate;
         
         public override MethodInfo[] GetAccessors(bool nonPublic)
         {
@@ -68,7 +71,7 @@ namespace OneScript.Contexts
         {
             throw new NotImplementedException();
         }
-
+        
         public override PropertyAttributes Attributes => PropertyAttributes.None;
         public override bool CanRead => _canRead;
         public override bool CanWrite => _canWrite;

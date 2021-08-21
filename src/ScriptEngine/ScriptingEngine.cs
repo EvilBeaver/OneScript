@@ -146,7 +146,7 @@ namespace ScriptEngine
 
         public ScriptDrivenObject CreateUninitializedSDO(LoadedModule module, ExternalContextData externalContext = null)
         {
-            var scriptContext = new UserScriptContextInstance(module);
+            var scriptContext = new UserScriptContextInstance(module, true);
             if (externalContext != null)
             {
                 foreach (var item in externalContext)

@@ -30,10 +30,10 @@ namespace ScriptEngine.Machine.Contexts
         
         public IValue[] ConstructorParams { get; private set; }
         
-        public UserScriptContextInstance(LoadedModule module) : base(module)
+        public UserScriptContextInstance(LoadedModule module, bool deffered = false) : base(module, deffered)
         {
             _module = module;
-            ConstructorParams = new IValue[0];
+            ConstructorParams = Array.Empty<IValue>();
         }
 
         public UserScriptContextInstance(LoadedModule module, TypeDescriptor asObjectOfType, IValue[] args = null)
@@ -45,7 +45,7 @@ namespace ScriptEngine.Machine.Contexts
             ConstructorParams = args;
             if (args == null)
             {
-                ConstructorParams = new IValue[0];
+                ConstructorParams = Array.Empty<IValue>();
             }
 
         }

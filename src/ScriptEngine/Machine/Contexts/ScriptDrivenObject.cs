@@ -53,9 +53,10 @@ namespace ScriptEngine.Machine.Contexts
 
         public void InitOwnData()
         {
-            
             VARIABLE_COUNT = GetOwnVariableCount();
             METHOD_COUNT = GetOwnMethodCount();
+
+            ClearSearchCaches();
 
             int stateSize = VARIABLE_COUNT + _module.Fields.Count;
             _state = new IVariable[stateSize];
@@ -86,6 +87,13 @@ namespace ScriptEngine.Machine.Contexts
                     _methodSearchCache.Add(method.Name, i);
             }
 
+        }
+
+        private void ClearSearchCaches()
+        {
+            _propertySearchCache.Clear();
+            _methodSearchCache.Clear();
+            _allPropertiesSearchCache.Clear();
         }
 
         protected abstract int GetOwnVariableCount();

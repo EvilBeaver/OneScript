@@ -19,11 +19,6 @@ namespace ScriptEngine.Machine.Contexts
     {
         private readonly string _origin;
 
-        internal ScriptInformationContext(ModuleInformation info)
-        {
-            _origin = info.Origin;
-        }
-
         public ScriptInformationContext(SourceCode codeSrc)
         {
             _origin = codeSrc.Location;

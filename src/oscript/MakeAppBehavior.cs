@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -52,63 +53,64 @@ namespace oscript
 
 	    private void CreateDump(Stream output)
 	    {
-	        var offset = (int)output.Length;
-	        
-	        var builder = ConsoleHostBuilder.Create(_codePath);
-	        var engine = ConsoleHostBuilder.Build(builder);
-	        engine.Initialize();
-	        ScriptFileHelper.OnBeforeScriptRead(engine);
-	        var source = engine.Loader.FromFile(_codePath);
-	        var compiler = engine.GetCompilerService();
-	        engine.SetGlobalEnvironment(new DoNothingHost(), source);
-	        var entry = compiler.Compile(source);
-
-	        var embeddedContext = engine.GetExternalLibraries()
-		        .SelectMany(x => x.Modules.Concat(x.Classes));
-	        
-	        var templates = engine.EngineInstance.GlobalsManager.GetInstance<TemplateStorage>();
-
-	        var dump = new ApplicationDump();
-	        dump.Scripts = new UserAddedScript[]
-	        {
-		        new UserAddedScript()
-		        {
-			        Image = entry,
-			        Symbol = ModuleImage.BODY_METHOD_NAME,
-			        Type = UserAddedScriptType.Module
-		        }
-	        }.Concat(embeddedContext)
-	         .ToArray();
-	        dump.Resources = templates.GetTemplates()
-	                                  .Select(SerializeTemplate)
-	                                  .ToArray();
-
-	        // не пишем абсолютных путей в дамп
-	        foreach (var script in dump.Scripts)
-	        {
-		        script.Image.ModuleInfo.Origin = "oscript://" + script.ModuleName();
-		        script.Image.ModuleInfo.ModuleName = script.Image.ModuleInfo.Origin;
-	        }
-
-	        using (var bw = new BinaryWriter(output))
-	        {
-		        var serializer = new BinaryFormatter();
-		        serializer.Serialize(output, dump);
-
-		        var signature = new byte[]
-		        {
-			        0x4f,
-			        0x53,
-			        0x4d,
-			        0x44
-		        };
-		        output.Write(signature, 0, signature.Length);
-
-		        bw.Write(offset);
-
-		        OutputToFile(output);
-	        }
-        }
+		    throw new NotImplementedException();
+		    // var offset = (int)output.Length;
+		    //
+		    // var builder = ConsoleHostBuilder.Create(_codePath);
+		    // var engine = ConsoleHostBuilder.Build(builder);
+		    // engine.Initialize();
+		    // ScriptFileHelper.OnBeforeScriptRead(engine);
+		    // var source = engine.Loader.FromFile(_codePath);
+		    // var compiler = engine.GetCompilerService();
+		    // engine.SetGlobalEnvironment(new DoNothingHost(), source);
+		    // var entry = compiler.Compile(source);
+		    //
+		    // var embeddedContext = engine.GetExternalLibraries()
+		    //  .SelectMany(x => x.Modules.Concat(x.Classes));
+		    //
+		    // var templates = engine.EngineInstance.GlobalsManager.GetInstance<TemplateStorage>();
+		    //
+		    // var dump = new ApplicationDump();
+		    // dump.Scripts = new UserAddedScript[]
+		    // {
+		    //  new UserAddedScript()
+		    //  {
+		    //   Image = entry,
+		    //   Symbol = ModuleImage.BODY_METHOD_NAME,
+		    //   Type = UserAddedScriptType.Module
+		    //  }
+		    // }.Concat(embeddedContext)
+		    //  .ToArray();
+		    // dump.Resources = templates.GetTemplates()
+		    //                           .Select(SerializeTemplate)
+		    //                           .ToArray();
+		    //
+		    // // не пишем абсолютных путей в дамп
+		    // foreach (var script in dump.Scripts)
+		    // {
+		    //  script.Image.ModuleInfo.Origin = "oscript://" + script.ModuleName();
+		    //  script.Image.ModuleInfo.ModuleName = script.Image.ModuleInfo.Origin;
+		    // }
+		    //
+		    // using (var bw = new BinaryWriter(output))
+		    // {
+		    //  var serializer = new BinaryFormatter();
+		    //  serializer.Serialize(output, dump);
+		    //
+		    //  var signature = new byte[]
+		    //  {
+		    //   0x4f,
+		    //   0x53,
+		    //   0x4d,
+		    //   0x44
+		    //  };
+		    //  output.Write(signature, 0, signature.Length);
+		    //
+		    //  bw.Write(offset);
+		    //
+		    //  OutputToFile(output);
+		    // }
+	    }
 
 	    private ApplicationResource SerializeTemplate(KeyValuePair<string, ITemplate> keyValuePair)
 	    {

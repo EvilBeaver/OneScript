@@ -7,6 +7,9 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Sources;
 using ScriptEngine.Machine;
 
@@ -29,41 +32,38 @@ namespace ScriptEngine.Compiler
 
         }
 
-        public void Write(TextWriter output, ModuleImage module)
+        public void Write(TextWriter output, LoadedModule module)
         {
             WriteImage(output, module);
         }
 
-        private void WriteImage(TextWriter output, ModuleImage module)
+        private void WriteImage(TextWriter output, LoadedModule module)
         {
             output.WriteLine(".loadAt: {0}", module.LoadAddress);
             output.WriteLine(".variableFrame:");
-            module.Variables.ForEach(x=>output.WriteLine(" " + x));
-
+            module.Fields
+                .Cast<BslScriptFieldInfo>()
+                .OrderBy(x=>x.DispatchId)
+                .ForEach(x=>output.WriteLine($"{x.DispatchId}:{x.Name}{(x.IsPublic ? " export" : "")}"));
+            
             output.WriteLine(".constants");
             for (int i = 0; i < module.Constants.Count; i++)
             {
                 var item = module.Constants[i];
                 output.WriteLine(
-                    String.Format("{0,-3}:type: {1}, val: {2}",
-                    i,
-                    Enum.GetName(typeof(DataType), item.Type),
-                    item.Presentation));
+                    $"{i,-3}:type: {item.SystemType.Alias}, val: {item}");
             }
             output.WriteLine(".code");
             for (int i = 0; i < module.Code.Count; i++)
             {
                 var item = module.Code[i];
                 output.WriteLine(
-                    String.Format("{0,-3}:({1,-10}{2,3})",
-                    i,
-                    Enum.GetName(typeof(OperationCode), item.Code),
-                    item.Argument));
+                    $"{i,-3}:({Enum.GetName(typeof(OperationCode), item.Code),-10}{item.Argument,3})");
             }
             output.WriteLine(".procedures");
-            foreach (var item in module.Methods)
+            foreach (var item in module.Methods.Cast<MachineMethodInfo>())
             {
-                WriteMethodDefinition(output, item);
+                WriteMethodDefinition(output, item.GetRuntimeMethod());
             }
             output.WriteLine(".varmap");
             WriteSymbolMap(output, module.VariableRefs);
@@ -71,9 +71,6 @@ namespace ScriptEngine.Compiler
             WriteSymbolMap(output, module.MethodRefs);
             output.WriteLine(".moduleEntry");
             output.WriteLine(module.EntryMethodIndex.ToString());
-            output.WriteLine(".exports");
-            WriteExports(output, module.ExportedProperties);
-            WriteExports(output, module.ExportedMethods);
         }
 
         private void WriteSymbolMap(TextWriter output, IList<SymbolBinding> map)
@@ -106,13 +103,11 @@ namespace ScriptEngine.Compiler
             output.WriteLine("]");
         }
 
-        private void WriteMethodDefinition(TextWriter output, MethodDescriptor item)
+        private void WriteMethodDefinition(TextWriter output, MachineMethod item)
         {
             output.Write(item.Signature.IsFunction ? "Func " : "Proc ");
-            output.Write(string.Format("{0} entryPoint: {1}, frameSize:{2}\n",
-                item.Signature.Name,
-                item.EntryPoint,
-                item.Variables.Count));
+            output.Write(
+                $"{item.Signature.Name} entryPoint: {item.EntryPoint}, frameSize:{item.LocalVariables.Length}\n");
             if (item.Signature.AnnotationsCount != 0)
             {
                 WriteAnnotationsList(output, item.Signature.Annotations);
@@ -134,7 +129,10 @@ namespace ScriptEngine.Compiler
                 }
             }
             output.WriteLine(".variables [");
-            item.Variables.ForEach(x=>output.WriteLine(" " + x));
+            for (int i = 0; i < item.LocalVariables.Length; i++)
+            {
+                output.WriteLine($" {i}:{item.LocalVariables[i]}");
+            }
             output.WriteLine("]");
         }
 
