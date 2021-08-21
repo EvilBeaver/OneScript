@@ -7,19 +7,19 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OneScript.Commons;
+using OneScript.Contexts;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
     public class SymbolScope
     {
-        readonly Dictionary<string, int> _variableNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        private readonly IndexedNameValueCollection<VariableInfo> _variables =
+            new IndexedNameValueCollection<VariableInfo>();
 
-        readonly List<VariableInfo> _variables = new List<VariableInfo>();
-
-        readonly Dictionary<string, int> _methodsNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-        readonly List<MethodSignature> _methods = new List<MethodSignature>();
+        private readonly IndexedNameValueCollection<MethodSignature> _methods =
+            new IndexedNameValueCollection<MethodSignature>();
 
         public MethodSignature GetMethod(string name)
         {
@@ -34,15 +34,11 @@ namespace ScriptEngine.Compiler
 
         public int GetVariableNumber(string name)
         {
-            int varNumber;
-            if(_variableNumbers.TryGetValue(name, out varNumber))
-            {
-                return varNumber;
-            }
-            else
-            {
-                throw new SymbolNotFoundException(name);
-            }
+            var index = _variables.IndexOf(name);
+            if (index >= 0)
+                return index;
+            
+            throw new SymbolNotFoundException(name);
         }
 
         public VariableInfo GetVariable(int number)
@@ -52,24 +48,22 @@ namespace ScriptEngine.Compiler
 
         public int GetMethodNumber(string name)
         {
-            try
+            var number = _methods.IndexOf(name);
+            if(number >= 0)
             {
-                return _methodsNumbers[name];
+                return number;
             }
-            catch (KeyNotFoundException)
-            {
-                throw new SymbolNotFoundException(name);
-            }
+            throw new SymbolNotFoundException(name);
         }
 
         public bool IsVarDefined(string name)
         {
-            return _variableNumbers.ContainsKey(name);
+            return _variables.IndexOf(name) >= 0;
         }
 
         public bool IsMethodDefined(string name)
         {
-            return _methodsNumbers.ContainsKey(name);
+            return _methods.IndexOf(name) >= 0;
         }
 
         public int DefineVariable(string name, string alias = null)
@@ -94,19 +88,15 @@ namespace ScriptEngine.Compiler
             }
 
             var newIdx = _variables.Count;
-            _variableNumbers[name] = newIdx;
-            if (!string.IsNullOrEmpty(alias))
-            {
-                _variableNumbers[alias] = newIdx;
-            }
-
-            _variables.Add(new VariableInfo()
+            var item = new VariableInfo
             {
                 Index = newIdx,
                 Identifier = name,
                 Alias = alias,
                 Type = symbolType
-            });
+            };
+
+            _variables.Add(item, name, alias);
 
             return newIdx;
         }
@@ -115,13 +105,7 @@ namespace ScriptEngine.Compiler
         {
             if (!IsMethodDefined(method.Name))
             {
-                int newIdx = _methods.Count;
-                _methods.Add(method);
-                _methodsNumbers[method.Name] = newIdx;
-
-                if (method.Alias != null)
-                    _methodsNumbers[method.Alias] = newIdx;
-
+                int newIdx = _methods.Add(method, method.Name, method.Alias);
                 return newIdx;
             }
             else
@@ -132,35 +116,19 @@ namespace ScriptEngine.Compiler
 
         public string GetVariableName(int number)
         {
-            return _variableNumbers.First(x => x.Value == number).Key;
+            return _variables[number].Identifier;
         }
 
-        public int VariableCount 
-        {
-            get
-            {
-                return _variables.Count;
-            }
-        }
+        public int VariableCount => _variables.Count;
 
-        public int MethodCount
-        {
-            get
-            {
-                return _methods.Count;
-            }
-        }
+        public int MethodCount => _methods.Count;
 
-        public bool IsDynamicScope 
-        { 
-            get; 
-            set; 
-        }
+        public bool IsDynamicScope { get; set; }
     }
 
     class SymbolNotFoundException : CompilerException
     {
-        public SymbolNotFoundException(string symbol) : base(string.Format("Неизвестный символ: {0}", symbol))
+        public SymbolNotFoundException(string symbol) : base($"Неизвестный символ: {symbol}")
         {
 
         }

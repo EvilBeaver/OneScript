@@ -102,12 +102,6 @@ namespace ScriptEngine.HostedScript
 
         public ScriptSourceFactory Loader => _engine.Loader;
 
-        public IDebugController DebugController
-        {
-            get => _engine.DebugController;
-            set => _engine.DebugController = value;
-        }
-
         public ICompilerService GetCompilerService()
         {
             var compilerSvc = _engine.GetCompilerService();
