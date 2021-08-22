@@ -107,11 +107,10 @@ pipeline {
                 }
 
                 stage('Linux testing') {
-						agent{ 
-                            docker {
-                                image 'mcr.microsoft.com/dotnet/sdk:5.0'
-                                label 'linux' 
-                            }
+                    agent{ 
+                        docker {
+                            image 'mcr.microsoft.com/dotnet/sdk:5.0'
+                            label 'linux' 
                         }
                     }
 
@@ -171,5 +170,4 @@ pipeline {
             }
         }
     }
-    
 }
