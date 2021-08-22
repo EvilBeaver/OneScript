@@ -65,11 +65,20 @@
 				ItemName="BuildVariant"/>
 		</CreateItem>
 		
-		<ItemGroup>
-			<CppDll Include="$(MSBuildProjectDirectory)/src/ScriptEngine.NativeApi/bin/"/>
-		</ItemGroup>
-
 		<Exec Command="dotnet publish &quot;src/%(BuildVariant.Identity)/%(BuildVariant.ProjectFile)&quot; -f %(BuildVariant.Framework) -c $(Configuration) -p:Platform=%(BuildVariant.Platform) -p:UseAppHost=false -o &quot;$(ArtifactsRoot)/fdd-%(BuildVariant.Suffix)/bin&quot;"/>
+
+		<PropertyGroup>
+			<CppBinPrefix>$(MSBuildProjectDirectory)/src/ScriptEngine.NativeApi/bin/$(Configuration)</CppBinPrefix>
+		</PropertyGroup>
+		
+		<ItemGroup>
+			<CppX86 Include="$(CppBinPrefix)/x86/*.dll"/>
+			<CppX64 Include="$(CppBinPrefix)/x64/*.dll"/>
+		</ItemGroup>
+		
+		<Copy SourceFiles="@(CppX86)" DestinationFolder="$(ArtifactsRoot)/fdd-x86/bin" />
+		<Copy SourceFiles="@(CppX64)" DestinationFolder="$(ArtifactsRoot)/fdd-x64/bin" />
+
 	</Target>
 	
 	<Target Name="MakeSCD">
@@ -81,6 +90,19 @@
 		</ItemGroup>
 		
 		<Exec Command="dotnet publish &quot;src/oscript/oscript.csproj&quot; -r %(RuntimeID.Identity) -c $(Configuration) -o &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/bin&quot;"/>
+
+		<PropertyGroup>
+			<CppBinPrefix>$(MSBuildProjectDirectory)/src/ScriptEngine.NativeApi/bin/$(Configuration)</CppBinPrefix>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<CppX86 Include="$(CppBinPrefix)/x86/*.dll"/>
+			<CppX64 Include="$(CppBinPrefix)/x64/*.dll"/>
+		</ItemGroup>
+
+		<Copy SourceFiles="@(CppX86)" DestinationFolder="$(ArtifactsRoot)/win-x86/bin" />
+		<Copy SourceFiles="@(CppX64)" DestinationFolder="$(ArtifactsRoot)/win-x64/bin" />
+
 	</Target>
     
 	<Target Name="BuildDebugger">
@@ -125,7 +147,7 @@
 			<Output TaskParameter="FirstItem" PropertyName="Runner"/>
 		</GetFirstItem>
 		
-		<Exec Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)/install/unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)/install/opm-0.16.2.ospx&quot; &quot;$(LibDir)/tmp&quot;"/>
+		<Exec Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)/install/unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)/install/opm.ospx&quot; &quot;$(LibDir)/tmp&quot;"/>
 		<Exec Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)/install/unicode-zipper.os&quot; unpack &quot;$(LibDir)/tmp/content.zip&quot; &quot;$(LibDir)/opm&quot;"/>
 
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibDir)"/>
