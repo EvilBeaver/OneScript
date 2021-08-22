@@ -49,7 +49,7 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private SymbolBinding GetSymbol(string symbol, Func<SymbolScope, int> extract)
+        private SymbolBinding GetSymbol(string symbol, Func<string, SymbolScope, int> extract)
         {
             if (TryGetSymbol(symbol, extract, out var result))
             {
@@ -59,11 +59,11 @@ namespace ScriptEngine.Compiler
             throw new SymbolNotFoundException(symbol);
         }
 
-        private bool TryGetSymbol(string symbol, Func<SymbolScope, int> extract, out SymbolBinding result)
+        private bool TryGetSymbol(string symbol, Func<string, SymbolScope, int> extract, out SymbolBinding result)
         {
             for (int i = _scopeStack.Count - 1; i >= 0; i--)
             {
-                var number = extract(_scopeStack[i]);
+                var number = extract(symbol, _scopeStack[i]);
                 if (number < 0)
                     continue;
 
@@ -74,7 +74,7 @@ namespace ScriptEngine.Compiler
 
             }
 
-            result = default(SymbolBinding);
+            result = default;
             return false;
         }
 
@@ -92,8 +92,8 @@ namespace ScriptEngine.Compiler
 
         public VariableBinding GetVariable(string name)
         {
-            var sb = GetSymbol(name, x => ExtractVariableIndex(name, x));
-            return new VariableBinding()
+            var sb = GetSymbol(name, ExtractVariableIndex);
+            return new VariableBinding
             {
                 type = _scopeStack[sb.ContextIndex].GetVariable(sb.CodeIndex).Type,
                 binding = sb
@@ -102,20 +102,20 @@ namespace ScriptEngine.Compiler
 
         public SymbolBinding GetMethod(string name)
         {
-            return GetSymbol(name, x => ExtractMethodIndex(name, x));
+            return GetSymbol(name, ExtractMethodIndex);
         }
 
         public bool TryGetMethod(string name, out SymbolBinding result)
         {
-            return TryGetSymbol(name, x => ExtractMethodIndex(name, x), out result);
+            return TryGetSymbol(name, ExtractMethodIndex, out result);
         }
 
         public bool TryGetVariable(string name, out VariableBinding vb)
         {
-            var hasSymbol = TryGetSymbol(name, x => ExtractVariableIndex(name, x), out var sb);
+            var hasSymbol = TryGetSymbol(name, ExtractVariableIndex, out var sb);
             if (!hasSymbol)
             {
-                vb = default(VariableBinding);
+                vb = default;
                 return false;
             }
 
