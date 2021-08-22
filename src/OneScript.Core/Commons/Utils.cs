@@ -36,16 +36,6 @@ namespace OneScript.Commons
             }
         }
         
-        public static bool IsNetCore => System.Runtime.InteropServices
-            .RuntimeInformation
-            .FrameworkDescription
-            .StartsWith(".NET Core", StringComparison.OrdinalIgnoreCase);
-        
-        public static bool IsNetFramework => System.Runtime.InteropServices
-            .RuntimeInformation
-            .FrameworkDescription
-            .StartsWith(".NET Framework", StringComparison.OrdinalIgnoreCase);
-
         public static bool IsMonoRuntime => Type.GetType("Mono.Runtime") != null;
 
     }

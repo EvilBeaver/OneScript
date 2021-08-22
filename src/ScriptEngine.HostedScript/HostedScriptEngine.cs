@@ -143,16 +143,6 @@ namespace ScriptEngine.HostedScript
                 compilerSvc.DefinePreprocessorValue(val);
             }
 
-            if (Utils.IsNetCore)
-            {
-                compilerSvc.DefinePreprocessorValue("NETCORE");
-            }
-
-            if (Utils.IsNetFramework)
-            {
-                compilerSvc.DefinePreprocessorValue("NETFRAMEWORK");
-            }
-
             if (Utils.IsMonoRuntime)
             {
                 compilerSvc.DefinePreprocessorValue("MONO");
