@@ -113,6 +113,9 @@ pipeline {
                             label 'linux' 
                         }
                     }
+                    environment {
+                        OSCRIPT_CONFIG = 'systemlanguage=ru'
+                    }
 
                     steps {
                         
