@@ -135,13 +135,5 @@ namespace ScriptEngine.Compiler
             }
             output.WriteLine("]");
         }
-
-        private void WriteExports(TextWriter output, IList<ExportedSymbol> exports)
-        {
-            for (int i = 0; i < exports.Count; i++)
-            {
-                output.WriteLine(String.Format("{0}:{1,-3}", exports[i].SymbolicName, exports[i].Index));
-            }
-        }
     }
 }

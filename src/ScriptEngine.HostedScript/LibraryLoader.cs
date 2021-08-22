@@ -233,13 +233,14 @@ namespace ScriptEngine.HostedScript
         {
             var files = Directory.EnumerateFiles(libraryPath, "*.os")
                 .Select(x => new { Name = Path.GetFileNameWithoutExtension(x), Path = x })
-                .Where(x => Utils.IsValidIdentifier(x.Name));
+                .Where(x => Utils.IsValidIdentifier(x.Name))
+                .ToList();
 
             bool hasFiles = false;
 
             TraceLoadLibrary(
-                Locale.NStr($"ru = 'Обнаружено {files.Count()} модулей в библиотеке {libraryPath}';"+
-                            $"en = 'Found {files.Count()} modules in library {libraryPath}'")    
+                Locale.NStr($"ru = 'Обнаружено {files.Count} модулей в библиотеке {libraryPath}';"+
+                            $"en = 'Found {files.Count} modules in library {libraryPath}'")    
             );
 
             foreach (var file in files)

@@ -9,7 +9,6 @@ using System;
 using OneScript.Sources;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
-using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Tasks;
@@ -108,26 +107,6 @@ namespace ScriptEngine.HostedScript
             UserScriptContextInstance.PrepareCompilation(compilerSvc);
             
             return compilerSvc;
-        }
-
-        public IEnumerable<ExternalLibraryDef> GetExternalLibraries()
-        {
-            return _env.GetUserAddedScripts();
-        }
-
-        [Obsolete]
-        public void LoadUserScript(UserAddedScript script)
-        {
-            if (script.Type == UserAddedScriptType.Class)
-            {
-                _engine.AttachedScriptsFactory.LoadImageAndRegister(script.Symbol, script.Image);
-            }
-            else
-            {
-                var loaded = _engine.LoadModuleImage(script.Image);
-                var instance = (IValue)_engine.NewObject(loaded);
-                _env.InjectGlobalProperty(instance, script.Symbol, true);
-            }
         }
 
         public Process CreateProcess(IHostApplication host, SourceCode src)

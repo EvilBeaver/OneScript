@@ -41,14 +41,12 @@ namespace oscript
             initializers.Add("-measure", MeasureBehavior.Create);
             initializers.Add("-compile", ShowCompiledBehavior.Create);
             initializers.Add("-check", CheckSyntaxBehavior.Create);
-            initializers.Add("-make", MakeAppBehavior.Create);
             initializers.Add("-cgi", h => new CgiBehavior());
             initializers.Add("-version", h => new ShowVersionBehavior());
             initializers.Add("-v", h => new ShowVersionBehavior());
             initializers.Add("-encoding", ProcessEncodingKey);
             initializers.Add("-codestat", EnableCodeStatistics);
             initializers.Add("-debug", DebugBehavior.Create);
-            initializers.Add("-serialize", SerializeModuleBehavior.Create);
 
             var param = helper.Parse(helper.Current());
             if(initializers.TryGetValue(param.Name.ToLowerInvariant(), out var action))

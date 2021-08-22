@@ -35,8 +35,4 @@
     <ProjectReference Include="..\OneScript.StandardLibrary\OneScript.StandardLibrary.csproj" />
   </ItemGroup>
   
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-
 </Project>

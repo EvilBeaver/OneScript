@@ -100,20 +100,9 @@ namespace ScriptEngine
 
         internal IList<AttachedContext> AttachedContexts => _contexts;
 
-        public IEnumerable<ExternalLibraryDef> GetUserAddedScripts()
+        public IEnumerable<ExternalLibraryDef> GetLibraries()
         { 
             return _externalLibs.ToArray();
-        }
-
-        [Obsolete]
-        public void LoadMemory(MachineInstance machine)
-        {
-            machine.Cleanup();
-            foreach (var item in AttachedContexts)
-            {
-                machine.AttachContext(item.Instance);
-            }
-            machine.ContextsAttached();
         }
 
         public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library)
