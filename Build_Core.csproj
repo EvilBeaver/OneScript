@@ -153,6 +153,26 @@
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibDir)"/>
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="%(Executable.RelativeDir)"/>
 		<RemoveDir Directories="$(LibDir)/tmp"/>
+		
+		<PropertyGroup>
+			<OpmEntryPoint>opm\src\cmd\opm.os</OpmEntryPoint>
+			<OpmLaunch>dotnet $(Runner) &quot;$(LibDir)\$(OpmEntryPoint)&quot;</OpmLaunch>
+		</PropertyGroup>
+		
+		<ItemGroup>
+			<CoreLibraries Include="asserts"/>
+			<CoreLibraries Include="logos"/>
+			<CoreLibraries Include="fs"/>
+			<CoreLibraries Include="tempfiles"/>
+			<CoreLibraries Include="cli"/>
+			<ConfigEnv Include="OSCRIPT_CONFIG=lib.system=$(LibDir)"/>
+		</ItemGroup>
+		
+		<Exec Command="$(OpmLaunch) install -d &quot;$(LibDir)&quot; %(CoreLibraries.Identity)" 
+			  IgnoreExitCode="false"
+			  EnvironmentVariables="@(ConfigEnv)"
+			  Condition="'$(SkipLibraryDownload)' == ''"/>
+		
 	</Target>
 	
 	<Target Name="ComposeDistributionFolders">
