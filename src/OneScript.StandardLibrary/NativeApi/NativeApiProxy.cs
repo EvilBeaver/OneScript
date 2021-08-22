@@ -134,6 +134,8 @@ namespace OneScript.StandardLibrary.NativeApi
         public static TCallAsProc CallAsProc;
         public static TCallAsFunc CallAsFunc;
 
+        public static bool IsAvailable { get; private set; }
+        
         static NativeApiProxy()
         {
             string location = System.Reflection.Assembly.GetExecutingAssembly().Location;
@@ -142,6 +144,14 @@ namespace OneScript.StandardLibrary.NativeApi
                 + (IntPtr.Size == 8 ? "64" : "32")
                 + (NativeApiKernel.IsLinux ? ".so" : ".dll");
             IntPtr module = NativeApiKernel.LoadLibrary(filename);
+            if (module == IntPtr.Zero)
+            {
+                IsAvailable = false;
+                return;
+            }
+
+            IsAvailable = true;
+
             GetClassObject = Marshal.GetDelegateForFunctionPointer<TGetClassObject>(NativeApiKernel.GetProcAddress(module, "GetClassObject"));
             DestroyObject = Marshal.GetDelegateForFunctionPointer<TDestroyObject>(NativeApiKernel.GetProcAddress(module, "DestroyObject"));
             CreateVariant = Marshal.GetDelegateForFunctionPointer<TCreateVariant>(NativeApiKernel.GetProcAddress(module, "CreateVariant"));

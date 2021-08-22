@@ -79,7 +79,7 @@ namespace OneScript.StandardLibrary.NativeApi
 
         public IValue CreateComponent(ITypeManager typeManager, object host, String typeName, String componentName)
         {
-            var typeDef = typeManager.RegisterType(typeName, default, typeof(NativeApiComponent));
+            var typeDef = typeManager.GetTypeByName(typeName);
             var component = new NativeApiComponent(host, this, typeDef, componentName);
             _components.Add(component);
             return component;

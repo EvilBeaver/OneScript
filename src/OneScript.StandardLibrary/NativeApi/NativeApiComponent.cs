@@ -21,10 +21,6 @@ namespace OneScript.StandardLibrary.NativeApi
     {
         private readonly IntPtr _object;
 
-        public NativeApiComponent()
-        {
-        }
-        
         public override IRuntimeContextInstance AsObject()
         {
             return this;
@@ -82,6 +78,9 @@ namespace OneScript.StandardLibrary.NativeApi
 
         public NativeApiComponent(object host, NativeApiLibrary library, TypeDescriptor typeDef, string componentName)
         {
+            if (!NativeApiProxy.IsAvailable)
+                throw new RuntimeException("Native API Proxy DLL is not loaded");
+                
             _object = NativeApiProxy.GetClassObject(library.Module, componentName,
                 (wcode, source, descr, scode) =>
                 {
@@ -221,45 +220,6 @@ namespace OneScript.StandardLibrary.NativeApi
             return method.Build();
         }
         
-        // public MethodSignature GetMethodInfo(int methodNumber)
-        // {
-        //     if (methodNumber < 0)
-        //         throw new RuntimeException("Метод не найден");
-        //     var name = string.Empty;
-        //     var alias = string.Empty;
-        //     NativeApiProxy.GetMethodName(_object, methodNumber, 0,
-        //         str => name = NativeApiProxy.Str(str)
-        //     );
-        //     NativeApiProxy.GetMethodName(_object, methodNumber, 1,
-        //         str => alias = NativeApiProxy.Str(str)
-        //     );
-        //     var paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
-        //     var paramArray = new ParameterDefinition[paramCount];
-        //     for (int i = 0; i < paramCount; i++)
-        //     {
-        //         var localCopyOfIndex = i;
-        //         NativeApiProxy.GetParamDefValue(_object, methodNumber, i, variant =>
-        //         {
-        //             if (NativeApiVariant.NotEmpty(variant))
-        //             {
-        //                 paramArray[localCopyOfIndex].HasDefaultValue = true;
-        //                 paramArray[localCopyOfIndex].DefaultValueIndex = ParameterDefinition.UNDEFINED_VALUE_INDEX;
-        //             }
-        //         });
-        //     }
-        //
-        //     return new MethodSignature
-        //     {
-        //         Name = name,
-        //         Alias = alias,
-        //         IsFunction = NativeApiProxy.HasRetVal(_object, methodNumber),
-        //         IsDeprecated = false,
-        //         IsExport = false,
-        //         ThrowOnUseDeprecated = false,
-        //         Params = paramArray,
-        //     };
-        // }
-
         public BslPropertyInfo GetPropertyInfo(int propertyNumber)
         {
             var propName = GetPropName(propertyNumber);
