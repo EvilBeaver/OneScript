@@ -534,9 +534,9 @@ namespace ScriptEngine.Machine
 
         private static CultureInfo CreateCulture(string locale)
         {
-            locale = locale.Replace('_', '-');
-            var culture = System.Globalization.CultureInfo.CreateSpecificCulture(locale);
-            return culture;
+            // преобразуем имя локали из нашего формата в формат понятный для .NET
+            var isoLocaleName = locale.Replace('_', '-');
+            return Locale.CreateCulture(isoLocaleName);
         }
 
 

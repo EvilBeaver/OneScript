@@ -23,10 +23,15 @@ namespace OneScript.Commons
             set
             {
                 _actualLocaleName = value;
-                var ci = CultureInfo.CreateSpecificCulture(_actualLocaleName);
+                var ci = CreateCulture(_actualLocaleName);
                 CultureInfo.CurrentCulture = ci;
                 SystemLocaleChanged?.Invoke();
             }
+        }
+
+        public static CultureInfo CreateCulture(string cultureName)
+        {
+            return Teva.Common.Cultures.CultureHelper.GetCulture(cultureName);
         }
 
         public static bool UseAliasedPresentations => SystemLanguageISOName != default && SystemLanguageISOName != "ru"; 
