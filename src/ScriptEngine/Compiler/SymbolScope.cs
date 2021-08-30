@@ -5,8 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
 using ScriptEngine.Machine;

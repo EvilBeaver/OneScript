@@ -9,7 +9,6 @@ using System.Collections;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Collections;
-using OneScript.Types;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

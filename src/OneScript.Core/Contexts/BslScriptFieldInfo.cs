@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using OneScript.Contexts;
 using OneScript.Contexts.Internal;
 using OneScript.Values;
 

@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using OneScript.Commons;
-using OneScript.Language;
 using OneScript.Sources;
 using ScriptEngine.Compiler;
 

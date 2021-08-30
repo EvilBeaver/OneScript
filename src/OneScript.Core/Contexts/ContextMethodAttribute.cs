@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using OneScript.Commons;
 
-namespace OneScript.Types
+namespace OneScript.Contexts
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class ContextMethodAttribute : Attribute

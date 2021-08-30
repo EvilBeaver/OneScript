@@ -10,7 +10,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using OneScript.Commons;
-using OneScript.Types;
 
 namespace OneScript.Contexts
 {

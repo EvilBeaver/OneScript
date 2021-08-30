@@ -12,7 +12,6 @@ using OneScript.Contexts;
 using OneScript.StandardLibrary.XMLSchema.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using OneScript.StandardLibrary.XMLSchema.Interfaces;
-using OneScript.Types;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.XMLSchema.Objects

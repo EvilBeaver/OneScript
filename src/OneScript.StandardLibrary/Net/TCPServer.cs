@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System.Net;
 using System.Net.Sockets;
 using OneScript.Contexts;
-using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

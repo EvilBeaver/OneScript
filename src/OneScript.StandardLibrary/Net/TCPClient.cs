@@ -11,7 +11,6 @@ using System.Net.Sockets;
 using System.Text;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
-using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

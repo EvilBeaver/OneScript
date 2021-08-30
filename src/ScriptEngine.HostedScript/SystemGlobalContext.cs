@@ -10,7 +10,6 @@ using System.Linq;
 using OneScript.Contexts;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
-using OneScript.Types;
 using OneScript.Sources;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

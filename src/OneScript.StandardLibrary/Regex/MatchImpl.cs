@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Types;
+using OneScript.Contexts;
 using ScriptEngine.Machine.Contexts;
 using RegExp = System.Text.RegularExpressions;
 

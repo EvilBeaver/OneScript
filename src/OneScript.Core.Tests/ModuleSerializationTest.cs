@@ -10,7 +10,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using Moq;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
-using OneScript.Sources;
 using ScriptEngine;
 using Xunit;
 

@@ -8,8 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System.Linq;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
-using OneScript.Language;
-using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Runtime;
