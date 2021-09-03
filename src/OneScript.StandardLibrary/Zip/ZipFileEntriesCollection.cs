@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using System.Linq;
 using Ionic.Zip;
-using OneScript.Types;
+using OneScript.Contexts;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

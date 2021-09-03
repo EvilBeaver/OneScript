@@ -11,8 +11,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security;
+using OneScript.Contexts;
 using OneScript.StandardLibrary.Collections;
-using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

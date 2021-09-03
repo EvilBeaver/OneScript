@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Runtime.CompilerServices;
 using OneScript.Commons;
-using OneScript.Types;
+using OneScript.Contexts;
 using OneScript.Values;
 
 namespace OneScript.Native.Runtime

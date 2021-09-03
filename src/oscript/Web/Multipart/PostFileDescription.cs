@@ -6,8 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using HttpMultipartParser;
+using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
-using OneScript.Types;
 using ScriptEngine.Machine.Contexts;
 
 namespace oscript.Web.Multipart

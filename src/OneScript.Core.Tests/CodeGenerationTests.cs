@@ -7,12 +7,10 @@ at http://mozilla.org/MPL/2.0/.
 
 using FluentAssertions;
 using Moq;
-using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Sources;
-using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 using Xunit;

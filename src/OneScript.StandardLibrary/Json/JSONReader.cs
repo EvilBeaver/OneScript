@@ -11,7 +11,6 @@ using Newtonsoft.Json;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Text;
-using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

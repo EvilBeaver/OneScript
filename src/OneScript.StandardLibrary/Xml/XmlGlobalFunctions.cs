@@ -9,6 +9,7 @@ using System;
 using System.Diagnostics;
 using System.Xml;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
 using OneScript.Types;
 using OneScript.Values;

@@ -10,7 +10,6 @@ using System.Linq;
 using System.Xml.Schema;
 using OneScript.Commons;
 using OneScript.Contexts;
-using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Machine;

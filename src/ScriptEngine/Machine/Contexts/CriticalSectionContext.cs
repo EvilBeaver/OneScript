@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Threading;
 using OneScript.Contexts;
-using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {

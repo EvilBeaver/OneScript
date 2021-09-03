@@ -12,7 +12,6 @@ using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Text;
-using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

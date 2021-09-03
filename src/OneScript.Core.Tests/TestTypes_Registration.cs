@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using Moq;
+using OneScript.Contexts;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using ScriptEngine;

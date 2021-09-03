@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System.Threading.Tasks;
 using OneScript.StandardLibrary;
 using ScriptEngine;
-using ScriptEngine.Compiler;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using Xunit;
