@@ -49,7 +49,8 @@ namespace OneScript.Localization
             return Localize(Russian, English);
         }
 
-        public static bool UseRussianLocale => CultureInfo.CurrentCulture.Parent.Equals(RussianCulture);
+        public static bool UseRussianLocale => CultureInfo.CurrentCulture.Parent.Equals(RussianCulture)
+                                               || CultureInfo.CurrentCulture.Equals(RussianCulture);
 
         public static implicit operator string(BilingualString str)
         {
