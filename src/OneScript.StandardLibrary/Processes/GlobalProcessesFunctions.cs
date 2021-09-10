@@ -43,6 +43,17 @@ namespace OneScript.StandardLibrary.Processes
         }
 
         /// <summary>
+        /// Получает текущий процесс
+        /// </summary>
+        [ContextMethod("ТекущийПроцесс", "CurrentProcess")]
+        public ProcessContext CurrentProcess()
+        {
+            var p = System.Diagnostics.Process.GetCurrentProcess();
+
+            return new ProcessContext(p);
+        }
+
+        /// <summary>
         /// Создает процесс, которым можно манипулировать из скрипта
         /// </summary>
         /// <param name="cmdLine">Командная строка запуска</param>
