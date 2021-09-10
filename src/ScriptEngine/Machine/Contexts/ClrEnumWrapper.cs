@@ -17,33 +17,14 @@ namespace ScriptEngine.Machine.Contexts
     public class ClrEnumWrapper<T> : EnumerationContext where T : struct
     {
         public static ClrEnumWrapper<T> Instance { get; private set; }
-        
-        /// <summary>
-        /// Internal constructor, used for discovering SimpleEnums only
-        /// </summary>
-        /// <param name="typeRepresentation"></param>
-        /// <param name="valuesType"></param>
-        /// <param name="autoRegister"></param>
-        /// <exception cref="InvalidOperationException">Attempt to construct second wrapper for enum</exception>
-        // ReSharper disable once MemberCanBePrivate.Global
-        internal ClrEnumWrapper(TypeDescriptor typeRepresentation, TypeDescriptor valuesType, bool autoRegister) : base(typeRepresentation, valuesType)
-        {
-            if (Instance != default)
-                return;
-            
-            if(autoRegister)
-                Autoregister();
-
-            Instance = this;
-        }
 
         /// <summary>
         /// Constructor for inherited enum wrappers
         /// </summary>
         /// <param name="typeRepresentation"></param>
         /// <param name="valuesType"></param>
-        protected ClrEnumWrapper(TypeDescriptor typeRepresentation, TypeDescriptor valuesType) : this(
-            typeRepresentation, valuesType, false)
+        protected ClrEnumWrapper(TypeDescriptor typeRepresentation, TypeDescriptor valuesType) 
+            : base(typeRepresentation, valuesType)
         {
         }
 
@@ -87,6 +68,20 @@ namespace ScriptEngine.Machine.Contexts
                         AddValue(contextField.Name, contextField.Alias, osValue);
                 }
             }
+        }
+
+        public static ClrEnumWrapper<T> CreateInstance(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
+        {
+            var instance = new ClrEnumWrapper<T>(typeRepresentation, valuesType);
+            instance.Autoregister();
+            Instance = instance;
+
+            return instance;
+        }
+
+        protected static void OnInstanceCreation(ClrEnumWrapper<T> instance)
+        {
+            Instance = instance;
         }
     }
 }

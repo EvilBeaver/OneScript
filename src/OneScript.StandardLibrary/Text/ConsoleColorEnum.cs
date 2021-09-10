@@ -17,7 +17,6 @@ namespace OneScript.StandardLibrary.Text
         private ConsoleColorEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
         {
-
         }
 
         public static ConsoleColorEnum CreateInstance(ITypeManager typeManager)
@@ -36,6 +35,8 @@ namespace OneScript.StandardLibrary.Text
             instance.WrapClrValue("Малиновый", "Magenta", ConsoleColor.Magenta);
             instance.WrapClrValue("Серый", "Gray", ConsoleColor.Gray);
 
+            OnInstanceCreation(instance);
+            
             return instance;
         }
     }

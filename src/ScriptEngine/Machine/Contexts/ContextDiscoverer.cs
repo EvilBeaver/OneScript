@@ -130,20 +130,19 @@ namespace ScriptEngine.Machine.Contexts
             var (enumTypeDescription, valueTypeDescription) =
                 EnumContextHelper.RegisterEnumType(genericType, genericValue, Types, enumTypeAttribute);
 
-            var ctor = genericType.GetConstructor(
-                BindingFlags.NonPublic | BindingFlags.Instance,
+            var factory = genericType.GetMethod(INSTANCE_RETRIEVER_NAME,
+                BindingFlags.Public | BindingFlags.Static,
                 default,
                 new []
                 {
                     typeof(TypeDescriptor),
-                    typeof(TypeDescriptor),
-                    typeof(bool)
+                    typeof(TypeDescriptor)
                 },
                 default);
             
-            Debug.Assert(ctor != null);
+            Debug.Assert(factory != null);
             
-            var instance = (IValue)ctor.Invoke(new object[]{enumTypeDescription, valueTypeDescription, true});
+            var instance = (IValue)factory.Invoke(null, new object[]{enumTypeDescription, valueTypeDescription});
             
 			if (enumTypeAttribute.CreateGlobalProperty)
 			{

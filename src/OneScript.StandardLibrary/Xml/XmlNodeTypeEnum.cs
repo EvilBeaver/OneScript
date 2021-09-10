@@ -57,6 +57,8 @@ namespace OneScript.StandardLibrary.Xml
                 typeManager,
                 (t,v) => new XmlNodeTypeEnum(t, v));
 
+            OnInstanceCreation(instance);
+            
             return instance;
         }
    }

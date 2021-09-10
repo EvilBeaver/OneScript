@@ -67,6 +67,8 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
             instance.AddValue("Расширение", "Extension", instance._valuesCache[XmlSchemaDerivationMethod.Extension]);
             instance.AddValue("Список", "List", instance._valuesCache[XmlSchemaDerivationMethod.List]);
  
+            OnInstanceCreation(instance);
+            
             return instance;
         }
     }
