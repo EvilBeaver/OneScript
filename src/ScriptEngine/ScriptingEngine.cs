@@ -30,7 +30,6 @@ namespace ScriptEngine
             ConfigurationProviders configurationProviders,
             IServiceContainer services)
         {
-            Configuration = configurationProviders;
             _compilerFactory = compilerFactory;
             TypeManager = types;
             // FIXME: Пока потребители не отказались от статических инстансов, они будут жить и здесь
@@ -39,10 +38,10 @@ namespace ScriptEngine
             Environment = env;
             
             Loader = new ScriptSourceFactory();
-            ContextDiscoverer = new ContextDiscoverer(types, globals);
             Services = services;
+            ContextDiscoverer = new ContextDiscoverer(types, globals, services);
             
-            ApplyConfiguration(Configuration.CreateConfig());
+            ApplyConfiguration(configurationProviders.CreateConfig());
         }
 
         public IServiceContainer Services { get; }
@@ -53,8 +52,6 @@ namespace ScriptEngine
 
             Loader.ReaderEncoding = options.FileReaderEncoding;
         }
-
-        public ConfigurationProviders Configuration { get; }
 
         private ContextDiscoverer ContextDiscoverer { get; }
         

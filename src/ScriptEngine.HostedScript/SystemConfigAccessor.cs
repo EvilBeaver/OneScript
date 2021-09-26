@@ -59,9 +59,12 @@ namespace ScriptEngine.HostedScript.Library
             return ValueFactory.Create();
         }
 
-        public static IAttachableContext CreateInstance()
+        public static IAttachableContext CreateInstance(ConfigurationProviders providers)
         {
-            return new SystemConfigAccessor();
+            return new SystemConfigAccessor
+            {
+                Provider = providers
+            };
         }
     }
 }

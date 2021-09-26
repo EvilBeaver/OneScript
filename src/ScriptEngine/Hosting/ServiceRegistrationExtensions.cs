@@ -25,7 +25,7 @@ namespace ScriptEngine.Hosting
         
         public static MachineEnvironment AddAssembly(this MachineEnvironment env, Assembly asm, Predicate<Type> filter = null)
         {
-            var discoverer = new ContextDiscoverer(env.TypeManager, env.GlobalInstances);
+            var discoverer = env.Services.Resolve<ContextDiscoverer>();
             discoverer.DiscoverClasses(asm, filter);
             discoverer.DiscoverGlobalContexts(env.GlobalNamespace, asm, filter);
             return env;

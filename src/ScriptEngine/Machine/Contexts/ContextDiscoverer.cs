@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using OneScript.Contexts;
+using OneScript.DependencyInjection;
 using OneScript.Types;
 using ScriptEngine.Types;
 
@@ -20,15 +21,17 @@ namespace ScriptEngine.Machine.Contexts
     {
         private const string INSTANCE_RETRIEVER_NAME = "CreateInstance";
 
-        public ContextDiscoverer(ITypeManager types, IGlobalsManager globals)
+        public ContextDiscoverer(ITypeManager types, IGlobalsManager globals, IServiceContainer services)
         {
             Types = types;
             Globals = globals;
+            Services = services;
         }
         
         private ITypeManager Types { get; }
         private IGlobalsManager Globals { get; }
-        
+        private IServiceContainer Services { get; }
+
         public void DiscoverClasses(Assembly assembly, Predicate<Type> filter = null)
         {
             IEnumerable<Type> types;
@@ -159,7 +162,18 @@ namespace ScriptEngine.Machine.Contexts
 
             var method = contextType.GetMethod(INSTANCE_RETRIEVER_NAME, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
             System.Diagnostics.Trace.Assert(method != null, "Global context must have a static method " + INSTANCE_RETRIEVER_NAME);
-            var instance = (IAttachableContext)method.Invoke(null, null);
+            var parameters = method.GetParameters();
+            IAttachableContext instance;
+            if (parameters.Length == 0)
+            {
+                instance = (IAttachableContext)method.Invoke(null, null);
+            }
+            else
+            {
+                var resolvedArgs = parameters.Select(p => Services.Resolve(p.ParameterType))
+                    .ToArray();
+                instance = (IAttachableContext)method.Invoke(null, resolvedArgs);
+            }
             Globals.RegisterInstance(instance);
             environment.InjectObject(instance, false);
 

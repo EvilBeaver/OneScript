@@ -240,7 +240,7 @@ namespace OneScript.Core.Tests
             var manualGuid = new GuidWrapper("9F3457C0-7D2A-4DCD-B9F9-3D9228986A6A");
 
             var typeManager = new DefaultTypeManager(); 
-            var discoverer = new ContextDiscoverer(typeManager, Mock.Of<IGlobalsManager>());
+            var discoverer = new ContextDiscoverer(typeManager, Mock.Of<IGlobalsManager>(), default);
             
             discoverer.DiscoverClasses(typeof(GuidWrapper).Assembly, x => x == typeof(GuidWrapper));
 

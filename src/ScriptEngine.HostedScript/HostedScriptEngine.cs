@@ -33,17 +33,8 @@ namespace ScriptEngine.HostedScript
             _engine = engine;
             _env = _engine.Environment;
             _engine.AttachAssembly(typeof(HostedScriptEngine).Assembly);
-            
+            _workingConfig = new Lazy<OneScriptLibraryOptions>(InitWorkingConfig);
             SetGlobalContexts(engine.GlobalsManager);
-
-            _workingConfig = new Lazy<OneScriptLibraryOptions>(() =>
-            {
-                var cfgAccessor = EngineInstance.GlobalsManager.GetInstance<SystemConfigAccessor>();
-                cfgAccessor.Provider = _engine.Configuration;
-                cfgAccessor.Refresh();
-                
-                return new OneScriptLibraryOptions(cfgAccessor.GetConfig());
-            });
         }
 
         private void SetGlobalContexts(IGlobalsManager manager)
@@ -61,21 +52,24 @@ namespace ScriptEngine.HostedScript
             var bgTasksManager = new BackgroundTasksManager(_engine.Services.Resolve<MachineEnvironment>());
             _env.InjectGlobalProperty(bgTasksManager, "ФоновыеЗадания", "BackgroundJobs", true);
         }
-        
-        public ScriptingEngine EngineInstance => _engine;
 
         private OneScriptLibraryOptions GetWorkingConfig()
         {
             return _workingConfig.Value;
         }
-
-        public Action<ScriptingEngine, RuntimeEnvironment> InitializationCallback { get; set; }
         
+        private OneScriptLibraryOptions InitWorkingConfig()
+        {
+            var cfgAccessor = _engine.GlobalsManager.GetInstance<SystemConfigAccessor>();
+            cfgAccessor.Refresh();
+                
+            return new OneScriptLibraryOptions(cfgAccessor.GetConfig());
+        }
+
         public void Initialize()
         {
             if (!_isInitialized)
             {
-                InitializationCallback?.Invoke(_engine, _engine.Environment);
                 _engine.Initialize();
                 _isInitialized = true;
             }
@@ -147,14 +141,6 @@ namespace ScriptEngine.HostedScript
             {
                 compilerSvc.DefinePreprocessorValue("MONO");
             }
-        }
-
-        [Obsolete]
-        public Process CreateProcess(IHostApplication host, ModuleImage moduleImage, SourceCode src)
-        {
-            SetGlobalEnvironment(host, src);
-            var module = _engine.LoadModuleImage(moduleImage);
-            return InitProcess(host, module);
         }
 
         public void SetGlobalEnvironment(IHostApplication host, SourceCode src)

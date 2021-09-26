@@ -27,7 +27,7 @@ namespace OneScript.Core.Tests
         public void All_Classes_Have_Unique_Types()
         {
             var tm = new DefaultTypeManager();
-            var discoverer = new ContextDiscoverer(tm, Mock.Of<IGlobalsManager>());
+            var discoverer = new ContextDiscoverer(tm, Mock.Of<IGlobalsManager>(), default);
             
             discoverer.DiscoverClasses(typeof(ArrayImpl).Assembly);
 

@@ -187,6 +187,8 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
         
+        #region DynamicObject members 
+        
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             try
@@ -294,6 +296,8 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
+        #endregion
+        
         public override int CompareTo(BslValue other)
         {
             if (other.GetType() == GetType())
