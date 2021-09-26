@@ -15,7 +15,7 @@ namespace OneScript.Values
         public override int CompareTo(BslValue other)
         {
             var msg = new BilingualString("Сравнение на больше/меньше для данного типа не поддерживается",
-                "Comparision for less/greater is not supported for this type");
+                "Comparison for less/greater is not supported for this type");
             
             throw new RuntimeException(msg);
         }
