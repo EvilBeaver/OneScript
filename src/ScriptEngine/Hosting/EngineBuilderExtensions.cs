@@ -16,6 +16,12 @@ namespace ScriptEngine.Hosting
 {
     public static class EngineBuilderExtensions
     {
+        /// <summary>
+        /// Используется для замены DI системы, например в ASP.NET
+        /// </summary>
+        /// <param name="b"></param>
+        /// <param name="ioc"></param>
+        /// <returns></returns>
         public static IEngineBuilder WithServices(this IEngineBuilder b, IServiceDefinitions ioc)
         {
             b.Services = ioc;

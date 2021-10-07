@@ -111,7 +111,7 @@ namespace OneScript.Values
             if (obj.GetType() != this.GetType()) return false;
             return Equals((BslNumericValue) obj);
         }
-
+        
         protected decimal ActualValue => _value;
         
         public override int GetHashCode()
@@ -236,6 +236,21 @@ namespace OneScript.Values
         public static implicit operator long(BslNumericValue numVal)
         {
             return (long)numVal._value;
+        }
+
+        public static explicit operator BslNumericValue(decimal value)
+        {
+            return Create(value);
+        }
+        
+        public static explicit operator BslNumericValue(int value)
+        {
+            return Create(value);
+        }
+        
+        public static explicit operator BslNumericValue(double value)
+        {
+            return Create((decimal)value);
         }
         
         #endregion

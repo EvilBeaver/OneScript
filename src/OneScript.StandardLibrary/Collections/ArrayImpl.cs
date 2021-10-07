@@ -32,15 +32,11 @@ namespace OneScript.StandardLibrary.Collections
 
         #region Native Runtime Bridge
         
-        // Нельзя использовать свойство-индексатор this, поскольку в этом случае
-        // падает тест DynamicObjectTest.CanAccessArraysByIndex
-        // это происходит потому, что при наличии индексатора протокол DynamicObject перестает использовать метод
-        // TryGetIndex при биндинге, а вызывает объявленный индексатор.
-        // После чего, не может привязать результат индексатора к методу Assert.Equal
-        
-        public BslValue BslIndexGetter(int index) => (BslValue)_values[index];
-        
-        public void BslIndexSetter(int index, BslValue value) => _values[index] = value;
+        public BslValue this[int index]
+        {
+            get => (BslValue)_values[index];
+            set => _values[index] = value;
+        }
         
         #endregion
         

@@ -257,7 +257,7 @@ namespace OneScript.Core.Tests
 
         }
         
-        [Fact]
+        [Fact(Skip = "Будет переделываться на индексатор this")]
         public void Can_Read_Special_StaticIndexer()
         {
             var tm = new DefaultTypeManager();
