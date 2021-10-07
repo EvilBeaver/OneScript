@@ -602,6 +602,33 @@ namespace OneScript.Language.Tests
         }
 
         [Fact]
+        public void PreprocessingLexer_LF_LineEnding()
+        {
+            var pp = new PreprocessingLexer();
+ 
+            {
+                string code = @"
+                #Если ЛожноеУсловие Тогда
+                Неважно Что тут
+                #Иначе
+                Л
+                #КонецЕсли".Replace("\r\n", "\n");
+
+                Assert.Equal("Л", GetPreprocessedContent(pp, code));
+            }
+            
+            {
+                string code = @"
+                #Если ЛожноеУсловие Тогда
+                Неважно что тут
+                #КонецЕсли
+                Л".Replace("\r\n", "\n");
+
+                Assert.Equal("Л", GetPreprocessedContent(pp, code));
+            }
+        }
+        
+        [Fact]
         public void PreprocessingLexer_ExcludedLines()
         {
             var pp = new PreprocessingLexer();
