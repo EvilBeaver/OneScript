@@ -12,8 +12,6 @@ namespace ScriptEngine.Hosting
 {
     public interface IEngineBuilder
     {
-        IDebugController DebugController { get; set; }
-        
         ConfigurationProviders ConfigurationProviders { get; }
         
         EnvironmentProviders EnvironmentProviders { get; }

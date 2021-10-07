@@ -23,7 +23,6 @@ namespace ScriptEngine.Hosting
             return builder;
         }
         
-        public IDebugController DebugController { get; set; }
         public ConfigurationProviders ConfigurationProviders { get; } = new ConfigurationProviders();
 
         public EnvironmentProviders EnvironmentProviders { get; } = new EnvironmentProviders();
