@@ -9,7 +9,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 
-namespace ScriptEngine.Machine.Rcw
+namespace OneScript.Rcw
 {
 	/// <summary>
 	/// A partial declaration of IDispatch used to lookup Type information and DISPIDs.

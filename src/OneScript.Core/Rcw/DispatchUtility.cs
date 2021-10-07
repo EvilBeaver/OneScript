@@ -18,12 +18,12 @@ using System.Security.Permissions;
 
 #endregion
 
-namespace ScriptEngine.Machine.Rcw
+namespace OneScript.Rcw
 {
     /// <summary>
     /// Provides helper methods for working with COM IDispatch objects that have a registered type library.
     /// </summary>
-    static class DispatchUtility
+    public static class DispatchUtility
     {
         #region Private Constants
         

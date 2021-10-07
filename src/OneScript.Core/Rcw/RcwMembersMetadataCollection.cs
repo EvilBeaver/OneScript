@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace ScriptEngine.Machine.Rcw
+namespace OneScript.Rcw
 {
     public class RcwMembersMetadataCollection<T> where T : RcwMemberMetadata
     {
