@@ -39,8 +39,6 @@ namespace ScriptEngine.Hosting
             
             EnvironmentProviders.Invoke(env);
             
-            engine.DebugController = DebugController;
-
             var dependencyResolver = container.TryResolve<IDependencyResolver>();
             dependencyResolver?.Initialize(engine);
             

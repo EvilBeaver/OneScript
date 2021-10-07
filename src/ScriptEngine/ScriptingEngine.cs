@@ -40,7 +40,7 @@ namespace ScriptEngine
             Loader = new ScriptSourceFactory();
             Services = services;
             ContextDiscoverer = new ContextDiscoverer(types, globals, services);
-            
+            DebugController = services.TryResolve<IDebugController>();
             ApplyConfiguration(configurationProviders.CreateConfig());
         }
 
@@ -177,7 +177,7 @@ namespace ScriptEngine
         public IDebugController DebugController
         {
             get => _debugController;
-            set
+            private set
             {
                 _debugController = value;
                 if (value != null)

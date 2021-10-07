@@ -82,7 +82,7 @@ namespace ScriptEngine.Hosting
 
         public static IEngineBuilder WithDebugger(this IEngineBuilder b, IDebugController debugger)
         {
-            b.DebugController = debugger;
+            b.Services.RegisterSingleton(debugger);
             return b;
         }
     }
