@@ -965,10 +965,9 @@ namespace ScriptEngine.Compiler
 
         private void BuildWhileStatement()
         {
-            AddLineNumber(_lexer.CurrentLine);
-
             NextToken();
-            var conditionIndex = _module.Code.Count;
+            var conditionIndex = AddLineNumber(_lexer.CurrentLine);
+
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = conditionIndex;
             _nestedLoops.Push(loopRecord);
