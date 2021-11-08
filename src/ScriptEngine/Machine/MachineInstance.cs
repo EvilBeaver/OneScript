@@ -1789,7 +1789,7 @@ namespace ScriptEngine.Machine
         {
             var code = (int)_operationStack.Pop().AsNumber();
 
-            var result = new string(new char[1] { (char)code });
+            var result = (code >= 0 && code < 65536) ? new String((char)code, 1) : String.Empty;
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
         }
@@ -1814,13 +1814,7 @@ namespace ScriptEngine.Machine
                 throw new WrongStackConditionException();
             }
 
-            int result;
-            if (strChar.Length == 0)
-                result = 0;
-            else if (position >= 0 && position < strChar.Length)
-                result = (int)strChar[position];
-            else
-                throw RuntimeException.InvalidArgumentValue();
+            int result = (position >= 0 && position < strChar.Length) ? strChar[position] : -1;
 
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
