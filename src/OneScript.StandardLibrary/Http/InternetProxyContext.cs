@@ -120,7 +120,7 @@ namespace OneScript.StandardLibrary.Http
             return proxy?.Address.GetComponents(serverComponents, UriFormat.UriEscaped) ?? string.Empty;
         }
 
-        [ContextMethod("Порт", "Password")]
+        [ContextMethod("Порт", "Port")]
         public int Port(string protocol)
         {
             var proxy = GetProxy(protocol) as WebProxy;
