@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class EnumerationContext : PropertyNameIndexAccessor
+    public class EnumerationContext : PropertyNameIndexAccessor, ICollectionContext
     {
         private readonly List<EnumerationValue> _values = new List<EnumerationValue>();
 
@@ -91,5 +91,26 @@ namespace ScriptEngine.Machine.Contexts
                 return _values;
             }
         }
+
+        #region ICollectionContext Members
+
+        public int Count()
+        {
+            return _values.Count;
+        }
+
+        public CollectionEnumerator GetManagedIterator()
+        {
+            return new CollectionEnumerator(GetEnumerator());
+        }
+        public IEnumerator<IValue> GetEnumerator()
+        {
+            foreach (var item in _values)
+            {
+                yield return item;
+            }
+        }
+
+        #endregion
     }
 }
