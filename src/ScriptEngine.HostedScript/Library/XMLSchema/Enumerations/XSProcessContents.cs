@@ -9,19 +9,19 @@ using System.Xml.Schema;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    [EnumerationType("XSProcessContents", "ОбработкаСодержимогоXS")]
+    [EnumerationType("ОбработкаСодержимогоXS", "XSProcessContents")]
     public enum XSProcessContents
     {
-        [EnumItem("EmptyRef", "ПустаяСсылка")]
-        EmptyRef = XmlSchemaContentProcessing.None,
+        [EnumItem("Строгая", "Strict")]
+        Strict = XmlSchemaContentProcessing.Strict,
 
-        [EnumItem("Skip", "Пропустить")]
+        [EnumItem("Пропустить", "Skip")]
         Skip = XmlSchemaContentProcessing.Skip,
 
-        [EnumItem("Lax", "Слабая")]
+        [EnumItem("Слабая", "Lax")]
         Lax = XmlSchemaContentProcessing.Lax,
 
-        [EnumItem("Strict", "Строгая")]
-        Strict = XmlSchemaContentProcessing.Strict
+        [EnumItem("ПустаяСсылка", "EmptyRef")]
+        EmptyRef = XmlSchemaContentProcessing.None
     }
 }

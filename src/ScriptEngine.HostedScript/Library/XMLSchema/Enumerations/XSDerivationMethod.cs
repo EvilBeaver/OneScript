@@ -7,16 +7,16 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    [EnumerationType("XSDerivationMethod", "МетодНаследованияXS")]
+    [EnumerationType("МетодНаследованияXS", "XSDerivationMethod")]
     public enum XSDerivationMethod
     {
-        [EnumItem("EmptyRef", "ПустаяСсылка")]
-        EmptyRef,
+        [EnumItem("Расширение", "Extension")]
+        Extension,
 
-        [EnumItem("Restriction", "Ограничение")]
+        [EnumItem("Ограничение", "Restriction")]
         Restriction,
 
-        [EnumItem("Extension", "Расширение")]
-        Extension
+        [EnumItem("ПустаяСсылка", "EmptyRef")]
+        EmptyRef
     }
 }

@@ -7,19 +7,19 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    [EnumerationType("XSNamespaceConstraintCategory", "КатегорияОграниченияПространствИменXS")]
+    [EnumerationType("КатегорияОграниченияПространствИменXS", "XSNamespaceConstraintCategory")]
     public enum XSNamespaceConstraintCategory
     {
-        [EnumItem("EmptyRef", "ПустаяСсылка")]
-        EmptyRef,
-
-        [EnumItem("Not", "Кроме")]
-        Not,
-
-        [EnumItem("Any", "Любое")]
+        [EnumItem("Любое", "Any")]
         Any,
 
-        [EnumItem("Set", "Набор")]
-        Set
+        [EnumItem("Кроме", "Not")]
+        Not,
+
+        [EnumItem("Набор", "Set")]
+        Set,
+
+        [EnumItem("ПустаяСсылка", "EmptyRef")]
+        EmptyRef
     }
 }

@@ -13,20 +13,19 @@ namespace ScriptEngine.HostedScript.Library
         [EnumItem("БезСтатуса", "WithoutStatus")]
 		WithoutStatus,
 
-		[EnumItem("Важное", "Important")]
-		Important,
-
-		[EnumItem("Внимание", "Attention")]
-		Attention,
+		[EnumItem("Обычное", "Ordinary")]
+		Ordinary,
 
 		[EnumItem("Информация", "Information")]
 		Information,
 
-		[EnumItem("Обычное", "Ordinary")]
-		Ordinary,
+		[EnumItem("Внимание", "Attention")]
+		Attention,
+
+		[EnumItem("Важное", "Important")]
+		Important,
 
 		[EnumItem("ОченьВажное", "VeryImportant")]
 		VeryImportant
-
     }
 }

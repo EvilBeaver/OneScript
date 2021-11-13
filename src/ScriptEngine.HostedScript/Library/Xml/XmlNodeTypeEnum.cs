@@ -48,23 +48,26 @@ namespace ScriptEngine.HostedScript.Library.Xml
             var type = TypeManager.RegisterType("ПеречислениеТипУзлаXML", typeof(XmlNodeTypeEnum));
             var enumValueType = TypeManager.RegisterType("ТипУзлаXML", typeof(CLREnumValueWrapper<XmlNodeType>));
 
+            TypeManager.RegisterAliasFor(type, "EnumerationXMLNodeType");
+            TypeManager.RegisterAliasFor(enumValueType, "XMLNodeType");
+
             instance = new XmlNodeTypeEnum(type, enumValueType);
 
-            instance.AddValue("Атрибут", "Attribute", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Attribute));
-            instance.AddValue("ИнструкцияОбработки", "ProcessingInstruction", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.ProcessingInstruction));
-            instance.AddValue("Комментарий", "Comment", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Comment));
-            instance.AddValue("КонецСущности", "EndEntity", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.EndEntity));
-            instance.AddValue("КонецЭлемента", "EndElement", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.EndElement));
-            instance.AddValue("НачалоЭлемента", "StartElement", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Element));
             instance.AddValue("Ничего", "None", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.None));
-            instance.AddValue("Нотация", "Notation", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Notation));
-            instance.AddValue("ОбъявлениеXML", "XMLDeclaration", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.XmlDeclaration));
-            instance.AddValue("ОпределениеТипаДокумента", "DocumentTypeDefinition", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.DocumentType));
-            instance.AddValue("ПробельныеСимволы", "Whitespace", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Whitespace));
+            instance.AddValue("Атрибут", "Attribute", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Attribute));
             instance.AddValue("СекцияCDATA", "CDATASection", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.CDATA));
-            instance.AddValue("СсылкаНаСущность", "EntityReference", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.EntityReference));
+            instance.AddValue("Комментарий", "Comment", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Comment));
+            instance.AddValue("ОпределениеТипаДокумента", "DocumentTypeDefinition", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.DocumentType));
+            instance.AddValue("НачалоЭлемента", "StartElement", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Element));
+            instance.AddValue("КонецЭлемента", "EndElement", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.EndElement));
+            instance.AddValue("КонецСущности", "EndEntity", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.EndEntity));
             instance.AddValue("Сущность", "Entity", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Entity));
+            instance.AddValue("СсылкаНаСущность", "EntityReference", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.EntityReference));
+            instance.AddValue("Нотация", "Notation", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Notation));
+            instance.AddValue("ИнструкцияОбработки", "ProcessingInstruction", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.ProcessingInstruction));
             instance.AddValue("Текст", "Text", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Text));
+            instance.AddValue("ПробельныеСимволы", "Whitespace", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.Whitespace));
+            instance.AddValue("ОбъявлениеXML", "XMLDeclaration", new CLREnumValueWrapper<XmlNodeType>(instance, XmlNodeType.XmlDeclaration));
 
             return instance;
         }

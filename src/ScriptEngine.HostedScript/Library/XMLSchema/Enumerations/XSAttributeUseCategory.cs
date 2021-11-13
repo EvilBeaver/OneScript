@@ -9,19 +9,19 @@ using System.Xml.Schema;
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    [EnumerationType("XSAttributeUseCategory", "КатегорияИспользованияАтрибутаXS")]
+    [EnumerationType("КатегорияИспользованияАтрибутаXS","XSAttributeUseCategory")]
     public enum XSAttributeUseCategory
     {
-        [EnumItem("EmptyRef", "ПустаяСсылка")]
-        EmptyRef = XmlSchemaUse.None,
-
-        [EnumItem("Optional", "Необязательно")]
+        [EnumItem("Необязательно", "Optional")]
         Optional = XmlSchemaUse.Optional,
 
-        [EnumItem("Prohibited", "Запрещено")]
+        [EnumItem("Запрещено", "Prohibited")]
         Prohibited = XmlSchemaUse.Prohibited,
 
-        [EnumItem("Required", "Обязательно")]
-        Required = XmlSchemaUse.Required
+        [EnumItem("Обязательно", "Required")]
+        Required = XmlSchemaUse.Required,
+
+        [EnumItem("ПустаяСсылка", "EmptyRef")]
+        EmptyRef = XmlSchemaUse.None
     }
 }

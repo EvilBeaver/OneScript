@@ -13,10 +13,10 @@ namespace ScriptEngine.HostedScript.Library
 		[EnumItem("Дата", "Date")]
 		Date,
 
-		[EnumItem("ДатаВремя", "DateTime")]
-		DateTime,
-
 		[EnumItem("Время", "Time")]
-		Time
+		Time,
+
+		[EnumItem("ДатаВремя", "DateTime")]
+		DateTime
 	}
 }

@@ -18,31 +18,13 @@ namespace ScriptEngine.HostedScript.Library.Json
         }
 
         [EnumValue("Нет", "None")]
-        public EnumerationValue None
-        {
-            get
-            {
-                return this["Нет"];
-            }
-        }
-
-        [EnumValue("СимволыВнеASCII", "NotASCIISymbols")]
-        public EnumerationValue NotASCIISymbols
-        {
-            get
-            {
-                return this["СимволыВнеASCII"];
-            }
-        }
+        public EnumerationValue None => this["Нет"];
 
         [EnumValue("СимволыВнеBMP", "SymbolsNotInBMP")]
-        public EnumerationValue SymbolsNotInBMP
-        {
-            get
-            {
-                return this["СимволыВнеBMP"];
-            }
-        }
+        public EnumerationValue SymbolsNotInBMP => this["СимволыВнеBMP"];
+
+        [EnumValue("СимволыВнеASCII", "NotASCIISymbols")]
+        public EnumerationValue NotASCIISymbols => this["СимволыВнеASCII"];
 
         public static JSONCharactersEscapeModeEnum CreateInstance()
         {

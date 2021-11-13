@@ -17,32 +17,14 @@ namespace ScriptEngine.HostedScript.Library.Json
         {
         }
 
+        [EnumValue("Microsoft")]
+        public EnumerationValue Microsoft => this["Microsoft"];
+
         [EnumValue("ISO")]
-        public EnumerationValue ISO
-        {
-            get
-            {
-                return this["ISO"];
-            }
-        }
+        public EnumerationValue ISO => this["ISO"];
 
         [EnumValue("JavaScript")]
-        public EnumerationValue JavaScript
-        {
-            get
-            {
-                return this["JavaScript"];
-            }
-        }
-
-        [EnumValue("Microsoft")]
-        public EnumerationValue Microsoft
-        {
-            get
-            {
-                return this["Microsoft"];
-            }
-        }
+        public EnumerationValue JavaScript => this["JavaScript"];
 
         public static JSONDateFormatEnum CreateInstance()
         {

@@ -21,22 +21,10 @@ namespace ScriptEngine.HostedScript.Library.Zip
         }
 
         [EnumValue(RESTORE_PATHS_NAME, "Restore")]
-        public EnumerationValue Restore
-        {
-            get
-            {
-                return this[RESTORE_PATHS_NAME];
-            }
-        }
+        public EnumerationValue Restore => this[RESTORE_PATHS_NAME];
 
         [EnumValue(DONT_RESTORE_PATHS_NAME, "DontRestore")]
-        public EnumerationValue DoNotRestore
-        {
-            get
-            {
-                return this[DONT_RESTORE_PATHS_NAME];
-            }
-        }
+        public EnumerationValue DoNotRestore => this[DONT_RESTORE_PATHS_NAME];
 
         public static ZipRestoreFilePathsModeEnum CreateInstance()
         {

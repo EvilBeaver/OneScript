@@ -7,13 +7,13 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace ScriptEngine.HostedScript.Library.Xml
 {
-    [EnumerationType("XMLTypeAssignment", "НазначениеТипаXML")]
+    [EnumerationType("НазначениеТипаXML", "XMLTypeAssignment")]
     public enum XMLTypeAssignment
     {
-        [EnumItem("Implicit", "Неявное")]
-        Implicit,
+        [EnumItem("Явное", "Explicit")]
+        Explicit,
 
-        [EnumItem("Explicit", "Явное")]
-        Explicit
+        [EnumItem("Неявное", "Implicit")]
+        Implicit
     }
 }

@@ -155,22 +155,10 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         [EnumValue(EV_SIMPLE, "URLEncoding")]
-        public EnumerationValue URLEncoding
-        {
-            get
-            {
-                return this[EV_SIMPLE];
-            }
-        }
+        public EnumerationValue URLEncoding => this[EV_SIMPLE];
 
         [EnumValue(EV_URL, "URLInURLEncoding")]
-        public EnumerationValue URLInURLEncoding
-        {
-            get
-            {
-                return this[EV_URL];
-            }
-        }
+        public EnumerationValue URLInURLEncoding => this[EV_URL];
 
         public static StringEncodingMethodEnum CreateInstance()
         {

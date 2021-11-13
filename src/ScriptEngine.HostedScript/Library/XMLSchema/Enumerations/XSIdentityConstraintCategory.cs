@@ -13,28 +13,28 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     /// Типы ограничения идентичности.
     /// </summary>
     /// <see cref="XSIdentityConstraintDefinition"/>
-    [EnumerationType("XSIdentityConstraintCategory", "КатегорияОграниченияИдентичностиXS")]
+    [EnumerationType("КатегорияОграниченияИдентичностиXS", "XSIdentityConstraintCategory")]
     public enum XSIdentityConstraintCategory
     {
         /// <summary>
         /// Ограничение идентичности по ключу
         /// </summary>
         /// <see cref="XmlSchemaKey"/>
-        [EnumItem("Key", "Ключ")]
+        [EnumItem("Ключ", "Key")]
         Key,
 
         /// <summary>
         /// Ограничение идентичности по ссылке
         /// </summary>
         /// <see cref="XmlSchemaKey"/>
-        [EnumItem("KeyRef", "СсылкаНаКлюч")]
+        [EnumItem("СсылкаНаКлюч", "KeyRef")]
         KeyRef,
 
         /// <summary>
         /// Ограничение идентичности по опредению уникальности
         /// </summary>
         /// <see cref="XmlSchemaUnique"/>
-        [EnumItem("Unique", "Уникальность")]
+        [EnumItem("Уникальность", "Unique")]
         Unique
     }
 }

@@ -55,11 +55,11 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public static EnumerationXSForm CreateInstance()
         {
  
-            TypeDescriptor type          = TypeManager.RegisterType("EnumerationXSForm",  typeof(EnumerationXSForm));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("XSForm",             typeof(XSForm));
+            TypeDescriptor type          = TypeManager.RegisterType("ПеречислениеФормаПредставленияXS", typeof(EnumerationXSForm));
+            TypeDescriptor enumValueType = TypeManager.RegisterType("ФормаПредставленияXS", typeof(XSForm));
 
-            TypeManager.RegisterAliasFor(type,          "ПеречислениеФормаПредставленияXS"); 
-            TypeManager.RegisterAliasFor(enumValueType, "ФормаПредставленияXS");
+            TypeManager.RegisterAliasFor(type, "EnumerationXSForm"); 
+            TypeManager.RegisterAliasFor(enumValueType, "XSForm");
 
             EnumerationXSForm instance = new EnumerationXSForm(type, enumValueType);
 

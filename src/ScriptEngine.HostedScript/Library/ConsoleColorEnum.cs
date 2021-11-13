@@ -46,6 +46,9 @@ namespace ScriptEngine.HostedScript.Library
             var type = TypeManager.RegisterType("ПеречислениеЦветКонсоли", typeof(ConsoleColorEnum));
             var enumValueType = TypeManager.RegisterType("ЦветКонсоли", typeof(CLREnumValueWrapper<ConsoleColor>));
 
+            TypeManager.RegisterAliasFor(type, "EnumerationConsoleColor");
+            TypeManager.RegisterAliasFor(enumValueType, "ConsoleColor");
+
             instance = new ConsoleColorEnum(type, enumValueType);
 
             instance.AddValue("Белый", "White", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.White));

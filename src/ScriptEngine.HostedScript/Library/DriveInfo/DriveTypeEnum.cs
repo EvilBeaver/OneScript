@@ -35,6 +35,9 @@ namespace ScriptEngine.HostedScript.Library.DriveInfo
             var type = TypeManager.RegisterType("ПеречислениеТипДиска", typeof(DriveTypeEnum));
             var enumValueType = TypeManager.RegisterType("ТипДиска", typeof(CLREnumValueWrapper<System.IO.DriveType>));
 
+            TypeManager.RegisterAliasFor(type, "EnumerationDriveType");
+            TypeManager.RegisterAliasFor(enumValueType, "DriveType");
+
             instance = new DriveTypeEnum(type, enumValueType);
 
             instance.AddValue("Неизвестный", "Unknown", new CLREnumValueWrapper<System.IO.DriveType>(instance, System.IO.DriveType.Unknown));

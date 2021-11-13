@@ -11,19 +11,19 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     /// Содержит варианты использования выражения XPath.
     /// </summary>
     /// <see cref="XSXPathDefinition"/>
-    [EnumerationType("XSXPathVariety", "ВариантXPathXS")]
+    [EnumerationType("ВариантXPathXS", "XSXPathVariety")]
     public enum XSXPathVariety
     {
         /// <summary>
-        /// Используется в качестве поля
-        /// </summary>
-        [EnumItem("Field", "Поле")]
-        Field,
-  
-        /// <summary>
         /// Используется в качестве селектора
         /// </summary>
-        [EnumItem("Selector", "Селектор")]
-        Selector
+        [EnumItem("Селектор","Selector")]
+        Selector,
+
+        /// <summary>
+        /// Используется в качестве поля
+        /// </summary>
+        [EnumItem("Поле","Field")]
+        Field
     }
 }

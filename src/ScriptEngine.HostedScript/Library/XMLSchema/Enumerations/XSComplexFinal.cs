@@ -49,16 +49,16 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
 
         public static EnumerationXSComplexFinal CreateInstance()
         {
-            TypeDescriptor type = TypeManager.RegisterType("EnumerationXSComplexFinal", typeof(EnumerationXSComplexFinal));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("XSComplexFinal", typeof(XSComplexFinal));
+            TypeDescriptor type = TypeManager.RegisterType("ПеречислениеЗавершенностьСоставногоТипаXS", typeof(EnumerationXSComplexFinal));
+            TypeDescriptor enumValueType = TypeManager.RegisterType("ЗавершенностьСоставногоТипаXS", typeof(XSComplexFinal));
 
-            TypeManager.RegisterAliasFor(type, "ПеречислениеЗавершенностьСоставногоТипаXS");
-            TypeManager.RegisterAliasFor(enumValueType, "ЗавершенностьСоставногоТипаXS");
+            TypeManager.RegisterAliasFor(type, "EnumerationXSComplexFinal");
+            TypeManager.RegisterAliasFor(enumValueType, "XSComplexFinal");
 
             EnumerationXSComplexFinal instance = new EnumerationXSComplexFinal(type, enumValueType);
-            instance.AddValue("Все", "All", new XSComplexFinal(instance, XmlSchemaDerivationMethod.All));
-            instance.AddValue("Ограничение", "Restriction", new XSComplexFinal(instance, XmlSchemaDerivationMethod.Restriction));
             instance.AddValue("Расширение", "Extension", new XSComplexFinal(instance, XmlSchemaDerivationMethod.Extension));
+            instance.AddValue("Ограничение", "Restriction", new XSComplexFinal(instance, XmlSchemaDerivationMethod.Restriction));
+            instance.AddValue("Все", "All", new XSComplexFinal(instance, XmlSchemaDerivationMethod.All));
 
             return instance;
         }

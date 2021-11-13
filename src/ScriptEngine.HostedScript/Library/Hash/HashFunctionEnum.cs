@@ -14,74 +14,33 @@ namespace ScriptEngine.HostedScript.Library.Hash
     [SystemEnum("ХешФункция", "HashFunction")]
     public class HashFunctionEnum : EnumerationContext
     {
+        const string CRC32 = "CRC32";
         const string MD5 = "MD5";
         const string SHA1 = "SHA1";
         const string SHA256 = "SHA256";
-        const string SHA384 = "SHA384";
         const string SHA512 = "SHA512";
-        const string CRC32 = "CRC32";
-
-
-        [EnumValue(MD5)]
-        public EnumerationValue Md5
-        {
-            get
-            {
-                return this[MD5];
-            }
-        }
-
-
-        [EnumValue(SHA1)]
-        public EnumerationValue Sha1
-        {
-            get
-            {
-                return this[SHA1];
-            }
-        }
-
-
-        [EnumValue(SHA256)]
-        public EnumerationValue Sha256
-        {
-            get
-            {
-                return this[SHA256];
-            }
-        }
-
-
-        [EnumValue(SHA384)]
-        public EnumerationValue Sha384
-        {
-            get
-            {
-                return this[SHA384];
-            }
-        }
-
-
-        [EnumValue(SHA512)]
-        public EnumerationValue Sha512
-        {
-            get
-            {
-                return this[SHA512];
-            }
-        }
+        const string SHA384 = "SHA384";
 
 
         [EnumValue(CRC32)]
-        public EnumerationValue Crc32
-        {
-            get
-            {
-                return this[CRC32];
-            }
-        }
+        public EnumerationValue Crc32 => this[CRC32];
+
+        [EnumValue(MD5)]
+        public EnumerationValue Md5 => this[MD5];
+
+        [EnumValue(SHA1)]
+        public EnumerationValue Sha1 => this[SHA1];
 
 
+        [EnumValue(SHA256)]
+        public EnumerationValue Sha256 => this[SHA256];
+
+        [EnumValue(SHA512)]
+        public EnumerationValue Sha512 => this[SHA512];
+
+
+        [EnumValue(SHA384)]
+        public EnumerationValue Sha384 => this[SHA384];
 
         private HashFunctionEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)

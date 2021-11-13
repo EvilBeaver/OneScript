@@ -10,16 +10,16 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     /// <summary>
     /// Определяет вид модели содержания.
     /// </summary>
-    [EnumerationType("XSContentModel", "МодельСодержимогоXS")]
+    [EnumerationType("МодельСодержимогоXS", "XSContentModel")]
     public enum XSContentModel
     {
-        [EnumItem("EmptyRef", "ПустаяСсылка")]
-        EmptyRef,
-
-        [EnumItem("Simple", "Простая")]
+        [EnumItem("Простая", "Simple" )]
         Simple,
 
-        [EnumItem("Complex", "Составная")]
-        Complex
+        [EnumItem("Составная", "Complex")]
+        Complex,
+
+        [EnumItem("ПустаяСсылка", "EmptyRef")]
+        EmptyRef
     }
 }

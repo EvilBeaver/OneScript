@@ -12,13 +12,15 @@ namespace ScriptEngine.HostedScript.Library.Tasks
     [EnumerationType("СостояниеФоновогоЗадания", "BackgroundJobState")]
     public enum TaskStateEnum
     {
-        [EnumItem("НеВыполнялось", "NotRunned")]
-        NotRunned,
         [EnumItem("Активно", "Active")]
         Running,
         [EnumItem("Завершено", "Completed")]
         Completed,
         [EnumItem("ЗавершеноАварийно", "Failed")]
-        CompletedWithErrors
+        CompletedWithErrors,
+        [EnumItem("Отменено", "Canceled")]
+        Canceled,
+        [EnumItem("НеВыполнялось", "NotRunned")]
+        NotRunned
     }
 }

@@ -7,16 +7,16 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    [EnumerationType("XSWhitespaceHandling", "ОбработкаПробельныхСимволовXS")]
+    [EnumerationType("ОбработкаПробельныхСимволовXS", "XSWhitespaceHandling")]
     public enum XSWhitespaceHandling
     {
-        [EnumItem("Replace", "Заменять")]
+        [EnumItem("Сохранять", "Preserve")]
+        Preserve,
+
+        [EnumItem("Заменять", "Replace")]
         Replace,
 
-        [EnumItem("Collapse", "Сворачивать")]
-        Collapse,
-
-        [EnumItem("Preserve", "Сохранять")]
-        Preserve
+        [EnumItem("Сворачивать", "Collapse")]
+        Collapse
     }
 }

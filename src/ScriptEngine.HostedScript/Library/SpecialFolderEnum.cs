@@ -30,6 +30,9 @@ namespace ScriptEngine.HostedScript.Library
             var type = TypeManager.RegisterType("ПеречислениеСпециальнаяПапка", typeof(SpecialFolderEnum));
             var enumValueType = TypeManager.RegisterType("СпециальнаяПапка", typeof(CLREnumValueWrapper<sysFolder>));
 
+            TypeManager.RegisterAliasFor(type, "EnumerationSpecialFolder");
+            TypeManager.RegisterAliasFor(enumValueType, "SpecialFolder");
+
             instance = new SpecialFolderEnum(type, enumValueType);
 
             instance.AddValue("МоиДокументы", "MyDocuments", new CLREnumValueWrapper<sysFolder>(instance, sysFolder.Personal));

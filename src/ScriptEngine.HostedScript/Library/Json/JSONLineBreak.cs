@@ -17,41 +17,17 @@ namespace ScriptEngine.HostedScript.Library.Json
         {
         }
 
-        [EnumValue("Unix")]
-        public EnumerationValue Unix
-        {
-            get
-            {
-                return this["Unix"];
-            }
-        }
-
         [EnumValue("Windows")]
-        public EnumerationValue Windows
-        {
-            get
-            {
-                return this["Windows"];
-            }
-        }
+        public EnumerationValue Windows => this["Windows"];
 
-        [EnumValue("Авто", "Auto")]
-        public EnumerationValue Auto
-        {
-            get
-            {
-                return this["Авто"];
-            }
-        }
+        [EnumValue("Unix")]
+        public EnumerationValue Unix => this["Unix"];
 
         [EnumValue("Нет", "None")]
-        public EnumerationValue None
-        {
-            get
-            {
-                return this["Нет"];
-            }
-        }
+        public EnumerationValue None => this["Нет"];
+
+        [EnumValue("Авто", "Auto")]
+        public EnumerationValue Auto => this["Авто"];
 
         public static JSONLineBreakEnum CreateInstance()
         {

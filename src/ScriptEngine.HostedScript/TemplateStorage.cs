@@ -83,9 +83,9 @@ namespace ScriptEngine.HostedScript
     [EnumerationType("ТипМакета", "TemplateKind")]
     public enum TemplateKind
     {
-        [EnumItem("Файл")]
+        [EnumItem("Файл","File")]
         File,
-        [EnumItem("ДвоичныеДанные")]
+        [EnumItem("ДвоичныеДанные", "BinaryData")]
         BinaryData
     }
     

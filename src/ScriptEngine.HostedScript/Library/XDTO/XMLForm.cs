@@ -7,16 +7,16 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace ScriptEngine.HostedScript.Library.XDTO
 {
-    [EnumerationType("XMLForm", "ФормаXML")]
+    [EnumerationType("ФормаXML", "XMLForm")]
     public enum XMLForm
     {
-        [EnumItem("Element", "Элемент")]
+        [EnumItem("Атрибут", "Attribute")]
+        Attribute,
+
+        [EnumItem("Элемент", "Element")]
         Element,
 
-        [EnumItem("Text", "Текст")]
-        Text,
-
-        [EnumItem("Attribute", "Атрибут")]
-        Attribute
+        [EnumItem("Текст", "Text")]
+        Text
     }
 }

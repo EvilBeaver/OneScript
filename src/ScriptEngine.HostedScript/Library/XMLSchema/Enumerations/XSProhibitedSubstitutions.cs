@@ -63,17 +63,17 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public static EnumerationXSProhibitedSubstitutions CreateInstance()
         {
 
-            TypeDescriptor type = TypeManager.RegisterType("EnumerationXSProhibitedSubstitutions", typeof(EnumerationXSProhibitedSubstitutions));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("XSProhibitedSubstitutions", typeof(XSProhibitedSubstitutions));
+            TypeDescriptor type = TypeManager.RegisterType("ПеречислениеЗапрещенныеПодстановкиXS", typeof(EnumerationXSProhibitedSubstitutions));
+            TypeDescriptor enumValueType = TypeManager.RegisterType("ЗапрещенныеПодстановкиXS", typeof(XSProhibitedSubstitutions));
 
-            TypeManager.RegisterAliasFor(type, "ПеречислениеЗапрещенныеПодстановкиXS");
-            TypeManager.RegisterAliasFor(enumValueType, "ЗапрещенныеПодстановкиXS");
+            TypeManager.RegisterAliasFor(type, "EnumerationXSProhibitedSubstitutions");
+            TypeManager.RegisterAliasFor(enumValueType, "XSProhibitedSubstitutions");
 
             EnumerationXSProhibitedSubstitutions instance = new EnumerationXSProhibitedSubstitutions(type, enumValueType);
 
-            instance.AddValue("Все", "All", instance._valuesCache[XmlSchemaDerivationMethod.All]);
-            instance.AddValue("Ограничение", "Restriction", instance._valuesCache[XmlSchemaDerivationMethod.Restriction]);
             instance.AddValue("Расширение", "Extension", instance._valuesCache[XmlSchemaDerivationMethod.Extension]);
+            instance.AddValue("Ограничение", "Restriction", instance._valuesCache[XmlSchemaDerivationMethod.Restriction]);
+            instance.AddValue("Все", "All", instance._valuesCache[XmlSchemaDerivationMethod.All]);
 
             return instance;
         }

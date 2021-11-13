@@ -7,16 +7,16 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    [EnumerationType("XSSimpleTypeVariety", "ВариантПростогоТипаXS")]
+    [EnumerationType("ВариантПростогоТипаXS", "XSSimpleTypeVariety")]
     public enum XSSimpleTypeVariety
     {
-        [EnumItem("Atomic", "Атомарная")]
+        [EnumItem("Атомарная", "Atomic")]
         Atomic,
 
-        [EnumItem("Union", "Объединение")]
-        Union,
+        [EnumItem("Список", "List")]
+        List,
 
-        [EnumItem("List", "Список")]
-        List
+        [EnumItem("Объединение", "Union")]
+        Union,
     }
 }

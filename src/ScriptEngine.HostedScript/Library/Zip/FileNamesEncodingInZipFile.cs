@@ -12,11 +12,11 @@ namespace ScriptEngine.HostedScript.Library.Zip
     {
         [EnumItem("Авто")]
         Auto,
-        
+
+        [EnumItem("КодировкаОСДополнительноUTF8", "OSEncodingWithUTF8")]
+        OsEncodingWithUtf8,
+
         [EnumItem("UTF8")]
-        Utf8,
-        
-        [EnumItem("КодировкаОСДополнительноUTF8","OSEncodingWithUTF8")]
-        OsEncodingWithUtf8
+        Utf8
     }
 }

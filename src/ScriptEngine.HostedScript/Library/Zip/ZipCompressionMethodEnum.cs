@@ -21,22 +21,10 @@ namespace ScriptEngine.HostedScript.Library.Zip
         }
         
         [EnumValue(EV_COPY_NAME, "Copy")]
-        public EnumerationValue Copy
-        {
-            get
-            {
-                return this[EV_COPY_NAME];
-            }
-        }
+        public EnumerationValue Copy => this[EV_COPY_NAME];
 
         [EnumValue(EV_DEFLATE_NAME, "Deflate")]
-        public EnumerationValue Deflate
-        {
-            get
-            {
-                return this[EV_DEFLATE_NAME];
-            }
-        }
+        public EnumerationValue Deflate => this[EV_DEFLATE_NAME];
 
         public static ZipCompressionMethodEnum CreateInstance()
         {

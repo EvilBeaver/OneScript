@@ -22,31 +22,13 @@ namespace ScriptEngine.HostedScript.Library.Zip
         }
         
         [EnumValue(EV_MINIMAL_NAME, "Minimum")]
-        public EnumerationValue Minimal
-        {
-            get
-            {
-                return this[EV_MINIMAL_NAME];
-            }
-        }
+        public EnumerationValue Minimal => this[EV_MINIMAL_NAME];
 
         [EnumValue(EV_OPTIMAL_NAME, "Optimal")]
-        public EnumerationValue Optimal
-        {
-            get
-            {
-                return this[EV_OPTIMAL_NAME];
-            }
-        }
+        public EnumerationValue Optimal => this[EV_OPTIMAL_NAME];
 
         [EnumValue(EV_MAXIMAL_NAME, "Maximum")]
-        public EnumerationValue Maximal
-        {
-            get
-            {
-                return this[EV_MAXIMAL_NAME];
-            }
-        }
+        public EnumerationValue Maximal => this[EV_MAXIMAL_NAME];
 
         public static ZipCompressionLevelEnum CreateInstance()
         {

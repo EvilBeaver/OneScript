@@ -7,104 +7,104 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace ScriptEngine.HostedScript.Library.XMLSchema
 {
-    [EnumerationType("XSComponentType", "ТипКомпонентыXS")]
+    [EnumerationType("ТипКомпонентыXS", "XSComponentType")]
     public enum XSComponentType
     {
 
-        [EnumItem("Annotation", "Аннотация")]
+        [EnumItem("Аннотация", "Annotation")]
         Annotation,
 
-        [EnumItem("Include", "Включение")]
-        Include,
-
-        [EnumItem("ModelGroup", "ГруппаМодели")]
-        ModelGroup,
-
-        [EnumItem("Documentation", "Документация")]
-        Documentation,
-
-        [EnumItem("Import", "Импорт")]
-        Import,
-
-        [EnumItem("AppInfo", "ИнформацияПриложения")]
+        [EnumItem("ИнформацияПриложения", "AppInfo")]
         AppInfo,
 
-        [EnumItem("AttributeUse", "ИспользованиеАтрибута")]
-        AttributeUse,
+        [EnumItem("Документация", "Documentation")]
+        Documentation,
 
-        [EnumItem("MaxInclusiveFacet", "МаксимальноВключающийФасет")]
-        MaxInclusiveFacet,
-
-        [EnumItem("MaxExclusiveFacet", "МаксимальноИсключающийФасет")]
-        MaxExclusiveFacet,
-
-        [EnumItem("Wildcard", "Маска")]
-        Wildcard,
-
-        [EnumItem("MinInclusiveFacet", "МинимальноВключающийФасет")]
-        MinInclusiveFacet,
-
-        [EnumItem("MinExclusiveFacet", "МинимальноИсключающийФасет")]
-        MinExclusiveFacet,
-
-        [EnumItem("AttributeDeclaration", "ОбъявлениеАтрибута")]
-        AttributeDeclaration,
-
-        [EnumItem("NotationDeclaration", "ОбъявлениеНотации")]
-        NotationDeclaration,
-
-        [EnumItem("ElementDeclaration", "ОбъявлениеЭлемента")]
-        ElementDeclaration,
-
-        [EnumItem("XPathDefinition", "ОпределениеXPath")]
-        XPathDefinition,
-
-        [EnumItem("AttributeGroupDefinition", "ОпределениеГруппыАтрибутов")]
-        AttributeGroupDefinition,
-
-        [EnumItem("ModelGroupDefinition", "ОпределениеГруппыМодели")]
-        ModelGroupDefinition,
-
-        [EnumItem("IdentityConstraintDefinition", "ОпределениеОграниченияИдентичности")]
+        [EnumItem("ОпределениеОграниченияИдентичности", "IdentityConstraintDefinition")]
         IdentityConstraintDefinition,
 
-        [EnumItem("SimpleTypeDefinition", "ОпределениеПростогоТипа")]
+        [EnumItem("ОбъявлениеАтрибута", "AttributeDeclaration")]
+        AttributeDeclaration,
+
+        [EnumItem("ОбъявлениеЭлемента", "ElementDeclaration")]
+        ElementDeclaration,
+
+        [EnumItem("ОбъявлениеНотации", "NotationDeclaration")]
+        NotationDeclaration,
+
+        [EnumItem("ОпределениеПростогоТипа", "SimpleTypeDefinition")]
         SimpleTypeDefinition,
 
-        [EnumItem("ComplexTypeDefinition", "ОпределениеСоставногоТипа")]
+        [EnumItem("ОпределениеСоставногоТипа", "ComplexTypeDefinition")]
         ComplexTypeDefinition,
 
-        [EnumItem("Redefine", "Переопределение")]
-        Redefine,
+        [EnumItem("ОпределениеГруппыАтрибутов", "AttributeGroupDefinition")]
+        AttributeGroupDefinition,
 
-        [EnumItem("Schema", "Схема")]
-        Schema,
+        [EnumItem("ОпределениеГруппыМодели", "ModelGroupDefinition")]
+        ModelGroupDefinition,
 
-        [EnumItem("LengthFacet", "ФасетДлины")]
-        LengthFacet,
+        [EnumItem("Фрагмент", "Particle")]
+        Particle,
 
-        [EnumItem("FractionDigitsFacet", "ФасетКоличестваРазрядовДробнойЧасти")]
-        FractionDigitsFacet,
+        [EnumItem("ОпределениеXPath", "XPathDefinition")]
+        XPathDefinition,
 
-        [EnumItem("MaxLengthFacet", "ФасетМаксимальнойДлины")]
-        MaxLengthFacet,
-
-        [EnumItem("MinLengthFacet", "ФасетМинимальнойДлины")]
-        MinLengthFacet,
-
-        [EnumItem("PatternFacet", "ФасетОбразца")]
-        PatternFacet,
-
-        [EnumItem("TotalDigitsFacet", "ФасетОбщегоКоличестваРазрядов")]
+        [EnumItem("ФасетОбщегоКоличестваРазрядов", "TotalDigitsFacet")]
         TotalDigitsFacet,
 
-        [EnumItem("EnumerationFacet", "ФасетПеречисления")]
+        [EnumItem("ФасетКоличестваРазрядовДробнойЧасти", "FractionDigitsFacet")]
+        FractionDigitsFacet,
+
+        [EnumItem("ФасетДлины", "LengthFacet")]
+        LengthFacet,
+
+        [EnumItem("ФасетМинимальнойДлины", "MinLengthFacet")]
+        MinLengthFacet,
+
+        [EnumItem("ФасетМаксимальнойДлины", "MaxLengthFacet")]
+        MaxLengthFacet,
+
+        [EnumItem("МинимальноИсключающийФасет", "MinExclusiveFacet")]
+        MinExclusiveFacet,
+
+        [EnumItem("МинимальноВключающийФасет", "MinInclusiveFacet")]
+        MinInclusiveFacet,
+
+        [EnumItem("МаксимальноИсключающийФасет", "MaxExclusiveFacet")]
+        MaxExclusiveFacet,
+
+        [EnumItem("МаксимальноВключающийФасет", "MaxInclusiveFacet")]
+        MaxInclusiveFacet,
+
+        [EnumItem("ФасетПеречисления", "EnumerationFacet")]
         EnumerationFacet,
 
-        [EnumItem("WhitespaceFacet", "ФасетПробельныхСимволов")]
+        [EnumItem("ФасетОбразца", "PatternFacet")]
+        PatternFacet,
+
+        [EnumItem("ФасетПробельныхСимволов", "WhitespaceFacet")]
         WhitespaceFacet,
 
-        [EnumItem("Particle", "Фрагмент")]
-        Particle
+        [EnumItem("Импорт", "Import")]
+        Import,
+
+        [EnumItem("Переопределение", "Redefine")]
+        Redefine,
+
+        [EnumItem("Включение", "Include")]
+        Include,
+
+        [EnumItem("Маска", "Wildcard")]
+        Wildcard,
+
+        [EnumItem("ГруппаМодели", "ModelGroup")]
+        ModelGroup,
+
+        [EnumItem("ИспользованиеАтрибута", "AttributeUse")]
+        AttributeUse,
+
+        [EnumItem("Схема", "Schema")]
+        Schema
     }
 }

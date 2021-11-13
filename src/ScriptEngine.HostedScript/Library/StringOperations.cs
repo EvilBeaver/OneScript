@@ -313,9 +313,9 @@ namespace ScriptEngine.HostedScript.Library
     [EnumerationType("НаправлениеПоиска", "SearchDirection")]
     public enum SearchDirection
     {
-        [EnumItem("СНачала")]
+        [EnumItem("СНачала", "FromBegin")]
         FromBegin,
-        [EnumItem("СКонца")]
+        [EnumItem("СКонца", "FromEnd")]
         FromEnd
     }
 

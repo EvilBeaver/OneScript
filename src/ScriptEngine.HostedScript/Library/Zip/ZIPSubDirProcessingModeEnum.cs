@@ -12,31 +12,19 @@ namespace ScriptEngine.HostedScript.Library.Zip
     [SystemEnum("РежимОбработкиПодкаталоговZIP", "ZIPSubDirProcessingMode")]
     public class ZIPSubDirProcessingModeEnum : EnumerationContext
     {
-        private const string EV_DONT_RECURSE = "НеОбрабатывать";
         private const string EV_RECURSE = "ОбрабатыватьРекурсивно";
+        private const string EV_DONT_RECURSE = "НеОбрабатывать";
 
         private ZIPSubDirProcessingModeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
         {
         }
 
-        [EnumValue(EV_DONT_RECURSE, "DontProcess")]
-        public EnumerationValue DontRecurse
-        {
-            get
-            {
-                return this[EV_DONT_RECURSE];
-            }
-        }
-
         [EnumValue(EV_RECURSE, "ProcessRecursively")]
-        public EnumerationValue Recurse
-        {
-            get
-            {
-                return this[EV_RECURSE];
-            }
-        }
+        public EnumerationValue Recurse => this[EV_RECURSE];
+
+        [EnumValue(EV_DONT_RECURSE, "DontProcess")]
+        public EnumerationValue DontRecurse => this[EV_DONT_RECURSE];
 
         public static ZIPSubDirProcessingModeEnum CreateInstance()
         {

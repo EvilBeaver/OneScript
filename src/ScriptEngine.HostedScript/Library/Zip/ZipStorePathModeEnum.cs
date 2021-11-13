@@ -12,9 +12,9 @@ namespace ScriptEngine.HostedScript.Library.Zip
     [SystemEnum("РежимСохраненияПутейZIP", "ZIPStorePathsMode")]
     public class ZipStorePathModeEnum : EnumerationContext
     {
-        const string DONT_SAVE = "НеСохранятьПути";
-        const string SAVE_RELATIVE = "СохранятьОтносительныеПути";
         const string SAVE_FULL = "СохранятьПолныеПути";
+        const string SAVE_RELATIVE = "СохранятьОтносительныеПути";
+        const string DONT_SAVE = "НеСохранятьПути";
 
         public ZipStorePathModeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
@@ -22,32 +22,14 @@ namespace ScriptEngine.HostedScript.Library.Zip
 
         }
 
-        [EnumValue(DONT_SAVE, "DontStorePath")]
-        public EnumerationValue DontStorePath
-        {
-            get
-            {
-                return this[DONT_SAVE];
-            }
-        }
+        [EnumValue(SAVE_FULL, "StoreFullPath")]
+        public EnumerationValue StoreFullPath => this[SAVE_FULL];
 
         [EnumValue(SAVE_RELATIVE, "StoreRelativePath")]
-        public EnumerationValue StoreRelativePath
-        {
-            get
-            {
-                return this[SAVE_RELATIVE];
-            }
-        }
+        public EnumerationValue StoreRelativePath => this[SAVE_RELATIVE];
 
-        [EnumValue(SAVE_FULL, "StoreFullPath")]
-        public EnumerationValue StoreFullPath
-        {
-            get
-            {
-                return this[SAVE_FULL];
-            }
-        }
+        [EnumValue(DONT_SAVE, "DontStorePath")]
+        public EnumerationValue DontStorePath => this[DONT_SAVE];
 
         public static ZipStorePathModeEnum CreateInstance()
         {

@@ -65,20 +65,20 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public static EnumerationXSSchemaFinal CreateInstance()
         {
 
-            TypeDescriptor type = TypeManager.RegisterType("EnumerationXSSchemaFinal", typeof(EnumerationXSSchemaFinal));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("XSSchemaFinal", typeof(XSSchemaFinal));
+            TypeDescriptor type = TypeManager.RegisterType("ПеречислениеЗавершенностьСхемыXS", typeof(EnumerationXSSchemaFinal));
+            TypeDescriptor enumValueType = TypeManager.RegisterType("ЗавершенностьСхемыXS", typeof(XSSchemaFinal));
 
-            TypeManager.RegisterAliasFor(type, "ПеречислениеЗавершенностьСхемыXS");
-            TypeManager.RegisterAliasFor(enumValueType, "ЗавершенностьСхемыXS");
+            TypeManager.RegisterAliasFor(type, "EnumerationXSSchemaFinal");
+            TypeManager.RegisterAliasFor(enumValueType, "XSSchemaFinal");
 
             EnumerationXSSchemaFinal instance = new EnumerationXSSchemaFinal(type, enumValueType);
 
-            instance.AddValue("Все", "All", instance._valuesCache[XmlSchemaDerivationMethod.All]);
-            instance.AddValue("Объединение", "Union", instance._valuesCache[XmlSchemaDerivationMethod.Union]);
-            instance.AddValue("Ограничение", "Restriction", instance._valuesCache[XmlSchemaDerivationMethod.Restriction]);
-            instance.AddValue("Расширение", "Extension", instance._valuesCache[XmlSchemaDerivationMethod.Extension]);
             instance.AddValue("Список", "List", instance._valuesCache[XmlSchemaDerivationMethod.List]);
- 
+            instance.AddValue("Объединение", "Union", instance._valuesCache[XmlSchemaDerivationMethod.Union]);
+            instance.AddValue("Расширение", "Extension", instance._valuesCache[XmlSchemaDerivationMethod.Extension]);
+            instance.AddValue("Ограничение", "Restriction", instance._valuesCache[XmlSchemaDerivationMethod.Restriction]);
+            instance.AddValue("Все", "All", instance._valuesCache[XmlSchemaDerivationMethod.All]);
+
             return instance;
         }
     }

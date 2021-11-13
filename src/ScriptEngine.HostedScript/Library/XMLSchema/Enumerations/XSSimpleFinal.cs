@@ -62,18 +62,18 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
         public static EnumerationXSSimpleFinal CreateInstance()
         {
 
-            TypeDescriptor type = TypeManager.RegisterType("EnumerationXSSimpleFinal", typeof(EnumerationXSSimpleFinal));
-            TypeDescriptor enumValueType = TypeManager.RegisterType("XSSimpleFinal", typeof(XSSimpleFinal));
+            TypeDescriptor type = TypeManager.RegisterType("ПеречислениеЗавершенностьПростогоТипаXS", typeof(EnumerationXSSimpleFinal));
+            TypeDescriptor enumValueType = TypeManager.RegisterType("ЗавершенностьПростогоТипаXS", typeof(XSSimpleFinal));
 
-            TypeManager.RegisterAliasFor(type, "ПеречислениеЗавершенностьПростогоТипаXS");
-            TypeManager.RegisterAliasFor(enumValueType, "ЗавершенностьПростогоТипаXS");
+            TypeManager.RegisterAliasFor(type, "EnumerationXSSimpleFinal");
+            TypeManager.RegisterAliasFor(enumValueType, "XSSimpleFinal");
 
             EnumerationXSSimpleFinal instance = new EnumerationXSSimpleFinal(type, enumValueType);
 
-            instance.AddValue("Все", "All", instance._valuesCache[XmlSchemaDerivationMethod.All]);
+            instance.AddValue("Список", "List", instance._valuesCache[XmlSchemaDerivationMethod.List]);
             instance.AddValue("Объединение", "Union", instance._valuesCache[XmlSchemaDerivationMethod.Union]);
             instance.AddValue("Ограничение", "Restriction", instance._valuesCache[XmlSchemaDerivationMethod.Restriction]);
-            instance.AddValue("Список", "List", instance._valuesCache[XmlSchemaDerivationMethod.List]);
+            instance.AddValue("Все", "All", instance._valuesCache[XmlSchemaDerivationMethod.All]);
 
             return instance;
         }

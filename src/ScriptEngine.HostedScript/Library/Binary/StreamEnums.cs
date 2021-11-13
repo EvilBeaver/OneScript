@@ -10,48 +10,48 @@ namespace ScriptEngine.HostedScript.Library.Binary
     [EnumerationType("РежимОткрытияФайла", "FileOpenMode")]
     public enum FileOpenModeEnum
     {
-        [EnumItem("Дописать")]
-        Append,
-        [EnumItem("Обрезать")]
-        Truncate,
-        [EnumItem("Открыть")]
-        Open,
-        [EnumItem("ОткрытьИлиСоздать")]
-        OpenOrCreate,
-        [EnumItem("Создать")]
+        [EnumItem("Создать", "Create")]
         Create,
-        [EnumItem("СоздатьНовый")]
-        CreateNew
+        [EnumItem("СоздатьНовый", "CreateNew")]
+        CreateNew,
+        [EnumItem("Открыть", "Open")]
+        Open,
+        [EnumItem("ОткрытьИлиСоздать", "OpenOrCreate")]
+        OpenOrCreate,
+        [EnumItem("Обрезать", "Truncate")]
+        Truncate,
+        [EnumItem("Дописать", "Append")]
+        Append
     }
 
     [EnumerationType("ДоступКФайлу", "FileAccess")]
     public enum FileAccessEnum
     {
-        [EnumItem("Запись")]
-        Write,
-        [EnumItem("Чтение")]
+        [EnumItem("Чтение", "Read")]
         Read,
-        [EnumItem("ЧтениеИЗапись")]
+        [EnumItem("Запись", "Write")]
+        Write,
+        [EnumItem("ЧтениеИЗапись", "ReadAndWrite")]
         ReadAndWrite
     }
 
     [EnumerationType("ПозицияВПотоке", "StreamPosition")]
     public enum StreamPositionEnum
     {
-        [EnumItem("Начало")]
+        [EnumItem("Начало", "Begin")]
         Begin,
-        [EnumItem("Конец")]
-        End,
-        [EnumItem("Текущая")]
-        Current
+        [EnumItem("Текущая", "Current")]
+        Current,
+        [EnumItem("Конец", "End")]
+        End
     }
 
     [EnumerationType("ПорядокБайтов", "ByteOrder")]
     public enum ByteOrderEnum
     {
-        [EnumItem("BigEndian")]
-        BigEndian,
         [EnumItem("LittleEndian")]
-        LittleEndian
+        LittleEndian,
+        [EnumItem("BigEndian")]
+        BigEndian
     }
 }

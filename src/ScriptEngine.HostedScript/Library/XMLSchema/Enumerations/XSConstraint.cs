@@ -10,19 +10,19 @@ namespace ScriptEngine.HostedScript.Library.XMLSchema
     /// <summary>
     /// Описывает варианты ограничения значения
     /// </summary>
-    [EnumerationType("XSConstraint", "ОграничениеЗначенияXS")]
+    [EnumerationType("ОграничениеЗначенияXS", "XSConstraint")]
     public enum XSConstraint
     {
         /// <summary>
         /// Используется ограничение по умолчанию
         /// </summary>
-        [EnumItem("Default", "ПоУмолчанию")]
+        [EnumItem("ПоУмолчанию", "Default")]
         Default,
 
         /// <summary>
         /// Используется фиксированное значение
         /// </summary>
-        [EnumItem("Fixed", "Фиксированное")]
+        [EnumItem("Фиксированное", "Fixed")]
         Fixed
     }
 }

@@ -10,6 +10,12 @@ namespace ScriptEngine.HostedScript.Library
     [EnumerationType("ТипПлатформы", "PlatformType")]
     public enum PlatformTypeEnum
     {
+        [EnumItem("Windows_x86")]
+        Windows_x86,
+
+        [EnumItem("Windows_x86_64")]
+        Windows_x86_64,
+
         [EnumItem("Linux_x86")]
         Linux_x86,
         
@@ -21,12 +27,6 @@ namespace ScriptEngine.HostedScript.Library
 
         [EnumItem("MacOS_x86_64")]
         MacOS_x86_64, 
-
-        [EnumItem("Windows_x86")]
-        Windows_x86,
-
-        [EnumItem("Windows_x86_64")]
-        Windows_x86_64,
 
         [EnumItem("Unknown")]
         Unknown,

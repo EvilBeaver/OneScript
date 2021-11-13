@@ -17,104 +17,38 @@ namespace ScriptEngine.HostedScript.Library.Json
         {
         }
 
-        [EnumValue("Null")]
-        public EnumerationValue Null
-        {
-            get
-            {
-                return this["Null"];
-            }
-        }
-
-        [EnumValue("Булево", "Boolean")]
-        public EnumerationValue Boolean
-        {
-            get
-            {
-                return this["Булево"];
-            }
-        }
-
-        [EnumValue("ИмяСвойства", "PropertyName")]
-        public EnumerationValue PropertyName
-        {
-            get
-            {
-                return this["ИмяСвойства"];
-            }
-        }
-
-        [EnumValue("Комментарий", "Comment")]
-        public EnumerationValue Comment
-        {
-            get
-            {
-                return this["Комментарий"];
-            }
-        }
-
-        [EnumValue("КонецМассива", "ArrayEnd")]
-        public EnumerationValue ArrayEnd
-        {
-            get
-            {
-                return this["КонецМассива"];
-            }
-        }
+        [EnumValue("НачалоОбъекта", "ObjectStart")]
+        public EnumerationValue ObjectStart => this["НачалоОбъекта"];
 
         [EnumValue("КонецОбъекта", "ObjectEnd")]
-        public EnumerationValue ObjectEnd
-        {
-            get
-            {
-                return this["КонецОбъекта"];
-            }
-        }
+        public EnumerationValue ObjectEnd => this["КонецОбъекта"];
 
         [EnumValue("НачалоМассива", "ArrayStart")]
-        public EnumerationValue ArrayStart
-        {
-            get
-            {
-                return this["НачалоМассива"];
-            }
-        }
+        public EnumerationValue ArrayStart => this["НачалоМассива"];
 
-        [EnumValue("НачалоОбъекта", "ObjectStart")]
-        public EnumerationValue ObjectStart
-        {
-            get
-            {
-                return this["НачалоОбъекта"];
-            }
-        }
+        [EnumValue("КонецМассива", "ArrayEnd")]
+        public EnumerationValue ArrayEnd => this["КонецМассива"];
 
-        [EnumValue("Ничего", "None")]
-        public EnumerationValue None
-        {
-            get
-            {
-                return this["Ничего"];
-            }
-        }
-
-        [EnumValue("Строка", "String")]
-        public EnumerationValue String
-        {
-            get
-            {
-                return this["Строка"];
-            }
-        }
+        [EnumValue("ИмяСвойства", "PropertyName")]
+        public EnumerationValue PropertyName => this["ИмяСвойства"];
 
         [EnumValue("Число", "Number")]
-        public EnumerationValue Number
-        {
-            get
-            {
-                return this["Число"];
-            }
-        }
+        public EnumerationValue Number => this["Число"];
+
+        [EnumValue("Строка", "String")]
+        public EnumerationValue String => this["Строка"];
+
+        [EnumValue("Булево", "Boolean")]
+        public EnumerationValue Boolean => this["Булево"];
+
+        [EnumValue("Null")]
+        public EnumerationValue Null => this["Null"];
+
+        [EnumValue("Комментарий", "Comment")]
+        public EnumerationValue Comment => this["Комментарий"];
+
+        [EnumValue("Ничего", "None")]
+        public EnumerationValue None => this["Ничего"];
 
         public static JSONValueTypeEnum CreateInstance()
         {

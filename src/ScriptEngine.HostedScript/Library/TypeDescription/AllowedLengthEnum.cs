@@ -10,10 +10,10 @@ namespace ScriptEngine.HostedScript.Library
 	[EnumerationType("ДопустимаяДлина", "AllowedLength")]
 	public enum AllowedLengthEnum
 	{
+		[EnumItem("Фиксированная", "Fixed")]
+		Fixed,
+
 		[EnumItem("Переменная", "Variable")]
 		Variable,
-
-		[EnumItem("Фиксированная", "Fixed")]
-		Fixed
 	}
 }
