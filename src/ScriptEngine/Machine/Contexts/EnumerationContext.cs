@@ -65,6 +65,11 @@ namespace ScriptEngine.Machine.Contexts
             return _values.IndexOf(enumVal);
         }
 
+        public override int GetPropCount()
+        {
+            return _values.Count;
+        }
+
         public override int FindProperty(string name)
         {
             int id;
@@ -83,6 +88,12 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _values[propNum];
         }
+
+        public override string GetPropName(int propNum)
+        {
+            return _values[propNum].AsString();
+        }
+
 
         protected IList<EnumerationValue> ValuesInternal
         {
