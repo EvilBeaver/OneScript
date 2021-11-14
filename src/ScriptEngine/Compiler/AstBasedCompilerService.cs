@@ -110,9 +110,9 @@ namespace ScriptEngine.Compiler
             return codeGen.CreateModule(moduleNode, src);
         }
 
-        protected virtual AstBasedCodeGenerator GetCodeGenerator(ICompilerContext context)
+        protected virtual StackMachineCodeGenerator GetCodeGenerator(ICompilerContext context)
         {
-            return new AstBasedCodeGenerator(context);
+            return new StackMachineCodeGenerator(context);
         }
 
         private PreprocessingLexer CreatePreprocessor(

@@ -11,7 +11,7 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace ScriptEngine.Compiler
 {
-    public partial class AstBasedCodeGenerator
+    public partial class StackMachineCodeGenerator
     {
         private const int DUMMY_ADDRESS = -1;
         

@@ -14,7 +14,6 @@ using OneScript.Sources;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 using Xunit;
-using AstBasedCodeGenerator = ScriptEngine.Compiler.AstBasedCodeGenerator;
 
 namespace OneScript.Core.Tests
 {
@@ -65,7 +64,7 @@ namespace OneScript.Core.Tests
 
             var ctx = new CompilerContext();
             ctx.PushScope(new SymbolScope());
-            var compiler = new AstBasedCodeGenerator(ctx);
+            var compiler = new StackMachineCodeGenerator(ctx);
             return compiler.CreateModule(node, lexer.Iterator.Source);
         }
     }

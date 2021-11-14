@@ -43,7 +43,6 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
             services.RegisterSingleton<RuntimeEnvironment>();
             services.RegisterSingleton<ICompilerServiceFactory, AstBasedCompilerFactory>();
-            services.RegisterSingleton<BslSyntaxWalker, AstBasedCodeGenerator>();
             services.RegisterSingleton<IErrorSink, ThrowingErrorSink>();
             
             services.RegisterEnumerable<IDirectiveHandler, ConditionalDirectiveHandler>();

@@ -24,7 +24,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    public partial class AstBasedCodeGenerator : BslSyntaxWalker
+    public partial class StackMachineCodeGenerator : BslSyntaxWalker
     {
         private readonly LoadedModule _module;
         private readonly ICompilerContext _ctx;
@@ -35,7 +35,7 @@ namespace ScriptEngine.Compiler
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
 
-        public AstBasedCodeGenerator(ICompilerContext context)
+        public StackMachineCodeGenerator(ICompilerContext context)
         {
             _ctx = context;
             _module = new LoadedModule();
@@ -349,11 +349,11 @@ namespace ScriptEngine.Compiler
         protected override void VisitWhileNode(WhileLoopNode node)
         {
             var conditionIndex = _module.Code.Count;
-            var loopRecord = AstBasedCodeGenerator.NestedLoopInfo.New();
+            var loopRecord = StackMachineCodeGenerator.NestedLoopInfo.New();
             loopRecord.startPoint = conditionIndex;
             _nestedLoops.Push(loopRecord);
             base.VisitExpression(node.Children[0]);
-            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, AstBasedCodeGenerator.DUMMY_ADDRESS);
+            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, StackMachineCodeGenerator.DUMMY_ADDRESS);
             
             VisitCodeBlock(node.Children[1]);
 
@@ -370,11 +370,11 @@ namespace ScriptEngine.Compiler
             
             var loopBegin = AddLineNumber(node.Location.LineNumber);
             AddCommand(OperationCode.IteratorNext);
-            var condition = AddCommand(OperationCode.JmpFalse, AstBasedCodeGenerator.DUMMY_ADDRESS);
+            var condition = AddCommand(OperationCode.JmpFalse, StackMachineCodeGenerator.DUMMY_ADDRESS);
             
             VisitIteratorLoopVariable(node.IteratorVariable);
             
-            var loopRecord = AstBasedCodeGenerator.NestedLoopInfo.New();
+            var loopRecord = StackMachineCodeGenerator.NestedLoopInfo.New();
             loopRecord.startPoint = loopBegin;
             _nestedLoops.Push(loopRecord);
             
@@ -401,7 +401,7 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.MakeRawValue);
             AddCommand(OperationCode.PushTmp);
 
-            var jmpIndex = AddCommand(OperationCode.Jmp, AstBasedCodeGenerator.DUMMY_ADDRESS);
+            var jmpIndex = AddCommand(OperationCode.Jmp, StackMachineCodeGenerator.DUMMY_ADDRESS);
             var indexLoopBegin = AddLineNumber(node.Location.LineNumber);
 
             // increment
@@ -411,9 +411,9 @@ namespace ScriptEngine.Compiler
 
             var counterIndex = PushVariable(counter.GetIdentifier());
             CorrectCommandArgument(jmpIndex, counterIndex);
-            var conditionIndex = AddCommand(OperationCode.JmpCounter, AstBasedCodeGenerator.DUMMY_ADDRESS);
+            var conditionIndex = AddCommand(OperationCode.JmpCounter, StackMachineCodeGenerator.DUMMY_ADDRESS);
 
-            var loopRecord = AstBasedCodeGenerator.NestedLoopInfo.New();
+            var loopRecord = StackMachineCodeGenerator.NestedLoopInfo.New();
             loopRecord.startPoint = indexLoopBegin;
             _nestedLoops.Push(loopRecord);
 
@@ -432,7 +432,7 @@ namespace ScriptEngine.Compiler
         {
             ExitTryBlocks();
             var loopInfo = _nestedLoops.Peek();
-            var idx = AddCommand(OperationCode.Jmp, AstBasedCodeGenerator.DUMMY_ADDRESS);
+            var idx = AddCommand(OperationCode.Jmp, StackMachineCodeGenerator.DUMMY_ADDRESS);
             loopInfo.breakStatements.Add(idx);
         }
         
@@ -471,10 +471,10 @@ namespace ScriptEngine.Compiler
             var exitIndices = new List<int>();
             VisitIfExpression(node.Expression);
             
-            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, AstBasedCodeGenerator.DUMMY_ADDRESS);
+            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, StackMachineCodeGenerator.DUMMY_ADDRESS);
 
             VisitIfTruePart(node.TruePart);
-            exitIndices.Add(AddCommand(OperationCode.Jmp, AstBasedCodeGenerator.DUMMY_ADDRESS));
+            exitIndices.Add(AddCommand(OperationCode.Jmp, StackMachineCodeGenerator.DUMMY_ADDRESS));
 
             bool hasAlternativeBranches = false;
             
@@ -485,9 +485,9 @@ namespace ScriptEngine.Compiler
                 {
                     AddLineNumber(alternative.Location.LineNumber);
                     VisitIfExpression(elif.Expression);
-                    jumpFalseIndex = AddCommand(OperationCode.JmpFalse, AstBasedCodeGenerator.DUMMY_ADDRESS);
+                    jumpFalseIndex = AddCommand(OperationCode.JmpFalse, StackMachineCodeGenerator.DUMMY_ADDRESS);
                     VisitIfTruePart(elif.TruePart);
-                    exitIndices.Add(AddCommand(OperationCode.Jmp, AstBasedCodeGenerator.DUMMY_ADDRESS));
+                    exitIndices.Add(AddCommand(OperationCode.Jmp, StackMachineCodeGenerator.DUMMY_ADDRESS));
                 }
                 else
                 {
@@ -518,7 +518,7 @@ namespace ScriptEngine.Compiler
                 CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
         }
 
-        private void CorrectBreakStatements(AstBasedCodeGenerator.NestedLoopInfo nestedLoopInfo, int endLoopIndex)
+        private void CorrectBreakStatements(StackMachineCodeGenerator.NestedLoopInfo nestedLoopInfo, int endLoopIndex)
         {
             foreach (var breakCmdIndex in nestedLoopInfo.breakStatements)
             {
@@ -764,7 +764,7 @@ namespace ScriptEngine.Compiler
             else
             {
                 // can be defined later
-                var forwarded = new AstBasedCodeGenerator.ForwardedMethodDecl();
+                var forwarded = new StackMachineCodeGenerator.ForwardedMethodDecl();
                 forwarded.identifier = identifier;
                 forwarded.asFunction = asFunction;
                 forwarded.location = identifierNode.Location;
@@ -773,7 +773,7 @@ namespace ScriptEngine.Compiler
                 PushCallArguments(call.ArgumentList);
                 
                 var opCode = asFunction ? OperationCode.CallFunc : OperationCode.CallProc;
-                forwarded.commandIndex = AddCommand(opCode, AstBasedCodeGenerator.DUMMY_ADDRESS);
+                forwarded.commandIndex = AddCommand(opCode, StackMachineCodeGenerator.DUMMY_ADDRESS);
                 _forwardedMethods.Add(forwarded);
             }
         }
@@ -804,11 +804,11 @@ namespace ScriptEngine.Compiler
         {
             VisitExpression(expression.Children[0]);
             AddCommand(OperationCode.MakeBool);
-            var addrOfCondition = AddCommand(OperationCode.JmpFalse, AstBasedCodeGenerator.DUMMY_ADDRESS);
+            var addrOfCondition = AddCommand(OperationCode.JmpFalse, StackMachineCodeGenerator.DUMMY_ADDRESS);
 
             VisitExpression(expression.Children[1]); // построили true-part
 
-            var endOfTruePart = AddCommand(OperationCode.Jmp, AstBasedCodeGenerator.DUMMY_ADDRESS); // уход в конец оператора
+            var endOfTruePart = AddCommand(OperationCode.Jmp, StackMachineCodeGenerator.DUMMY_ADDRESS); // уход в конец оператора
             
             CorrectCommandArgument(addrOfCondition, _module.Code.Count); // отметили, куда переходить по false
             VisitExpression(expression.Children[2]); // построили false-part
@@ -844,9 +844,9 @@ namespace ScriptEngine.Compiler
 
         protected override void VisitTryExceptNode(TryExceptNode node)
         {
-            var beginTryIndex = AddCommand(OperationCode.BeginTry, AstBasedCodeGenerator.DUMMY_ADDRESS);
+            var beginTryIndex = AddCommand(OperationCode.BeginTry, StackMachineCodeGenerator.DUMMY_ADDRESS);
             VisitTryBlock(node.TryBlock);
-            var jmpIndex = AddCommand(OperationCode.Jmp, AstBasedCodeGenerator.DUMMY_ADDRESS);
+            var jmpIndex = AddCommand(OperationCode.Jmp, StackMachineCodeGenerator.DUMMY_ADDRESS);
 
             var beginHandler = AddLineNumber(
                 node.ExceptBlock.Location.LineNumber,
@@ -1216,7 +1216,7 @@ namespace ScriptEngine.Compiler
             return _tokenToOpCode[token];
         }
         
-        static AstBasedCodeGenerator()
+        static StackMachineCodeGenerator()
         {
             _tokenToOpCode = new Dictionary<Token, OperationCode>();
 

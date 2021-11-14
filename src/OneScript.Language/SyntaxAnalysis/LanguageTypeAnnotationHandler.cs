@@ -7,14 +7,21 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Language.LexicalAnalysis;
-using OneScript.Language.SyntaxAnalysis;
+using OneScript.Language.SyntaxAnalysis.AstNodes;
 
-namespace ScriptEngine.HostedScript
+namespace OneScript.Language.SyntaxAnalysis
 {
     public class LanguageTypeAnnotationHandler : ModuleAnnotationDirectiveHandler
     {
+        private readonly ILexer _allLineContentLexer;
+        
         public LanguageTypeAnnotationHandler(IErrorSink errorSink) : base(errorSink)
         {
+            var builder = new LexerBuilder();
+            builder.Detect((cs, i) => !char.IsWhiteSpace(cs))
+                .HandleWith(new WordLexerState());
+
+            _allLineContentLexer = builder.Build();
         }
 
         protected override bool DirectiveSupported(string directive)
@@ -24,7 +31,18 @@ namespace ScriptEngine.HostedScript
 
         protected override void ParseAnnotationInternal(ref Lexem lastExtractedLexem, ILexer lexer, ParserContext parserContext)
         {
-            throw new System.NotImplementedException();
+            var node = new PreprocessorDirectiveNode(lastExtractedLexem);
+            _allLineContentLexer.Iterator = lexer.Iterator;
+
+            lastExtractedLexem = _allLineContentLexer.NextLexemOnSameLine();
+            if (lastExtractedLexem.Type != LexemType.EndOfText)
+            {
+                var child = new TerminalNode(NodeKind.Unknown, lastExtractedLexem);
+                node.AddChild(child);
+            }
+
+            lastExtractedLexem = lexer.NextLexem();
+            parserContext.AddChild(node);
         }
     }
 }
