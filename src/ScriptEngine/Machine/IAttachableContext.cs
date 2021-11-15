@@ -18,6 +18,6 @@ namespace ScriptEngine.Machine
 
     public interface IRunnable : IAttachableContext
     {
-        LoadedModule Module { get; }
+        StackRuntimeModule Module { get; }
     }
 }

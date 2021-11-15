@@ -51,7 +51,7 @@ namespace OneScript.Core.Tests
             image.Fields.Should().HaveCount(2);
         }
 
-        private static LoadedModule BuildModule(string code)
+        private static StackRuntimeModule BuildModule(string code)
         {
             var lexer = new DefaultLexer();
             lexer.Iterator = SourceCodeBuilder.Create().FromString(code).Build().CreateIterator();

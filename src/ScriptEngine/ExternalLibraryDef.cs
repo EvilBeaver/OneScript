@@ -23,7 +23,7 @@ namespace ScriptEngine
         public IList<UserAddedScript> Classes { get; } = new List<UserAddedScript>();
         public IList<UserAddedScript> Modules { get; } = new List<UserAddedScript>();
 
-        public UserAddedScript AddClass(string identifier, string filePath, LoadedModule module = null)
+        public UserAddedScript AddClass(string identifier, string filePath, StackRuntimeModule module = null)
         {
             var item = new UserAddedScript
             {
@@ -38,7 +38,7 @@ namespace ScriptEngine
             return item;
         }
         
-        public UserAddedScript AddModule(string identifier, string filePath, LoadedModule module = null)
+        public UserAddedScript AddModule(string identifier, string filePath, StackRuntimeModule module = null)
         {
             var item = new UserAddedScript
             {
@@ -66,7 +66,7 @@ namespace ScriptEngine
         public string FilePath;
 
         [NonSerialized]
-        public LoadedModule Module;
+        public StackRuntimeModule Module;
         
         public string ModuleName()
         {

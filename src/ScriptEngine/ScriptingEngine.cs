@@ -133,7 +133,7 @@ namespace ScriptEngine
             return cs;
         }
         
-        public IRuntimeContextInstance NewObject(LoadedModule module, ExternalContextData externalContext = null)
+        public IRuntimeContextInstance NewObject(StackRuntimeModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = CreateUninitializedSDO(module, externalContext);
             InitializeSDO(scriptContext);
@@ -141,7 +141,7 @@ namespace ScriptEngine
             return scriptContext;
         }
 
-        public ScriptDrivenObject CreateUninitializedSDO(LoadedModule module, ExternalContextData externalContext = null)
+        public ScriptDrivenObject CreateUninitializedSDO(StackRuntimeModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = new UserScriptContextInstance(module, true);
             if (externalContext != null)
@@ -156,7 +156,7 @@ namespace ScriptEngine
             return scriptContext;
         }
 
-        public LoadedModule LoadModuleImage(ModuleImage moduleImage)
+        public StackRuntimeModule LoadModuleImage(ModuleImage moduleImage)
         {
             throw new NotImplementedException("Deserialization of module not implemented");
             //return new LoadedModule(moduleImage);

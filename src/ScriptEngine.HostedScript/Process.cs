@@ -14,9 +14,9 @@ namespace ScriptEngine.HostedScript
         ScriptingEngine _engine;
 
         readonly IHostApplication _host;
-        readonly LoadedModule _module;
+        readonly StackRuntimeModule _module;
 
-        internal Process(IHostApplication host, LoadedModule src, ScriptingEngine runtime)
+        internal Process(IHostApplication host, StackRuntimeModule src, ScriptingEngine runtime)
         {
             _host = host;
             _engine = runtime;

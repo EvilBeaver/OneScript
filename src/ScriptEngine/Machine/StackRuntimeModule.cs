@@ -14,14 +14,14 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
-    public class LoadedModule : IExecutableModule
+    public class StackRuntimeModule : IExecutableModule
     {
-        public LoadedModule(Type ownerType)
+        public StackRuntimeModule(Type ownerType)
         {
             ClassType = ownerType;
         }
         
-        public LoadedModule() : this(typeof(UserScriptContextInstance))
+        public StackRuntimeModule() : this(typeof(UserScriptContextInstance))
         {
         }
 
@@ -37,6 +37,8 @@ namespace ScriptEngine.Machine
         
         public IList<SymbolBinding> MethodRefs { get; } = new List<SymbolBinding>();
 
+        #region IExecutableModule members
+
         public IList<BslAnnotationAttribute> ModuleAttributes { get; } = new List<BslAnnotationAttribute>();
         
         public IList<BslFieldInfo> Fields { get; } = new List<BslFieldInfo>();
@@ -48,5 +50,7 @@ namespace ScriptEngine.Machine
         public IList<Command> Code { get; } = new List<Command>(512);
 
         public SourceCode Source { get; set; }
+
+        #endregion
     }
 }

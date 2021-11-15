@@ -32,12 +32,12 @@ namespace ScriptEngine.Compiler
 
         }
 
-        public void Write(TextWriter output, LoadedModule module)
+        public void Write(TextWriter output, StackRuntimeModule module)
         {
             WriteImage(output, module);
         }
 
-        private void WriteImage(TextWriter output, LoadedModule module)
+        private void WriteImage(TextWriter output, StackRuntimeModule module)
         {
             output.WriteLine(".loadAt: {0}", module.LoadAddress);
             output.WriteLine(".variableFrame:");

@@ -17,14 +17,14 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class AttachedScriptsFactory
     {
-        private readonly Dictionary<string, LoadedModule> _loadedModules;
+        private readonly Dictionary<string, StackRuntimeModule> _loadedModules;
         private readonly Dictionary<string, string> _fileHashes;
         
         private readonly ScriptingEngine _engine;
 
         internal AttachedScriptsFactory(ScriptingEngine engine)
         {
-            _loadedModules = new Dictionary<string, LoadedModule>(StringComparer.InvariantCultureIgnoreCase);
+            _loadedModules = new Dictionary<string, StackRuntimeModule>(StringComparer.InvariantCultureIgnoreCase);
             _fileHashes = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             _engine = engine;
         }
@@ -129,7 +129,7 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        public void RegisterTypeModule(string typeName, LoadedModule module)
+        public void RegisterTypeModule(string typeName, StackRuntimeModule module)
         {
             if (_loadedModules.ContainsKey(typeName))
             {
@@ -173,7 +173,7 @@ namespace ScriptEngine.Machine.Contexts
             return _engine.NewObject(module, externalContext);
         }
 
-        public LoadedModule CompileModuleFromSource(ICompilerService compiler, SourceCode code, ExternalContextData externalContext)
+        public StackRuntimeModule CompileModuleFromSource(ICompilerService compiler, SourceCode code, ExternalContextData externalContext)
         {
             UserScriptContextInstance.PrepareCompilation(compiler);
                 
@@ -199,7 +199,7 @@ namespace ScriptEngine.Machine.Contexts
             _instance = factory;
         }
 
-        public static LoadedModule GetModuleOfType(string typeName)
+        public static StackRuntimeModule GetModuleOfType(string typeName)
         {
             return _instance._loadedModules[typeName];
         }

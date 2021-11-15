@@ -26,7 +26,7 @@ namespace ScriptEngine.Compiler
             _сompilerOptions = сompilerOptions;
         }
         
-        protected override LoadedModule CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
+        protected override StackRuntimeModule CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
@@ -39,7 +39,7 @@ namespace ScriptEngine.Compiler
             return BuildModule(context, moduleNode, source);
         }
 
-        protected override LoadedModule CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
+        protected override StackRuntimeModule CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context)
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
             var lexer = CreatePreprocessor(source, preprocessorConstants, handlers);
@@ -52,7 +52,7 @@ namespace ScriptEngine.Compiler
             return BuildModule(context, moduleNode, source);
         }
 
-        protected override LoadedModule CompileExpressionInternal(SourceCode source, ICompilerContext context)
+        protected override StackRuntimeModule CompileExpressionInternal(SourceCode source, ICompilerContext context)
         {
             var handlers = _сompilerOptions.PreprocessorHandlers;
             
@@ -100,7 +100,7 @@ namespace ScriptEngine.Compiler
             return moduleNode;
         }
 
-        private LoadedModule BuildModule(ICompilerContext context, ModuleNode moduleNode, SourceCode src)
+        private StackRuntimeModule BuildModule(ICompilerContext context, ModuleNode moduleNode, SourceCode src)
         {
             var codeGen = GetCodeGenerator(context);
             codeGen.ThrowErrors = true;

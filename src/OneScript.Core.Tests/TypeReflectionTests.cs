@@ -30,7 +30,7 @@ namespace OneScript.Core.Tests
             host.Environment = new RuntimeEnvironment();
         }
         
-        private LoadedModule LoadFromString(string code)
+        private StackRuntimeModule LoadFromString(string code)
         {
             var codeSrc = host.Loader.FromString(code);
             var cmp = host.GetCompilerService();

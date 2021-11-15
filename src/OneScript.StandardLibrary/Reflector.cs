@@ -385,7 +385,7 @@ namespace OneScript.StandardLibrary
 
         public static Type ReflectUserType(string typeName)
         {
-            LoadedModule module;
+            StackRuntimeModule module;
             try
             {
                 module = AttachedScriptsFactory.GetModuleOfType(typeName);

@@ -45,12 +45,6 @@ namespace ScriptEngine.Hosting
             return services;
         }
         
-        public static IServiceDefinitions UseNativeRuntime(this IServiceDefinitions services)
-        {
-            services.RegisterEnumerable<IDirectiveHandler, LanguageTypeAnnotationHandler>();
-            return services;
-        }
-
         public static IServiceDefinitions UseImports<T>(this IServiceDefinitions services)
             where T : class, IDependencyResolver
         {

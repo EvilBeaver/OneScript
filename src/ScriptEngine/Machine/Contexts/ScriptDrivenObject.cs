@@ -15,7 +15,7 @@ namespace ScriptEngine.Machine.Contexts
 {
     public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IRunnable
     {
-        private LoadedModule _module;
+        private StackRuntimeModule _module;
         private IVariable[] _state;
         private int VARIABLE_COUNT;
         private int METHOD_COUNT;
@@ -24,9 +24,9 @@ namespace ScriptEngine.Machine.Contexts
         private readonly Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _allPropertiesSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-        public LoadedModule Module => _module;
+        public StackRuntimeModule Module => _module;
 
-        protected ScriptDrivenObject(LoadedModule module, bool deffered)
+        protected ScriptDrivenObject(StackRuntimeModule module, bool deffered)
         {
             _module = module;
             if (!deffered)
@@ -35,7 +35,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        protected ScriptDrivenObject(LoadedModule module)
+        protected ScriptDrivenObject(StackRuntimeModule module)
         {
             _module = module;
             InitOwnData();
@@ -45,7 +45,7 @@ namespace ScriptEngine.Machine.Contexts
         {
         }
 
-        protected void SetModule(LoadedModule module)
+        protected void SetModule(StackRuntimeModule module)
         {
             _module = module;
         }

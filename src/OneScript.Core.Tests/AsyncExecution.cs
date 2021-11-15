@@ -49,7 +49,7 @@ namespace OneScript.Core.Tests
             await Task.WhenAll(tasks);
         }
         
-        private LoadedModule CompileModule(ScriptingEngine engine, string code)
+        private StackRuntimeModule CompileModule(ScriptingEngine engine, string code)
         {
             var codeSource = engine.Loader.FromString(code);
             var compiler = engine.GetCompilerService();

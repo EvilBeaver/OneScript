@@ -26,10 +26,10 @@ namespace ScriptEngine
         
         void DefinePreprocessorValue(string name);
         
-        LoadedModule Compile(SourceCode source, Type classType = null);
+        StackRuntimeModule Compile(SourceCode source, Type classType = null);
         
-        LoadedModule CompileExpression(SourceCode source);
+        StackRuntimeModule CompileExpression(SourceCode source);
         
-        LoadedModule CompileBatch(SourceCode source);
+        StackRuntimeModule CompileBatch(SourceCode source);
     }
 }

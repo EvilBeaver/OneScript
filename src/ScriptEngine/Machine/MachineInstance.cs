@@ -31,7 +31,7 @@ namespace ScriptEngine.Machine
         private Action<int>[] _commands;
         private Stack<ExceptionJumpInfo> _exceptionsStack;
         
-        private LoadedModule _module;
+        private StackRuntimeModule _module;
         private ICodeStatCollector _codeStatCollector;
         private MachineStopManager _stopManager;
         
@@ -384,7 +384,7 @@ namespace ScriptEngine.Machine
                 : ValueFactory.Create();
         }
 
-        private void SetModule(LoadedModule module)
+        private void SetModule(StackRuntimeModule module)
         {
             _module = module;
         }
@@ -460,7 +460,7 @@ namespace ScriptEngine.Machine
             PushFrame(frame);
         }
 
-        private void PrepareCodeStatisticsData(LoadedModule _module)
+        private void PrepareCodeStatisticsData(StackRuntimeModule _module)
         {
             if (_codeStatCollector == null
                 || _codeStatCollector.IsPrepared(_module.Source.Location))
@@ -2548,7 +2548,7 @@ namespace ScriptEngine.Machine
 
         #endregion
 
-        private LoadedModule CompileExpressionModule(string expression)
+        private StackRuntimeModule CompileExpressionModule(string expression)
         {
             var ctx = ExtractCompilerContext();
 
@@ -2565,7 +2565,7 @@ namespace ScriptEngine.Machine
             return module;
         }
 
-        private LoadedModule CompileExecutionBatchModule(string execBatch)
+        private StackRuntimeModule CompileExecutionBatchModule(string execBatch)
         {
             var ctx = ExtractCompilerContext();
             var entryId = CurrentCodeEntry().ToString();
@@ -2635,7 +2635,7 @@ namespace ScriptEngine.Machine
             return frame.FrameObject.Locals;
         }
 
-        private ExecutionFrameInfo FrameInfo(LoadedModule module, ExecutionFrame frame)
+        private ExecutionFrameInfo FrameInfo(StackRuntimeModule module, ExecutionFrame frame)
         {
             return new ExecutionFrameInfo()
             {

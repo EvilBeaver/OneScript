@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using System.IO;
+using OneScript.Native.Extensions;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 
@@ -114,6 +115,12 @@ namespace ScriptEngine.HostedScript.Extensions
             env.GlobalNamespace.InjectObject(storage);
             env.GlobalInstances.RegisterInstance(storage);
             return env;
+        }
+
+        public static IEngineBuilder UseNativeRuntime(this IEngineBuilder builder)
+        {
+            builder.Services.UseNativeRuntime();
+            return builder;
         }
     }
 }

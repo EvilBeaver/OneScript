@@ -116,7 +116,7 @@ namespace ScriptEngine.HostedScript
 
             var compilerSvc = GetCompilerService();
             DefineConstants(compilerSvc);
-            LoadedModule module;
+            StackRuntimeModule module;
             try
             {
                 module = compilerSvc.Compile(src);
@@ -150,7 +150,7 @@ namespace ScriptEngine.HostedScript
             _globalCtx.InitInstance();
         }
 
-        private Process InitProcess(IHostApplication host, LoadedModule module)
+        private Process InitProcess(IHostApplication host, StackRuntimeModule module)
         {
             Initialize();
             

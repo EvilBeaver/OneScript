@@ -18,7 +18,7 @@ namespace ScriptEngine.Machine.Contexts
     [ContextClass("Сценарий", "Script")]
     public class UserScriptContextInstance : ThisAwareScriptedObjectBase, IDebugPresentationAcceptor
     {
-        readonly LoadedModule _module;
+        readonly StackRuntimeModule _module;
         Dictionary<string, int> _ownPropertyIndexes;
         List<IValue> _ownProperties;
 
@@ -30,13 +30,13 @@ namespace ScriptEngine.Machine.Contexts
         
         public IValue[] ConstructorParams { get; private set; }
         
-        public UserScriptContextInstance(LoadedModule module, bool deffered = false) : base(module, deffered)
+        public UserScriptContextInstance(StackRuntimeModule module, bool deffered = false) : base(module, deffered)
         {
             _module = module;
             ConstructorParams = Array.Empty<IValue>();
         }
 
-        public UserScriptContextInstance(LoadedModule module, TypeDescriptor asObjectOfType, IValue[] args = null)
+        public UserScriptContextInstance(StackRuntimeModule module, TypeDescriptor asObjectOfType, IValue[] args = null)
             : base(module, true)
         {
             DefineType(asObjectOfType);

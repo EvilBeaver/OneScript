@@ -18,7 +18,7 @@ namespace ScriptEngine.Machine
         public bool DiscardReturnValue;
         public string MethodName;
         public ScriptException LastException;
-        public LoadedModule Module;
+        public StackRuntimeModule Module;
         public bool IsReentrantCall;
         
         public Stack<IValue> LocalFrameStack = new Stack<IValue>();
