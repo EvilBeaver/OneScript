@@ -14,7 +14,7 @@ using OneScript.Sources;
 
 namespace ScriptEngine
 {
-    public abstract class CompilerServiceBase : ICompilerService
+    public abstract class CompilerServiceBase : IStackCompilerService
     {
         private SymbolScope _scope;
         private readonly ModuleCompilerContext _currentContext;
@@ -61,7 +61,7 @@ namespace ScriptEngine
             _preprocessorVariables.Add(name);
         }
 
-        public StackRuntimeModule Compile(SourceCode source, Type classType = null)
+        public IExecutableModule Compile(SourceCode source, Type classType = null)
         {
             try
             {
@@ -75,12 +75,12 @@ namespace ScriptEngine
             }
         }
 
-        public StackRuntimeModule CompileExpression(SourceCode source)
+        public IExecutableModule CompileExpression(SourceCode source)
         {
             return CompileExpressionInternal(source, _currentContext);
         }
         
-        public StackRuntimeModule CompileBatch(SourceCode source)
+        public IExecutableModule CompileBatch(SourceCode source)
         {
             try
             {

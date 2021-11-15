@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Sources;
 
 namespace ScriptEngine.HostedScript
 {
@@ -32,7 +33,7 @@ namespace ScriptEngine.HostedScript
             public bool asClass;
         }
         
-        private LibraryLoader(StackRuntimeModule moduleHandle, RuntimeEnvironment env, ScriptingEngine engine): base(moduleHandle)
+        private LibraryLoader(IExecutableModule moduleHandle, RuntimeEnvironment env, ScriptingEngine engine): base(moduleHandle)
         {
             _env = env;
             _engine = engine;
@@ -240,7 +241,7 @@ namespace ScriptEngine.HostedScript
             _env.InitExternalLibrary(_engine, library);
         }
 
-        private StackRuntimeModule CompileFile(string path)
+        private IExecutableModule CompileFile(string path)
         {
             var compiler = _engine.GetCompilerService();
             

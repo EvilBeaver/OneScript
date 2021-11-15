@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using OneScript.Sources;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine
@@ -66,7 +67,7 @@ namespace ScriptEngine
         public string FilePath;
 
         [NonSerialized]
-        public StackRuntimeModule Module;
+        public IExecutableModule Module;
         
         public string ModuleName()
         {

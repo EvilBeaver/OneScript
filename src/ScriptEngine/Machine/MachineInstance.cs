@@ -2555,7 +2555,7 @@ namespace ScriptEngine.Machine
             ctx.PushScope(new SymbolScope()); // скоуп выражения
 
             var compiler = new AstBasedCompilerService(new CompilerOptions(), ctx);
-            var module = compiler.CompileExpression(stringSource);
+            var module = (StackRuntimeModule)compiler.CompileExpression(stringSource);
             
             return module;
         }
@@ -2572,7 +2572,7 @@ namespace ScriptEngine.Machine
             
             var compiler = new AstBasedCompilerService(new CompilerOptions(), ctx);
             ctx.PushScope(new SymbolScope()); // скоуп выражения
-            var module = compiler.CompileBatch(stringSource);
+            var module = (StackRuntimeModule)compiler.CompileBatch(stringSource);
             
             return module;
         }

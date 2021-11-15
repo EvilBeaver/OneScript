@@ -26,7 +26,7 @@ namespace ScriptEngine.Compiler
 
         public void Write(TextWriter output, SourceCode source)
         {
-            var module = _compiler.Compile(source);
+            var module = (StackRuntimeModule)_compiler.Compile(source);
 
             WriteImage(output, module);
 

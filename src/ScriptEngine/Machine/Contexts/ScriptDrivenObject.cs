@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Sources;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -24,11 +25,16 @@ namespace ScriptEngine.Machine.Contexts
         private readonly Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _allPropertiesSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-        public StackRuntimeModule Module => _module;
+        StackRuntimeModule IRunnable.Module => _module;
 
-        protected ScriptDrivenObject(StackRuntimeModule module, bool deffered)
+        protected IExecutableModule Module => _module; 
+
+        protected ScriptDrivenObject(IExecutableModule module, bool deffered)
         {
-            _module = module;
+            if (!(module is StackRuntimeModule stackRuntimeModule))
+                throw new NotImplementedException("Non-stack modules are in develop");
+            
+            _module = stackRuntimeModule;
             if (!deffered)
             {
                 InitOwnData();

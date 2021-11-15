@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using OneScript.DependencyInjection;
+using OneScript.Sources;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -113,7 +114,7 @@ namespace ScriptEngine
 
         public ScriptSourceFactory Loader { get; }
 
-        public ICompilerService GetCompilerService()
+        public IStackCompilerService GetCompilerService()
         {
             var cs = _compilerFactory.CreateInstance(Environment.SymbolsContext);
             switch (System.Environment.OSVersion.Platform)
@@ -130,10 +131,10 @@ namespace ScriptEngine
             }
             
             cs.ProduceExtraCode = ProduceExtraCode;
-            return cs;
+            return (IStackCompilerService)cs;
         }
         
-        public IRuntimeContextInstance NewObject(StackRuntimeModule module, ExternalContextData externalContext = null)
+        public IRuntimeContextInstance NewObject(IExecutableModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = CreateUninitializedSDO(module, externalContext);
             InitializeSDO(scriptContext);
@@ -141,7 +142,7 @@ namespace ScriptEngine
             return scriptContext;
         }
 
-        public ScriptDrivenObject CreateUninitializedSDO(StackRuntimeModule module, ExternalContextData externalContext = null)
+        public ScriptDrivenObject CreateUninitializedSDO(IExecutableModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = new UserScriptContextInstance(module, true);
             if (externalContext != null)

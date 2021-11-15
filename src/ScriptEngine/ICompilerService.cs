@@ -26,10 +26,21 @@ namespace ScriptEngine
         
         void DefinePreprocessorValue(string name);
         
-        StackRuntimeModule Compile(SourceCode source, Type classType = null);
+        IExecutableModule Compile(SourceCode source, Type classType = null);
         
-        StackRuntimeModule CompileExpression(SourceCode source);
+        IExecutableModule CompileExpression(SourceCode source);
         
-        StackRuntimeModule CompileBatch(SourceCode source);
+        IExecutableModule CompileBatch(SourceCode source);
+    }
+
+    /// <summary>
+    /// Заглушка на стадии рефакторинга инфраструктуры компилятора
+    /// </summary>
+    public interface IStackCompilerService : ICompilerService
+    {
+        StackRuntimeModule CompileStack(SourceCode source, Type classType = null)
+        {
+            return (StackRuntimeModule)Compile(source, classType);
+        }
     }
 }

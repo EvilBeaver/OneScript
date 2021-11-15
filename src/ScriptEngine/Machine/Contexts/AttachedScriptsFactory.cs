@@ -17,14 +17,14 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class AttachedScriptsFactory
     {
-        private readonly Dictionary<string, StackRuntimeModule> _loadedModules;
+        private readonly Dictionary<string, IExecutableModule> _loadedModules;
         private readonly Dictionary<string, string> _fileHashes;
         
         private readonly ScriptingEngine _engine;
 
         internal AttachedScriptsFactory(ScriptingEngine engine)
         {
-            _loadedModules = new Dictionary<string, StackRuntimeModule>(StringComparer.InvariantCultureIgnoreCase);
+            _loadedModules = new Dictionary<string, IExecutableModule>(StringComparer.InvariantCultureIgnoreCase);
             _fileHashes = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             _engine = engine;
         }
@@ -129,11 +129,11 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        public void RegisterTypeModule(string typeName, StackRuntimeModule module)
+        public void RegisterTypeModule(string typeName, IExecutableModule module)
         {
             if (_loadedModules.ContainsKey(typeName))
             {
-                var alreadyLoadedSrc = ((IExecutableModule)_loadedModules[typeName]).Source.Location;
+                var alreadyLoadedSrc = (_loadedModules[typeName]).Source.Location;
                 var currentSrc = module.Source.Location;
 
                 if(alreadyLoadedSrc != currentSrc)
@@ -150,7 +150,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (_loadedModules.ContainsKey(typeName))
             {
-                var alreadyLoadedSrc = ((IExecutableModule)_loadedModules[typeName]).Source.Location;
+                var alreadyLoadedSrc = _loadedModules[typeName].Source.Location;
                 var currentSrc = module.Source.Location;
 
                 if(alreadyLoadedSrc != currentSrc)
@@ -173,7 +173,7 @@ namespace ScriptEngine.Machine.Contexts
             return _engine.NewObject(module, externalContext);
         }
 
-        public StackRuntimeModule CompileModuleFromSource(ICompilerService compiler, SourceCode code, ExternalContextData externalContext)
+        public IExecutableModule CompileModuleFromSource(ICompilerService compiler, SourceCode code, ExternalContextData externalContext)
         {
             UserScriptContextInstance.PrepareCompilation(compiler);
                 
@@ -199,7 +199,7 @@ namespace ScriptEngine.Machine.Contexts
             _instance = factory;
         }
 
-        public static StackRuntimeModule GetModuleOfType(string typeName)
+        public static IExecutableModule GetModuleOfType(string typeName)
         {
             return _instance._loadedModules[typeName];
         }

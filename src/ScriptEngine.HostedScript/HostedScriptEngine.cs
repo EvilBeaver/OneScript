@@ -95,7 +95,7 @@ namespace ScriptEngine.HostedScript
 
         public ScriptSourceFactory Loader => _engine.Loader;
 
-        public ICompilerService GetCompilerService()
+        public IStackCompilerService GetCompilerService()
         {
             var compilerSvc = _engine.GetCompilerService();
             UserScriptContextInstance.PrepareCompilation(compilerSvc);
@@ -119,7 +119,7 @@ namespace ScriptEngine.HostedScript
             StackRuntimeModule module;
             try
             {
-                module = compilerSvc.Compile(src);
+                module = compilerSvc.CompileStack(src);
             }
             catch (CompilerException)
             {

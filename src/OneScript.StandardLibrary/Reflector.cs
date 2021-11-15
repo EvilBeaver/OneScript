@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Sources;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.TypeDescriptions;
@@ -385,7 +386,7 @@ namespace OneScript.StandardLibrary
 
         public static Type ReflectUserType(string typeName)
         {
-            StackRuntimeModule module;
+            IExecutableModule module;
             try
             {
                 module = AttachedScriptsFactory.GetModuleOfType(typeName);

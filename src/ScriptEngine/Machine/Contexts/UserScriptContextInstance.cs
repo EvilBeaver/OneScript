@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Sources;
 using OneScript.Types;
 using OneScript.Values;
 
@@ -18,7 +19,6 @@ namespace ScriptEngine.Machine.Contexts
     [ContextClass("Сценарий", "Script")]
     public class UserScriptContextInstance : ThisAwareScriptedObjectBase, IDebugPresentationAcceptor
     {
-        readonly StackRuntimeModule _module;
         Dictionary<string, int> _ownPropertyIndexes;
         List<IValue> _ownProperties;
 
@@ -30,17 +30,15 @@ namespace ScriptEngine.Machine.Contexts
         
         public IValue[] ConstructorParams { get; private set; }
         
-        public UserScriptContextInstance(StackRuntimeModule module, bool deffered = false) : base(module, deffered)
+        public UserScriptContextInstance(IExecutableModule module, bool deffered = false) : base(module, deffered)
         {
-            _module = module;
             ConstructorParams = Array.Empty<IValue>();
         }
 
-        public UserScriptContextInstance(StackRuntimeModule module, TypeDescriptor asObjectOfType, IValue[] args = null)
+        public UserScriptContextInstance(IExecutableModule module, TypeDescriptor asObjectOfType, IValue[] args = null)
             : base(module, true)
         {
             DefineType(asObjectOfType);
-            _module = module;
 
             ConstructorParams = args;
             if (args == null)
@@ -290,7 +288,7 @@ namespace ScriptEngine.Machine.Contexts
         
         public override int GetMethodsCount()
         {
-            return GetOwnMethodCount() + _module.Methods.Count;
+            return GetOwnMethodCount() + Module.Methods.Count;
         }
 
         protected override string ConvertToString()

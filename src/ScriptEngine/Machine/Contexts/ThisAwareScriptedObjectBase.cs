@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Sources;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -19,7 +20,7 @@ namespace ScriptEngine.Machine.Contexts
         protected const string THISOBJ_EN = "ThisObject";
         protected const string THISOBJ_RU = "ЭтотОбъект";
 
-        protected ThisAwareScriptedObjectBase(StackRuntimeModule module, bool deffered) : base(module, deffered)
+        protected ThisAwareScriptedObjectBase(IExecutableModule module, bool deffered) : base(module, deffered)
         {
         }
         

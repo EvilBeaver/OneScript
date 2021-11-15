@@ -20,7 +20,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region SDO Methods
 
-        protected AutoScriptDrivenObject(StackRuntimeModule module, bool deffered)
+        protected AutoScriptDrivenObject(IExecutableModule module, bool deffered)
             : base(module, deffered)
         {
             _privatePropsOffset = base.GetOwnVariableCount();
@@ -28,7 +28,7 @@ namespace ScriptEngine.Machine.Contexts
                 InitOwnData();
         }
 
-        protected AutoScriptDrivenObject(StackRuntimeModule module)
+        protected AutoScriptDrivenObject(IExecutableModule module)
             : this(module, false)
         {
         }
@@ -143,7 +143,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
         
-        public static StackRuntimeModule CompileModule(ICompilerService compiler, SourceCode src)
+        public static IExecutableModule CompileModule(ICompilerService compiler, SourceCode src)
         {
             ThisAwareScriptedObjectBase.RegisterSymbols(compiler);
             RegisterSymbols(compiler);

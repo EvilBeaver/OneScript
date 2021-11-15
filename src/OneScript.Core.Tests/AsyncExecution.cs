@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Threading.Tasks;
+using OneScript.Sources;
 using OneScript.StandardLibrary;
 using ScriptEngine;
 using ScriptEngine.Hosting;
@@ -49,7 +50,7 @@ namespace OneScript.Core.Tests
             await Task.WhenAll(tasks);
         }
         
-        private StackRuntimeModule CompileModule(ScriptingEngine engine, string code)
+        private IExecutableModule CompileModule(ScriptingEngine engine, string code)
         {
             var codeSource = engine.Loader.FromString(code);
             var compiler = engine.GetCompilerService();

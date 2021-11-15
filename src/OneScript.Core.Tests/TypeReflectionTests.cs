@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Reflection;
 using OneScript.Contexts;
+using OneScript.Sources;
 using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Hosting;
@@ -30,7 +31,7 @@ namespace OneScript.Core.Tests
             host.Environment = new RuntimeEnvironment();
         }
         
-        private StackRuntimeModule LoadFromString(string code)
+        private IExecutableModule LoadFromString(string code)
         {
             var codeSrc = host.Loader.FromString(code);
             var cmp = host.GetCompilerService();
