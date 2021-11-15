@@ -384,11 +384,6 @@ namespace ScriptEngine.Machine
                 : ValueFactory.Create();
         }
 
-        private void SetModule(StackRuntimeModule module)
-        {
-            _module = module;
-        }
-
         internal void Cleanup()
         {
             Reset();
@@ -408,7 +403,7 @@ namespace ScriptEngine.Machine
 
         private void SetFrame(ExecutionFrame frame)
         {
-            SetModule(frame.Module);
+            _module = frame.Module;
             _scopes[frame.ModuleLoadIndex] = frame.ModuleScope;
             _currentFrame = frame;
         }

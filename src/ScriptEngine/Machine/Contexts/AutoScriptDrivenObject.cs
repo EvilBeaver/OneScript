@@ -24,6 +24,8 @@ namespace ScriptEngine.Machine.Contexts
             : base(module, deffered)
         {
             _privatePropsOffset = base.GetOwnVariableCount();
+            if (!deffered)
+                InitOwnData();
         }
 
         protected AutoScriptDrivenObject(StackRuntimeModule module)

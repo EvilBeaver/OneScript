@@ -16,7 +16,7 @@ using OneScript.Contexts;
 
 namespace ScriptEngine.HostedScript
 {
-    public class LibraryLoader : ThisAwareScriptedObjectBase
+    public class LibraryLoader : AutoScriptDrivenObject<LibraryLoader>
     {
         private readonly RuntimeEnvironment _env;
         private readonly ScriptingEngine _engine;
@@ -32,12 +32,12 @@ namespace ScriptEngine.HostedScript
             public bool asClass;
         }
         
-        private LibraryLoader(LoadedModule moduleHandle, RuntimeEnvironment env, ScriptingEngine engine): base(moduleHandle)
+        private LibraryLoader(StackRuntimeModule moduleHandle, RuntimeEnvironment env, ScriptingEngine engine): base(moduleHandle)
         {
             _env = env;
             _engine = engine;
             _customized = true;
-
+            
             _engine.InitializeSDO(this);
 
         }
@@ -50,24 +50,14 @@ namespace ScriptEngine.HostedScript
         }
         
         #region Static part
-
-        private static readonly ContextMethodsMapper<LibraryLoader> _methods = new ContextMethodsMapper<LibraryLoader>();
-
+        
         public static LibraryLoader Create(ScriptingEngine engine, string processingScript)
         {
-            var code = engine.Loader.FromFile(processingScript);
             var compiler = engine.GetCompilerService();
-            RegisterSymbols(compiler);
+            var code = engine.Loader.FromFile(processingScript);
+            var module = CompileModule(compiler, code);
             
-            for (int i = 0; i < _methods.Count; i++)
-            {
-                var mi = _methods.GetRuntimeMethod(i);
-                compiler.DefineMethod(mi);
-            }
-
-            var loadedModule = compiler.Compile(code, typeof(LibraryLoader));
-
-            return new LibraryLoader(loadedModule, engine.Environment, engine);
+            return new LibraryLoader(module, engine.Environment, engine);
 
         }
 
@@ -133,41 +123,6 @@ namespace ScriptEngine.HostedScript
         {
             var manager = _engine.GlobalsManager.GetInstance<TemplateStorage>();
             manager.RegisterTemplate(file, name, kind);
-        }
-
-        protected override int GetOwnVariableCount()
-        {
-            return 1;
-        }
-
-        protected override int GetOwnMethodCount()
-        {
-            return _methods.Count;
-        }
-
-        protected override void UpdateState()
-        {
-            
-        }
-
-        protected override int FindOwnMethod(string name)
-        {
-            return _methods.FindMethod(name);
-        }
-
-        protected override BslMethodInfo GetOwnMethod(int index)
-        {
-            return _methods.GetRuntimeMethod(index);
-        }
-
-        protected override void CallOwnProcedure(int index, IValue[] arguments)
-        {
-            _methods.GetCallableDelegate(index)(this, arguments);
-        }
-
-        protected override IValue CallOwnFunction(int index, IValue[] arguments)
-        {
-            return _methods.GetCallableDelegate(index)(this, arguments);
         }
 
         public ExternalLibraryDef ProcessLibrary(string libraryPath)
@@ -285,7 +240,7 @@ namespace ScriptEngine.HostedScript
             _env.InitExternalLibrary(_engine, library);
         }
 
-        private LoadedModule CompileFile(string path)
+        private StackRuntimeModule CompileFile(string path)
         {
             var compiler = _engine.GetCompilerService();
             
