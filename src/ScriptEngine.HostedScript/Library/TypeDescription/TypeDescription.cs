@@ -17,6 +17,8 @@ namespace ScriptEngine.HostedScript.Library
 	{
 		private readonly List<TypeTypeValue> _types = new List<TypeTypeValue>();
 
+		private const string TYPE_BINARYDATA_NAME = "ДвоичныеДанные";
+
 		public TypeDescription(IEnumerable<TypeTypeValue> types = null,
 		                           NumberQualifiers numberQualifiers = null,
 		                           StringQualifiers stringQualifiers = null,
@@ -28,10 +30,14 @@ namespace ScriptEngine.HostedScript.Library
 				_types.AddRange(types);
 			}
 
-			NumberQualifiers = numberQualifiers ?? new NumberQualifiers();
-			StringQualifiers = stringQualifiers ?? new StringQualifiers();
-			DateQualifiers = dateQualifiers ?? new DateQualifiers();
-			BinaryDataQualifiers = binaryDataQualifiers ?? new BinaryDataQualifiers();
+			NumberQualifiers = numberQualifiers != null && _types.Contains(TypeNumber()) ?
+				numberQualifiers : new NumberQualifiers();
+			StringQualifiers = stringQualifiers != null && _types.Contains(TypeString()) ?
+				stringQualifiers : new StringQualifiers();
+			DateQualifiers = dateQualifiers != null && _types.Contains(TypeDate()) ?
+				dateQualifiers : new DateQualifiers();
+			BinaryDataQualifiers = binaryDataQualifiers != null && _types.Contains(TypeBinaryData()) ? 
+				binaryDataQualifiers : new BinaryDataQualifiers();
 		}
 
 		[ContextProperty("КвалификаторыЧисла", "NumberQualifiers")]
@@ -171,6 +177,16 @@ namespace ScriptEngine.HostedScript.Library
 		static TypeTypeValue TypeString()
 		{
 			return new TypeTypeValue(TypeManager.GetTypeById((int)DataType.String));
+		}
+		
+		static TypeTypeValue TypeDate()
+		{
+			return new TypeTypeValue(TypeManager.GetTypeById((int)DataType.Date));
+		}
+
+		static TypeTypeValue TypeBinaryData()
+		{
+			return new TypeTypeValue(TypeManager.GetTypeByName(TYPE_BINARYDATA_NAME));
 		}
 
 		public static TypeDescription StringType(int length = 0,
