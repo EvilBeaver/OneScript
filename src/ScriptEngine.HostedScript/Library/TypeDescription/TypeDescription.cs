@@ -142,7 +142,7 @@ namespace ScriptEngine.HostedScript.Library
 				{
 					var rawType = type.GetRawValue() as TypeTypeValue;
 					if (rawType == null)
-						return null;
+						continue;
 
 					_types.Add(rawType);
 				}
@@ -278,7 +278,7 @@ namespace ScriptEngine.HostedScript.Library
 		{
 			var _types = ConstructTypeList(types);
 			if (_types == null)
-				throw RuntimeException.InvalidNthArgumentType(2);
+				throw RuntimeException.InvalidNthArgumentType(1);
 
 			var qualSet = new TypeQualifiersSet(p2,p3,p4,p5,p6,p7);
 
@@ -320,7 +320,7 @@ namespace ScriptEngine.HostedScript.Library
 
 			var addTypesList = ConstructTypeList(addTypes);
 			if (addTypesList == null)
-				throw RuntimeException.InvalidArgumentType(nameof(addTypes));
+				throw RuntimeException.InvalidNthArgumentType(2);
 			_types.AddRange(addTypesList);
 
 			var qualSet = new TypeQualifiersSet(null, null, p4, p5, p6, p7);
