@@ -62,8 +62,9 @@ namespace ScriptEngine.HostedScript.Library
 		[ContextMethod("СодержитТип", "ContainsType")]
 		public bool ContainsType(IValue type)
 		{
-			if (type is TypeTypeValue)
-				return _types.IndexOf(type as TypeTypeValue) != -1;
+			if (type is TypeTypeValue typeVal)
+				return _types.Contains(typeVal);
+
 			throw RuntimeException.InvalidArgumentType(nameof(type));
 		}
 
@@ -124,9 +125,9 @@ namespace ScriptEngine.HostedScript.Library
 
 		private static IList<TypeTypeValue> ConstructTypeList(IValue types)
 		{
-			var _types = new List<TypeTypeValue>();
+			var typesList = new List<TypeTypeValue>();
 			if (types == null)
-				return _types;
+				return typesList;
 
 			types = types.GetRawValue();
 			if (types.DataType == DataType.String)
@@ -134,9 +135,12 @@ namespace ScriptEngine.HostedScript.Library
 				var typeNames = types.AsString().Split(',');
 				foreach (var typeName in typeNames)
 				{
-					_types.Add(new TypeTypeValue(typeName.Trim()));
+					var typeValue = new TypeTypeValue(typeName.Trim());
+					if (!typesList.Contains(typeValue))
+						typesList.Add(typeValue);
 				}
-			} else if (types is ArrayImpl)
+			}
+			else if (types is ArrayImpl)
 			{
 				foreach (var type in (types as ArrayImpl))
 				{
@@ -144,13 +148,14 @@ namespace ScriptEngine.HostedScript.Library
 					if (rawType == null)
 						continue;
 
-					_types.Add(rawType);
+					if (!typesList.Contains(rawType))
+						typesList.Add(rawType);
 				}
 			} else
 			{
 				return null;
 			}
-			return _types;
+			return typesList;
 		}
 
 		static TypeTypeValue TypeNumber()
@@ -276,13 +281,13 @@ namespace ScriptEngine.HostedScript.Library
 			IValue p6 = null,
 			IValue p7 = null)
 		{
-			var _types = ConstructTypeList(types);
-			if (_types == null)
+			var typesList = ConstructTypeList(types);
+			if (typesList == null)
 				throw RuntimeException.InvalidNthArgumentType(1);
 
 			var qualSet = new TypeQualifiersSet(p2,p3,p4,p5,p6,p7);
 
-			return new TypeDescription(_types,
+			return new TypeDescription(typesList,
 				qualSet.numberQualifiers,
 				qualSet.stringQualifiers,
 				qualSet.dateQualifiers,
@@ -298,22 +303,18 @@ namespace ScriptEngine.HostedScript.Library
 			IValue p6 = null,
 			IValue p7 = null)
 		{
-			var td = typeDescription as TypeDescription;
-
 			var removeTypesList = ConstructTypeList(removeTypes);
 			if (removeTypesList == null)
 				throw RuntimeException.InvalidNthArgumentType(3);
 
-
-			var _types = new List<TypeTypeValue>();
-			if (td != null)
+			var typesList = new List<TypeTypeValue>();
+			if (typeDescription is TypeDescription typeDesc)
 			{
-				foreach (var ivType in td.Types())
+				foreach (var type in typeDesc._types)
 				{
-					var type = ivType as TypeTypeValue;
-					if (removeTypesList.IndexOf(type) == -1)
+					if (!removeTypesList.Contains(type))
 					{
-						_types.Add(type);
+						typesList.Add(type);
 					}
 				}
 			}
@@ -321,11 +322,11 @@ namespace ScriptEngine.HostedScript.Library
 			var addTypesList = ConstructTypeList(addTypes);
 			if (addTypesList == null)
 				throw RuntimeException.InvalidNthArgumentType(2);
-			_types.AddRange(addTypesList);
+			typesList.AddRange(addTypesList);
 
 			var qualSet = new TypeQualifiersSet(null, null, p4, p5, p6, p7);
 
-			return new TypeDescription(_types,
+			return new TypeDescription(typesList,
 				qualSet.numberQualifiers,
 				qualSet.stringQualifiers,
 				qualSet.dateQualifiers,
