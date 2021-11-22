@@ -52,8 +52,6 @@ namespace ScriptEngine
             set => _sourceBackField = value;
         }
         public IList<AnnotationDefinition> Annotations { get; set; }
-        
-        public const string BODY_METHOD_NAME = "$entry";
     }
 
     [Serializable]

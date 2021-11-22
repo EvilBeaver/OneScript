@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using OneScript.DependencyInjection;
+using OneScript.Execution;
 using OneScript.Sources;
 using OneScript.Types;
 using ScriptEngine.Machine;
@@ -102,8 +103,8 @@ namespace ScriptEngine
 
         public void UpdateContexts()
         {
-            var mem = Services.Resolve<MachineEnvironment>();
-            MachineInstance.Current.SetMemory(mem);
+            ExecutionDispatcher.Current ??= Services.Resolve<ExecutionDispatcher>();
+            MachineInstance.Current.SetMemory(Services.Resolve<MachineEnvironment>());
         }
 
         private void SetDefaultEnvironmentIfNeeded()
@@ -114,7 +115,7 @@ namespace ScriptEngine
 
         public ScriptSourceFactory Loader { get; }
 
-        public IStackCompilerService GetCompilerService()
+        public ICompilerService GetCompilerService()
         {
             var cs = _compilerFactory.CreateInstance(Environment.SymbolsContext);
             switch (System.Environment.OSVersion.Platform)
@@ -131,7 +132,7 @@ namespace ScriptEngine
             }
             
             cs.ProduceExtraCode = ProduceExtraCode;
-            return (IStackCompilerService)cs;
+            return cs;
         }
         
         public IRuntimeContextInstance NewObject(IExecutableModule module, ExternalContextData externalContext = null)

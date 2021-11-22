@@ -38,7 +38,7 @@ namespace OneScript.Core.Tests
 
             var compiler = engine.GetCompilerService();
             UserScriptContextInstance.PrepareCompilation(compiler);
-            var module = compiler.CompileStack(engine.Loader.FromString("Перем А Экспорт; Перем Б Экспорт;\n" +
+            var module = compiler.Compile(engine.Loader.FromString("Перем А Экспорт; Перем Б Экспорт;\n" +
                                                                    "А = 1; Б = 2;"));
             engine.Initialize();
             var propertyHolder = (UserScriptContextInstance)engine.NewObject(module);

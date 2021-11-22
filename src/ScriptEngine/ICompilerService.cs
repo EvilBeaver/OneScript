@@ -36,11 +36,11 @@ namespace ScriptEngine
     /// <summary>
     /// Заглушка на стадии рефакторинга инфраструктуры компилятора
     /// </summary>
-    public interface IStackCompilerService : ICompilerService
+    public static class StackCompilerExtension
     {
-        StackRuntimeModule CompileStack(SourceCode source, Type classType = null)
+        public static StackRuntimeModule CompileStack(this ICompilerService compiler, SourceCode source, Type classType = null)
         {
-            return (StackRuntimeModule)Compile(source, classType);
+            return (StackRuntimeModule)compiler.Compile(source, classType);
         }
     }
 }

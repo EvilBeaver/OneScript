@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Sources;
@@ -20,7 +21,9 @@ namespace OneScript.Native.Compiler
         public IList<BslPropertyInfo> Properties { get; } = new List<BslPropertyInfo>();
 
         public IList<BslMethodInfo> Methods { get; } = new List<BslMethodInfo>();
-        
+
+        public BslMethodInfo ModuleBody => throw new NotImplementedException();
+
         public SourceCode Source { get; set; }
     }
 }

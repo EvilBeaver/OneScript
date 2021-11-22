@@ -150,15 +150,12 @@ namespace OneScript.Contexts
 
         public ClassBuilder ExportScriptMethods()
         {
-            // TODO придумать как сделать это в одном месте
-            const string BODY_METHOD_NAME = "$entry";
-                
             if (Module == null)
                 throw new InvalidOperationException("Module is not set");
 
             foreach (var methodDescriptor in Module.Methods)
             {
-                if(methodDescriptor.Name == BODY_METHOD_NAME)
+                if(methodDescriptor.Name == IExecutableModule.BODY_METHOD_NAME)
                     continue;
                 
                 _methods.Add(methodDescriptor);

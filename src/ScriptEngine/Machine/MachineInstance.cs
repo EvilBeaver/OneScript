@@ -132,13 +132,14 @@ namespace ScriptEngine.Machine
             SetFrame(_callStack.Peek());
         } 
 
+        [Obsolete]
         internal void ExecuteModuleBody(IRunnable sdo)
         {
             var module = sdo.Module;
             if (module.EntryMethodIndex >= 0)
             {
                 var entryRef = module.MethodRefs[module.EntryMethodIndex];
-                PrepareReentrantMethodExecution(sdo, entryRef.CodeIndex);
+                PrepareReentrantMethodExecution(sdo, (MachineMethodInfo)module.Methods[entryRef.CodeIndex]);
                 ExecuteCode();
                 if (_callStack.Count > 1)
                     PopFrame();
@@ -200,12 +201,17 @@ namespace ScriptEngine.Machine
         }
         
         public bool IsRunning => _callStack.Count != 0;
-        
+
+        [Obsolete]
         internal IValue ExecuteMethod(IRunnable sdo, int methodIndex, IValue[] arguments)
         {
-            PrepareReentrantMethodExecution(sdo, methodIndex);
-            var methodInfo = (MachineMethodInfo)_module.Methods[methodIndex];
-            var method = methodInfo.GetRuntimeMethod();
+            var methodInfo = (MachineMethodInfo)sdo.Module.Methods[methodIndex];
+            return ExecuteMethod(sdo, methodInfo, arguments);
+        }
+        
+        internal IValue ExecuteMethod(IRunnable sdo, MachineMethodInfo methodInfo, IValue[] arguments)
+        {
+            PrepareReentrantMethodExecution(sdo, methodInfo);
             var parameters = methodInfo.GetBslParameters();
             for (int i = 0; i < parameters.Length; i++)
             {
@@ -221,8 +227,7 @@ namespace ScriptEngine.Machine
                     else
                     {
                         // TODO: Alias ?
-                        _currentFrame.Locals[i] =
-                        Variable.CreateReference((IVariable)arguments[i], parameters[i].Name);
+                        _currentFrame.Locals[i] = Variable.CreateReference((IVariable)arguments[i], parameters[i].Name);
                     }
                 }
                 else if (arguments[i] == null || arguments[i].IsSkippedArgument())
@@ -434,13 +439,12 @@ namespace ScriptEngine.Machine
             _mem = null;
         }
         
-        private void PrepareReentrantMethodExecution(IRunnable sdo, int methodIndex)
+        private void PrepareReentrantMethodExecution(IRunnable sdo, MachineMethodInfo methodInfo)
         {
             var module = sdo.Module;
-            var methInfo = (MachineMethodInfo)module.Methods[methodIndex];
-            var methDescr = methInfo.GetRuntimeMethod();
+            var methDescr = methodInfo.GetRuntimeMethod();
             var frame = CreateNewFrame();
-            frame.MethodName = methInfo.Name;
+            frame.MethodName = methodInfo.Name;
             frame.Locals = new IVariable[methDescr.LocalVariables.Length];
             frame.Module = module;
             frame.ModuleScope = CreateModuleScope(sdo);

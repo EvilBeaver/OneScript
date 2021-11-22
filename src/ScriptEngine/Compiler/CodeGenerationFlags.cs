@@ -12,8 +12,8 @@ namespace ScriptEngine.Compiler
     [Flags]
     public enum CodeGenerationFlags
     {
-        Always,
-        CodeStatistics,
-        DebugCode
+        Always = 0,
+        CodeStatistics = 1,
+        DebugCode = 2,
     }
 }

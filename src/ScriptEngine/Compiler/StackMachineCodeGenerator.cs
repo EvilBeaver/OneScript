@@ -208,8 +208,9 @@ namespace ScriptEngine.Compiler
             if (entry != _module.Code.Count)
             {
                 var methodInfo = NewMethod()
-                    .Name(ModuleImage.BODY_METHOD_NAME)
+                    .Name(IExecutableModule.BODY_METHOD_NAME)
                     .DeclaringType(_module.ClassType)
+                    .SetDispatchingIndex(_module.Methods.Count)
                     .Build();
                 
                 methodInfo.SetRuntimeParameters(entry, GetVariableNames(localCtx));

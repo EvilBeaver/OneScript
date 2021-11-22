@@ -10,7 +10,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Execution;
 using OneScript.Sources;
+using OneScript.Values;
+using ScriptEngine.Machine;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -122,7 +125,7 @@ namespace ScriptEngine.Machine.Contexts
 
         protected virtual void OnInstanceCreation()
         {
-            MachineInstance.Current.ExecuteModuleBody(this);
+            ExecutionDispatcher.Current.ExecuteModuleBody(this, _module);
         }
         
         protected virtual Task OnInstanceCreationAsync()
@@ -160,7 +163,7 @@ namespace ScriptEngine.Machine.Contexts
 
         protected IValue CallScriptMethod(int methodIndex, IValue[] parameters)
         {
-            var returnValue = MachineInstance.Current.ExecuteMethod(this, methodIndex, parameters);
+            var returnValue = ExecutionDispatcher.Current.Execute(this, _module, _module.Methods[methodIndex], parameters);
 
             return returnValue;
         }
@@ -384,7 +387,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (MethodDefinedInScript(methodNumber))
             {
-                MachineInstance.Current.ExecuteMethod(this, methodNumber - METHOD_COUNT, arguments);
+                ExecutionDispatcher.Current.Execute(this, _module, _module.Methods[methodNumber - METHOD_COUNT], arguments);
             }
             else
             {
@@ -396,7 +399,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (MethodDefinedInScript(methodNumber))
             {
-                retValue = MachineInstance.Current.ExecuteMethod(this, methodNumber - METHOD_COUNT, arguments);
+                retValue = ExecutionDispatcher.Current.Execute(this, _module, _module.Methods[methodNumber - METHOD_COUNT], arguments);
             }
             else
             {

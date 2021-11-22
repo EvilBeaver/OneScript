@@ -14,7 +14,7 @@ using OneScript.Sources;
 
 namespace ScriptEngine
 {
-    public abstract class CompilerServiceBase : IStackCompilerService
+    public abstract class CompilerServiceBase : ICompilerService
     {
         private SymbolScope _scope;
         private readonly ModuleCompilerContext _currentContext;

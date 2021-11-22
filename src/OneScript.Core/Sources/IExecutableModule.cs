@@ -20,6 +20,10 @@ namespace OneScript.Sources
         
         IList<BslMethodInfo> Methods { get; }
         
+        BslMethodInfo ModuleBody { get; }
+        
         SourceCode Source { get; }
+        
+        const string BODY_METHOD_NAME = "$entry";
     }
 }

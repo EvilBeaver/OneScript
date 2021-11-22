@@ -39,6 +39,17 @@ namespace ScriptEngine.Machine
 
         #region IExecutableModule members
 
+        public BslMethodInfo ModuleBody
+        {
+            get
+            {
+                if (EntryMethodIndex == -1)
+                    return null;
+
+                return Methods[MethodRefs[EntryMethodIndex].CodeIndex];
+            }
+        }
+        
         public IList<BslAnnotationAttribute> ModuleAttributes { get; } = new List<BslAnnotationAttribute>();
         
         public IList<BslFieldInfo> Fields { get; } = new List<BslFieldInfo>();
