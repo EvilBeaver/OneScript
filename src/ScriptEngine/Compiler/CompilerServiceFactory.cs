@@ -7,11 +7,11 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace ScriptEngine.Compiler
 {
-    public class AstBasedCompilerFactory : ICompilerServiceFactory
+    public class CompilerServiceFactory : ICompilerServiceFactory
     {
         private readonly CompilerOptions _compilerOptions;
 
-        public AstBasedCompilerFactory(CompilerOptions options)
+        public CompilerServiceFactory(CompilerOptions options)
         {
             _compilerOptions = options;
         }

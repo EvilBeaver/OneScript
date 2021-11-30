@@ -43,7 +43,7 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<ITypeManager, DefaultTypeManager>();
             services.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
             services.RegisterSingleton<RuntimeEnvironment>();
-            services.RegisterSingleton<ICompilerServiceFactory, AstBasedCompilerFactory>();
+            services.RegisterSingleton<ICompilerServiceFactory, CompilerServiceFactory>();
             services.RegisterSingleton<IErrorSink, ThrowingErrorSink>();
             services.Register<ExecutionDispatcher>();
             
