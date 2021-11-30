@@ -165,10 +165,8 @@ namespace OneScript.Language.LexicalAnalysis
 
         public string ReadToLineEnd()
         {
-            while (MoveNext())
+            while (_currentSymbol != '\n' && MoveNext())
             {
-                if (_currentSymbol == '\n')
-                    break;
             }
 
             var res = GetContents();
