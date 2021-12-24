@@ -15,12 +15,12 @@ namespace ScriptEngine.HostedScript.Library
     {
         private readonly Random _random;
 
-        public RandomNumberGenerator(int seed = 0)
+        public RandomNumberGenerator(long seed = 0)
         {
             if (seed == 0)
                 _random = new Random();
             else
-                _random = new Random(seed);
+                _random = new Random((int)seed);
         }
 
         [ContextMethod("СлучайноеЧисло", "RandomNumber")]
