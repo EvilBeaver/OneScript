@@ -84,7 +84,7 @@ namespace ScriptEngine.Machine
 
         #region IAttachableContext Members
 
-        public void OnAttach(MachineInstance machine, out IVariable[] variables, out BslMethodInfo[] methods)
+        public void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
         {
             variables = new IVariable[this.Count];
             var props = GetDynamicProperties().OrderBy(x => x.Value).Select(x=>x.Key).ToArray();

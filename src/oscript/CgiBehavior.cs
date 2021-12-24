@@ -94,7 +94,7 @@ namespace oscript
 			return exitCode;
 		}
 
-		public void OnAttach(MachineInstance machine, out IVariable[] variables, out BslMethodInfo[] methods)
+		public void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
 		{
 			variables = Array.Empty<IVariable>();
 			methods = this.GetMethods().ToArray();

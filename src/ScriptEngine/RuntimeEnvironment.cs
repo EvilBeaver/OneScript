@@ -15,7 +15,7 @@ namespace ScriptEngine
 {
     public class RuntimeEnvironment
     {
-        private readonly CompilerContext _symbolScopes = new CompilerContext();
+        private readonly ICompilerContext _symbolScopes = new CompilerContext();
         private SymbolScope _globalScope;
         private PropertyBag _injectedProperties;
 
@@ -96,7 +96,7 @@ namespace ScriptEngine
             return context.Instance.GetPropValue(binding.CodeIndex);
         }
 
-        internal CompilerContext SymbolsContext => _symbolScopes;
+        internal ICompilerContext SymbolsContext => _symbolScopes;
 
         internal IList<AttachedContext> AttachedContexts => _contexts;
 

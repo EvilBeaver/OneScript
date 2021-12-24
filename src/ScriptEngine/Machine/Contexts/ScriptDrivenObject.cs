@@ -238,7 +238,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext Members
 
-        public void OnAttach(MachineInstance machine, out IVariable[] variables, out BslMethodInfo[] methods)
+        public void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
         {
             UpdateState();
 

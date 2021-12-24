@@ -8,10 +8,12 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using OneScript.Contexts;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
+using OneScript.Runtime.Binding;
 using OneScript.Values;
 
 namespace OneScript.Native.Compiler
@@ -72,7 +74,7 @@ namespace OneScript.Native.Compiler
             var symbol = new VariableSymbol
             {
                 Name = name,
-                VariableType = type
+                Type = type
             };
         
             scope.Variables.Add(symbol, name);
@@ -80,18 +82,6 @@ namespace OneScript.Native.Compiler
             return scope;
         }
 
-        public static SymbolScope AddVariable(this SymbolScope scope, PropertySymbol symbol)
-        {
-            scope.Variables.Add(symbol, symbol.Name, symbol.Alias);
-            return scope;
-        }
-        
-        public static SymbolScope AddMethod(this SymbolScope scope, MethodSymbol symbol)
-        {
-            scope.Methods.Add(symbol, symbol.Name, symbol.Alias);
-            return scope;
-        }
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetIdentifier(this BslSyntaxNode node)
         {
@@ -102,6 +92,48 @@ namespace OneScript.Native.Compiler
         public static string GetIdentifier(this TerminalNode node)
         {
             return node.Lexem.Content;
+        }
+        
+        public static SymbolScope FromContext(BslObjectValue target)
+        {
+            var scope = new SymbolScope();
+
+            var type = target.GetType();
+            foreach (var info in type.GetMethods())
+            {
+                var attr = info.GetCustomAttribute<ContextMethodAttribute>();
+                if(attr == null)
+                    continue;
+                
+                var symbol = new MethodSymbol
+                {
+                    Name = attr.GetName(),
+                    Alias = attr.GetAlias(),
+                    Method = info,
+                    Target = target
+                };
+
+                scope.AddMethod(symbol);
+            }
+            
+            foreach (var info in type.GetProperties())
+            {
+                var attr = info.GetCustomAttribute<ContextMethodAttribute>();
+                if(attr == null)
+                    continue;
+                
+                var symbol = new PropertySymbol
+                {
+                    Name = attr.GetName(),
+                    Alias = attr.GetAlias(),
+                    Property = info,
+                    Target = target
+                };
+
+                scope.AddVariable(symbol);
+            }
+
+            return scope;
         }
     }
 }

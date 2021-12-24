@@ -115,7 +115,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext members
 
-        public virtual void OnAttach(MachineInstance machine, out IVariable[] variables, out BslMethodInfo[] methods)
+        public virtual void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
         {
             variables = new IVariable[GetPropCount()];
             for (int i = 0; i < variables.Length; i++)

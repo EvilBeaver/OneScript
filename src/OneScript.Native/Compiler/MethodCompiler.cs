@@ -23,6 +23,7 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
+using OneScript.Runtime.Binding;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -93,7 +94,7 @@ namespace OneScript.Native.Compiler
             {
                 MethodReturn = Expression.Label(typeof(BslValue))
             });
-            Symbols.AddScope(new SymbolScope());
+            Symbols.PushScope(new SymbolScope());
             FillParameterVariables();
 
             try
@@ -194,17 +195,17 @@ namespace OneScript.Native.Compiler
             }
 
             var symbol = Symbols.GetScope(binding.ScopeNumber).Variables[binding.MemberNumber];
-            if (symbol.MemberInfo == null)
+            if (symbol is IPropertySymbol && symbol is IBoundSymbol boundSymbol)
+            {
+                // prop read
+                var target = boundSymbol.Target;
+                _statementBuildParts.Push(Expression.Constant(target));
+            }
+            else
             {
                 // local read
                 var expr = _localVariables[binding.MemberNumber];
                 _statementBuildParts.Push(expr);
-            }
-            else
-            {
-                // prop read
-                var target = symbol.Target;
-                _statementBuildParts.Push(Expression.Constant(target));
             }
         }
 
@@ -288,18 +289,17 @@ namespace OneScript.Native.Compiler
             if (hasVar)
             {
                 var symbol = Symbols.GetScope(varBinding.ScopeNumber).Variables[varBinding.MemberNumber];
-                if (symbol.MemberInfo == null)
+                if (!(symbol is PropertySymbol propSymbol))
                 {
                     var local = _localVariables[varBinding.MemberNumber];
                     _statementBuildParts.Push(local);
                 }
                 else
                 {
-                   var propSymbol = (PropertySymbol) symbol;
-                   var convert = Expression.Convert(Expression.Constant(propSymbol.Target),
+                    var convert = Expression.Convert(Expression.Constant(propSymbol.Target),
                             propSymbol.Target.GetType());
                     
-                   var accessExpression = Expression.Property(convert, propSymbol.PropertyInfo.SetMethod);
+                   var accessExpression = Expression.Property(convert, propSymbol.Property.SetMethod);
                    _statementBuildParts.Push(accessExpression);
                 }
             }
@@ -1091,10 +1091,10 @@ namespace OneScript.Native.Compiler
             }
 
             var symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
-            var args = PrepareCallArguments(node.ArgumentList, symbol.MethodInfo.GetParameters());
+            var args = PrepareCallArguments(node.ArgumentList, symbol.Method.GetParameters());
 
-            var context = Expression.Constant(symbol.Target);
-            return Expression.Call(context, symbol.MethodInfo, args);
+            var context = Expression.Constant(((IBoundSymbol)symbol).Target);
+            return Expression.Call(context, symbol.Method, args);
         }
         
         private Expression CreateBuiltInFunctionCall(CallNode node)

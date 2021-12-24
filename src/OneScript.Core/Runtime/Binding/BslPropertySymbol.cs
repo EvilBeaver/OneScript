@@ -7,34 +7,16 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Reflection;
-using OneScript.Runtime.Binding;
-using OneScript.Values;
 
-namespace OneScript.Native.Compiler
+namespace OneScript.Runtime.Binding
 {
-    public class RuntimeSymbol : IBoundSymbol
+    internal class BslPropertySymbol : IPropertySymbol
     {
         public string Name { get; set; }
-        
         public string Alias { get; set; }
         
-        public object Target { get; set; }
-    }
-    
-    public class VariableSymbol : RuntimeSymbol, IVariableSymbol
-    {
-        public Type Type { get; set; }
-    }
-    
-    public class PropertySymbol : RuntimeSymbol, IPropertySymbol
-    {
         public Type Type => Property.PropertyType;
         
         public PropertyInfo Property { get; set; }
-    }
-    
-    public class MethodSymbol : RuntimeSymbol, IMethodSymbol
-    {
-        public MethodInfo Method { get; set; }
     }
 }

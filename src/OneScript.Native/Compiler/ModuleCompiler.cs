@@ -11,6 +11,7 @@ using OneScript.DependencyInjection;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Runtime;
+using OneScript.Runtime.Binding;
 using OneScript.Sources;
 using OneScript.Values;
 
@@ -72,7 +73,7 @@ namespace OneScript.Native.Compiler
                 var symbol = new MethodSymbol
                 {
                     Name = methodInfo.Name,
-                    MemberInfo = methodInfo
+                    Method = methodInfo
                 };
                 
                 Symbols.TopScope().Methods.Add(symbol, methodInfo.Name);
@@ -109,7 +110,7 @@ namespace OneScript.Native.Compiler
         protected override void VisitModule(ModuleNode node)
         {
             var moduleScope = new SymbolScope();
-            Symbols.AddScope(moduleScope);
+            Symbols.PushScope(moduleScope);
             
             RegisterLocalMethods(node);
             base.VisitModule(node);
@@ -132,7 +133,7 @@ namespace OneScript.Native.Compiler
         protected override void VisitMethod(MethodNode methodNode)
         {
             var methodSymbol = Symbols.TopScope().Methods[methodNode.Signature.MethodName];
-            var methodInfo = (BslNativeMethodInfo)methodSymbol.MethodInfo;
+            var methodInfo = (BslNativeMethodInfo)methodSymbol.Method;
 
             var context = MakeContext();
             var methCompiler = new MethodCompiler(context, methodInfo);

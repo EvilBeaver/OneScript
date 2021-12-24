@@ -19,12 +19,14 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Compiler;
 using OneScript.Native.Runtime;
+using OneScript.Runtime.Binding;
 using OneScript.Sources;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using SymbolScope = OneScript.Runtime.Binding.SymbolScope;
 
 namespace OneScript.StandardLibrary.Native
 {
@@ -164,7 +166,7 @@ namespace OneScript.StandardLibrary.Native
             if (Symbols == null)
                 Symbols = new SymbolTable();
             
-            Symbols.AddScope(SymbolScope.FromContext(new StandardGlobalContext()));
+            Symbols.PushScope(CompilerHelpers.FromContext(new StandardGlobalContext()));
             
             var methodInfo = CreateMethodInfo();
             var methodCompiler = new MethodCompiler(new BslWalkerContext

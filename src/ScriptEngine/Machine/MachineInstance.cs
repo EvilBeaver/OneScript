@@ -53,7 +53,7 @@ namespace ScriptEngine.Machine
         {
             IVariable[] vars;
             BslMethodInfo[] methods;
-            context.OnAttach(this, out vars, out methods);
+            context.OnAttach(out vars, out methods);
             var scope = new Scope()
             {
                 Variables = vars,
@@ -68,7 +68,7 @@ namespace ScriptEngine.Machine
         {
             IVariable[] vars;
             BslMethodInfo[] methods;
-            context.OnAttach(this, out vars, out methods);
+            context.OnAttach(out vars, out methods);
             var scope = new Scope()
             {
                 Variables = vars,

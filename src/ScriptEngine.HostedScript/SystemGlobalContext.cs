@@ -181,8 +181,7 @@ namespace ScriptEngine.HostedScript.Library
 
 #region IAttachableContext Members
 
-        public void OnAttach(MachineInstance machine, 
-            out IVariable[] variables, 
+        public void OnAttach(out IVariable[] variables, 
             out BslMethodInfo[] methods)
         {
             if (_state == null)

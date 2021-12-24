@@ -11,8 +11,7 @@ namespace ScriptEngine.Machine
 {
     public interface IAttachableContext : IRuntimeContextInstance
     {
-        void OnAttach(MachineInstance machine,
-                      out IVariable[] variables,
+        void OnAttach(out IVariable[] variables,
                       out BslMethodInfo[] methods);
     }
 

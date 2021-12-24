@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 
-namespace OneScript.Native.Compiler
+namespace OneScript.Runtime.Binding
 {
     public class SymbolTable
     {
@@ -16,12 +16,24 @@ namespace OneScript.Native.Compiler
         public SymbolScope GetScope(int index) => _scopes[index];
 
         public SymbolScope TopScope() => _scopes.Count == 0?null:_scopes[_scopes.Count - 1];
+
+        public int ScopeCount => _scopes.Count;
         
-        public void AddScope(SymbolScope scope)
+        public void PushScope(SymbolScope scope)
         {
             _scopes.Add(scope);
         }
 
+        public void PopScope()
+        {
+            _scopes.RemoveAt(_scopes.Count - 1);
+        }
+
+        public int IndexOf(SymbolScope scope)
+        {
+            return _scopes.IndexOf(scope);
+        }
+        
         public bool FindVariable(string name, out SymbolBinding binding)
         {
             for (int i = _scopes.Count - 1; i >= 0; i--)
@@ -62,11 +74,6 @@ namespace OneScript.Native.Compiler
 
             binding = default;
             return false;
-        }
-
-        public void PopScope()
-        {
-            _scopes.RemoveAt(_scopes.Count - 1);
         }
     }
 }

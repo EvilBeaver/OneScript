@@ -1,16 +1,17 @@
-/*----------------------------------------------------------
+﻿/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace OneScript.Native.Compiler
+using System;
+using System.Reflection;
+
+namespace OneScript.Runtime.Binding
 {
-    public struct SymbolBinding
+    internal class BslBoundPropertySymbol : BslPropertySymbol, IBoundSymbol
     {
-        public int ScopeNumber { get; set; }
-        
-        public int MemberNumber { get; set; }
+        public object Target { get; set; }
     }
 }
