@@ -6,7 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

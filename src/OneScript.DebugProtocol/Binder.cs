@@ -7,11 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 
 #if NETFRAMEWORK
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
-using System.Text;
 
 namespace OneScript.DebugProtocol
 {

@@ -13,7 +13,6 @@ using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 
 namespace StandaloneRunner
 {
