@@ -15,24 +15,24 @@ namespace ScriptEngine.HostedScript.Library
     {
         private readonly Random _random;
 
-        public RandomNumberGenerator(long seed = 0)
+        public RandomNumberGenerator(int seed = 0)
         {
             if (seed == 0)
                 _random = new Random();
             else
-                _random = new Random((int)seed);
+                _random = new Random(seed);
         }
 
         [ContextMethod("СлучайноеЧисло", "RandomNumber")]
-        public IValue RandomNumber(IValue low = null, IValue high = null)
+        public IValue RandomNumber(uint? low = null, uint? high = null)
         {
             long lo64 = 0, hi64 = UInt32.MaxValue;
 
             if (low != null)
-                lo64 = decimal.ToInt64(low.AsNumber());
+                lo64 = (uint)low;
 
             if (high != null)
-                hi64 = decimal.ToInt64(high.AsNumber());
+                hi64 = (uint)high;
 
             if (lo64 < 0 || lo64 > 4294967295)
                 throw RuntimeException.InvalidArgumentValue();
@@ -65,10 +65,24 @@ namespace ScriptEngine.HostedScript.Library
         public static RandomNumberGenerator Constructor(IValue seed)
         {
             seed = seed.GetRawValue();
-            if (seed.DataType == DataType.Number)
-                return new RandomNumberGenerator(decimal.ToInt32(seed.AsNumber()));
+            if (seed.DataType != DataType.Number)
+                throw RuntimeException.InvalidArgumentType(1, nameof(seed));
 
-            return new RandomNumberGenerator();
+            var seedNum = seed.AsNumber();
+
+            // надо как-то привести к размеру системного seed int, но не совсем рандомно, а более стабильно
+            int seedInt;
+            if (seedNum < int.MinValue || seedNum > int.MaxValue)
+            {
+                var bits = decimal.GetBits(seedNum);
+                seedInt = bits[0];
+            }
+            else
+            {
+                seedInt = (int)seedNum;
+            }
+
+            return new RandomNumberGenerator(seedInt);
         }
 
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
