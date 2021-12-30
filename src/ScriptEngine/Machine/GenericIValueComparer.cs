@@ -27,7 +27,7 @@ namespace ScriptEngine.Machine
 
             try
             {
-                CLR_obj = ContextValuesMarshaller.ConvertToCLRObject(obj);
+                CLR_obj = ContextValuesMarshaller.ConvertToClrObject(obj);
             }
             catch (ValueMarshallingException)
             {

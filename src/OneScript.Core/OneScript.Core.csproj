@@ -7,8 +7,5 @@
     <ItemGroup>
       <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
     </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Compilation" />
-    </ItemGroup>
 
 </Project>

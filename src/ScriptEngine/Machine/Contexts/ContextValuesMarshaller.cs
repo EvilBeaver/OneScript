@@ -131,7 +131,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                valueObj = CastToCLRObject(value);
+                valueObj = CastToClrObject(value);
             }
 
             return valueObj;
@@ -225,36 +225,27 @@ namespace ScriptEngine.Machine.Contexts
             return ConvertReturnValue(param, type);
         }
 
-		public static object ConvertToCLRObject(IValue value)
+		public static object ConvertToClrObject(IValue value)
 		{
             if (value == null)
                 return null;
             
             var raw = value.GetRawValue();
-            switch (raw)
+            return raw switch
             {
-                case BslNumericValue num:
-                    return (decimal) num;
-                case BslBooleanValue boolean:
-                    return (bool) boolean;
-                case BslStringValue str:
-                    return (string) str;
-                case BslDateValue date:
-                    return (DateTime) date;
-                case BslUndefinedValue _:
-                    return null;
-                case BslNullValue _:
-                    return null;
-                case BslTypeValue type:
-                    return type.SystemType.ImplementingClass;
-                case IObjectWrapper wrapper:
-                    return wrapper.UnderlyingObject;
-                default:
-                    return value;
-            }
+                BslNumericValue num => num,
+                BslBooleanValue boolean => boolean,
+                BslStringValue str => str,
+                BslDateValue date => date,
+                BslUndefinedValue _ => null,
+                BslNullValue _ => null,
+                BslTypeValue type => type.SystemType.ImplementingClass,
+                IObjectWrapper wrapper => wrapper.UnderlyingObject,
+                _ => value
+            };
         }
 
-        public static object CastToCLRObject(IValue val)
+        private static object CastToClrObject(IValue val)
         {
             var rawValue = val.GetRawValue();
             object objectRef;
@@ -264,7 +255,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                objectRef = ConvertToCLRObject(rawValue);
+                objectRef = ConvertToClrObject(rawValue);
             }
 
             return objectRef;

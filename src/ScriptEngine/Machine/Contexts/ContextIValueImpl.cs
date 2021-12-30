@@ -200,7 +200,7 @@ namespace ScriptEngine.Machine.Contexts
                     return false;
                 }
 
-                result = ContextValuesMarshaller.ConvertToCLRObject(GetPropValue(propIdx));
+                result = ContextValuesMarshaller.ConvertToClrObject(GetPropValue(propIdx));
                 return true;
             }
             catch (PropertyAccessException)
@@ -248,7 +248,7 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             var index = ContextValuesMarshaller.ConvertReturnValue(indexes[0], indexes[0].GetType());
-            result = ContextValuesMarshaller.ConvertToCLRObject(GetIndexedValue(index));
+            result = ContextValuesMarshaller.ConvertToClrObject(GetIndexedValue(index));
             return true;
         }
 
@@ -290,7 +290,7 @@ namespace ScriptEngine.Machine.Contexts
 
             IValue methResult;
             CallAsFunction(methIdx, valueArgs, out methResult);
-            result = methResult == null? null : ContextValuesMarshaller.ConvertToCLRObject(methResult);
+            result = methResult == null? null : ContextValuesMarshaller.ConvertToClrObject(methResult);
 
             return true;
 

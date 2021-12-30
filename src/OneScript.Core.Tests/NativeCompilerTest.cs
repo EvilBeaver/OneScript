@@ -53,7 +53,7 @@ namespace OneScript.Core.Tests
         public void CanInjectContext_As_Symbols()
         {
             var context = new GlobalJsonFunctions();
-            var scope = CompilerHelpers.FromContext(context);
+            var scope = SymbolScope.FromObject(context);
 
             scope.Methods.Should().HaveCount(3);
             scope.Methods.IndexOf("ЗаписатьJSON").Should().BeGreaterOrEqualTo(0);
@@ -464,7 +464,7 @@ namespace OneScript.Core.Tests
             var block = new CompiledBlock(default);
             var context = new StandardGlobalContext();
             block.Symbols = new SymbolTable();
-            block.Symbols.PushScope(CompilerHelpers.FromContext(context));
+            block.Symbols.PushScope(SymbolScope.FromObject(context));
             block.CodeBlock = "Возврат ТекущаяУниверсальнаяДатаВМиллисекундах();";
             
             var func = block.CreateDelegate<Func<BslValue>>();
@@ -511,7 +511,7 @@ namespace OneScript.Core.Tests
             blockCompiler.Parameters.Insert("Н", new BslTypeValue(BasicTypes.Number));
             blockCompiler.Parameters.Insert("Массив", new BslTypeValue(arrayType));
             blockCompiler.Symbols = new SymbolTable();
-            blockCompiler.Symbols.PushScope(CompilerHelpers.FromContext(new StandardGlobalContext()));
+            blockCompiler.Symbols.PushScope(SymbolScope.FromObject(new StandardGlobalContext()));
             blockCompiler.CodeBlock = code;
             
             var lambda = blockCompiler.MakeExpression();

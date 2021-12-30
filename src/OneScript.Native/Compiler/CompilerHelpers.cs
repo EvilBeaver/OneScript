@@ -93,47 +93,5 @@ namespace OneScript.Native.Compiler
         {
             return node.Lexem.Content;
         }
-        
-        public static SymbolScope FromContext(BslObjectValue target)
-        {
-            var scope = new SymbolScope();
-
-            var type = target.GetType();
-            foreach (var info in type.GetMethods())
-            {
-                var attr = info.GetCustomAttribute<ContextMethodAttribute>();
-                if(attr == null)
-                    continue;
-                
-                var symbol = new MethodSymbol
-                {
-                    Name = attr.GetName(),
-                    Alias = attr.GetAlias(),
-                    Method = info,
-                    Target = target
-                };
-
-                scope.AddMethod(symbol);
-            }
-            
-            foreach (var info in type.GetProperties())
-            {
-                var attr = info.GetCustomAttribute<ContextMethodAttribute>();
-                if(attr == null)
-                    continue;
-                
-                var symbol = new PropertySymbol
-                {
-                    Name = attr.GetName(),
-                    Alias = attr.GetAlias(),
-                    Property = info,
-                    Target = target
-                };
-
-                scope.AddVariable(symbol);
-            }
-
-            return scope;
-        }
     }
 }

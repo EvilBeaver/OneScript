@@ -32,7 +32,7 @@ namespace ScriptEngine.Machine
 
         public static object CastToClrObject(this IValue value)
         {
-            return ContextValuesMarshaller.ConvertToCLRObject(value);
+            return ContextValuesMarshaller.ConvertToClrObject(value);
         }
 
         public static bool IsSkippedArgument(this IValue val)
