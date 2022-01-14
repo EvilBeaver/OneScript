@@ -15,12 +15,14 @@ namespace ScriptEngine.HostedScript.Library
     {
         private readonly Random _random;
 
-        public RandomNumberGenerator(int seed = 0)
+        public RandomNumberGenerator()
         {
-            if (seed == 0)
-                _random = new Random();
-            else
-                _random = new Random(seed);
+            _random = new Random();
+        }
+
+        public RandomNumberGenerator(int seed)
+        {
+            _random = new Random(seed);
         }
 
         [ContextMethod("СлучайноеЧисло", "RandomNumber")]
@@ -60,13 +62,19 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor(Name = "Конструктор по умолчанию")]
         public static RandomNumberGenerator Constructor(IValue seed)
         {
-            seed = seed.GetRawValue();
-            if (seed.DataType != DataType.Number)
-                throw RuntimeException.InvalidArgumentType(1, nameof(seed));
+            decimal seedNum;
+            try
+            {
+                seedNum = seed.GetRawValue().AsNumber();
+            }
+            catch
+            {
+                throw RuntimeException.InvalidArgumentType();
+            }
 
-            var seedNum = seed.AsNumber();
+            if (seedNum == 0)
+                return new RandomNumberGenerator();
 
-            // надо как-то привести к размеру системного seed int, но не совсем рандомно, а более стабильно
             int seedInt;
             if (seedNum < int.MinValue || seedNum > int.MaxValue)
             {
