@@ -26,34 +26,30 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("СлучайноеЧисло", "RandomNumber")]
         public IValue RandomNumber(uint? low = null, uint? high = null)
         {
-            long lo64 = 0, hi64 = UInt32.MaxValue;
+            uint lo = low !=null ? (uint)low : 0;
+            uint hi = high != null ? (uint)high : uint.MaxValue;
 
-            if (low != null)
-                lo64 = (uint)low;
-
-            if (high != null)
-                hi64 = (uint)high;
-
-            if (lo64 < 0 || lo64 > 4294967295)
+            if (hi < lo)
                 throw RuntimeException.InvalidArgumentValue();
 
-            if (hi64 < 0 || hi64 > 4294967295)
-                throw RuntimeException.InvalidArgumentValue();
-
-            if (hi64 < lo64)
-                throw RuntimeException.InvalidArgumentValue();
+            uint range = hi - lo;
+            if (range == uint.MaxValue)
+                return ValueFactory.Create( Random32() );
 
             // Приводим к рабочему диапазону
-            lo64 += Int32.MinValue;
-            hi64 += Int32.MinValue;
+            long maxValue = int.MinValue + range + 1;
 
-            int lo = (int)lo64, hi = (int)hi64;
+            long v = _random.Next(int.MinValue, (int)maxValue );
+            v -= int.MinValue - lo;
 
-            int v = _random.Next(lo, hi);
-            long v64 = v;
-            v64 -= Int32.MinValue;
+            return ValueFactory.Create( v );
+        }
 
-            return ValueFactory.Create( v64 );
+        private uint Random32()
+        {
+            byte[] bytes = new byte[4];
+            _random.NextBytes(bytes);
+            return BitConverter.ToUInt32(bytes, 0);
         }
 
         /// <summary>
