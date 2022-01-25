@@ -13,7 +13,7 @@ namespace ScriptEngine.HostedScript.Library
 	[ContextClass("КвалификаторыДаты", "DateQualifiers")]
 	public sealed class DateQualifiers : AutoContext<DateQualifiers>, IValueAdjuster
 	{
-		public DateQualifiers(DateFractionsEnum dateFractions = DateFractionsEnum.Date)
+		public DateQualifiers(DateFractionsEnum dateFractions = DateFractionsEnum.DateTime)
 		{
 			DateFractions = dateFractions;
 		}
@@ -67,7 +67,7 @@ namespace ScriptEngine.HostedScript.Library
 		[ScriptConstructor(Name = "На основании описания даты")]
 		public static DateQualifiers Constructor(IValue dateFractions = null)
 		{
-			var paramDateFractions = ContextValuesMarshaller.ConvertParam<DateFractionsEnum>(dateFractions);
+			var paramDateFractions = ContextValuesMarshaller.ConvertParam(dateFractions, DateFractionsEnum.DateTime);
 			return new DateQualifiers(paramDateFractions);
 		}
 	}

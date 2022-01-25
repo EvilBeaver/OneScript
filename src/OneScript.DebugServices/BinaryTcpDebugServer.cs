@@ -5,12 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
 using System.Net.Sockets;
-using OneScript.DebugProtocol;
-using OneScript.DebugProtocol.Abstractions;
 using OneScript.DebugProtocol.TcpServer;
-using ScriptEngine;
 using ScriptEngine.Machine;
 
 namespace OneScript.DebugServices

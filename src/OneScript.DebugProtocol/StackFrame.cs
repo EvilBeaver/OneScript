@@ -7,9 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace OneScript.DebugProtocol
 {
