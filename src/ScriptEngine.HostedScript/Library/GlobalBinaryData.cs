@@ -165,9 +165,9 @@ namespace ScriptEngine.HostedScript.Library
         public BinaryDataContext GetBinaryDataFromString(string str, IValue encoding = null, bool addBOM = false)
         {
             // Получаем кодировку
-            // Из синтаксис помощника. Если кодировка не задана, используем UTF8
+            // Из синтаксис помощника. Если кодировка не задана, используем UTF8 без BOM.
 
-            System.Text.Encoding enc = System.Text.Encoding.UTF8;
+            System.Text.Encoding enc = new UTF8Encoding(false);
             if (encoding != null)
                 enc = TextEncodingEnum.GetEncoding(encoding, addBOM);
 
