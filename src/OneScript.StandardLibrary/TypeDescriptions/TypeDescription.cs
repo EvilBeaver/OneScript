@@ -6,8 +6,10 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using OneScript.Values;
@@ -19,11 +21,11 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 	[ContextClass("ОписаниеТипов", "TypeDescription")]
 	public class TypeDescription : AutoContext<TypeDescription>
 	{
-		private readonly List<TypeTypeValue> _types = new List<TypeTypeValue>();
+		private readonly List<BslTypeValue> _types = new List<BslTypeValue>();
 
 		private const string TYPE_BINARYDATA_NAME = "ДвоичныеДанные";
 
-		public TypeDescription(IEnumerable<TypeTypeValue> types = null,
+		public TypeDescription(IEnumerable<BslTypeValue> types = null,
 		                           NumberQualifiers numberQualifiers = null,
 		                           StringQualifiers stringQualifiers = null,
 		                           DateQualifiers   dateQualifiers = null,
@@ -40,7 +42,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				stringQualifiers : new StringQualifiers();
 			DateQualifiers = dateQualifiers != null && _types.Contains(TypeDate()) ?
 				dateQualifiers : new DateQualifiers();
-			BinaryDataQualifiers = binaryDataQualifiers != null && _types.Contains(TypeBinaryData()) ? 
+			BinaryDataQualifiers = binaryDataQualifiers != null && _types.Any(x => x.TypeValue.Name == TYPE_BINARYDATA_NAME) ? 
 				binaryDataQualifiers : new BinaryDataQualifiers();
 		}
 
@@ -137,7 +139,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 
 		private static IList<BslTypeValue> ConstructTypeList(ITypeManager typeManager, IValue types)
 		{
-			var _types = new List<BslTypeValue>();
+			var typesList = new List<BslTypeValue>();
 			if (types == null)
 				return typesList;
 
@@ -147,7 +149,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				var typeNames = types.AsString().Split(',');
 				foreach (var typeName in typeNames)
 				{
-					var typeValue = new BslTypeValue(typeName.Trim());
+					var typeValue = new BslTypeValue(typeManager.GetTypeByName(typeName.Trim()));
 					if (!typesList.Contains(typeValue))
 						typesList.Add(typeValue);
 				}
@@ -184,14 +186,9 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			return new BslTypeValue(BasicTypes.String);
 		}
 		
-		static TypeTypeValue TypeDate()
+		static BslTypeValue TypeDate()
 		{
-			return new TypeTypeValue(TypeManager.GetTypeById((int)DataType.Date));
-		}
-
-		static TypeTypeValue TypeBinaryData()
-		{
-			return new TypeTypeValue(TypeManager.GetTypeByName(TYPE_BINARYDATA_NAME));
+			return new BslTypeValue(BasicTypes.Date);
 		}
 
 		public static TypeDescription StringType(int length = 0,
@@ -283,12 +280,12 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 
 			if (rawSource is TypeDescription)
 			{
-				return ConstructByOtherDescription(rawSource, p2, p3, p4, p5, p6, p7);
+				return ConstructByOtherDescription(context.TypeManager, rawSource, p2, p3, p4, p5, p6, p7);
 			}
 
 			if (rawSource.SystemType == BasicTypes.String || rawSource is ArrayImpl)
 			{
-				return ConstructByQualifiers(rawSource, p2, p3, p4, p5, p6, p7);
+				return ConstructByQualifiers(context.TypeManager, rawSource, p2, p3, p4, p5, p6, p7);
 			}
 
 			throw RuntimeException.InvalidArgumentValue();
@@ -302,7 +299,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			IValue p6 = null,
 			IValue p7 = null)
 		{
-			var typesList = ConstructTypeList(types);
+			var typesList = ConstructTypeList(typeManager, types);
 			if (typesList == null)
 				throw RuntimeException.InvalidNthArgumentType(1);
 
