@@ -233,10 +233,10 @@ namespace ScriptEngine.Machine.Contexts
             var raw = value.GetRawValue();
             return raw switch
             {
-                BslNumericValue num => num,
-                BslBooleanValue boolean => boolean,
-                BslStringValue str => str,
-                BslDateValue date => date,
+                BslNumericValue num => (decimal)num,
+                BslBooleanValue boolean => (bool)boolean,
+                BslStringValue str => (string)str,
+                BslDateValue date => (DateTime)date,
                 BslUndefinedValue _ => null,
                 BslNullValue _ => null,
                 BslTypeValue type => type.SystemType.ImplementingClass,
