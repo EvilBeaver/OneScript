@@ -19,45 +19,43 @@ namespace OneScript.StandardLibrary
     {
         private readonly Random _random;
 
-        public RandomNumberGenerator(int seed = 0)
+        public RandomNumberGenerator()
         {
-            if (seed == 0)
-                _random = new Random();
-            else
-                _random = new Random(seed);
+            _random = new Random();
+        }
+
+        public RandomNumberGenerator(int seed)
+        {
+            _random = new Random(seed);
         }
 
         [ContextMethod("СлучайноеЧисло", "RandomNumber")]
-        public IValue RandomNumber(IValue low = null, IValue high = null)
+        public IValue RandomNumber(uint? low = null, uint? high = null)
         {
-            long lo64 = 0, hi64 = UInt32.MaxValue;
+            uint lo = low !=null ? (uint)low : 0;
+            uint hi = high != null ? (uint)high : uint.MaxValue;
 
-            if (low != null)
-                lo64 = decimal.ToInt64(low.AsNumber());
-
-            if (high != null)
-                hi64 = decimal.ToInt64(high.AsNumber());
-
-            if (lo64 < 0 || lo64 > 4294967295)
+            if (hi < lo)
                 throw RuntimeException.InvalidArgumentValue();
 
-            if (hi64 < 0 || hi64 > 4294967295)
-                throw RuntimeException.InvalidArgumentValue();
-
-            if (hi64 < lo64)
-                throw RuntimeException.InvalidArgumentValue();
+            uint range = hi - lo;
+            if (range == uint.MaxValue)
+                return ValueFactory.Create( Random32() );
 
             // Приводим к рабочему диапазону
-            lo64 += Int32.MinValue;
-            hi64 += Int32.MinValue;
+            long maxValue = int.MinValue + range + 1;
 
-            int lo = (int)lo64, hi = (int)hi64;
+            long v = _random.Next(int.MinValue, (int)maxValue );
+            v -= int.MinValue - lo;
 
-            int v = _random.Next(lo, hi);
-            long v64 = v;
-            v64 -= Int32.MinValue;
+            return ValueFactory.Create( v );
+        }
 
-            return ValueFactory.Create( v64 );
+        private uint Random32()
+        {
+            byte[] bytes = new byte[4];
+            _random.NextBytes(bytes);
+            return BitConverter.ToUInt32(bytes, 0);
         }
 
         /// <summary>
@@ -68,11 +66,31 @@ namespace OneScript.StandardLibrary
         [ScriptConstructor(Name = "Конструктор по умолчанию")]
         public static RandomNumberGenerator Constructor(IValue seed)
         {
-            seed = seed.GetRawValue();
-            if (seed.SystemType == BasicTypes.Number)
-                return new RandomNumberGenerator(decimal.ToInt32(seed.AsNumber()));
+            decimal seedNum;
+            try
+            {
+                seedNum = seed.GetRawValue().AsNumber();
+            }
+            catch
+            {
+                throw RuntimeException.InvalidArgumentType();
+            }
 
-            return new RandomNumberGenerator();
+            if (seedNum == 0)
+                return new RandomNumberGenerator();
+
+            int seedInt;
+            if (seedNum < int.MinValue || seedNum > int.MaxValue)
+            {
+                var bits = decimal.GetBits(seedNum);
+                seedInt = bits[0];
+            }
+            else
+            {
+                seedInt = (int)seedNum;
+            }
+
+            return new RandomNumberGenerator(seedInt);
         }
 
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]

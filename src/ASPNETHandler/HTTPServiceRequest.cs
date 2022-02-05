@@ -6,17 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OneScript.StandardLibrary;
-using OneScript.StandardLibrary.Binary;
-using OneScript.StandardLibrary.Collections;
-using OneScript.StandardLibrary.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.HostedScript.Library;
 
 /// <summary>
 /// 

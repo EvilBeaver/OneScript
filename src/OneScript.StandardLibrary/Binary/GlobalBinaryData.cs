@@ -105,7 +105,7 @@ namespace OneScript.StandardLibrary.Binary
         /// <param name="array">Массив объектов типа ДвоичныеДанные.</param>
         /// <returns>Тип: ДвоичныеДанные.</returns>
         [ContextMethod("СоединитьДвоичныеДанные")]
-        public BinaryDataContext  ConcatenateBinaryData(ArrayImpl array)
+        public BinaryDataContext ConcatenateBinaryData(ArrayImpl array)
         {
             // Сделано на int т.к. BinaryContext.Size имеет тип int;
 
@@ -172,13 +172,22 @@ namespace OneScript.StandardLibrary.Binary
         public BinaryDataContext GetBinaryDataFromString(string str, IValue encoding = null, bool addBOM = false)
         {
             // Получаем кодировку
-            // Из синтаксис помощника если кодировка не задана используем UTF8
+            // Из синтаксис помощника. Если кодировка не задана, используем UTF8 без BOM.
 
-            System.Text.Encoding enc = System.Text.Encoding.UTF8;
+            System.Text.Encoding enc = new UTF8Encoding(false);
             if (encoding != null)
                 enc = TextEncodingEnum.GetEncoding(encoding, addBOM);
 
-            return new BinaryDataContext(enc.GetBytes(str));
+            var stream = new System.IO.MemoryStream();
+
+            var bom = enc.GetPreamble();
+            var inputString = enc.GetBytes(str);
+
+            stream.Write(bom, 0, bom.Length);
+            stream.Write(inputString, 0, inputString.Length);
+            stream.Position = 0;
+            
+            return new BinaryDataContext(stream);
         }
 
         /// <summary>
