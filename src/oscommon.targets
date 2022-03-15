@@ -2,10 +2,9 @@
 	
     <!--Свойства сборки по умолчанию-->
     <PropertyGroup>
-        <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">2.0.0</ReleaseNumber>
         <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
         <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
-        <Configuration Condition="'$(Release)' == ''">Release</Configuration>
+        <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
         <Platform Condition="'$(Platform)' == ''">x86</Platform>
         <LangVersion>8.0</LangVersion>
     </PropertyGroup>
@@ -15,14 +14,13 @@
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
         <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-        <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
-        <PackageVersion>$(ReleaseNumber)$(Suffix)</PackageVersion>
+        <Authors>OneScript OpenSource Community</Authors>
     </PropertyGroup>
     
     <!--Общие свойства для проектов-->
     <PropertyGroup>
-        <Version>$(ReleaseNumber).$(BuildNumber)</Version>
-        <FileVersion>$(Version)</FileVersion>
+        <VersionPrefix Condition="'$(VersionPrefix)' == ''">2.0.0</VersionPrefix>
+        <FileVersion>$(VersionPrefix).$(BuildNumber)</FileVersion>
         <Product>1C (BSL) language runtime</Product>
         <Copyright>Copyright (c) 2021 EvilBeaver</Copyright>
     </PropertyGroup>

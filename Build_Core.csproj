@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">2.0.0</ReleaseNumber>
+        <VersionPrefix Condition="'$(VersionPrefix)' == ''">2.0.0</VersionPrefix>
+		
+        <ReleaseNumber Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</ReleaseNumber>
+		<ReleaseNumber Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</ReleaseNumber>
+		
         <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
         <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
 
@@ -244,5 +248,26 @@
 		<Exec Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/*&quot; &quot;$(ArtifactsRoot)/OneScript-$(ReleaseNumber)-%(RuntimeID.Identity).zip&quot;"/>
 		<RemoveDir Directories="$(ArtifactsRoot)/%(RuntimeID.Identity)" />
 	</Target>
+	
+	<!-- Nuget -->
+    <Target Name="CreateNuget" DependsOnTargets="MakeFDD">
+        <ItemGroup>
+            <NugetAbleProject Include="ScriptEngine"/>
+            <NugetAbleProject Include="ScriptEngine.HostedScript"/>
+            <NugetAbleProject Include="OneScript.StandardLibrary"/>
+            <NugetAbleProject Include="OneScript.Core"/>
+            <NugetAbleProject Include="OneScript.Native"/>
+            <NugetAbleProject Include="OneScript.Language"/>
+			<NugetAbleProject Include="OneScript.DebugServices"/>
+			<NugetAbleProject Include="OneScript.DebugProtocol"/>
+        </ItemGroup>
+        
+        <PropertyGroup>
+			<SuffixArg Condition="'$(VersionSuffix)' != ''">--version-suffix $(VersionSuffix)</SuffixArg>
+		</PropertyGroup>
+		
+		<Exec Command="dotnet pack src/%(NugetAbleProject.Identity)/%(NugetAbleProject.Identity).csproj -o &quot;$(ArtifactsRoot)/nuget&quot; $(SuffixArg) -c Release --no-build -p:VersionPrefix=$(VersionPrefix)"/>
+    
+    </Target>
 	
 </Project>

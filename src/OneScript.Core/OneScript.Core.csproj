@@ -8,4 +8,8 @@
       <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
     </ItemGroup>
 
+    <PropertyGroup>
+        <PackageId>OneScript.CoreLib</PackageId>
+    </PropertyGroup>
+    
 </Project>
