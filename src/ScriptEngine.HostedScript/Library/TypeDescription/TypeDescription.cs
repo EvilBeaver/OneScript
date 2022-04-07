@@ -141,6 +141,9 @@ namespace ScriptEngine.HostedScript.Library
 				var typeNames = types.AsString().Split(',');
 				foreach (var typeName in typeNames)
 				{
+					if (string.IsNullOrWhiteSpace(typeName))
+						continue;
+
 					var typeValue = new TypeTypeValue(typeName.Trim());
 					if (!typesList.Contains(typeValue))
 						typesList.Add(typeValue);
@@ -157,10 +160,13 @@ namespace ScriptEngine.HostedScript.Library
 					if (!typesList.Contains(rawType))
 						typesList.Add(rawType);
 				}
-			} else
+			} 
+			else if (types.DataType != DataType.Undefined)
 			{
-				return null;
+				return null; // далее будет исключение
 			}
+			// для Неопределено возвращается пустой список
+
 			return typesList;
 		}
 
