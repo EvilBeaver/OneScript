@@ -12,41 +12,30 @@ namespace ScriptEngine.Machine.Contexts
 {
     public static class ContextValuesMarshaller
     {
-        public static T ConvertParam<T>(IValue value)
+        public static T ConvertParam<T>(IValue value, T defaultValue = default)
         {
-            try
-            {
-                object valueObj = ConvertParam(value, typeof(T));
-                return valueObj != null ? (T)valueObj : default;
-            }
-            catch (InvalidCastException)
-            {
-                throw RuntimeException.InvalidArgumentType();
-            }
-            catch (OverflowException)
-            {
-                throw RuntimeException.InvalidArgumentValue();
-            }
-        }
-
-        public static T ConvertParam<T>(IValue value, T defaultValue)
-        {
-            try
-            {
-                object valueObj = ConvertParam(value, typeof(T));
-                return valueObj != null ? (T)valueObj : defaultValue;
-            }
-            catch (InvalidCastException)
-            {
-                throw RuntimeException.InvalidArgumentType();
-            }
-            catch (OverflowException)
-            {
-                throw RuntimeException.InvalidArgumentValue();
-            }
+            object valueObj = ConvertParam(value, typeof(T));
+            return valueObj != null ? (T)valueObj : defaultValue;
         }
 
         public static object ConvertParam(IValue value, Type type)
+        {
+            try
+            {
+                return ConvertValueType(value, type);
+            }
+            catch (InvalidCastException)
+            {
+                throw RuntimeException.InvalidArgumentType();
+            }
+            catch (OverflowException)
+            {
+                throw RuntimeException.InvalidArgumentValue();
+            }
+        }
+
+
+        private static object ConvertValueType(IValue value, Type type)
         {
             object valueObj;
             if (value == null || value.DataType == DataType.NotAValidValue)
@@ -56,7 +45,7 @@ namespace ScriptEngine.Machine.Contexts
 
             if (Nullable.GetUnderlyingType(type) != null)
             {
-                return ConvertParam(value, Nullable.GetUnderlyingType(type));
+                return ConvertValueType(value, Nullable.GetUnderlyingType(type));
             }
 
             if (type == typeof(IValue))
