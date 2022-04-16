@@ -346,7 +346,7 @@ namespace ScriptEngine.HostedScript.Library
                     var index = 0;
                     foreach (var param in methInfo.Params)
                     {
-                        var name = string.Format("param{0}", ++index);
+                        var name = param.Name ?? $"param{++index}";
                         var paramRow = paramTable.Add();
                         paramRow.Set(paramNameColumn, ValueFactory.Create(name));
                         paramRow.Set(paramByValue, ValueFactory.Create(param.IsByValue));
