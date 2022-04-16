@@ -1829,10 +1829,17 @@ namespace ScriptEngine.Compiler
         private void NewObjectDynamicConstructor()
         {
             var argsPassed = BuildArgumentList();
-            if (argsPassed.Length == 0)
-                throw CompilerException.ExpressionExpected();
+            if (argsPassed.Length < 1)
+            {
+                throw CompilerException.TooFewArgumentsPassed();
+            }
 
-            AddCommand(OperationCode.NewInstance, argsPassed.Length-1);
+            if (argsPassed.Length > 2)
+            {
+                throw CompilerException.TooManyArgumentsPassed();
+            }
+            
+            AddCommand(OperationCode.NewFunc, argsPassed.Length);
         }
 
         private void NewObjectStaticConstructor()

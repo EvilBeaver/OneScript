@@ -12,7 +12,7 @@ using ScriptEngine.Machine.Contexts;
 namespace ScriptEngine.HostedScript.Library
 {
     [ContextClass("Массив", "Array")]
-    public class ArrayImpl : AutoContext<ArrayImpl>, ICollectionContext, IEnumerable<IValue>
+    public class ArrayImpl : AutoContext<ArrayImpl>, ICollectionContext, IValueArray
     {
         private readonly List<IValue> _values;
 
@@ -26,13 +26,7 @@ namespace ScriptEngine.HostedScript.Library
             _values = new List<IValue>(values);
         }
 
-        public override bool IsIndexed
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsIndexed => true;
 
         public override IValue GetIndexedValue(IValue index)
         {
