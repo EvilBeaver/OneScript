@@ -87,6 +87,49 @@ namespace ScriptEngine.HostedScript.Library
             return bytes;
         }
 
+        private static string GetStringFromByteBuffer(byte[] buf, Encoding enc)
+        {
+            var bom = enc.GetPreamble();
+
+            if (bom.Length == 0)
+            {
+                return enc.GetString(buf);
+            }
+
+            int startPos = 0;
+            if (buf.Length >= 3 && buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF)
+            {
+                enc = Encoding.UTF8;
+                startPos = 3;
+            }
+            else if (buf.Length >= 2 && buf[0] == 0xFF && buf[1] == 0xFE)
+            {
+                if (buf.Length >= 4 && buf[2] == 0x00 && buf[3] == 0x00)
+                {
+                    enc = Encoding.UTF32; // UTF32LE
+                    startPos = 4;
+                }
+                else
+                {
+                    enc = Encoding.Unicode; // UTF16LE
+                    startPos = 2;
+                }
+            }
+            else if (buf.Length >= 2 && buf[0] == 0xFE && buf[1] == 0xFF)
+            {
+                enc = Encoding.BigEndianUnicode; // UTF16BE
+                startPos = 2;
+            }
+            else if (buf.Length >= 4 && buf[0] == 0x00 && buf[1] == 0x00 && buf[2] == 0xFE && buf[3] == 0xFF)
+            {
+                enc = new UTF32Encoding(true, true); // UTF32BE with BOM
+                startPos = 4;
+            }
+
+            return enc.GetString(buf, startPos, buf.Length - startPos);
+        }
+
+
         public static IAttachableContext CreateInstance()
         {
             return new GlobalBinaryData();
@@ -210,11 +253,9 @@ namespace ScriptEngine.HostedScript.Library
             // Получаем кодировку
             // Из синтаксис помощника если кодировка не задана используем UTF8
 
-            System.Text.Encoding enc = System.Text.Encoding.UTF8;
-            if (encoding != null)
-                enc = TextEncodingEnum.GetEncoding(encoding);
+            var enc = (encoding != null) ? TextEncodingEnum.GetEncoding(encoding) : Encoding.UTF8;
 
-            return enc.GetString(data.Buffer);
+            return GetStringFromByteBuffer(data.Buffer, enc);
         }
 
         /// <summary>
@@ -228,7 +269,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             var enc = (encoding != null) ? TextEncodingEnum.GetEncoding(encoding) : Encoding.UTF8;
 
-            return enc.GetString(buffer.Bytes);
+            return GetStringFromByteBuffer(buffer.Bytes, enc);
         }
 
         /// <summary>
