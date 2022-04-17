@@ -15,9 +15,9 @@ namespace ScriptEngine.Machine
 {
     public class StackMachineExecutor : IExecutorProvider
     {
-        private readonly MachineEnvironment _environment;
+        private readonly ExecutionContext _environment;
 
-        public StackMachineExecutor(MachineEnvironment environment)
+        public StackMachineExecutor(ExecutionContext environment)
         {
             _environment = environment;
         }

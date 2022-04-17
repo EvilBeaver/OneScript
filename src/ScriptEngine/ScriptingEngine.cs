@@ -104,7 +104,7 @@ namespace ScriptEngine
         public void UpdateContexts()
         {
             ExecutionDispatcher.Current ??= Services.Resolve<ExecutionDispatcher>();
-            MachineInstance.Current.SetMemory(Services.Resolve<MachineEnvironment>());
+            MachineInstance.Current.SetMemory(Services.Resolve<ExecutionContext>());
         }
 
         private void SetDefaultEnvironmentIfNeeded()

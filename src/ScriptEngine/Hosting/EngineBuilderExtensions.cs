@@ -29,7 +29,7 @@ namespace ScriptEngine.Hosting
             return b;
         }
         
-        public static IEngineBuilder SetupEnvironment(this IEngineBuilder b, Action<MachineEnvironment> action)
+        public static IEngineBuilder SetupEnvironment(this IEngineBuilder b, Action<ExecutionContext> action)
         {
             b.EnvironmentProviders.Add(action);
             return b;
@@ -51,7 +51,7 @@ namespace ScriptEngine.Hosting
             services.RegisterEnumerable<IDirectiveHandler, ConditionalDirectiveHandler>();
             services.RegisterEnumerable<IDirectiveHandler, RegionDirectiveHandler>();
             
-            services.Register<MachineEnvironment>();
+            services.Register<ExecutionContext>();
             
             services.Register<PreprocessorHandlers>(sp =>
             {

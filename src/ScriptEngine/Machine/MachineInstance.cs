@@ -35,7 +35,7 @@ namespace ScriptEngine.Machine
         private ICodeStatCollector _codeStatCollector;
         private MachineStopManager _stopManager;
         
-        private MachineEnvironment _mem;
+        private ExecutionContext _mem;
 
         // для отладчика.
         // актуален в момент останова машины
@@ -84,7 +84,7 @@ namespace ScriptEngine.Machine
             _scopes.Add(default(Scope));
         }
 
-        public MachineEnvironment Memory => _mem;
+        public ExecutionContext Memory => _mem;
 
         public ITypeManager TypeManager => _mem?.TypeManager;
         
@@ -92,7 +92,7 @@ namespace ScriptEngine.Machine
         
         public RuntimeEnvironment Environment => _mem?.GlobalNamespace;
 
-        public void SetMemory(MachineEnvironment memory)
+        public void SetMemory(ExecutionContext memory)
         {
             Cleanup();
             foreach (var item in memory.GlobalNamespace.AttachedContexts.Select(x=>x.Instance))

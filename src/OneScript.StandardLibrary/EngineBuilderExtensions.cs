@@ -13,7 +13,7 @@ namespace OneScript.StandardLibrary
 {
     public static class EngineBuilderExtensions
     {
-        public static MachineEnvironment AddStandardLibrary(this MachineEnvironment env)
+        public static ExecutionContext AddStandardLibrary(this ExecutionContext env)
         {
             return env.AddAssembly(typeof(ArrayImpl).Assembly);
         }
