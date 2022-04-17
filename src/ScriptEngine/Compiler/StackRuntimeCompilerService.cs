@@ -16,11 +16,11 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    public class AstBasedCompilerService : CompilerServiceBase
+    public class StackRuntimeCompilerService : CompilerServiceBase
     {
         private readonly CompilerOptions _сompilerOptions;
 
-        public AstBasedCompilerService(CompilerOptions сompilerOptions, ICompilerContext outerContext) 
+        public StackRuntimeCompilerService(CompilerOptions сompilerOptions, ICompilerContext outerContext) 
             : base(outerContext)
         {
             _сompilerOptions = сompilerOptions;
@@ -110,36 +110,16 @@ namespace ScriptEngine.Compiler
             return codeGen.CreateModule(moduleNode, src);
         }
 
-        protected virtual StackMachineCodeGenerator GetCodeGenerator(ICompilerContext context)
-        {
-            return new StackMachineCodeGenerator(context);
-        }
-
-        private PreprocessingLexer CreatePreprocessor(
-            SourceCode source,
+        private PreprocessingLexer CreatePreprocessor(SourceCode source,
             IEnumerable<string> preprocessorConstants,
             PreprocessorHandlers handlers)
         {
-            var baseLexer = new DefaultLexer
-            {
-                Iterator = source.CreateIterator()
-            };
+            return CreatePreprocessor(source, preprocessorConstants, handlers, _сompilerOptions.ErrorSink);
+        }
 
-            var conditionals = handlers?.Get<ConditionalDirectiveHandler>();
-            if (conditionals != default)
-            {
-                foreach (var constant in preprocessorConstants)
-                {
-                    conditionals.Define(constant);
-                }
-            }
-
-            var lexer = new PreprocessingLexer(baseLexer)
-            {
-                Handlers = handlers,
-                ErrorSink = _сompilerOptions.ErrorSink
-            };
-            return lexer;
+        protected virtual StackMachineCodeGenerator GetCodeGenerator(ICompilerContext context)
+        {
+            return new StackMachineCodeGenerator(context);
         }
     }
 }

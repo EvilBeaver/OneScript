@@ -8,6 +8,8 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using OneScript.Contexts;
+using OneScript.Language.LexicalAnalysis;
+using OneScript.Language.SyntaxAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 using OneScript.Sources;
@@ -108,6 +110,34 @@ namespace ScriptEngine
                 _scope = new SymbolScope();
                 _currentContext.PushScope(_scope);
             }
+        }
+
+        protected PreprocessingLexer CreatePreprocessor(
+            SourceCode source,
+            IEnumerable<string> preprocessorConstants,
+            PreprocessorHandlers handlers,
+            IErrorSink errorSink)
+        {
+            var baseLexer = new DefaultLexer
+            {
+                Iterator = source.CreateIterator()
+            };
+
+            var conditionals = handlers?.Get<ConditionalDirectiveHandler>();
+            if (conditionals != default)
+            {
+                foreach (var constant in preprocessorConstants)
+                {
+                    conditionals.Define(constant);
+                }
+            }
+
+            var lexer = new PreprocessingLexer(baseLexer)
+            {
+                Handlers = handlers,
+                ErrorSink = errorSink
+            };
+            return lexer;
         }
     }
 }

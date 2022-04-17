@@ -5,7 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace ScriptEngine.Compiler
+using ScriptEngine.Compiler;
+
+namespace ScriptEngine.Hosting
 {
     public class CompilerServiceFactory : ICompilerServiceFactory
     {
@@ -18,7 +20,7 @@ namespace ScriptEngine.Compiler
 
         public ICompilerService CreateInstance(ICompilerContext context)
         {
-            return new AstBasedCompilerService(_compilerOptions, context);
+            return new StackRuntimeCompilerService(_compilerOptions, context);
         }
     }
 }

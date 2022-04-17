@@ -25,9 +25,11 @@ namespace OneScript.Native.Compiler
             _allLineContentLexer = builder.Build();
         }
 
+        public static string NativeDirectiveName => "native";
+        
         protected override bool DirectiveSupported(string directive)
         {
-            return string.Equals(directive, "native", StringComparison.CurrentCultureIgnoreCase);
+            return string.Equals(directive, NativeDirectiveName, StringComparison.CurrentCultureIgnoreCase);
         }
 
         protected override void ParseAnnotationInternal(ref Lexem lastExtractedLexem, ILexer lexer, ParserContext parserContext)
