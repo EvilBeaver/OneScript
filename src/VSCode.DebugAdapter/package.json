@@ -1,7 +1,7 @@
 {
   "name": "oscript-debug",
   "displayName": "OneScript Debug (BSL)",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "publisher": "EvilBeaver",
   "description": "Visual Studio Code debugger extension for OneScript (BSL)",
   "icon": "images/mono-debug-icon.png",
@@ -14,7 +14,7 @@
   "license": "MPL-2.0",
   "private": true,
   "engines": {
-    "vscode": "^1.0.0"
+    "vscode": "^1.9.0"
   },
   "dependencies": {
   },
