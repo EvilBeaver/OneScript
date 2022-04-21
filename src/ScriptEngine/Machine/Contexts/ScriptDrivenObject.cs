@@ -19,7 +19,7 @@ namespace ScriptEngine.Machine.Contexts
 {
     public abstract class ScriptDrivenObject : PropertyNameIndexAccessor, IRunnable
     {
-        private StackRuntimeModule _module;
+        private IExecutableModule _module;
         private IVariable[] _state;
         private int VARIABLE_COUNT;
         private int METHOD_COUNT;
@@ -28,17 +28,16 @@ namespace ScriptEngine.Machine.Contexts
         private readonly Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _allPropertiesSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-        StackRuntimeModule IRunnable.Module => _module;
+        StackRuntimeModule IRunnable.Module => (StackRuntimeModule)_module;
 
         protected IExecutableModule Module => _module; 
 
         protected ScriptDrivenObject(IExecutableModule module, bool deffered)
         {
-            if (module == default)
-                return;
-            
             if (!(module is StackRuntimeModule stackRuntimeModule))
-                throw new NotImplementedException("Non-stack modules are in develop");
+            {
+                return;
+            }
             
             _module = stackRuntimeModule;
             if (!deffered)
