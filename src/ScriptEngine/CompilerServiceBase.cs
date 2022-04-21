@@ -27,8 +27,10 @@ namespace ScriptEngine
             _currentContext = new ModuleCompilerContext(outerContext);
         }
 
-        public CodeGenerationFlags ProduceExtraCode { get; set; }
-        
+
+        public bool GenerateDebugCode { get; set; }
+        public bool GenerateCodeStat { get; set; }
+
         public int DefineVariable(string name, string alias, SymbolType type)
         {
             RegisterScopeIfNeeded();

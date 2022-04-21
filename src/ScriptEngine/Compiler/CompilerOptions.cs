@@ -12,5 +12,7 @@ namespace ScriptEngine.Compiler
     public class CompilerOptions : ParserOptions
     {
         public IDependencyResolver DependencyResolver { get; set; }
+        
+        public CodeGenerationFlags CodeGenerationFlags { get; set; }
     }
 }

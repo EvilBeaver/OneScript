@@ -36,8 +36,7 @@ namespace oscript
 				var request = ValueFactory.Create();
 				hostedScript.InjectGlobalProperty("ВебЗапрос", "WebRequest", request, true);
 			}
-
-			ScriptFileHelper.OnBeforeScriptRead(hostedScript);
+			
 			var source = hostedScript.Loader.FromFile(_path);
 
 			hostedScript.SetGlobalEnvironment(new DoNothingHost(), source);

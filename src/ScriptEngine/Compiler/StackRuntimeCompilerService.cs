@@ -104,10 +104,22 @@ namespace ScriptEngine.Compiler
         {
             var codeGen = GetCodeGenerator(context);
             codeGen.ThrowErrors = true;
-            codeGen.ProduceExtraCode = ProduceExtraCode;
+            codeGen.ProduceExtraCode = GetCodeFlags();
             codeGen.DependencyResolver = _сompilerOptions.DependencyResolver;
 
             return codeGen.CreateModule(moduleNode, src);
+        }
+
+        private CodeGenerationFlags GetCodeFlags()
+        {
+            CodeGenerationFlags cs = CodeGenerationFlags.Always;
+            if (GenerateDebugCode)
+                cs |= CodeGenerationFlags.DebugCode;
+
+            if (GenerateCodeStat)
+                cs |= CodeGenerationFlags.CodeStatistics;
+
+            return cs;
         }
 
         private PreprocessingLexer CreatePreprocessor(SourceCode source,

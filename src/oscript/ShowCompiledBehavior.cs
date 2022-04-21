@@ -25,7 +25,6 @@ namespace oscript
 			var builder = ConsoleHostBuilder.Create(_path);
 			var hostedScript = ConsoleHostBuilder.Build(builder);
 			hostedScript.Initialize();
-			ScriptFileHelper.OnBeforeScriptRead(hostedScript);
 			
 			var source = hostedScript.Loader.FromFile(_path);
 			var compiler = hostedScript.GetCompilerService();

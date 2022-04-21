@@ -45,6 +45,7 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<RuntimeEnvironment>();
             services.RegisterSingleton<ICompilerServiceFactory, CompilerServiceFactory>();
             services.RegisterSingleton<IErrorSink, ThrowingErrorSink>();
+            
             services.Register<ExecutionDispatcher>();
             
             services.RegisterEnumerable<IExecutorProvider, StackMachineExecutor>();
@@ -63,18 +64,6 @@ namespace ScriptEngine.Hosting
             {
                 var providers = sp.Resolve<ConfigurationProviders>();
                 return providers.CreateConfig();
-            });
-            
-            services.Register<CompilerOptions>(sp =>
-            {
-                var opts = new CompilerOptions
-                {
-                    DependencyResolver = sp.TryResolve<IDependencyResolver>(),
-                    ErrorSink = sp.Resolve<IErrorSink>(),
-                    PreprocessorHandlers = sp.Resolve<PreprocessorHandlers>()
-                };
-                
-                return opts;
             });
             
             services.Register<ScriptingEngine>();

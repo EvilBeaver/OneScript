@@ -5,22 +5,39 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.DependencyInjection;
+using OneScript.Language.SyntaxAnalysis;
 using ScriptEngine.Compiler;
 
 namespace ScriptEngine.Hosting
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class CompilerServiceFactory : ICompilerServiceFactory
     {
-        private readonly CompilerOptions _compilerOptions;
-
-        public CompilerServiceFactory(CompilerOptions options)
+        private readonly PreprocessorHandlers _handlers;
+        private readonly IErrorSink _errorSink;
+        private readonly IDependencyResolver _dependencyResolver;
+        
+        public CompilerServiceFactory(
+            PreprocessorHandlers handlers,
+            IErrorSink errorSink,
+            IDependencyResolver dependencyResolver)
         {
-            _compilerOptions = options;
+            _handlers = handlers;
+            _errorSink = errorSink;
+            _dependencyResolver = dependencyResolver;
         }
 
         public ICompilerService CreateInstance(ICompilerContext context)
         {
-            return new StackRuntimeCompilerService(_compilerOptions, context);
+            var opts = new CompilerOptions
+            {
+                DependencyResolver = _dependencyResolver,
+                ErrorSink = _errorSink,
+                PreprocessorHandlers = _handlers
+            };
+
+            return new StackRuntimeCompilerService(opts, context);
         }
     }
 }

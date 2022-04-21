@@ -18,7 +18,9 @@ namespace ScriptEngine
     /// </summary>
     public interface ICompilerService
     {
-        CodeGenerationFlags ProduceExtraCode { get; set; }
+        public bool GenerateDebugCode { get; set; }
+        
+        public bool GenerateCodeStat { get; set; }
         
         int DefineVariable(string name, string alias, SymbolType type);
         

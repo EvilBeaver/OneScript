@@ -34,6 +34,9 @@ namespace ScriptEngine.Machine.Contexts
 
         protected ScriptDrivenObject(IExecutableModule module, bool deffered)
         {
+            if (module == default)
+                return;
+            
             if (!(module is StackRuntimeModule stackRuntimeModule))
                 throw new NotImplementedException("Non-stack modules are in develop");
             

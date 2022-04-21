@@ -15,8 +15,8 @@ namespace oscript
 {
     class ExecuteScriptBehavior : AppBehavior, IHostApplication, ISystemLogWriter
     {
-        string[] _scriptArgs;
-        string _path;
+        protected string[] _scriptArgs;
+        protected string _path;
 
         public ExecuteScriptBehavior(string path, string[] args)
         {
@@ -25,6 +25,10 @@ namespace oscript
         }
         
         public IDebugController DebugController { get; set; }
+        
+        public string CodeStatFile { get; set; }
+
+        public bool CodeStatisticsEnabled => CodeStatFile != null;
 
         public override int Execute()
         {
@@ -41,7 +45,8 @@ namespace oscript
 
             var hostedScript = ConsoleHostBuilder.Build(builder);
 
-            ScriptFileHelper.OnBeforeScriptRead(hostedScript);
+            if (CodeStatisticsEnabled)
+                hostedScript.EnableCodeStatistics();
             
             var source = hostedScript.Loader.FromFile(_path);
             Process process;
@@ -49,16 +54,21 @@ namespace oscript
             {
                 process = hostedScript.CreateProcess(this, source);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                this.ShowExceptionInfo(e);
+                ShowExceptionInfo(e);
                 return 1;
             }
-
+            
             var result = process.Start();
             hostedScript.Dispose();
 
-            ScriptFileHelper.OnAfterScriptExecute(hostedScript);
+            if (CodeStatisticsEnabled)
+            {
+                var codeStat = hostedScript.GetCodeStatData();
+                var statsWriter = new CodeStatWriter(CodeStatFile, CodeStatWriterType.JSON);
+                statsWriter.Write(codeStat);
+            }
 
             return result;
         }

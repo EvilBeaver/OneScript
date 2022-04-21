@@ -10,28 +10,22 @@ using ScriptEngine;
 
 namespace oscript
 {
-    internal class DebugBehavior : AppBehavior
+    internal class DebugBehavior : ExecuteScriptBehavior
     {
-        private readonly string[] _args;
-        private readonly string _path;
         private readonly int _port;
         
-        public DebugBehavior(int port, string path, string[] args)
+        public DebugBehavior(int port, string path, string[] args) : base(path, args)
         {
-            _args = args;
-            _path = path;
             _port = port;
         }
 
         public override int Execute()
         {
-            var executor = new ExecuteScriptBehavior(_path, _args);
-            SystemLogger.SetWriter(executor);
             var tcpDebugServer = new BinaryTcpDebugServer(_port);
                     
-            executor.DebugController = tcpDebugServer.CreateDebugController();
+            DebugController = tcpDebugServer.CreateDebugController();
             
-            return executor.Execute();
+            return base.Execute();
         }
 
         public static AppBehavior Create(CmdLineHelper helper)
