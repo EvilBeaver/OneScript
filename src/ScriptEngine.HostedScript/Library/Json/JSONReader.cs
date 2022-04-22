@@ -273,7 +273,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                 if (encoding != null)
                     _fileReader = Environment.FileOpener.OpenReader(JSONFileName, TextEncodingEnum.GetEncoding(encoding));
                 else
-                    _fileReader = Environment.FileOpener.OpenReader(JSONFileName);
+                    _fileReader = Environment.FileOpener.OpenReader(JSONFileName, System.Text.Encoding.UTF8 );
             }
             catch (Exception e)
             {
