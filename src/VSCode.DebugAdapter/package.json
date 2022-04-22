@@ -4,7 +4,7 @@
   "version": "0.7.2",
   "publisher": "EvilBeaver",
   "description": "Visual Studio Code debugger extension for OneScript (BSL)",
-  "icon": "images/mono-debug-icon.png",
+  "icon": "images/logo-dbg.png",
   "categories": [
     "Debuggers"
   ],
