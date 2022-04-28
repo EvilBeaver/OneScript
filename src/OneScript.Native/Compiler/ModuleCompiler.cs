@@ -9,6 +9,7 @@ using System.Linq;
 using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
+using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Runtime;

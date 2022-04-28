@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using FluentAssertions;
 using Moq;
+using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
@@ -55,17 +56,18 @@ namespace OneScript.Core.Tests
         {
             var lexer = new DefaultLexer();
             lexer.Iterator = SourceCodeBuilder.Create().FromString(code).Build().CreateIterator();
+            var errSink = new ThrowingErrorSink();
             var parser = new DefaultBslParser(
                 lexer,
-                Mock.Of<IErrorSink>(),
+                errSink,
                 Mock.Of<PreprocessorHandlers>());
             
             var node = parser.ParseStatefulModule() as ModuleNode;
 
             var ctx = new CompilerContext();
             ctx.PushScope(new SymbolScope());
-            var compiler = new StackMachineCodeGenerator(ctx);
-            return compiler.CreateModule(node, lexer.Iterator.Source);
+            var compiler = new StackMachineCodeGenerator(errSink);
+            return compiler.CreateModule(node, lexer.Iterator.Source, ctx);
         }
     }
 }

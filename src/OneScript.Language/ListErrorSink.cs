@@ -7,20 +7,20 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 
-namespace OneScript.Language.SyntaxAnalysis
+namespace OneScript.Language
 {
     public class ListErrorSink : IErrorSink
     {
-        private List<ParseError> _errors;
+        private List<CodeError> _errors;
 
-        public IEnumerable<ParseError> Errors => _errors;
+        public IEnumerable<CodeError> Errors => _errors;
 
         public bool HasErrors => _errors != default && _errors.Count > 0;
         
-        public void AddError(ParseError err)
+        public void AddError(CodeError err)
         {
             if (_errors == default)
-                _errors = new List<ParseError>();
+                _errors = new List<CodeError>();
             
             _errors.Add(err);
         }

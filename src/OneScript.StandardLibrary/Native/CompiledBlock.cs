@@ -80,7 +80,7 @@ namespace OneScript.StandardLibrary.Native
             }
             catch (ScriptException e)
             {
-                _errors.AddError(new ParseError
+                _errors.AddError(new CodeError
                 {
                     Description = e.Message,
                     Position = e.GetPosition()

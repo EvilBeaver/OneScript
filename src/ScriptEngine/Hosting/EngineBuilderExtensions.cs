@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using OneScript.DependencyInjection;
 using OneScript.Execution;
+using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Types;
 using ScriptEngine.Compiler;
@@ -47,6 +48,7 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<IErrorSink, ThrowingErrorSink>();
             
             services.Register<ExecutionDispatcher>();
+            services.Register<IDependencyResolver, NullDependencyResolver>();
             
             services.RegisterEnumerable<IExecutorProvider, StackMachineExecutor>();
             services.RegisterEnumerable<IDirectiveHandler, ConditionalDirectiveHandler>();

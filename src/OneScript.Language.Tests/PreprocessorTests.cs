@@ -598,7 +598,7 @@ namespace OneScript.Language.Tests
 
             handler.HandleDirective(ref lexem, lexer);
 
-            sinkMock.Verify(sink => sink.AddError(It.IsAny<ParseError>()), Times.Exactly(2));
+            sinkMock.Verify(sink => sink.AddError(It.IsAny<CodeError>()), Times.Exactly(2));
         }
 
         [Fact]

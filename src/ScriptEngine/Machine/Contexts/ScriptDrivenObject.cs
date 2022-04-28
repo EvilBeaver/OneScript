@@ -34,12 +34,7 @@ namespace ScriptEngine.Machine.Contexts
 
         protected ScriptDrivenObject(IExecutableModule module, bool deffered)
         {
-            if (!(module is StackRuntimeModule stackRuntimeModule))
-            {
-                return;
-            }
-            
-            _module = stackRuntimeModule;
+            _module = module;
             if (!deffered)
             {
                 InitOwnData();

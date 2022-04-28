@@ -27,8 +27,8 @@ namespace ScriptEngine.Compiler
 {
     public partial class StackMachineCodeGenerator : BslSyntaxWalker, ICompilerBackend
     {
+        private readonly IErrorSink _errorSink;
         private readonly StackRuntimeModule _module;
-        private readonly List<CompilerException> _errors = new List<CompilerException>();
         private SourceCode _sourceCode;
         private ICompilerContext _ctx;
         private List<ConstDefinition> _constMap = new List<ConstDefinition>();
@@ -36,16 +36,13 @@ namespace ScriptEngine.Compiler
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
 
-        public StackMachineCodeGenerator()
+        public StackMachineCodeGenerator(IErrorSink errorSink)
         {
+            _errorSink = errorSink;
             _module = new StackRuntimeModule();
         }
-
-        public bool ThrowErrors { get; set; }
         
         public CodeGenerationFlags ProduceExtraCode { get; set; }
-
-        public IReadOnlyList<CompilerException> Errors => _errors;
 
         protected StackRuntimeModule Module => _module;
 
@@ -122,7 +119,7 @@ namespace ScriptEngine.Compiler
                     {
                         methN = _ctx.GetMethod(item.identifier);
                     }
-                    catch (CompilerException exc)
+                    catch (SymbolNotFoundException exc)
                     {
                         AddError(exc, item.location);
                         continue;
@@ -135,21 +132,12 @@ namespace ScriptEngine.Compiler
                     if (item.asFunction && !methInfo.IsFunction())
                     {
                         AddError(
-                            CompilerException.UseProcAsFunction(),
+                            CompilerErrors.UseProcAsFunction(),
                             item.location);
                         continue;
                     }
 
-                    try
-                    {
-                        CheckFactArguments(methInfo.GetParameters(), item.factArguments);
-                    }
-                    catch (CompilerException exc)
-                    {
-                        AddError(exc, item.location);
-                        continue;
-                    }
-
+                    CheckFactArguments(methInfo.GetParameters(), item.factArguments);
                     CorrectCommandArgument(item.commandIndex, GetMethodRefNumber(ref methN));
                 }
             }
@@ -295,9 +283,7 @@ namespace ScriptEngine.Compiler
             }
             catch (CompilerException)
             {
-                var err = new CompilerException(Locale.NStr($"ru = 'Метод с таким именем уже определен: {signature.MethodName}';"+
-                                                            $"en = 'Method is already defined {signature.MethodName}'"));
-                AddError(CompilerException.AppendCodeInfo(err, MakeCodePosition(signature.Location)));
+                AddError(CompilerErrors.AmbiguousMethod(signature.MethodName), signature.Location);
                 binding = default;
             }
             _module.MethodRefs.Add(binding);
@@ -623,7 +609,7 @@ namespace ScriptEngine.Compiler
             if (funcId == OperationCode.Min || funcId == OperationCode.Max)
             {
                 if (argsPassed == 0)
-                    throw CompilerException.TooFewArgumentsPassed();
+                    AddError(CompilerErrors.TooFewArgumentsPassed(), node.ArgumentList.Location);
             }
             else
             {
@@ -639,13 +625,13 @@ namespace ScriptEngine.Compiler
             var argsPassed = argList.Children.Count;
             if (argsPassed > parameters.Length)
             {
-                AddError(CompilerException.TooManyArgumentsPassed(), argList.Location);
+                AddError(CompilerErrors.TooManyArgumentsPassed(), argList.Location);
                 return;
             }
             
             if (parameters.Skip(argsPassed).Any(param => !param.HasDefaultValue))
             {
-                AddError(CompilerException.TooFewArgumentsPassed(), argList.Location);
+                AddError(CompilerErrors.TooFewArgumentsPassed(), argList.Location);
             }
         }
 
@@ -658,9 +644,7 @@ namespace ScriptEngine.Compiler
         {
             if (LanguageDef.IsBuiltInFunction(node.Identifier.Lexem.Token))
             {   
-                AddError(new CompilerException(Locale.NStr(
-                        "en = 'Using build-in function as procedure';" +
-                        "ru = 'Использование встроенной функции, как процедуры'")));
+                AddError(CompilerErrors.UseBuiltInProcAsFunction(), node.Location);
                 return;
             }
             GlobalCall(node, false);
@@ -750,7 +734,7 @@ namespace ScriptEngine.Compiler
                     var methInfo = scope.GetMethod(methBinding.CodeIndex);
                     if (asFunction && !methInfo.IsFunction())
                     {
-                        AddError(CompilerException.UseProcAsFunction(), identifierNode.Location);
+                        AddError(CompilerErrors.UseProcAsFunction(), identifierNode.Location);
                         return;
                     }
 
@@ -1160,15 +1144,25 @@ namespace ScriptEngine.Compiler
             return idx;
         }
 
-        protected void AddError(CompilerException exc)
+        private void AddError(CompilerException exc)
         {
-            if (ThrowErrors)
-                throw exc;
-
-            _errors.Add(exc);
+            throw exc;
         }
         
-        protected void AddError(CompilerException error, in CodeRange location)
+        private void AddError(CodeError error)
+        {
+            throw CompilerException.FromCodeError(error);
+        }
+        
+        private void AddError(CodeError error, in CodeRange location)
+        {
+            var err = CompilerException.FromCodeError(error);
+            CompilerException.AppendCodeInfo(err, MakeCodePosition(location));
+            throw err;
+            //_errorSink.AddError(error);
+        }
+        
+        private void AddError(CompilerException error, in CodeRange location)
         {
             CompilerException.AppendCodeInfo(error, MakeCodePosition(location));
             AddError(error);

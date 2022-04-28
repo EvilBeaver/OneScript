@@ -11,9 +11,9 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     internal class InternalParseException : Exception
     {
-        public ParseError Error { get; }
+        public CodeError Error { get; }
 
-        public InternalParseException(ParseError error)
+        public InternalParseException(CodeError error)
         {
             Error = error;
         }

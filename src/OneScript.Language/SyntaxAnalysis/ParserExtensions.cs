@@ -13,7 +13,7 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public static class ParserExtensions
     {
-        public static string Describe(this IEnumerable<ParseError> errors)
+        public static string Describe(this IEnumerable<CodeError> errors)
         {
             var builder = new StringBuilder(128);
             foreach (var parseError in errors)

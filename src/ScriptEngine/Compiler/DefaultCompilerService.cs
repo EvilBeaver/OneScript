@@ -42,8 +42,7 @@ namespace ScriptEngine.Compiler
 
         private StackMachineCodeGenerator StackInitializer()
         {
-            var codeGen = new StackMachineCodeGenerator();
-            codeGen.ThrowErrors = true;
+            var codeGen = new StackMachineCodeGenerator(_сompilerOptions.ErrorSink);
             codeGen.ProduceExtraCode = GetCodeFlags();
             codeGen.DependencyResolver = _сompilerOptions.DependencyResolver;
 

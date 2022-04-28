@@ -62,14 +62,14 @@ namespace OneScript.Native.Compiler
 
         protected virtual void AddError(BilingualString errorText, CodeRange location)
         {
-            Errors.AddError(new ParseError
+            Errors.AddError(new CodeError
             {
                 Description = errorText.ToString(),
                 Position = ToCodePosition(location)
             });
         }
         
-        protected void AddError(ParseError err)
+        protected void AddError(CodeError err)
         {
             Errors.AddError(err);
         }

@@ -5,19 +5,22 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 
-namespace OneScript.Language.SyntaxAnalysis
+namespace OneScript.Language
 {
     public class ThrowingErrorSink : IErrorSink
     {
-        public IEnumerable<ParseError> Errors { get; }
+        public IEnumerable<CodeError> Errors => Array.Empty<CodeError>();
             
         public bool HasErrors => false;
             
-        public void AddError(ParseError err)
+        public void AddError(CodeError err)
         {
-            throw new SyntaxErrorException(err);
+            DoThrow(err);
         }
+        
+        protected virtual void DoThrow(CodeError err) => throw new SyntaxErrorException(err);
     }
 }
