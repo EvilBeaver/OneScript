@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using OneScript.DependencyInjection;
 using OneScript.Language.SyntaxAnalysis;
 using ScriptEngine.Compiler;
+using ScriptEngine.HostedScript;
 
 namespace ScriptEngine.Hosting
 {
@@ -17,15 +18,18 @@ namespace ScriptEngine.Hosting
         private readonly PreprocessorHandlers _handlers;
         private readonly IErrorSink _errorSink;
         private readonly IDependencyResolver _dependencyResolver;
-        
+        private readonly IServiceContainer _services;
+
         public CompilerServiceFactory(
             PreprocessorHandlers handlers,
             IErrorSink errorSink,
-            IDependencyResolver dependencyResolver)
+            IDependencyResolver dependencyResolver,
+            IServiceContainer services)
         {
             _handlers = handlers;
             _errorSink = errorSink;
             _dependencyResolver = dependencyResolver;
+            _services = services;
         }
 
         public ICompilerService CreateInstance(ICompilerContext context)
@@ -37,7 +41,7 @@ namespace ScriptEngine.Hosting
                 PreprocessorHandlers = _handlers
             };
 
-            return new StackRuntimeCompilerService(opts, context);
+            return new DefaultCompilerService(opts, context, _services);
         }
     }
 }

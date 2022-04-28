@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Compilation;
 using OneScript.Language.SyntaxAnalysis;
 
 namespace ScriptEngine.Compiler
@@ -12,7 +13,5 @@ namespace ScriptEngine.Compiler
     public class CompilerOptions : ParserOptions
     {
         public IDependencyResolver DependencyResolver { get; set; }
-        
-        public CodeGenerationFlags CodeGenerationFlags { get; set; }
     }
 }

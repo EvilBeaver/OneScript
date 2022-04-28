@@ -98,11 +98,11 @@ namespace ScriptEngine
             }
         }
 
-        protected abstract StackRuntimeModule CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
+        protected abstract IExecutableModule CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
         
-        protected abstract StackRuntimeModule CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
+        protected abstract IExecutableModule CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
         
-        protected abstract StackRuntimeModule CompileExpressionInternal(SourceCode source, ICompilerContext context);
+        protected abstract IExecutableModule CompileExpressionInternal(SourceCode source, ICompilerContext context);
         
 
         private void RegisterScopeIfNeeded()

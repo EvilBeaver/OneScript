@@ -28,17 +28,16 @@ namespace ScriptEngine.Compiler
     public partial class StackMachineCodeGenerator : BslSyntaxWalker, ICompilerBackend
     {
         private readonly StackRuntimeModule _module;
-        private readonly ICompilerContext _ctx;
         private readonly List<CompilerException> _errors = new List<CompilerException>();
         private SourceCode _sourceCode;
+        private ICompilerContext _ctx;
         private List<ConstDefinition> _constMap = new List<ConstDefinition>();
         
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
 
-        public StackMachineCodeGenerator(ICompilerContext context)
+        public StackMachineCodeGenerator()
         {
-            _ctx = context;
             _module = new StackRuntimeModule();
         }
 
@@ -54,13 +53,14 @@ namespace ScriptEngine.Compiler
         
         public IDependencyResolver DependencyResolver { get; set; }
         
-        public StackRuntimeModule CreateModule(ModuleNode moduleNode, SourceCode source)
+        public StackRuntimeModule CreateModule(ModuleNode moduleNode, SourceCode source, ICompilerContext context)
         {
             if (moduleNode.Kind != NodeKind.Module)
             {
                 throw new ArgumentException($"Node must be a Module node");
             }
 
+            _ctx = context;
             _sourceCode = source;
 
             return CreateImageInternal(moduleNode);
