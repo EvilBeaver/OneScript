@@ -119,9 +119,9 @@ namespace ScriptEngine.Compiler
                     {
                         methN = _ctx.GetMethod(item.identifier);
                     }
-                    catch (SymbolNotFoundException exc)
+                    catch (SymbolNotFoundException)
                     {
-                        AddError(exc, item.location);
+                        AddError(CompilerErrors.SymbolNotFound(item.identifier), item.location);
                         continue;
                     }
 
@@ -1159,7 +1159,6 @@ namespace ScriptEngine.Compiler
             var err = CompilerException.FromCodeError(error);
             CompilerException.AppendCodeInfo(err, MakeCodePosition(location));
             throw err;
-            //_errorSink.AddError(error);
         }
         
         private void AddError(CompilerException error, in CodeRange location)
