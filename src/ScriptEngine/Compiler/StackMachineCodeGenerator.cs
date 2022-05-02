@@ -103,8 +103,15 @@ namespace ScriptEngine.Compiler
             }
             catch (CompilerException e)
             {
-                CompilerException.AppendCodeInfo(e, MakeCodePosition(node.Location));
-                AddError(e);
+                var error = new CodeError
+                {
+                    Description = e.Message,
+                    Position = e.GetPosition()?.LineNumber == default
+                        ? MakeCodePosition(node.Location)
+                        : e.GetPosition(),
+                    ErrorId = nameof(CompilerException)
+                };
+                AddError(error);
             }
         }
 
@@ -544,7 +551,7 @@ namespace ScriptEngine.Compiler
             }
             catch (SymbolNotFoundException e)
             {
-                AddError(e, node.Location);
+                AddError(CompilerErrors.SymbolNotFound(e.Symbol), node.Location);
             }
         }
 
@@ -1143,33 +1150,21 @@ namespace ScriptEngine.Compiler
 
             return idx;
         }
-
-        private void AddError(CompilerException exc)
+        
+        private void AddError(CodeError error, in CodeRange location)
         {
-            throw exc;
+            error.Position = MakeCodePosition(location);
+            _errorSink.AddError(error);
         }
         
         private void AddError(CodeError error)
         {
-            throw CompilerException.FromCodeError(error);
-        }
-        
-        private void AddError(CodeError error, in CodeRange location)
-        {
-            var err = CompilerException.FromCodeError(error);
-            CompilerException.AppendCodeInfo(err, MakeCodePosition(location));
-            throw err;
-        }
-        
-        private void AddError(CompilerException error, in CodeRange location)
-        {
-            CompilerException.AppendCodeInfo(error, MakeCodePosition(location));
-            AddError(error);
+            _errorSink.AddError(error);
         }
 
         private ErrorPositionInfo MakeCodePosition(CodeRange range)
         {
-            return new ErrorPositionInfo()
+            return new ErrorPositionInfo
             {
                 Code = _sourceCode.GetCodeLine(range.LineNumber),
                 LineNumber = range.LineNumber,

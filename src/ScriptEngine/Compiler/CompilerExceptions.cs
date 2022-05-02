@@ -22,7 +22,7 @@ namespace ScriptEngine.Compiler
 
         public static CompilerException FromCodeError(CodeError error)
         {
-            var exc = new CompilerException(Locale.NStr(error.Description));
+            var exc = new CompilerException(error.Description);
             if (error.Position != default)
                 AppendCodeInfo(exc, error.Position);
 

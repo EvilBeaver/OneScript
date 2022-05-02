@@ -12,15 +12,25 @@ namespace OneScript.Language
 {
     public class ThrowingErrorSink : IErrorSink
     {
+        public ThrowingErrorSink()
+        {
+            ExceptionFactory = err => new SyntaxErrorException(err);
+        }
+        
+        public ThrowingErrorSink(Func<CodeError, ScriptException> exceptionFactory)
+        {
+            ExceptionFactory = exceptionFactory;
+        }
+
         public IEnumerable<CodeError> Errors => Array.Empty<CodeError>();
             
         public bool HasErrors => false;
-            
+
+        private Func<CodeError, ScriptException> ExceptionFactory { get; set; }
+        
         public void AddError(CodeError err)
         {
-            DoThrow(err);
+            throw ExceptionFactory(err);
         }
-        
-        protected virtual void DoThrow(CodeError err) => throw new SyntaxErrorException(err);
     }
 }
