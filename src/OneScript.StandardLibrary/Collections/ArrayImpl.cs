@@ -16,7 +16,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.Collections
 {
     [ContextClass("Массив", "Array")]
-    public class ArrayImpl : AutoCollectionContext<ArrayImpl, IValue>
+    public class ArrayImpl : AutoCollectionContext<ArrayImpl, IValue>, IValueArray
     {
         private readonly List<IValue> _values;
 
@@ -29,6 +29,8 @@ namespace OneScript.StandardLibrary.Collections
         {
             _values = new List<IValue>(values);
         }
+
+        public override bool IsIndexed => true;
 
         #region Native Runtime Bridge
         

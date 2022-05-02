@@ -914,14 +914,34 @@ namespace ScriptEngine.Compiler
                 AddCommand(OperationCode.PushConst, GetConstNumber(cDef));
             }
 
-            var callArgs = 0;
-            if (node.ConstructorArguments != default)
+            if (node.IsDynamic)
             {
-                PushArgumentsList(node.ConstructorArguments);
-                callArgs = node.ConstructorArguments.Children.Count;
-            }
+                var argsPassed = node.ConstructorArguments.Children.Count;
+                if (argsPassed < 1)
+                {
+                    AddError(CompilerErrors.TooFewArgumentsPassed(), node.ConstructorArguments.Location);
+                }
 
-            AddCommand(OperationCode.NewInstance, callArgs);
+                if (argsPassed > 2)
+                {
+                    AddError(CompilerErrors.TooManyArgumentsPassed(), node.ConstructorArguments.Location);
+                }
+                if (argsPassed == 2)
+                    VisitExpression(node.ConstructorArguments.Children[1]);
+                
+                AddCommand(OperationCode.NewFunc, argsPassed);
+            }
+            else
+            {
+                var callArgs = 0;
+                if (node.ConstructorArguments != default)
+                {
+                    PushArgumentsList(node.ConstructorArguments);
+                    callArgs = node.ConstructorArguments.Children.Count;
+                }
+
+                AddCommand(OperationCode.NewInstance, callArgs);
+            }
         }
 
         private void ExitTryBlocks()

@@ -276,7 +276,7 @@ namespace OneScript.StandardLibrary.Json
                 if (encoding != null)
                     _fileReader = FileOpener.OpenReader(JSONFileName, TextEncodingEnum.GetEncoding(encoding));
                 else
-                    _fileReader = FileOpener.OpenReader(JSONFileName);
+                    _fileReader = FileOpener.OpenReader(JSONFileName, System.Text.Encoding.UTF8);
             }
             catch (Exception e)
             {

@@ -686,6 +686,7 @@ namespace ScriptEngine.Machine
                 JmpCounter,
                 Inc,
                 NewInstance,
+                NewFunc,
                 PushIterator,
                 IteratorNext,
                 StopIterator,
@@ -2540,6 +2541,41 @@ namespace ScriptEngine.Machine
             {
                 _operationStack.Push(ValueFactory.Create());
             }
+            NextInstruction();
+        }
+
+        private void NewFunc(int argCount)
+        {
+            IValue[] argValues;
+
+            if (argCount == 1)
+                argValues = new IValue[0];
+            else
+            {
+                var valueFromStack = _operationStack.Pop().GetRawValue();
+                if (valueFromStack is IValueArray array)
+                    argValues = array.ToArray();
+                else
+                    argValues = new IValue[0];
+            }
+            
+            var typeName = _operationStack.Pop().AsString();
+            if (!TypeManager.TryGetType(typeName, out var type))
+            {
+                throw RuntimeException.ConstructorNotFound(typeName);
+            }
+            
+            // TODO убрать cast после рефакторинга ITypeFactory
+            var factory = (TypeFactory)TypeManager.GetFactoryFor(type);
+            var context = new TypeActivationContext
+            {
+                TypeName = typeName,
+                TypeManager = _mem.TypeManager,
+                Services = _mem.Services
+            };
+
+            var instance = factory.Activate(context, argValues);
+            _operationStack.Push(instance);
             NextInstruction();
         }
 
