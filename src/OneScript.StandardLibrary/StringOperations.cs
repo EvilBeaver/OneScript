@@ -300,32 +300,40 @@ namespace OneScript.StandardLibrary
             if (srcFormat == String.Empty)
                 return ValueFactory.Create("");
 
-            var re = new System.Text.RegularExpressions.Regex(@"(%%)|(%\d+)|(%\D)");
-            int matchCount = 0;
-            int passedArgsCount = arguments.Skip(1).Count(x => !x.IsSkippedArgument() && x.SystemType != BasicTypes.Undefined);
+            var re = new System.Text.RegularExpressions.Regex(@"(%%)|%(\d+)|%\((\d+)\)|%");
+            int passedArgsCount = arguments.Reverse()
+                .SkipWhile(x => x == null || x.IsSkippedArgument() || x.SystemType == BasicTypes.Undefined)
+                .Count() - 1;
+            int maxNumber = 0;
             var result = re.Replace(srcFormat, (m) =>
             {
                 if (m.Groups[1].Success)
                     return "%";
                 
-                if(m.Groups[2].Success)
+                if(m.Groups[2].Success || m.Groups[3].Success)
                 {
-                    matchCount++;
-                    var number = int.Parse(m.Groups[2].Value.Substring(1));
-                    if (number < 1 || number > 11)
-                        throw new RuntimeException("Ошибка при вызове метода контекста (СтрШаблон): Ошибка синтаксиса шаблона в позиции " + (m.Index + 1));
+                    var number = int.Parse(m.Groups[2].Success ? m.Groups[2].Value : m.Groups[3].Value);
 
-                    if (arguments[number] != null && !arguments[number].IsSkippedArgument())
+                    if (number < 1 || number > 10)
+                        throw new RuntimeException($"Ошибка синтаксиса шаблона в позиции {m.Index+2}: недопустимый номер подстановки");
+
+                    //FIXME: отключено, т.к. платформа игнорирует ошибку с недостаточным числом параметров
+                    //if (number > passedArgsCount)
+                    //    throw RuntimeException.TooFewArgumentsPassed();
+                    
+                    if (number > maxNumber)
+                        maxNumber = number;
+
+                    if (arguments[number] != null && arguments[number].IsSkippedArgument())
                         return arguments[number].AsString();
                     else
                         return "";
                 }
 
-                throw new RuntimeException("Ошибка при вызове метода контекста (СтрШаблон): Ошибка синтаксиса шаблона в позиции " + (m.Index + 1));
-
+                throw new RuntimeException("Ошибка синтаксиса шаблона в позиции " + (m.Index + 2));
             });
 
-            if (passedArgsCount > matchCount)
+            if (passedArgsCount > maxNumber)
                 throw RuntimeException.TooManyArgumentsPassed();
 
             return ValueFactory.Create(result);
