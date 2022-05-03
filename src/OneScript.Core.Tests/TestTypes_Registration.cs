@@ -63,6 +63,41 @@ namespace OneScript.Core.Tests
                 alreadySearchedTypes.Add(definition).Should().BeTrue(definition.Name + "\nshould not be in hashset");
             }
         }
+
+        [Fact]
+        public void TypeEqualityById()
+        {
+            var guid = Guid.Parse("826429B0-F662-4CCD-BF15-384A10B53611");
+            var type1 = new TypeDescriptor(guid, "TheType");
+            var type2 = new TypeDescriptor(guid, "TheType");
+            
+            Assert.Equal(type1, type2);
+            Assert.True(type1 == type2); // operator==
+            Assert.False(type1 != type2); // operator !=
+        }
+        
+        [Fact]
+        public void TypeInequalityForNull()
+        {
+            var guid = Guid.Parse("826429B0-F662-4CCD-BF15-384A10B53611");
+            var type1 = new TypeDescriptor(guid, "TheType");
+            TypeDescriptor type2 = null;
+            
+            Assert.NotEqual(type1, type2);
+            Assert.False(type1 == type2); // operator==
+            Assert.True(type1 != type2); // operator !=
+        }
+        
+        [Fact]
+        public void TypeEqualityForNull()
+        {
+            TypeDescriptor type1 = null;
+            TypeDescriptor type2 = null;
+            
+            Assert.Equal(type1, type2);
+            Assert.True(type1 == type2); // operator==
+            Assert.False(type1 != type2); // operator !=
+        }
         
     }
 }
