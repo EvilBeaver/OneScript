@@ -26,15 +26,14 @@ namespace ScriptEngine.Machine.Contexts
 
         private readonly object _locker = new object();
 
-        static private readonly System.Reflection.MethodInfo _genConvertParamMethod =
+        private static readonly MethodInfo _genConvertParamMethod =
             typeof(InternalMethInfo).GetMethod("ConvertParam",
             BindingFlags.Static | BindingFlags.NonPublic);
 
-        static private readonly System.Reflection.MethodInfo _genConvertReturnMethod =
+        private static readonly MethodInfo _genConvertReturnMethod =
             typeof(InternalMethInfo).GetMethod("ConvertReturnValue",
             BindingFlags.Static | BindingFlags.NonPublic);
-
-
+        
         private void Init()
         {
             if (_methodPtrs == null)

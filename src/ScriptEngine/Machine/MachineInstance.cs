@@ -2548,7 +2548,7 @@ namespace ScriptEngine.Machine
         {
             IValue[] argValues;
 
-            if (argCount == 1)
+            if (argCount == 0)
                 argValues = new IValue[0];
             else
             {

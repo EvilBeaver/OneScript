@@ -168,7 +168,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 						typesList.Add(rawType);
 				}
 			} 
-			else if (types.SystemType == BasicTypes.Undefined)
+			else if (types.SystemType != BasicTypes.Undefined)
 			{
 				return null; // далее будет исключение
 			}

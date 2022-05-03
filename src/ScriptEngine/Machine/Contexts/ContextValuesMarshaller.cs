@@ -35,7 +35,6 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-
         private static object ConvertValueType(IValue value, Type type)
         {
             object valueObj;

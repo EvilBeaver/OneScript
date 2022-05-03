@@ -324,7 +324,7 @@ namespace OneScript.StandardLibrary
                     if (number > maxNumber)
                         maxNumber = number;
 
-                    if (arguments[number] != null && arguments[number].IsSkippedArgument())
+                    if (arguments[number] != null && !arguments[number].IsSkippedArgument())
                         return arguments[number].AsString();
                     else
                         return "";

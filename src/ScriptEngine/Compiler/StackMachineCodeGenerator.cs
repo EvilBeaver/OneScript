@@ -782,14 +782,20 @@ namespace ScriptEngine.Compiler
             for (int i = 0; i < argList.Children.Count; i++)
             {
                 var passedArg = argList.Children[i];
-                if (passedArg.Children.Count > 0)
-                {
-                    VisitExpression(passedArg.Children[0]);
-                }
-                else
-                {
-                    AddCommand(OperationCode.PushDefaultArg);
-                }
+                VisitCallArgument(passedArg);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void VisitCallArgument(BslSyntaxNode passedArg)
+        {
+            if (passedArg.Children.Count > 0)
+            {
+                VisitExpression(passedArg.Children[0]);
+            }
+            else
+            {
+                AddCommand(OperationCode.PushDefaultArg);
             }
         }
 
@@ -917,18 +923,15 @@ namespace ScriptEngine.Compiler
             if (node.IsDynamic)
             {
                 var argsPassed = node.ConstructorArguments.Children.Count;
-                if (argsPassed < 1)
+                if (argsPassed == 1)
                 {
-                    AddError(CompilerErrors.TooFewArgumentsPassed(), node.ConstructorArguments.Location);
+                    PushArgumentsList(node.ConstructorArguments);
                 }
-
-                if (argsPassed > 2)
+                else if (argsPassed > 1)
                 {
                     AddError(CompilerErrors.TooManyArgumentsPassed(), node.ConstructorArguments.Location);
                 }
-                if (argsPassed == 2)
-                    VisitExpression(node.ConstructorArguments.Children[1]);
-                
+
                 AddCommand(OperationCode.NewFunc, argsPassed);
             }
             else

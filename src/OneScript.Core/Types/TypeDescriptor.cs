@@ -51,14 +51,19 @@ namespace OneScript.Types
             return Id.GetHashCode();
         }
 
+        private static bool StaticEquals(TypeDescriptor left, TypeDescriptor right)
+        {
+            return left?.Equals(right) ?? ReferenceEquals(right, null);
+        }
+        
         public static bool operator ==(TypeDescriptor left, TypeDescriptor right)
         {
-            return Equals(left, right);
+            return StaticEquals(left, right);
         }
 
         public static bool operator !=(TypeDescriptor left, TypeDescriptor right)
         {
-            return !Equals(left, right);
+            return !StaticEquals(left, right);
         }
     }
 }
