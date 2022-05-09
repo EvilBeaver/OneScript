@@ -15,6 +15,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.CSharp.RuntimeBinder;
 using OneScript.Commons;
+using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Language;

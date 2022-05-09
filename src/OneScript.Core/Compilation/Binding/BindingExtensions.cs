@@ -7,9 +7,9 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Contexts;
-using OneScript.Values;
+using OneScript.Runtime.Binding;
 
-namespace OneScript.Runtime.Binding
+namespace OneScript.Compilation.Binding
 {
     public static class HelperExtensions
     {

@@ -16,18 +16,22 @@ namespace OneScript.Contexts
     /// </summary>
     public interface IContext
     {
-        IReadOnlyList<BslPropertyInfo> Properties { get; }
+        IReadOnlyList<BslPropertyInfo> GetProperties();
+
+        IReadOnlyList<BslMethodInfo> GetMethods();
+
+        BslPropertyInfo FindProperty(string name);
         
-        IReadOnlyList<BslMethodInfo> Methods { get; }
+        BslMethodInfo FindMethod(string name);
         
         bool DynamicMethodSignatures { get; }
 
-        void SetPropValue(int index, BslValue value);
+        void SetPropValue(BslPropertyInfo property, BslValue value);
         
-        BslValue GetPropValue(int index);
+        BslValue GetPropValue(BslPropertyInfo property);
         
-        void CallAsProcedure(int index, IReadOnlyList<BslValue> arguments);
+        void CallAsProcedure(BslMethodInfo method, IReadOnlyList<BslValue> arguments);
         
-        BslValue CallAsFunction(int methodNumber, IReadOnlyList<BslValue> arguments);
+        BslValue CallAsFunction(BslMethodInfo method, IReadOnlyList<BslValue> arguments);
     }
 }

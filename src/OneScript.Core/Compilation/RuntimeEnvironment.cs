@@ -6,11 +6,13 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Compilation.Binding;
 using OneScript.Contexts;
+using OneScript.Localization;
 using OneScript.Runtime.Binding;
 using OneScript.Values;
 
-namespace OneScript.Runtime
+namespace OneScript.Compilation
 {
     /// <summary>
     /// Программное окружение процесса. Содержит условную "память" виртуальной машины
@@ -20,6 +22,8 @@ namespace OneScript.Runtime
     {
         private readonly SymbolTable _symbols = new SymbolTable();
         private readonly Lazy<SymbolScope> _scopeOfGlobalProperties;
+
+        private readonly GlobalPropertiesHolder _globalPropertiesHolder = new GlobalPropertiesHolder();
 
         public RuntimeEnvironment()
         {
@@ -34,6 +38,25 @@ namespace OneScript.Runtime
         public void InjectObject(IContext context)
         {
             _symbols.PushScope(SymbolScope.FromContext(context));
+        }
+        
+        public void RegisterGlobalProperty(BilingualString names, BslValue value)
+        {
+            if (_globalPropertiesHolder.HasProperty(names))
+            {
+                throw new InvalidOperationException($"Global Property {names} already registered");
+            }
+            
+            var propInfo = _globalPropertiesHolder.Register(names, value);
+            var symbol = new BslBoundPropertySymbol
+            {
+                Target = _globalPropertiesHolder,
+                Name = names.Russian,
+                Alias = names.English,
+                Property = propInfo
+            };
+
+            ScopeOfGlobalProps.AddVariable(symbol);
         }
         
         private SymbolScope ScopeOfGlobalProps => _scopeOfGlobalProperties.Value;

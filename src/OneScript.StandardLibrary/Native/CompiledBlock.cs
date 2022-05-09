@@ -11,6 +11,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using OneScript.Commons;
+using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Language;
@@ -26,7 +27,7 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using SymbolScope = OneScript.Runtime.Binding.SymbolScope;
+using SymbolScope = OneScript.Compilation.Binding.SymbolScope;
 
 namespace OneScript.StandardLibrary.Native
 {

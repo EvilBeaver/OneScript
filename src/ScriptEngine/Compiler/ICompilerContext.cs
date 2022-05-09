@@ -11,7 +11,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    [Obsolete]
+    [Obsolete("Use OneScript.Compilation.Binding.SymbolTable")]
     public interface ICompilerContext
     {
         SymbolBinding DefineMethod(BslMethodInfo method);

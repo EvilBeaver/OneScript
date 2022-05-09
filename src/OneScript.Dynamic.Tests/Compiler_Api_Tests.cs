@@ -9,6 +9,7 @@ using System;
 using System.Linq;
 using FluentAssertions;
 using OneScript.Commons;
+using OneScript.Compilation.Binding;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;

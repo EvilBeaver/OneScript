@@ -9,6 +9,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using FluentAssertions;
+using OneScript.Compilation.Binding;
 using OneScript.DependencyInjection;
 using OneScript.Native.Compiler;
 using OneScript.Native.Runtime;
