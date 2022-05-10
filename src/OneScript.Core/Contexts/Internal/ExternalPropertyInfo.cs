@@ -40,6 +40,8 @@ namespace OneScript.Contexts.Internal
             CanWrite = writable;
         }
 
+        public int DispatchId => _valueIndex;
+        
         private static MethodInfo MakeGetter(Type propType)
         {
             var rawMethod = typeof(ExternalPropertyInfo).GetMethod("GenericGetter", BindingFlags.Instance | BindingFlags.NonPublic);

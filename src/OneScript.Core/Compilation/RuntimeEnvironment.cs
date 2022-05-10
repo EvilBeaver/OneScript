@@ -9,7 +9,6 @@ using System;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Localization;
-using OneScript.Runtime.Binding;
 using OneScript.Values;
 
 namespace OneScript.Compilation
@@ -40,7 +39,7 @@ namespace OneScript.Compilation
             _symbols.PushScope(SymbolScope.FromContext(context));
         }
         
-        public void RegisterGlobalProperty(BilingualString names, BslValue value)
+        public void InjectGlobalProperty(BilingualString names, BslValue value)
         {
             if (_globalPropertiesHolder.HasProperty(names))
             {
@@ -58,7 +57,28 @@ namespace OneScript.Compilation
 
             ScopeOfGlobalProps.AddVariable(symbol);
         }
+
+        public void SetGlobalProperty(string name, BslValue value)
+        {
+            var prop = _globalPropertiesHolder.FindProperty(name);
+            if (prop == null)
+            {
+                throw new ArgumentException($"Property {name} is not registered");
+            }
+            _globalPropertiesHolder.SetPropValue(prop, value);
+        }
         
+        public BslValue GetGlobalProperty(string name)
+        {
+            var prop = _globalPropertiesHolder.FindProperty(name);
+            if (prop == null)
+            {
+                throw new ArgumentException($"Property {name} is not registered");
+            }
+            
+            return _globalPropertiesHolder.GetPropValue(prop);
+        }
+
         private SymbolScope ScopeOfGlobalProps => _scopeOfGlobalProperties.Value;
     }
 }

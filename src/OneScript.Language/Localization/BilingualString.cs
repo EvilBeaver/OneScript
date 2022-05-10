@@ -38,6 +38,7 @@ namespace OneScript.Localization
         public BilingualString(string single)
         {
             Russian = single;
+            English = string.Empty;
         }
 
         public string Russian { get; }
@@ -61,7 +62,7 @@ namespace OneScript.Localization
             var currentCulture = CultureInfo.CurrentCulture;
             if (!Equals(currentCulture.Parent, RussianCulture))
             {
-                return english ?? russian;
+                return string.IsNullOrEmpty(english) ? russian : english;
             }
 
             return russian;
