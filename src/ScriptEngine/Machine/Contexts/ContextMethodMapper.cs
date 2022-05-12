@@ -26,6 +26,15 @@ namespace ScriptEngine.Machine.Contexts
 
         private readonly object _locker = new object();
 
+        static private readonly System.Reflection.MethodInfo _genConvertParamMethod =
+            typeof(InternalMethInfo).GetMethod("ConvertParam",
+            BindingFlags.Static | BindingFlags.NonPublic);
+
+        static private readonly System.Reflection.MethodInfo _genConvertReturnMethod =
+            typeof(InternalMethInfo).GetMethod("ConvertReturnValue",
+            BindingFlags.Static | BindingFlags.NonPublic);
+
+
         private void Init()
         {
             if (_methodPtrs == null)
@@ -167,8 +176,8 @@ namespace ScriptEngine.Machine.Contexts
             {
                 var methodCall = MethodCallExpression(target, out var instParam, out var argsParam);
 
-                var convertRetMethod = typeof(InternalMethInfo).GetMethod("ConvertReturnValue", BindingFlags.Static | BindingFlags.NonPublic)?.MakeGenericMethod(target.ReturnType);
-                Debug.Assert(convertRetMethod != null);
+                var convertRetMethod = _genConvertReturnMethod.MakeGenericMethod(target.ReturnType);
+                //System.Diagnostics.Debug.Assert(convertRetMethod != null);
                 var convertReturnCall = Expression.Call(convertRetMethod, methodCall);
                 var body = convertReturnCall;
 
@@ -224,16 +233,7 @@ namespace ScriptEngine.Machine.Contexts
 
                 for (int i = 0; i < parameters.Length; i++)
                 {
-                    var convertMethod = typeof(InternalMethInfo).GetMethod("ConvertParam",
-                                            BindingFlags.Static | BindingFlags.NonPublic,
-                                            null,
-                                            new[]
-                                            {
-                                                typeof(IValue),
-                                                typeof(object)
-                                            },
-                                            null)?.MakeGenericMethod(parameters[i].ParameterType);
-                    Debug.Assert(convertMethod != null);
+                    var convertMethod = _genConvertParamMethod.MakeGenericMethod(parameters[i].ParameterType);
 
                     if (parameters[i].HasDefaultValue)
                     {
@@ -244,7 +244,6 @@ namespace ScriptEngine.Machine.Contexts
                     var defaultArg = Expression.ArrayIndex(defaultsClojure, Expression.Constant(i));
                     var conversionCall = Expression.Call(convertMethod, indexedArg, defaultArg);
                     argsPass.Add(conversionCall);
-
                 }
 
                 var methodCall = Expression.Invoke(methodClojure, argsPass);
@@ -276,12 +275,6 @@ namespace ScriptEngine.Machine.Contexts
                 var methodClojure = Expression.Constant(delegateCreator.DynamicInvoke());
 
                 return methodClojure;
-            }
-
-            // ReSharper disable once UnusedMember.Local
-            private static T ConvertParam<T>(IValue value)
-            {
-                return ContextValuesMarshaller.ConvertParam<T>(value);
             }
 
             // ReSharper disable once UnusedMember.Local

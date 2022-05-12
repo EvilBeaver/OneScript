@@ -16,12 +16,12 @@ namespace OneScript.Language
 
         }
 
-        internal SyntaxErrorException(ParseError error) : base(error.Position, error.Description)
+        internal SyntaxErrorException(CodeError error) : base(error.Position, error.Description)
         {
             
         }
         
-        internal SyntaxErrorException(ErrorPositionInfo codeInfo, ParseError error) : base(codeInfo, error.Description)
+        internal SyntaxErrorException(ErrorPositionInfo codeInfo, CodeError error) : base(codeInfo, error.Description)
         {
             
         }

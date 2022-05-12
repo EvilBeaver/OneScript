@@ -11,9 +11,9 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Hosting
 {
-    public class EnvironmentProviders : List<Action<MachineEnvironment>>
+    public class EnvironmentProviders : List<Action<ExecutionContext>>
     {
-        public void Invoke(MachineEnvironment env)
+        public void Invoke(ExecutionContext env)
         {
             foreach (var provider in this)
             {

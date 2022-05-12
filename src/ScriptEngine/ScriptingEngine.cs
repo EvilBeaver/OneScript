@@ -20,19 +20,15 @@ namespace ScriptEngine
 {
     public class ScriptingEngine : IDisposable
     {
-        private readonly ICompilerServiceFactory _compilerFactory;
-
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IDebugController _debugController;
 
         public ScriptingEngine(ITypeManager types,
             IGlobalsManager globals,
-            RuntimeEnvironment env,
-            ICompilerServiceFactory compilerFactory, 
+            RuntimeEnvironment env, 
             ConfigurationProviders configurationProviders,
             IServiceContainer services)
         {
-            _compilerFactory = compilerFactory;
             TypeManager = types;
             // FIXME: Пока потребители не отказались от статических инстансов, они будут жить и здесь
             
@@ -104,7 +100,7 @@ namespace ScriptEngine
         public void UpdateContexts()
         {
             ExecutionDispatcher.Current ??= Services.Resolve<ExecutionDispatcher>();
-            MachineInstance.Current.SetMemory(Services.Resolve<MachineEnvironment>());
+            MachineInstance.Current.SetMemory(Services.Resolve<ExecutionContext>());
         }
 
         private void SetDefaultEnvironmentIfNeeded()
@@ -117,7 +113,10 @@ namespace ScriptEngine
 
         public ICompilerService GetCompilerService()
         {
-            var cs = _compilerFactory.CreateInstance(Environment.SymbolsContext);
+            using var scope = Services.CreateScope();
+            var csFactory = scope.Resolve<ICompilerServiceFactory>();
+            
+            var cs = csFactory.CreateInstance(Environment.SymbolsContext);
             switch (System.Environment.OSVersion.Platform)
             {
                 case PlatformID.Unix:
@@ -131,7 +130,8 @@ namespace ScriptEngine
                     break;
             }
             
-            cs.ProduceExtraCode = ProduceExtraCode;
+            cs.GenerateDebugCode = ProduceExtraCode.HasFlag(CodeGenerationFlags.DebugCode);
+            cs.GenerateCodeStat = ProduceExtraCode.HasFlag(CodeGenerationFlags.CodeStatistics);
             return cs;
         }
         

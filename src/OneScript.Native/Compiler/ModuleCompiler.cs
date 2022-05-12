@@ -6,8 +6,10 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Linq;
+using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
+using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Runtime;
@@ -17,7 +19,7 @@ using OneScript.Values;
 
 namespace OneScript.Native.Compiler
 {
-    public class ModuleCompiler : ExpressionTreeGeneratorBase
+    public class ModuleCompiler : ExpressionTreeGeneratorBase, ICompilerBackend
     {
         private readonly IServiceContainer _runtimeServices;
         private DynamicModule _module;

@@ -48,6 +48,7 @@ namespace ScriptEngine.Machine
         JmpCounter,
         Inc,
         NewInstance,
+        NewFunc,
         PushIterator,
         IteratorNext,
         StopIterator,

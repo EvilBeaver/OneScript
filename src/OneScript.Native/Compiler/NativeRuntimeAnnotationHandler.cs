@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
@@ -25,9 +26,11 @@ namespace OneScript.Native.Compiler
             _allLineContentLexer = builder.Build();
         }
 
+        public static string NativeDirectiveName => "native";
+        
         protected override bool DirectiveSupported(string directive)
         {
-            return string.Equals(directive, "native", StringComparison.CurrentCultureIgnoreCase);
+            return string.Equals(directive, NativeDirectiveName, StringComparison.CurrentCultureIgnoreCase);
         }
 
         protected override void ParseAnnotationInternal(ref Lexem lastExtractedLexem, ILexer lexer, ParserContext parserContext)

@@ -71,7 +71,6 @@ namespace oscript
 			engine.InjectGlobalProperty("ВебЗапрос", "WebRequest", request, true);
 			engine.InjectObject(this, false);
 
-			ScriptFileHelper.OnBeforeScriptRead(engine);
 			var source = engine.Loader.FromFile(scriptFile);
 
 			Process process;

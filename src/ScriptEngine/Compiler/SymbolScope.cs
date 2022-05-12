@@ -128,8 +128,10 @@ namespace ScriptEngine.Compiler
     {
         public SymbolNotFoundException(string symbol) : base($"Неизвестный символ: {symbol}")
         {
-
+            Symbol = symbol;
         }
+
+        public string Symbol { get; }
     }
 
 }

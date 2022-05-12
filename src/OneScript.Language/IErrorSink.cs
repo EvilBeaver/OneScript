@@ -5,14 +5,14 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace OneScript.Language.SyntaxAnalysis
+using System.Collections.Generic;
+
+namespace OneScript.Language
 {
-    public struct ParseError
+    public interface IErrorSink
     {
-        public string ErrorId { get; set; }
-        
-        public string Description { get; set; }
-        
-        public ErrorPositionInfo Position { get; set; }
+        IEnumerable<CodeError> Errors { get; }
+        bool HasErrors { get; }
+        void AddError(CodeError err);
     }
 }

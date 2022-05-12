@@ -26,8 +26,19 @@ namespace ScriptEngine.Machine
 
         private Dictionary<int, InstanceConstructor> _constructorsCache = new Dictionary<int, InstanceConstructor>();
 
+        private static readonly Refl.MethodInfo _typeCast =
+            typeof(ContextValuesMarshaller).GetMethods()
+            .First(x => x.Name == "ConvertParam" && x.GetGenericArguments().Length == 0);
+
+        private static readonly Refl.MethodInfo _genTypeCast =
+            typeof(ContextValuesMarshaller).GetMethods()
+            .First(x => x.Name == "ConvertParam" && x.GetGenericArguments().Length == 1);
+        
         public TypeFactory(TypeDescriptor type)
         {
+            System.Diagnostics.Debug.Assert(_typeCast != null);
+            System.Diagnostics.Debug.Assert(_genTypeCast != null);
+            
             _systemType = type;
         }
         
@@ -66,7 +77,6 @@ namespace ScriptEngine.Machine
                 _constructorsCache[arguments.Length] = constructor;
 
             return constructor;
-
         }
 
         private InstanceConstructor CreateConstructor(IValue[] arguments)
@@ -85,6 +95,7 @@ namespace ScriptEngine.Machine
             var parameters = methodInfo.GetParameters();
             var argsToPass = new List<Expression>();
             var contextParam = Expression.Parameter(typeof(TypeActivationContext), "context");
+
             int paramIndex = 0;
             if (definition.Parametrized && parameters.Length > 0)
             {
@@ -99,9 +110,6 @@ namespace ScriptEngine.Machine
                 }   
                 ++paramIndex;
             }
-
-            var typeCast = typeof(ContextValuesMarshaller).GetMethod("ConvertParam", new[]{typeof(IValue),typeof(Type)});
-            System.Diagnostics.Debug.Assert(typeCast != null);
 
             for (int i = 0; i < arguments.Length; i++)
             {
@@ -122,17 +130,23 @@ namespace ScriptEngine.Machine
                     argsToPass.Add(Expression.ArrayIndex(argsParam, Expression.Constant(i)));
                 else
                 {
-                    var conversionArg = Expression.ArrayIndex(argsParam,
-                                                              Expression.Constant(i)
-                                                              );
-                    var marshalledArg = Expression.Call(typeCast, conversionArg, Expression.Constant(parameters[paramIndex].ParameterType));
-                    argsToPass.Add(
-                        Expression.Convert(marshalledArg, parameters[paramIndex].ParameterType)
-                        );
+                    var conversionArg = Expression.ArrayIndex(argsParam, Expression.Constant(i));
+                    if (parameters[i].HasDefaultValue)
+                    {
+                        var convertMethod = _genTypeCast.MakeGenericMethod(parameters[i].ParameterType);
+                        var defaultArg = Expression.Constant(parameters[i].DefaultValue);
+
+                        var marshalledArg = Expression.Call(convertMethod, conversionArg, defaultArg);
+                        argsToPass.Add(marshalledArg);
+                    }
+                    else
+                    {
+                        var marshalledArg = Expression.Call(_typeCast, conversionArg, Expression.Constant(parameters[paramIndex].ParameterType));
+                        argsToPass.Add(Expression.Convert(marshalledArg, parameters[paramIndex].ParameterType));
+                    }
                 }
 
                 ++paramIndex;
-
             }
 
             for (int i = paramIndex; i < parameters.Length; i++)
@@ -237,7 +251,6 @@ namespace ScriptEngine.Machine
 
                 if (success)
                     return (true, ctor);
-
             }
 
             return (false, default);
@@ -279,7 +292,5 @@ namespace ScriptEngine.Machine
             
             public bool InjectContext { get; set; }
         }
-
     }
-
 }

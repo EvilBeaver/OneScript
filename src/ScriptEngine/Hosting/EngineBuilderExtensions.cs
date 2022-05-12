@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using OneScript.DependencyInjection;
 using OneScript.Execution;
+using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Types;
 using ScriptEngine.Compiler;
@@ -29,7 +30,7 @@ namespace ScriptEngine.Hosting
             return b;
         }
         
-        public static IEngineBuilder SetupEnvironment(this IEngineBuilder b, Action<MachineEnvironment> action)
+        public static IEngineBuilder SetupEnvironment(this IEngineBuilder b, Action<ExecutionContext> action)
         {
             b.EnvironmentProviders.Add(action);
             return b;
@@ -44,14 +45,16 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
             services.RegisterSingleton<RuntimeEnvironment>();
             services.RegisterSingleton<ICompilerServiceFactory, CompilerServiceFactory>();
-            services.RegisterSingleton<IErrorSink, ThrowingErrorSink>();
+            services.RegisterSingleton<IErrorSink>(svc => new ThrowingErrorSink(CompilerException.FromCodeError));
+            
             services.Register<ExecutionDispatcher>();
+            services.Register<IDependencyResolver, NullDependencyResolver>();
             
             services.RegisterEnumerable<IExecutorProvider, StackMachineExecutor>();
             services.RegisterEnumerable<IDirectiveHandler, ConditionalDirectiveHandler>();
             services.RegisterEnumerable<IDirectiveHandler, RegionDirectiveHandler>();
             
-            services.Register<MachineEnvironment>();
+            services.Register<ExecutionContext>();
             
             services.Register<PreprocessorHandlers>(sp =>
             {
@@ -63,18 +66,6 @@ namespace ScriptEngine.Hosting
             {
                 var providers = sp.Resolve<ConfigurationProviders>();
                 return providers.CreateConfig();
-            });
-            
-            services.Register<CompilerOptions>(sp =>
-            {
-                var opts = new CompilerOptions
-                {
-                    DependencyResolver = sp.TryResolve<IDependencyResolver>(),
-                    ErrorSink = sp.Resolve<IErrorSink>(),
-                    PreprocessorHandlers = sp.Resolve<PreprocessorHandlers>()
-                };
-                
-                return opts;
             });
             
             services.Register<ScriptingEngine>();

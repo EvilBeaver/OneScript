@@ -6,10 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
-using OneScript.Contexts;
 using OneScript.Values;
 
-namespace OneScript.Runtime
+namespace OneScript.Contexts
 {
     /// <summary>
     /// Протокол динамического общения с классами Bsl

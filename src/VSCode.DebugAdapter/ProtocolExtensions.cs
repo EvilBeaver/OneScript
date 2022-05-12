@@ -12,9 +12,11 @@ namespace VSCode.DebugAdapter
 {
     public static class ProtocolExtensions
     {
+        private static readonly char[] specialChars = new char[] { '<', '>' };
+        
         public static bool IsStringModule(this StackFrame frame)
         {
-            return frame.Source == "<string>";
+            return frame.Source.IndexOfAny(specialChars) != -1;
         }
 
         public static Source GetSource(this StackFrame frame)

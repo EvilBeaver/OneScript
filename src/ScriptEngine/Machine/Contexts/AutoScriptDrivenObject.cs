@@ -33,7 +33,7 @@ namespace ScriptEngine.Machine.Contexts
         {
         }
 
-        protected AutoScriptDrivenObject() : this(default)
+        protected AutoScriptDrivenObject() : this(EmptyModule.Instance)
         {
         }
 

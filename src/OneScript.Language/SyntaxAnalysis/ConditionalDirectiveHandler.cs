@@ -305,7 +305,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void AddError(string message)
         {
-            var err = new ParseError
+            var err = new CodeError
             {
                 Description = message,
                 Position = _lexer.GetErrorPosition(),
@@ -315,7 +315,7 @@ namespace OneScript.Language.SyntaxAnalysis
             ErrorSink.AddError(err);
         }
         
-        private void AddError(ParseError err)
+        private void AddError(CodeError err)
         {
             err.Position = _lexer.GetErrorPosition();
             ErrorSink.AddError(err);

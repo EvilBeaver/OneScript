@@ -23,7 +23,7 @@ namespace ScriptEngine.Hosting
             return b;
         }
         
-        public static MachineEnvironment AddAssembly(this MachineEnvironment env, Assembly asm, Predicate<Type> filter = null)
+        public static ExecutionContext AddAssembly(this ExecutionContext env, Assembly asm, Predicate<Type> filter = null)
         {
             var discoverer = env.Services.Resolve<ContextDiscoverer>();
             discoverer.DiscoverClasses(asm, filter);
@@ -31,7 +31,7 @@ namespace ScriptEngine.Hosting
             return env;
         }
         
-        public static MachineEnvironment AddGlobalContext(this MachineEnvironment env, IAttachableContext context)
+        public static ExecutionContext AddGlobalContext(this ExecutionContext env, IAttachableContext context)
         {
             env.GlobalNamespace.InjectObject(context);
             env.GlobalInstances.RegisterInstance(context);

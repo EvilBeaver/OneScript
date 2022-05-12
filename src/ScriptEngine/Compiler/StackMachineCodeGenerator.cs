@@ -12,6 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using OneScript.Commons;
+using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.Language.Extensions;
@@ -24,28 +25,24 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    public partial class StackMachineCodeGenerator : BslSyntaxWalker
+    public partial class StackMachineCodeGenerator : BslSyntaxWalker, ICompilerBackend
     {
+        private readonly IErrorSink _errorSink;
         private readonly StackRuntimeModule _module;
-        private readonly ICompilerContext _ctx;
-        private readonly List<CompilerException> _errors = new List<CompilerException>();
         private SourceCode _sourceCode;
+        private ICompilerContext _ctx;
         private List<ConstDefinition> _constMap = new List<ConstDefinition>();
         
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
 
-        public StackMachineCodeGenerator(ICompilerContext context)
+        public StackMachineCodeGenerator(IErrorSink errorSink)
         {
-            _ctx = context;
+            _errorSink = errorSink;
             _module = new StackRuntimeModule();
         }
-
-        public bool ThrowErrors { get; set; }
         
         public CodeGenerationFlags ProduceExtraCode { get; set; }
-
-        public IReadOnlyList<CompilerException> Errors => _errors;
 
         protected StackRuntimeModule Module => _module;
 
@@ -53,13 +50,14 @@ namespace ScriptEngine.Compiler
         
         public IDependencyResolver DependencyResolver { get; set; }
         
-        public StackRuntimeModule CreateModule(ModuleNode moduleNode, SourceCode source)
+        public StackRuntimeModule CreateModule(ModuleNode moduleNode, SourceCode source, ICompilerContext context)
         {
             if (moduleNode.Kind != NodeKind.Module)
             {
                 throw new ArgumentException($"Node must be a Module node");
             }
 
+            _ctx = context;
             _sourceCode = source;
 
             return CreateImageInternal(moduleNode);
@@ -105,8 +103,15 @@ namespace ScriptEngine.Compiler
             }
             catch (CompilerException e)
             {
-                CompilerException.AppendCodeInfo(e, MakeCodePosition(node.Location));
-                AddError(e);
+                var error = new CodeError
+                {
+                    Description = e.Message,
+                    Position = e.GetPosition()?.LineNumber == default
+                        ? MakeCodePosition(node.Location)
+                        : e.GetPosition(),
+                    ErrorId = nameof(CompilerException)
+                };
+                AddError(error);
             }
         }
 
@@ -121,9 +126,9 @@ namespace ScriptEngine.Compiler
                     {
                         methN = _ctx.GetMethod(item.identifier);
                     }
-                    catch (CompilerException exc)
+                    catch (SymbolNotFoundException)
                     {
-                        AddError(exc, item.location);
+                        AddError(CompilerErrors.SymbolNotFound(item.identifier), item.location);
                         continue;
                     }
 
@@ -134,21 +139,12 @@ namespace ScriptEngine.Compiler
                     if (item.asFunction && !methInfo.IsFunction())
                     {
                         AddError(
-                            CompilerException.UseProcAsFunction(),
+                            CompilerErrors.UseProcAsFunction(),
                             item.location);
                         continue;
                     }
 
-                    try
-                    {
-                        CheckFactArguments(methInfo.GetParameters(), item.factArguments);
-                    }
-                    catch (CompilerException exc)
-                    {
-                        AddError(exc, item.location);
-                        continue;
-                    }
-
+                    CheckFactArguments(methInfo.GetParameters(), item.factArguments);
                     CorrectCommandArgument(item.commandIndex, GetMethodRefNumber(ref methN));
                 }
             }
@@ -294,9 +290,7 @@ namespace ScriptEngine.Compiler
             }
             catch (CompilerException)
             {
-                var err = new CompilerException(Locale.NStr($"ru = 'Метод с таким именем уже определен: {signature.MethodName}';"+
-                                                            $"en = 'Method is already defined {signature.MethodName}'"));
-                AddError(CompilerException.AppendCodeInfo(err, MakeCodePosition(signature.Location)));
+                AddError(CompilerErrors.AmbiguousMethod(signature.MethodName), signature.Location);
                 binding = default;
             }
             _module.MethodRefs.Add(binding);
@@ -350,11 +344,11 @@ namespace ScriptEngine.Compiler
         protected override void VisitWhileNode(WhileLoopNode node)
         {
             var conditionIndex = _module.Code.Count;
-            var loopRecord = StackMachineCodeGenerator.NestedLoopInfo.New();
+            var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = conditionIndex;
             _nestedLoops.Push(loopRecord);
             base.VisitExpression(node.Children[0]);
-            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, StackMachineCodeGenerator.DUMMY_ADDRESS);
+            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
             
             VisitCodeBlock(node.Children[1]);
 
@@ -371,11 +365,11 @@ namespace ScriptEngine.Compiler
             
             var loopBegin = AddLineNumber(node.Location.LineNumber);
             AddCommand(OperationCode.IteratorNext);
-            var condition = AddCommand(OperationCode.JmpFalse, StackMachineCodeGenerator.DUMMY_ADDRESS);
+            var condition = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
             
             VisitIteratorLoopVariable(node.IteratorVariable);
             
-            var loopRecord = StackMachineCodeGenerator.NestedLoopInfo.New();
+            var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = loopBegin;
             _nestedLoops.Push(loopRecord);
             
@@ -402,7 +396,7 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.MakeRawValue);
             AddCommand(OperationCode.PushTmp);
 
-            var jmpIndex = AddCommand(OperationCode.Jmp, StackMachineCodeGenerator.DUMMY_ADDRESS);
+            var jmpIndex = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
             var indexLoopBegin = AddLineNumber(node.Location.LineNumber);
 
             // increment
@@ -412,9 +406,9 @@ namespace ScriptEngine.Compiler
 
             var counterIndex = PushVariable(counter.GetIdentifier());
             CorrectCommandArgument(jmpIndex, counterIndex);
-            var conditionIndex = AddCommand(OperationCode.JmpCounter, StackMachineCodeGenerator.DUMMY_ADDRESS);
+            var conditionIndex = AddCommand(OperationCode.JmpCounter, DUMMY_ADDRESS);
 
-            var loopRecord = StackMachineCodeGenerator.NestedLoopInfo.New();
+            var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = indexLoopBegin;
             _nestedLoops.Push(loopRecord);
 
@@ -433,7 +427,7 @@ namespace ScriptEngine.Compiler
         {
             ExitTryBlocks();
             var loopInfo = _nestedLoops.Peek();
-            var idx = AddCommand(OperationCode.Jmp, StackMachineCodeGenerator.DUMMY_ADDRESS);
+            var idx = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
             loopInfo.breakStatements.Add(idx);
         }
         
@@ -472,10 +466,10 @@ namespace ScriptEngine.Compiler
             var exitIndices = new List<int>();
             VisitIfExpression(node.Expression);
             
-            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, StackMachineCodeGenerator.DUMMY_ADDRESS);
+            var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
 
             VisitIfTruePart(node.TruePart);
-            exitIndices.Add(AddCommand(OperationCode.Jmp, StackMachineCodeGenerator.DUMMY_ADDRESS));
+            exitIndices.Add(AddCommand(OperationCode.Jmp, DUMMY_ADDRESS));
 
             bool hasAlternativeBranches = false;
             
@@ -486,9 +480,9 @@ namespace ScriptEngine.Compiler
                 {
                     AddLineNumber(alternative.Location.LineNumber);
                     VisitIfExpression(elif.Expression);
-                    jumpFalseIndex = AddCommand(OperationCode.JmpFalse, StackMachineCodeGenerator.DUMMY_ADDRESS);
+                    jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
                     VisitIfTruePart(elif.TruePart);
-                    exitIndices.Add(AddCommand(OperationCode.Jmp, StackMachineCodeGenerator.DUMMY_ADDRESS));
+                    exitIndices.Add(AddCommand(OperationCode.Jmp, DUMMY_ADDRESS));
                 }
                 else
                 {
@@ -519,7 +513,7 @@ namespace ScriptEngine.Compiler
                 CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
         }
 
-        private void CorrectBreakStatements(StackMachineCodeGenerator.NestedLoopInfo nestedLoopInfo, int endLoopIndex)
+        private void CorrectBreakStatements(NestedLoopInfo nestedLoopInfo, int endLoopIndex)
         {
             foreach (var breakCmdIndex in nestedLoopInfo.breakStatements)
             {
@@ -557,7 +551,7 @@ namespace ScriptEngine.Compiler
             }
             catch (SymbolNotFoundException e)
             {
-                AddError(e, node.Location);
+                AddError(CompilerErrors.SymbolNotFound(e.Symbol), node.Location);
             }
         }
 
@@ -622,7 +616,7 @@ namespace ScriptEngine.Compiler
             if (funcId == OperationCode.Min || funcId == OperationCode.Max)
             {
                 if (argsPassed == 0)
-                    throw CompilerException.TooFewArgumentsPassed();
+                    AddError(CompilerErrors.TooFewArgumentsPassed(), node.ArgumentList.Location);
             }
             else
             {
@@ -638,13 +632,13 @@ namespace ScriptEngine.Compiler
             var argsPassed = argList.Children.Count;
             if (argsPassed > parameters.Length)
             {
-                AddError(CompilerException.TooManyArgumentsPassed(), argList.Location);
+                AddError(CompilerErrors.TooManyArgumentsPassed(), argList.Location);
                 return;
             }
             
             if (parameters.Skip(argsPassed).Any(param => !param.HasDefaultValue))
             {
-                AddError(CompilerException.TooFewArgumentsPassed(), argList.Location);
+                AddError(CompilerErrors.TooFewArgumentsPassed(), argList.Location);
             }
         }
 
@@ -657,9 +651,7 @@ namespace ScriptEngine.Compiler
         {
             if (LanguageDef.IsBuiltInFunction(node.Identifier.Lexem.Token))
             {   
-                AddError(new CompilerException(Locale.NStr(
-                        "en = 'Using build-in function as procedure';" +
-                        "ru = 'Использование встроенной функции, как процедуры'")));
+                AddError(CompilerErrors.UseBuiltInProcAsFunction(), node.Location);
                 return;
             }
             GlobalCall(node, false);
@@ -749,7 +741,7 @@ namespace ScriptEngine.Compiler
                     var methInfo = scope.GetMethod(methBinding.CodeIndex);
                     if (asFunction && !methInfo.IsFunction())
                     {
-                        AddError(CompilerException.UseProcAsFunction(), identifierNode.Location);
+                        AddError(CompilerErrors.UseProcAsFunction(), identifierNode.Location);
                         return;
                     }
 
@@ -765,7 +757,7 @@ namespace ScriptEngine.Compiler
             else
             {
                 // can be defined later
-                var forwarded = new StackMachineCodeGenerator.ForwardedMethodDecl();
+                var forwarded = new ForwardedMethodDecl();
                 forwarded.identifier = identifier;
                 forwarded.asFunction = asFunction;
                 forwarded.location = identifierNode.Location;
@@ -774,7 +766,7 @@ namespace ScriptEngine.Compiler
                 PushCallArguments(call.ArgumentList);
                 
                 var opCode = asFunction ? OperationCode.CallFunc : OperationCode.CallProc;
-                forwarded.commandIndex = AddCommand(opCode, StackMachineCodeGenerator.DUMMY_ADDRESS);
+                forwarded.commandIndex = AddCommand(opCode, DUMMY_ADDRESS);
                 _forwardedMethods.Add(forwarded);
             }
         }
@@ -805,11 +797,11 @@ namespace ScriptEngine.Compiler
         {
             VisitExpression(expression.Children[0]);
             AddCommand(OperationCode.MakeBool);
-            var addrOfCondition = AddCommand(OperationCode.JmpFalse, StackMachineCodeGenerator.DUMMY_ADDRESS);
+            var addrOfCondition = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
 
             VisitExpression(expression.Children[1]); // построили true-part
 
-            var endOfTruePart = AddCommand(OperationCode.Jmp, StackMachineCodeGenerator.DUMMY_ADDRESS); // уход в конец оператора
+            var endOfTruePart = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS); // уход в конец оператора
             
             CorrectCommandArgument(addrOfCondition, _module.Code.Count); // отметили, куда переходить по false
             VisitExpression(expression.Children[2]); // построили false-part
@@ -845,9 +837,9 @@ namespace ScriptEngine.Compiler
 
         protected override void VisitTryExceptNode(TryExceptNode node)
         {
-            var beginTryIndex = AddCommand(OperationCode.BeginTry, StackMachineCodeGenerator.DUMMY_ADDRESS);
+            var beginTryIndex = AddCommand(OperationCode.BeginTry, DUMMY_ADDRESS);
             VisitTryBlock(node.TryBlock);
-            var jmpIndex = AddCommand(OperationCode.Jmp, StackMachineCodeGenerator.DUMMY_ADDRESS);
+            var jmpIndex = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
 
             var beginHandler = AddLineNumber(
                 node.ExceptBlock.Location.LineNumber,
@@ -922,14 +914,34 @@ namespace ScriptEngine.Compiler
                 AddCommand(OperationCode.PushConst, GetConstNumber(cDef));
             }
 
-            var callArgs = 0;
-            if (node.ConstructorArguments != default)
+            if (node.IsDynamic)
             {
-                PushArgumentsList(node.ConstructorArguments);
-                callArgs = node.ConstructorArguments.Children.Count;
-            }
+                var argsPassed = node.ConstructorArguments.Children.Count;
+                if (argsPassed < 1)
+                {
+                    AddError(CompilerErrors.TooFewArgumentsPassed(), node.ConstructorArguments.Location);
+                }
 
-            AddCommand(OperationCode.NewInstance, callArgs);
+                if (argsPassed > 2)
+                {
+                    AddError(CompilerErrors.TooManyArgumentsPassed(), node.ConstructorArguments.Location);
+                }
+                if (argsPassed == 2)
+                    VisitExpression(node.ConstructorArguments.Children[1]);
+                
+                AddCommand(OperationCode.NewFunc, argsPassed);
+            }
+            else
+            {
+                var callArgs = 0;
+                if (node.ConstructorArguments != default)
+                {
+                    PushArgumentsList(node.ConstructorArguments);
+                    callArgs = node.ConstructorArguments.Children.Count;
+                }
+
+                AddCommand(OperationCode.NewInstance, callArgs);
+            }
         }
 
         private void ExitTryBlocks()
@@ -1158,24 +1170,21 @@ namespace ScriptEngine.Compiler
 
             return idx;
         }
-
-        protected void AddError(CompilerException exc)
+        
+        private void AddError(CodeError error, in CodeRange location)
         {
-            if (ThrowErrors)
-                throw exc;
-
-            _errors.Add(exc);
+            error.Position = MakeCodePosition(location);
+            _errorSink.AddError(error);
         }
         
-        protected void AddError(CompilerException error, in CodeRange location)
+        private void AddError(CodeError error)
         {
-            CompilerException.AppendCodeInfo(error, MakeCodePosition(location));
-            AddError(error);
+            _errorSink.AddError(error);
         }
 
         private ErrorPositionInfo MakeCodePosition(CodeRange range)
         {
-            return new ErrorPositionInfo()
+            return new ErrorPositionInfo
             {
                 Code = _sourceCode.GetCodeLine(range.LineNumber),
                 LineNumber = range.LineNumber,

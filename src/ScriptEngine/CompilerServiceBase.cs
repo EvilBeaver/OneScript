@@ -8,6 +8,9 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using OneScript.Contexts;
+using OneScript.Language;
+using OneScript.Language.LexicalAnalysis;
+using OneScript.Language.SyntaxAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 using OneScript.Sources;
@@ -25,8 +28,10 @@ namespace ScriptEngine
             _currentContext = new ModuleCompilerContext(outerContext);
         }
 
-        public CodeGenerationFlags ProduceExtraCode { get; set; }
-        
+
+        public bool GenerateDebugCode { get; set; }
+        public bool GenerateCodeStat { get; set; }
+
         public int DefineVariable(string name, string alias, SymbolType type)
         {
             RegisterScopeIfNeeded();
@@ -94,11 +99,11 @@ namespace ScriptEngine
             }
         }
 
-        protected abstract StackRuntimeModule CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
+        protected abstract IExecutableModule CompileInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
         
-        protected abstract StackRuntimeModule CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
+        protected abstract IExecutableModule CompileBatchInternal(SourceCode source, IEnumerable<string> preprocessorConstants, ICompilerContext context);
         
-        protected abstract StackRuntimeModule CompileExpressionInternal(SourceCode source, ICompilerContext context);
+        protected abstract IExecutableModule CompileExpressionInternal(SourceCode source, ICompilerContext context);
         
 
         private void RegisterScopeIfNeeded()
@@ -108,6 +113,34 @@ namespace ScriptEngine
                 _scope = new SymbolScope();
                 _currentContext.PushScope(_scope);
             }
+        }
+
+        protected PreprocessingLexer CreatePreprocessor(
+            SourceCode source,
+            IEnumerable<string> preprocessorConstants,
+            PreprocessorHandlers handlers,
+            IErrorSink errorSink)
+        {
+            var baseLexer = new DefaultLexer
+            {
+                Iterator = source.CreateIterator()
+            };
+
+            var conditionals = handlers?.Get<ConditionalDirectiveHandler>();
+            if (conditionals != default)
+            {
+                foreach (var constant in preprocessorConstants)
+                {
+                    conditionals.Define(constant);
+                }
+            }
+
+            var lexer = new PreprocessingLexer(baseLexer)
+            {
+                Handlers = handlers,
+                ErrorSink = errorSink
+            };
+            return lexer;
         }
     }
 }

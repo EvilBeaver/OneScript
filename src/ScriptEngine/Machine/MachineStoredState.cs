@@ -20,6 +20,6 @@ namespace ScriptEngine.Machine
         
         public MachineStopManager StopManager { get; set; }
         
-        public MachineEnvironment Memory { get; set; }
+        public ExecutionContext Memory { get; set; }
     }
 }

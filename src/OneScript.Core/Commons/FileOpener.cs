@@ -82,20 +82,22 @@ namespace OneScript.Commons
             var enc = fallbackEncoding;
 
             // *** Detect byte order mark if any - otherwise assume default
-            byte[] buffer = new byte[5];
+            byte[] buffer = new byte[4];
 
-            inputStream.Read(buffer, 0, 5);
+            inputStream.Read(buffer, 0, 4);
             inputStream.Position = 0;
 
-            if (buffer [0] == 0xef && buffer [1] == 0xbb && buffer [2] == 0xbf)
+            if (buffer[0] == 0xef && buffer[1] == 0xbb && buffer[2] == 0xbf)
                 enc = Encoding.UTF8;
-            else if (buffer [0] == 0xfe && buffer [1] == 0xff)
-                enc = Encoding.Unicode;
-            else if (buffer [0] == 0 && buffer [1] == 0 && buffer [2] == 0xfe && buffer [3] == 0xff)
-                enc = Encoding.UTF32;
-            else if (buffer [0] == 0x2b && buffer [1] == 0x2f && buffer [2] == 0x76)
-                enc = Encoding.UTF7;
-            else if (buffer [0] == '#' && buffer [1] == '!') 
+            else if (buffer[0] == 0xff && buffer[1] == 0xfe && buffer[2] == 0 && buffer[3] == 0)
+                enc = Encoding.UTF32; // UTF32LE
+            else if (buffer[0] == 0xff && buffer[1] == 0xfe)
+                enc = Encoding.Unicode; // UTF16LE
+            else if (buffer[0] == 0 && buffer[1] == 0 && buffer[2] == 0xfe && buffer[3] == 0xff)
+                enc = new UTF32Encoding(true, true); // UTF32BE with BOM;
+            else if (buffer[0] == 0xfe && buffer[1] == 0xff)
+                enc = Encoding.BigEndianUnicode; // UTF16BE
+            else if (buffer[0] == '#' && buffer[1] == '!') 
             {
                 /* Если в начале файла присутствует shebang, считаем, что файл в UTF-8*/
                 enc = Encoding.UTF8;

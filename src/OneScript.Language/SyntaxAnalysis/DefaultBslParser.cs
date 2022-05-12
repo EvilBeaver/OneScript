@@ -48,7 +48,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private IErrorSink ErrorSink { get; }
         
-        public IEnumerable<ParseError> Errors => ErrorSink.Errors ?? new ParseError[0]; 
+        public IEnumerable<CodeError> Errors => ErrorSink.Errors ?? new CodeError[0]; 
         
         public BslSyntaxNode ParseStatefulModule()
         {
@@ -1415,7 +1415,7 @@ namespace OneScript.Language.SyntaxAnalysis
             _lastExtractedLexem = recovery.Recover(_lexer);
         }
 
-        private void AddError(ParseError err, bool doFastForward = true)
+        private void AddError(CodeError err, bool doFastForward = true)
         {
             err.Position = _lexer.GetErrorPosition();
             ErrorSink.AddError(err);

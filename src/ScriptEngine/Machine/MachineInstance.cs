@@ -35,7 +35,7 @@ namespace ScriptEngine.Machine
         private ICodeStatCollector _codeStatCollector;
         private MachineStopManager _stopManager;
         
-        private MachineEnvironment _mem;
+        private ExecutionContext _mem;
 
         // для отладчика.
         // актуален в момент останова машины
@@ -84,7 +84,7 @@ namespace ScriptEngine.Machine
             _scopes.Add(default(Scope));
         }
 
-        public MachineEnvironment Memory => _mem;
+        public ExecutionContext Memory => _mem;
 
         public ITypeManager TypeManager => _mem?.TypeManager;
         
@@ -92,7 +92,7 @@ namespace ScriptEngine.Machine
         
         public RuntimeEnvironment Environment => _mem?.GlobalNamespace;
 
-        public void SetMemory(MachineEnvironment memory)
+        public void SetMemory(ExecutionContext memory)
         {
             Cleanup();
             foreach (var item in memory.GlobalNamespace.AttachedContexts.Select(x=>x.Instance))
@@ -686,6 +686,7 @@ namespace ScriptEngine.Machine
                 JmpCounter,
                 Inc,
                 NewInstance,
+                NewFunc,
                 PushIterator,
                 IteratorNext,
                 StopIterator,
@@ -2543,6 +2544,41 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
+        private void NewFunc(int argCount)
+        {
+            IValue[] argValues;
+
+            if (argCount == 1)
+                argValues = new IValue[0];
+            else
+            {
+                var valueFromStack = _operationStack.Pop().GetRawValue();
+                if (valueFromStack is IValueArray array)
+                    argValues = array.ToArray();
+                else
+                    argValues = new IValue[0];
+            }
+            
+            var typeName = _operationStack.Pop().AsString();
+            if (!TypeManager.TryGetType(typeName, out var type))
+            {
+                throw RuntimeException.ConstructorNotFound(typeName);
+            }
+            
+            // TODO убрать cast после рефакторинга ITypeFactory
+            var factory = (TypeFactory)TypeManager.GetFactoryFor(type);
+            var context = new TypeActivationContext
+            {
+                TypeName = typeName,
+                TypeManager = _mem.TypeManager,
+                Services = _mem.Services
+            };
+
+            var instance = factory.Activate(context, argValues);
+            _operationStack.Push(instance);
+            NextInstruction();
+        }
+
         #endregion
 
         #endregion
@@ -2558,7 +2594,7 @@ namespace ScriptEngine.Machine
             
             ctx.PushScope(new SymbolScope()); // скоуп выражения
 
-            var compiler = new AstBasedCompilerService(new CompilerOptions(), ctx);
+            var compiler = new DefaultCompilerService(new CompilerOptions(), ctx, _mem.Services);
             var module = (StackRuntimeModule)compiler.CompileExpression(stringSource);
             
             return module;
@@ -2574,7 +2610,7 @@ namespace ScriptEngine.Machine
                 .WithName($"{entryId}:<exec>")
                 .Build();
             
-            var compiler = new AstBasedCompilerService(new CompilerOptions(), ctx);
+            var compiler = new DefaultCompilerService(new CompilerOptions(), ctx, _mem.Services);
             ctx.PushScope(new SymbolScope()); // скоуп выражения
             var module = (StackRuntimeModule)compiler.CompileBatch(stringSource);
             

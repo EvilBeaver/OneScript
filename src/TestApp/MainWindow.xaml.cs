@@ -160,10 +160,8 @@ namespace TestApp
                 try
                 {
                     var cs = hostedScript.GetCompilerService();
-                    if(GenerateExtraCode.IsChecked)
-                        cs.ProduceExtraCode |= CodeGenerationFlags.CodeStatistics;
-                    if(GenerateDebugCode.IsChecked)
-                        cs.ProduceExtraCode |= CodeGenerationFlags.DebugCode;
+                    cs.GenerateCodeStat = GenerateExtraCode.IsChecked;
+                    cs.GenerateDebugCode = GenerateDebugCode.IsChecked;
 
                     var moduleWriter = new ModuleDumpWriter(cs);
                     moduleWriter.Write(writer, src);

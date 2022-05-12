@@ -149,6 +149,9 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				var typeNames = types.AsString().Split(',');
 				foreach (var typeName in typeNames)
 				{
+					if (string.IsNullOrWhiteSpace(typeName))
+						continue;
+
 					var typeValue = new BslTypeValue(typeManager.GetTypeByName(typeName.Trim()));
 					if (!typesList.Contains(typeValue))
 						typesList.Add(typeValue);
@@ -164,10 +167,13 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 					if (!typesList.Contains(rawType))
 						typesList.Add(rawType);
 				}
-			} else
+			} 
+			else if (types.SystemType == BasicTypes.Undefined)
 			{
-				return null;
+				return null; // далее будет исключение
 			}
+			// для Неопределено возвращается пустой список
+
 			return typesList;
 		}
 

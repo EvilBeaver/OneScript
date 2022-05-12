@@ -49,7 +49,7 @@ namespace ScriptEngine.HostedScript
             _env.InjectObject(dynLoader, false);
             manager.RegisterInstance(dynLoader);
 
-            var bgTasksManager = new BackgroundTasksManager(_engine.Services.Resolve<MachineEnvironment>());
+            var bgTasksManager = new BackgroundTasksManager(_engine.Services.Resolve<ExecutionContext>());
             _env.InjectGlobalProperty(bgTasksManager, "ФоновыеЗадания", "BackgroundJobs", true);
         }
 

@@ -5,13 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Compilation;
-using OneScript.Language.SyntaxAnalysis;
 
-namespace ScriptEngine.Compiler
+namespace OneScript.Compilation
 {
-    public class CompilerOptions : ParserOptions
+    public interface ICompilerBackend
     {
-        public IDependencyResolver DependencyResolver { get; set; }
     }
 }

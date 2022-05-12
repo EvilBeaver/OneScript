@@ -64,9 +64,12 @@ namespace oscript
                 return null;
             
             var outputStatFile = param.Value;
-            ScriptFileHelper.EnableCodeStatistics(outputStatFile);
-            return Select(helper.Tail());
 
+            var behavior = Select(helper.Tail());
+            if (behavior is ExecuteScriptBehavior executor)
+                executor.CodeStatFile = outputStatFile;
+
+            return behavior;
         }
         
         private static AppBehavior ProcessEncodingKey(CmdLineHelper helper)

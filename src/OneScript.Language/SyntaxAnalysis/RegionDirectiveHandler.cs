@@ -73,7 +73,7 @@ namespace OneScript.Language.SyntaxAnalysis
             return result;
         }
         
-        private void AddError(ParseError err, ErrorPositionInfo position)
+        private void AddError(CodeError err, ErrorPositionInfo position)
         {
             err.Position ??= position;
             ErrorSink.AddError(err);

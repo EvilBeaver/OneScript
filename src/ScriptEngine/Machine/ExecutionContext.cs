@@ -10,9 +10,9 @@ using OneScript.Types;
 
 namespace ScriptEngine.Machine
 {
-    public class MachineEnvironment
+    public class ExecutionContext
     {
-        public MachineEnvironment(
+        public ExecutionContext(
             ITypeManager typeManager,
             RuntimeEnvironment globalNamespace,
             IGlobalsManager globalInstances,
