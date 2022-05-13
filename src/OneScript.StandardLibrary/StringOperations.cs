@@ -21,15 +21,6 @@ namespace OneScript.StandardLibrary
     [GlobalContext(Category = "Операции со строками")]
     public class StringOperations : GlobalContextBase<StringOperations>
     {
-        readonly int STRTEMPLATE_ID;
-        const string STRTEMPLATE_NAME_RU = "СтрШаблон";
-        const string STRTEMPLATE_NAME_EN = "StrTemplate";
-
-        public StringOperations()
-        {
-            STRTEMPLATE_ID = this.Methods.Count;
-        }
-
         /// <summary>
         /// Получает строку на языке, заданном во втором параметре (коды языков в соответствии с  ISO 639-1)
         /// или на текущем языке системы.
@@ -207,103 +198,25 @@ namespace OneScript.StandardLibrary
                 return 0;
         }
 
-        #region IRuntimeContextInstance overrides
-
-        public override int FindMethod(string name)
+        /// <summary>
+        /// Подставляет параметры в строку по номеру
+        /// </summary>
+        /// <param name="template">Шаблон: строка, содержащая маркеры подстановки вида %N</param>
+        /// <param name="p1-p10">Параметры, строковые представления которых должны быть подставлены в шаблон</param>
+        /// <returns>Строка шаблона с подставленными параметрами</returns>
+        [ContextMethod("СтрШаблон", "StrTemplate")]
+        public IValue StrTemplate(IValue template,
+            IValue p1=null, IValue p2=null, IValue p3=null, IValue p4=null, IValue p5=null,
+            IValue p6=null, IValue p7=null, IValue p8=null, IValue p9=null, IValue p10=null)
         {
-            if (string.Compare(name, STRTEMPLATE_NAME_RU, true) == 0 || string.Compare(name, STRTEMPLATE_NAME_EN, true) == 0)
-                return STRTEMPLATE_ID;
-            else
-                return base.FindMethod(name);
-        }
+            var srcFormat = template?.AsString() ?? "";
 
-        public override int GetMethodsCount()
-        {
-            return base.GetMethodsCount() + 1;
-        }
-
-        private static MethodSignature CreateStrTemplateMethodInfo()
-        {
-            var strTemplateMethodInfo = new MethodSignature();
-            strTemplateMethodInfo.IsFunction = true;
-            strTemplateMethodInfo.Name = STRTEMPLATE_NAME_RU;
-            strTemplateMethodInfo.Alias = STRTEMPLATE_NAME_EN;
-            strTemplateMethodInfo.Params = new ParameterDefinition[11];
-            strTemplateMethodInfo.IsExport = true;
-
-            strTemplateMethodInfo.Params[0] = new ParameterDefinition()
-            {
-                IsByValue = true
-            };
-
-            for (int i = 1; i < strTemplateMethodInfo.Params.Length; i++)
-            {
-                strTemplateMethodInfo.Params[i] = new ParameterDefinition()
-                {
-                    IsByValue = true,
-                    HasDefaultValue = true
-                };
-            }
-            return strTemplateMethodInfo;
-        }
-        
-        private static BslMethodInfo CreateStrTemplateRuntimeMethodInfo()
-        {
-            var method = BslMethodBuilder.Create();
-            method.ReturnType(typeof(string))
-                .SetNames(STRTEMPLATE_NAME_RU, STRTEMPLATE_NAME_EN)
-                .IsExported(true);
-
-            method.NewParameter()
-                .Name("template")
-                .ByValue(true);
-            
-            for (int i = 1; i < 11; i++)
-            {
-                method.NewParameter()
-                    .ByValue(true)
-                    .DefaultValue(BslSkippedParameterValue.Instance);
-            }
-            
-            return method.Build();
-        }
-
-        public override BslMethodInfo GetMethodInfo(int methodNumber)
-        {
-            if (methodNumber == STRTEMPLATE_ID)
-                return CreateStrTemplateRuntimeMethodInfo();
-            else
-                return base.GetMethodInfo(methodNumber);
-        }
-
-        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
-        {
-            if (methodNumber == STRTEMPLATE_ID)
-                CallStrTemplate(arguments);
-            else
-                base.CallAsProcedure(methodNumber, arguments);
-        }
-
-        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
-        {
-            if (methodNumber == STRTEMPLATE_ID)
-                retValue = CallStrTemplate(arguments);
-            else
-                base.CallAsFunction(methodNumber, arguments, out retValue);
-        } 
-
-        #endregion
-
-        private IValue CallStrTemplate(IValue[] arguments)
-        {
-            var srcFormat = arguments[0].AsString();
-            if (srcFormat == String.Empty)
-                return ValueFactory.Create("");
+            var arguments = new IValue[] { p10,p9,p8,p7,p6,p5,p4,p3,p2,p1 };
+            int passedArgsCount = arguments
+                .SkipWhile(x => x == null || x.IsSkippedArgument() || x.SystemType == BasicTypes.Undefined)
+                .Count();
 
             var re = new System.Text.RegularExpressions.Regex(@"(%%)|%(\d+)|%\((\d+)\)|%");
-            int passedArgsCount = arguments.Reverse()
-                .SkipWhile(x => x == null || x.IsSkippedArgument() || x.SystemType == BasicTypes.Undefined)
-                .Count() - 1;
             int maxNumber = 0;
             var result = re.Replace(srcFormat, (m) =>
             {
@@ -324,8 +237,9 @@ namespace OneScript.StandardLibrary
                     if (number > maxNumber)
                         maxNumber = number;
 
-                    if (arguments[number] != null && !arguments[number].IsSkippedArgument())
-                        return arguments[number].AsString();
+                    var arg = arguments[10-number];
+                    if ( arg!= null && !arg.IsSkippedArgument())
+                        return arg.AsString();
                     else
                         return "";
                 }
