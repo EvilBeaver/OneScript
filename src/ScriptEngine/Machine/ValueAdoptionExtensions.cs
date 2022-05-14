@@ -30,7 +30,7 @@ namespace ScriptEngine.Machine
         public static IRuntimeContextInstance AsObject(this IValue val) 
             => val.GetRawValue() is IRuntimeContextInstance ctx? ctx : throw BslExceptions.ValueIsNotObjectException();
 
-        public static object CastToClrObject(this IValue value)
+        public static object UnwrapToClrObject(this IValue value)
         {
             return ContextValuesMarshaller.ConvertToClrObject(value);
         }

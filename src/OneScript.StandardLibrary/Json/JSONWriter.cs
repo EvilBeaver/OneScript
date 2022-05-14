@@ -351,7 +351,7 @@ namespace OneScript.StandardLibrary.Json
             if(!(value.GetRawValue() is BslPrimitiveValue))
                 throw new RuntimeException("Тип переданного значения не поддерживается.");
             
-            var clrValue = value.CastToClrObject();
+            var clrValue = value.UnwrapToClrObject();
             
             if (clrValue == null)
             {

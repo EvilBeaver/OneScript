@@ -36,7 +36,7 @@ namespace OneScript.StandardLibrary.NativeApi
 
         public void Assign(IValue value, Int32 number = 0)
         {
-            var clrObject = value.CastToClrObject();
+            var clrObject = value.UnwrapToClrObject();
             switch (clrObject)
             {
                 case string str:
