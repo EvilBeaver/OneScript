@@ -112,11 +112,11 @@ namespace ScriptEngine.Machine.Contexts
                     throw e.InnerException ?? e;
                 }
             }
-            catch (System.MissingMemberException)
+            catch (MissingMemberException)
             {
                 throw PropertyAccessException.PropNotFoundException(prop.Name);
             }
-            catch (System.MemberAccessException)
+            catch (MemberAccessException)
             {
                 throw PropertyAccessException.PropIsNotReadableException(prop.Name);
             }
@@ -158,11 +158,11 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw PropertyAccessException.PropNotFoundException(prop.Name);
+                throw OneScript.Commons.PropertyAccessException.PropNotFoundException(prop.Name);
             }
             catch (System.MemberAccessException)
             {
-                throw PropertyAccessException.PropIsNotWritableException(prop.Name);
+                throw OneScript.Commons.PropertyAccessException.PropIsNotWritableException(prop.Name);
             }
         }
 

@@ -9,15 +9,6 @@ using OneScript.Commons;
 
 namespace ScriptEngine.Machine
 {
-    [Obsolete]
-    public static class OldRuntimeException
-    {
-        public static RuntimeException PropNotFoundException(string prop)
-        {
-            return PropertyAccessException.PropNotFoundException(prop);
-        }
-    }
-
     public class WrongStackConditionException : ApplicationException
     {
         public WrongStackConditionException()
@@ -26,31 +17,7 @@ namespace ScriptEngine.Machine
 
         }
     }
-
-    public class PropertyAccessException : RuntimeException
-    {
-        private PropertyAccessException(string msg) : base (msg)
-        {
-
-        }
-
-        public static PropertyAccessException PropIsNotReadableException(string prop)
-        {
-            return new PropertyAccessException(string.Format("Свойство {0} недоступно для чтения", prop));
-        }
-
-        public static PropertyAccessException PropIsNotWritableException(string prop)
-        {
-            return new PropertyAccessException(string.Format("Свойство {0} недоступно для записи", prop));
-        }
-
-        public static PropertyAccessException PropNotFoundException(string prop)
-        {
-            return new PropertyAccessException(string.Format("Свойство объекта не обнаружено ({0})", prop));
-        }
-
-    }
-
+    
     public class ValueMarshallingException : RuntimeException
     {
         public ValueMarshallingException() : this("Неклассифицированная ошибка маршаллинга значений")
