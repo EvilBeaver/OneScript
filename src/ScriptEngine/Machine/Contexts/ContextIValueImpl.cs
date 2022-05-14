@@ -94,10 +94,10 @@ namespace ScriptEngine.Machine.Contexts
 
         public override bool Equals(IValue other)
         {
-            if (other == null)
+            if (!(other is BslObjectValue _))
                 return false;
 
-            return other.SystemType.Equals(this.SystemType) && Object.ReferenceEquals(this.AsObject(), other.AsObject());
+            return ReferenceEquals(this, other);
         }
 
         #endregion
