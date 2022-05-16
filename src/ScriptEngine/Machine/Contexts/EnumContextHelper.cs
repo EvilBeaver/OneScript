@@ -55,19 +55,35 @@ namespace ScriptEngine.Machine.Contexts
             Type enumClass,
             Type enumValueClass,
             ITypeManager typeManager,
-            INameAndAliasProvider enumMetadata)
+            IEnumMetadataProvider enumMetadata)
         {
-            var enumType = typeManager.RegisterType(
-                "Перечисление" + enumMetadata.Name,
-                enumMetadata.Alias != default? "Enum" + enumMetadata.Alias : default,
-                enumClass);
+            var enumType = CreateEnumType(enumClass, enumMetadata);
+            typeManager.RegisterType(enumType);
 
-            var enumValueType = typeManager.RegisterType(
-                enumMetadata.Name,
-                enumMetadata.Alias,
-                enumValueClass);
+            var enumValueType = CreateEnumValueType(enumValueClass, enumMetadata);
+            typeManager.RegisterType(enumValueType);
             
             return (enumType, enumValueType);
+        }
+
+        private static TypeDescriptor CreateEnumType(Type enumType, IEnumMetadataProvider metadata)
+        {
+            return new TypeDescriptor(
+                metadata.TypeUUID == default ? Guid.NewGuid() : Guid.Parse(metadata.TypeUUID),
+                "Перечисление" + metadata.Name,
+                metadata.Alias != default? "Enum" + metadata.Alias : default,
+                enumType
+            );
+        }
+
+        private static TypeDescriptor CreateEnumValueType(Type enumValueClass, IEnumMetadataProvider metadata)
+        {
+            return new TypeDescriptor(
+                metadata.ValueTypeUUID == default ? Guid.NewGuid() : Guid.Parse(metadata.ValueTypeUUID),
+                metadata.Name,
+                metadata.Alias,
+                enumValueClass
+            );
         }
 
         public static T CreateSelfAwareEnumInstance<T>(ITypeManager typeManager, EnumCreationDelegate<T> creator) where T : EnumerationContext

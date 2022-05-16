@@ -90,25 +90,23 @@ namespace OneScript.StandardLibrary.Json
             }
             _writer.Formatting = Formatting.Indented;
 
-            if (_settings.EscapeCharacters != null)
+            if (_settings.EscapeCharacters != JSONCharactersEscapeModeEnum.None)
             {
-                var jsonCharactersEscapeMode = _settings.EscapeCharacters.GetRawValue() as SelfAwareEnumValue<JSONCharactersEscapeModeEnum>;
-                var jsonCharactersEscapeModeEnum = GlobalsHelper.GetEnum<JSONCharactersEscapeModeEnum>();
-
-                if (jsonCharactersEscapeMode == jsonCharactersEscapeModeEnum.NotASCIISymbols)
+                var jsonCharactersEscapeMode = _settings.EscapeCharacters;
+                if (jsonCharactersEscapeMode == JSONCharactersEscapeModeEnum.NotASCIISymbols)
                 {
                     _escapeNonAscii = true;
                     _writer.QuoteChar = '\"';
                     _writer.StringEscapeHandling = StringEscapeHandling.EscapeNonAscii;
                 }
-                else if (jsonCharactersEscapeMode == jsonCharactersEscapeModeEnum.SymbolsNotInBMP)
+                else if (jsonCharactersEscapeMode == JSONCharactersEscapeModeEnum.SymbolsNotInBMP)
                     throw new NotImplementedException();
             }
         }
 
         void WriteStringValue(string val)
         { 
-            if (_settings.EscapeCharacters != null && _escapeNonAscii)
+            if (_settings.EscapeCharacters != JSONCharactersEscapeModeEnum.None && _escapeNonAscii)
             {
                 StringWriter wr = new StringWriter();
                 var jsonWriter = new JsonTextWriter(wr);
@@ -228,30 +226,25 @@ namespace OneScript.StandardLibrary.Json
         {
             if (_settings != null)
             {
-                if (_settings.NewLines != null)
+                switch (_settings.NewLines)
                 {
-                    var NewLines = _settings.NewLines.GetRawValue() as SelfAwareEnumValue<JSONLineBreakEnum>;
-                    var LineBreakEnum = GlobalsHelper.GetEnum<JSONLineBreakEnum>();
-
-                    if (NewLines == LineBreakEnum.Unix)
+                    case JSONLineBreakEnum.Unix:
                         textWriter.NewLine = "\n";
-                    else if (NewLines == LineBreakEnum.Windows)
+                        break;
+                    case JSONLineBreakEnum.Windows:
                         textWriter.NewLine = "\r\n";
-                    else if (NewLines == LineBreakEnum.Auto)
-                    {
-                        if (System.Environment.OSVersion.Platform == PlatformID.Unix || System.Environment.OSVersion.Platform == PlatformID.MacOSX)
-                            textWriter.NewLine = "\n";
-                        else
-                            textWriter.NewLine = "\r\n";
-                    }
-                    else
-                    {
+                        break;
+                    case JSONLineBreakEnum.Auto when Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX:
+                        textWriter.NewLine = "\n";
+                        break;
+                    case JSONLineBreakEnum.Auto:
+                        textWriter.NewLine = "\r\n";
+                        break;
+                    default:
                         textWriter.NewLine = ""; //Нет
                         _writer.Formatting = Formatting.None;
-                    }
-                        
+                        break;
                 }
-
             }
         }
         [ScriptConstructor]

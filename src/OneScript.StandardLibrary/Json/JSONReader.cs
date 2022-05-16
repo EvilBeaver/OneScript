@@ -183,50 +183,28 @@ namespace OneScript.StandardLibrary.Json
         /// </summary>
         /// <value>ТипЗначенияJSON (JSONValueType)</value>
         [ContextProperty("ТипТекущегоЗначения", "CurrentValueType")]
-        public IValue CurrentValueType
+        public JSONValueTypeEnum CurrentValueType
         {
             get
             {
                 if (IsOpen())
                 {
-                    string JSONValueType = "None";
-
-                    switch (_reader.TokenType)
+                    return _reader.TokenType switch
                     {
-                        case JsonToken.Null:
-                        case JsonToken.Undefined:
-                            JSONValueType = "Null";
-                            break;
-                        case JsonToken.StartObject:
-                            JSONValueType = "ObjectStart";
-                            break;
-                        case JsonToken.StartArray:
-                            JSONValueType = "ArrayStart";
-                            break;
-                        case JsonToken.PropertyName:
-                            JSONValueType = "PropertyName";
-                            break;
-                        case JsonToken.Comment:
-                            JSONValueType = "Comment";
-                            break;
-                        case JsonToken.Integer:
-                        case JsonToken.Float:
-                            JSONValueType = "Number";
-                            break;
-                        case JsonToken.String:
-                            JSONValueType = "String";
-                            break;
-                        case JsonToken.Boolean:
-                            JSONValueType = "Boolean";
-                            break;
-                        case JsonToken.EndObject:
-                            JSONValueType = "ObjectEnd";
-                            break;
-                        case JsonToken.EndArray:
-                            JSONValueType = "ArrayEnd";
-                            break;
-                    }
-                    return GlobalsHelper.GetEnum<JSONValueTypeEnum>()[JSONValueType];
+                        JsonToken.Null => JSONValueTypeEnum.Null,
+                        JsonToken.Undefined => JSONValueTypeEnum.Null,
+                        JsonToken.StartObject => JSONValueTypeEnum.ObjectStart,
+                        JsonToken.StartArray => JSONValueTypeEnum.ArrayStart,
+                        JsonToken.PropertyName => JSONValueTypeEnum.PropertyName,
+                        JsonToken.Comment => JSONValueTypeEnum.Comment,
+                        JsonToken.Integer => JSONValueTypeEnum.Number,
+                        JsonToken.Float => JSONValueTypeEnum.Number,
+                        JsonToken.String => JSONValueTypeEnum.String,
+                        JsonToken.Boolean => JSONValueTypeEnum.Boolean,
+                        JsonToken.EndObject => JSONValueTypeEnum.ObjectEnd,
+                        JsonToken.EndArray => JSONValueTypeEnum.ArrayEnd,
+                        _ => JSONValueTypeEnum.None
+                    };
                 }
                 else
                     throw NotOpenException();

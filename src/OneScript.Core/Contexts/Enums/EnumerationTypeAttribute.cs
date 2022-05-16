@@ -13,7 +13,7 @@ namespace OneScript.Contexts.Enums
     /// Атрибут для простых перечислений, являющихся обычными Clr-перечислениями
     /// </summary>
 	[AttributeUsage(AttributeTargets.Enum)]
-    public class EnumerationTypeAttribute : Attribute, INameAndAliasProvider
+    public class EnumerationTypeAttribute : Attribute, IEnumMetadataProvider
     {
         public EnumerationTypeAttribute (string name, string alias = null, bool createProperty = true)
 		{
@@ -27,5 +27,7 @@ namespace OneScript.Contexts.Enums
 		public bool CreateGlobalProperty { get; }
 		
 		public string TypeUUID { get; set; }
+		
+		public string ValueTypeUUID { get; set; }
     }
 }

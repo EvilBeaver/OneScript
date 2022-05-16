@@ -21,11 +21,11 @@ namespace OneScript.StandardLibrary.Json
 
         private bool _useDoubleQuotes;
 
-        private IValue _newLines;
+        private JSONLineBreakEnum _newLines;
 
         private string _paddingSymbols;
 
-        private IValue _escapeCharacters;
+        private JSONCharactersEscapeModeEnum _escapeCharacters;
 
         private bool _escapeAmpersand;
 
@@ -37,7 +37,7 @@ namespace OneScript.StandardLibrary.Json
 
         private bool _escapeAngleBrackets;
 
-        public JSONWriterSettings(IValue NewLines = null, string PaddingSymbols = null, bool UseDoubleQuotes = true, IValue EscapeCharacters = null, bool EscapeAngleBrackets = false, bool EscapeLineTerminators = true, bool EscapeAmpersand = false, bool EscapeSingleQuotes = false, bool EscapeSlash = false)
+        public JSONWriterSettings(JSONLineBreakEnum NewLines = JSONLineBreakEnum.Auto, string PaddingSymbols = null, bool UseDoubleQuotes = true, JSONCharactersEscapeModeEnum EscapeCharacters = JSONCharactersEscapeModeEnum.None, bool EscapeAngleBrackets = false, bool EscapeLineTerminators = true, bool EscapeAmpersand = false, bool EscapeSingleQuotes = false, bool EscapeSlash = false)
         {
             _newLines = NewLines;
             _paddingSymbols = PaddingSymbols;
@@ -88,15 +88,15 @@ namespace OneScript.StandardLibrary.Json
         [ScriptConstructor(Name = "По описанию параметров записи")]
         public static JSONWriterSettings Constructor(IValue newLines = null, IValue paddingSymbols = null, IValue useDoubleQuotes = null, IValue escapeCharacters = null, IValue escapeAngleBrackets = null, IValue escapeLineTerminators = null, IValue escapeAmpersand = null, IValue escapeSingleQuotes = null, IValue escapeSlash = null)
         {
-            return new JSONWriterSettings(newLines,
-                                          (paddingSymbols == null ? null : paddingSymbols.AsString()),
-                                          (useDoubleQuotes == null? true: useDoubleQuotes.AsBoolean()),
-                                          escapeCharacters,
-                                          (escapeAngleBrackets == null ? false : escapeAngleBrackets.AsBoolean()),
-                                          (escapeLineTerminators == null ? true : escapeLineTerminators.AsBoolean()),
-                                          (escapeAmpersand == null ? false : escapeAmpersand.AsBoolean()),
-                                          (escapeSingleQuotes == null ? false : escapeSingleQuotes.AsBoolean()),
-                                          (escapeSlash == null ? false : escapeSlash.AsBoolean()));
+            return new JSONWriterSettings((newLines as ClrEnumValueWrapper<JSONLineBreakEnum>)?.UnderlyingValue ?? JSONLineBreakEnum.None,
+                                          paddingSymbols?.AsString(),
+                                          useDoubleQuotes?.AsBoolean() ?? true,
+                                          (escapeCharacters as ClrEnumValueWrapper<JSONCharactersEscapeModeEnum>)?.UnderlyingValue ?? JSONCharactersEscapeModeEnum.None,
+                                          escapeAngleBrackets?.AsBoolean() ?? false,
+                                          (escapeLineTerminators == null || escapeLineTerminators.AsBoolean()),
+                                          escapeAmpersand?.AsBoolean() ?? false,
+                                          escapeSingleQuotes?.AsBoolean() ?? false,
+                                          escapeSlash?.AsBoolean() ?? false);
         }
 
         /// <summary>
@@ -117,11 +117,7 @@ namespace OneScript.StandardLibrary.Json
         /// </summary>
         /// <value>Булево (Boolean)</value>
         [ContextProperty("ИспользоватьДвойныеКавычки", "UseDoubleQuotes")]
-        public bool UseDoubleQuotes
-        {
-            get { return _useDoubleQuotes; }
-	
-        }
+        public bool UseDoubleQuotes => _useDoubleQuotes;
 
 
         /// <summary>
@@ -132,11 +128,7 @@ namespace OneScript.StandardLibrary.Json
         /// </summary>
         /// <value>ПереносСтрокJSON (JSONLineBreak)</value>
         [ContextProperty("ПереносСтрок", "NewLines")]
-        public IValue NewLines
-        {
-            get { return _newLines; }
-	
-        }
+        public JSONLineBreakEnum NewLines => _newLines;
 
 
         /// <summary>
@@ -147,11 +139,7 @@ namespace OneScript.StandardLibrary.Json
         /// </summary>
         /// <value>Строка (String)</value>
         [ContextProperty("СимволыОтступа", "PaddingSymbols")]
-        public string PaddingSymbols
-        {
-            get { return _paddingSymbols; }
-	
-        }
+        public string PaddingSymbols => _paddingSymbols;
 
 
         /// <summary>
@@ -161,11 +149,7 @@ namespace OneScript.StandardLibrary.Json
         /// </summary>
         /// <value>ЭкранированиеСимволовJSON (JSONCharactersEscapeMode)</value>
         [ContextProperty("ЭкранированиеСимволов", "EscapeCharacters")]
-        public IValue EscapeCharacters
-        {
-            get { return _escapeCharacters; }
-	
-        }
+        public JSONCharactersEscapeModeEnum EscapeCharacters => _escapeCharacters;
 
 
         /// <summary>
@@ -175,11 +159,7 @@ namespace OneScript.StandardLibrary.Json
         /// </summary>
         /// <value>Булево (Boolean)</value>
         [ContextProperty("ЭкранироватьАмперсанд", "EscapeAmpersand")]
-        public bool EscapeAmpersand
-        {
-            get { return _escapeAmpersand; }
-	
-        }
+        public bool EscapeAmpersand => _escapeAmpersand;
 
 
         /// <summary>
@@ -190,10 +170,7 @@ namespace OneScript.StandardLibrary.Json
         /// </summary>
         /// <value>Булево (Boolean)</value>
         [ContextProperty("ЭкранироватьОдинарныеКавычки", "EscapeSingleQuotes")]
-        public bool EscapeSingleQuotes
-        {
-            get { return _escapeSingleQuotes; }	
-        }
+        public bool EscapeSingleQuotes => _escapeSingleQuotes;
 
 
         /// <summary>
@@ -203,11 +180,7 @@ namespace OneScript.StandardLibrary.Json
         /// </summary>
         /// <value>Булево (Boolean)</value>
         [ContextProperty("ЭкранироватьРазделителиСтрок", "EscapeLineTerminators")]
-        public bool EscapeLineTerminators
-        {
-            get { return _escapeLineTerminators; }
-	
-        }
+        public bool EscapeLineTerminators => _escapeLineTerminators;
 
 
         /// <summary>
@@ -217,11 +190,7 @@ namespace OneScript.StandardLibrary.Json
         /// </summary>
         /// <value>Булево (Boolean)</value>
         [ContextProperty("ЭкранироватьСлеш", "EscapeSlash")]
-        public bool EscapeSlash
-        {
-            get { return _escapeSlash; }
-	
-        }
+        public bool EscapeSlash => _escapeSlash;
 
 
         /// <summary>
@@ -231,11 +200,6 @@ namespace OneScript.StandardLibrary.Json
         /// </summary>
         /// <value>Булево (Boolean)</value>
         [ContextProperty("ЭкранироватьУгловыеСкобки", "EscapeAngleBrackets")]
-        public bool EscapeAngleBrackets
-        {
-            get { return _escapeAngleBrackets; }
-	
-        }
-
+        public bool EscapeAngleBrackets => _escapeAngleBrackets;
     }
 }

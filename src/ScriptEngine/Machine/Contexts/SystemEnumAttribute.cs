@@ -5,12 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using OneScript.Contexts;
+using OneScript.Contexts.Enums;
 
 namespace ScriptEngine.Machine.Contexts
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class SystemEnumAttribute : Attribute, INameAndAliasProvider
+    public class SystemEnumAttribute : Attribute, IEnumMetadataProvider
     {
         public SystemEnumAttribute(string name, string alias = "")
         {
@@ -20,5 +20,9 @@ namespace ScriptEngine.Machine.Contexts
 
         public string Name { get; }
         public string Alias { get; }
+        
+        public string TypeUUID { get; set; }
+		
+        public string ValueTypeUUID { get; set; }
     }
 }

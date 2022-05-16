@@ -12,48 +12,19 @@ using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Json
 {
-    [Obsolete("Use simple enums")]
-    [SystemEnum("ЭкранированиеСимволовJSON", "JSONCharactersEscapeMode")]
-    public class JSONCharactersEscapeModeEnum : EnumerationContext
+    [EnumerationType("ЭкранированиеСимволовJSON", "JSONCharactersEscapeMode",
+        TypeUUID = "A7FA438B-AC4D-4811-BB88-29F16BB9594D",
+        ValueTypeUUID = "064950E9-91D3-4FF4-836D-BE6C8BF173E3")]
+    public enum JSONCharactersEscapeModeEnum
     {
-        private JSONCharactersEscapeModeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
-           : base(typeRepresentation, valuesType)
-        {
-        }
-
         [EnumValue("Нет", "None")]
-        public EnumerationValue None
-        {
-            get
-            {
-                return this["Нет"];
-            }
-        }
-
+        None,
+        
         [EnumValue("СимволыВнеASCII", "NotASCIISymbols")]
-        public EnumerationValue NotASCIISymbols
-        {
-            get
-            {
-                return this["СимволыВнеASCII"];
-            }
-        }
-
+        NotASCIISymbols,
+        
         [EnumValue("СимволыВнеBMP", "SymbolsNotInBMP")]
-        public EnumerationValue SymbolsNotInBMP
-        {
-            get
-            {
-                return this["СимволыВнеBMP"];
-            }
-        }
-
-        public static JSONCharactersEscapeModeEnum CreateInstance(ITypeManager typeManager)
-        {
-            return EnumContextHelper.CreateSelfAwareEnumInstance(typeManager,
-                (t, v) => new JSONCharactersEscapeModeEnum(t, v));
-        }
-
+        SymbolsNotInBMP
     }
 
 }

@@ -11,119 +11,42 @@ using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Json
 {
-    [SystemEnum("ТипЗначенияJSON", "JSONValueType")]
-    public class JSONValueTypeEnum : EnumerationContext
+    [EnumerationType("ТипЗначенияJSON", "JSONValueType",
+        TypeUUID = "90EC0979-11CF-4688-972B-3530FA16EEF5",
+        ValueTypeUUID = "D6089B59-1730-452C-B142-C2EF6C75299C")]
+    public enum JSONValueTypeEnum
     {
-        private JSONValueTypeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
-           : base(typeRepresentation, valuesType)
-        {
-        }
-
-        [EnumValue("Null")]
-        public EnumerationValue Null
-        {
-            get
-            {
-                return this["Null"];
-            }
-        }
-
-        [EnumValue("Булево", "Boolean")]
-        public EnumerationValue Boolean
-        {
-            get
-            {
-                return this["Булево"];
-            }
-        }
-
-        [EnumValue("ИмяСвойства", "PropertyName")]
-        public EnumerationValue PropertyName
-        {
-            get
-            {
-                return this["ИмяСвойства"];
-            }
-        }
-
-        [EnumValue("Комментарий", "Comment")]
-        public EnumerationValue Comment
-        {
-            get
-            {
-                return this["Комментарий"];
-            }
-        }
-
-        [EnumValue("КонецМассива", "ArrayEnd")]
-        public EnumerationValue ArrayEnd
-        {
-            get
-            {
-                return this["КонецМассива"];
-            }
-        }
-
-        [EnumValue("КонецОбъекта", "ObjectEnd")]
-        public EnumerationValue ObjectEnd
-        {
-            get
-            {
-                return this["КонецОбъекта"];
-            }
-        }
-
-        [EnumValue("НачалоМассива", "ArrayStart")]
-        public EnumerationValue ArrayStart
-        {
-            get
-            {
-                return this["НачалоМассива"];
-            }
-        }
-
-        [EnumValue("НачалоОбъекта", "ObjectStart")]
-        public EnumerationValue ObjectStart
-        {
-            get
-            {
-                return this["НачалоОбъекта"];
-            }
-        }
-
         [EnumValue("Ничего", "None")]
-        public EnumerationValue None
-        {
-            get
-            {
-                return this["Ничего"];
-            }
-        }
-
+        None,
+        
+        [EnumValue("Null")]
+        Null,
+        
+        [EnumValue("Булево", "Boolean")]
+        Boolean,
+        
+        [EnumValue("ИмяСвойства", "PropertyName")]
+        PropertyName,
+        
+        [EnumValue("Комментарий", "Comment")]
+        Comment,
+        
+        [EnumValue("КонецМассива", "ArrayEnd")]
+        ArrayEnd,
+        
+        [EnumValue("КонецОбъекта", "ObjectEnd")]
+        ObjectEnd,
+        
+        [EnumValue("НачалоМассива", "ArrayStart")]
+        ArrayStart,
+        
+        [EnumValue("НачалоОбъекта", "ObjectStart")]
+        ObjectStart,
+        
         [EnumValue("Строка", "String")]
-        public EnumerationValue String
-        {
-            get
-            {
-                return this["Строка"];
-            }
-        }
-
+        String,
+        
         [EnumValue("Число", "Number")]
-        public EnumerationValue Number
-        {
-            get
-            {
-                return this["Число"];
-            }
-        }
-
-        public static JSONValueTypeEnum CreateInstance(ITypeManager typeManager)
-        {
-            return EnumContextHelper.CreateSelfAwareEnumInstance(typeManager,
-                (t, v) => new JSONValueTypeEnum(t, v));
-        }
-
+        Number
     }
-
 }

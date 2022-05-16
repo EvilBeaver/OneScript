@@ -12,57 +12,22 @@ using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Json
 {
-    [Obsolete("Use simple enums")]
-    [SystemEnum("ПереносСтрокJSON", "JSONLineBreak")]
-    public class JSONLineBreakEnum : EnumerationContext
+    [EnumerationType("ПереносСтрокJSON", "JSONLineBreak",
+        TypeUUID = "C0049501-11D3-41F8-8FAD-767AE8CD7C7E",
+        ValueTypeUUID = "623C2D3A-01B4-43E3-AF2B-9EB922D0D838")]
+    public enum JSONLineBreakEnum
     {
-        private JSONLineBreakEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
-           : base(typeRepresentation, valuesType)
-        {
-        }
-
-        [EnumValue("Unix")]
-        public EnumerationValue Unix
-        {
-            get
-            {
-                return this["Unix"];
-            }
-        }
-
-        [EnumValue("Windows")]
-        public EnumerationValue Windows
-        {
-            get
-            {
-                return this["Windows"];
-            }
-        }
-
         [EnumValue("Авто", "Auto")]
-        public EnumerationValue Auto
-        {
-            get
-            {
-                return this["Авто"];
-            }
-        }
-
+        Auto,
+        
+        [EnumValue("Unix")]
+        Unix,
+        
+        [EnumValue("Windows")]
+        Windows,
+        
         [EnumValue("Нет", "None")]
-        public EnumerationValue None
-        {
-            get
-            {
-                return this["Нет"];
-            }
-        }
-
-        public static JSONLineBreakEnum CreateInstance(ITypeManager typeManager)
-        {
-            return EnumContextHelper.CreateSelfAwareEnumInstance(typeManager,
-                (t, v) => new JSONLineBreakEnum(t, v));
-        }
-
+        None
     }
 
 }
