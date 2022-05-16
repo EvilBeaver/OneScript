@@ -9,7 +9,6 @@ using OneScript.StandardLibrary;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Hosting;
 using ScriptEngine.HostedScript.Extensions;
-using OneScript.Native.Extensions;
 
 namespace oscript
 {

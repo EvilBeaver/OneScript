@@ -13,7 +13,7 @@ namespace OneScript.Contexts
     /// <summary>
     /// Информация о методе, который может быть вызван из 1Script
     /// </summary>
-    public abstract class BslMethodInfo : MethodInfo, IAliasedMemberInfo
+    public abstract class BslMethodInfo : MethodInfo, INameAndAliasProvider
     {
         private AnnotationHolder _annotations;
         

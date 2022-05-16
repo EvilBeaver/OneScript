@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Linq;
-using System.Linq.Expressions;
 using OneScript.Compilation;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;

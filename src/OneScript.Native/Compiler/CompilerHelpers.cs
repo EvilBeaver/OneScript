@@ -8,13 +8,11 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
-using OneScript.Runtime.Binding;
 using OneScript.Values;
 
 namespace OneScript.Native.Compiler

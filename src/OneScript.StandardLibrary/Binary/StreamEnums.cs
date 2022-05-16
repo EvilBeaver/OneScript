@@ -5,55 +5,55 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.Binary
 {
     [EnumerationType("РежимОткрытияФайла", "FileOpenMode")]
     public enum FileOpenModeEnum
     {
-        [EnumItem("Дописать")]
+        [EnumValue("Дописать")]
         Append,
-        [EnumItem("Обрезать")]
+        [EnumValue("Обрезать")]
         Truncate,
-        [EnumItem("Открыть")]
+        [EnumValue("Открыть")]
         Open,
-        [EnumItem("ОткрытьИлиСоздать")]
+        [EnumValue("ОткрытьИлиСоздать")]
         OpenOrCreate,
-        [EnumItem("Создать")]
+        [EnumValue("Создать")]
         Create,
-        [EnumItem("СоздатьНовый")]
+        [EnumValue("СоздатьНовый")]
         CreateNew
     }
 
     [EnumerationType("ДоступКФайлу", "FileAccess")]
     public enum FileAccessEnum
     {
-        [EnumItem("Запись")]
+        [EnumValue("Запись")]
         Write,
-        [EnumItem("Чтение")]
+        [EnumValue("Чтение")]
         Read,
-        [EnumItem("ЧтениеИЗапись")]
+        [EnumValue("ЧтениеИЗапись")]
         ReadAndWrite
     }
 
     [EnumerationType("ПозицияВПотоке", "StreamPosition")]
     public enum StreamPositionEnum
     {
-        [EnumItem("Начало")]
+        [EnumValue("Начало")]
         Begin,
-        [EnumItem("Конец")]
+        [EnumValue("Конец")]
         End,
-        [EnumItem("Текущая")]
+        [EnumValue("Текущая")]
         Current
     }
 
     [EnumerationType("ПорядокБайтов", "ByteOrder")]
     public enum ByteOrderEnum
     {
-        [EnumItem("BigEndian")]
+        [EnumValue("BigEndian")]
         BigEndian,
-        [EnumItem("LittleEndian")]
+        [EnumValue("LittleEndian")]
         LittleEndian
     }
 }

@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
@@ -18,13 +18,13 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
         /// <summary>
         /// Используется ограничение по умолчанию
         /// </summary>
-        [EnumItem("Default", "ПоУмолчанию")]
+        [EnumValue("Default", "ПоУмолчанию")]
         Default,
 
         /// <summary>
         /// Используется фиксированное значение
         /// </summary>
-        [EnumItem("Fixed", "Фиксированное")]
+        [EnumValue("Fixed", "Фиксированное")]
         Fixed
     }
 }

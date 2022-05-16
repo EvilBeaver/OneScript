@@ -5,17 +5,17 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.Collections
 {
     [EnumerationType("НаправлениеСортировки", "SortDirection")]
     public enum SortDirectionEnum
     {
-        [EnumItem("Возр", "ASC")]
+        [EnumValue("Возр", "ASC")]
         Asc,
 
-        [EnumItem("Убыв", "DESC")]
+        [EnumValue("Убыв", "DESC")]
         Desc
     }
 }

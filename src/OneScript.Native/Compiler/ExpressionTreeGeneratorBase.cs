@@ -10,7 +10,6 @@ using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Localization;
-using OneScript.Runtime.Binding;
 using OneScript.Sources;
 
 namespace OneScript.Native.Compiler

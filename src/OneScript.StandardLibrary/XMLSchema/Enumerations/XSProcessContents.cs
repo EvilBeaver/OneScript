@@ -6,23 +6,23 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Xml.Schema;
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
     [EnumerationType("XSProcessContents", "ОбработкаСодержимогоXS")]
     public enum XSProcessContents
     {
-        [EnumItem("EmptyRef", "ПустаяСсылка")]
+        [EnumValue("EmptyRef", "ПустаяСсылка")]
         EmptyRef = XmlSchemaContentProcessing.None,
 
-        [EnumItem("Skip", "Пропустить")]
+        [EnumValue("Skip", "Пропустить")]
         Skip = XmlSchemaContentProcessing.Skip,
 
-        [EnumItem("Lax", "Слабая")]
+        [EnumValue("Lax", "Слабая")]
         Lax = XmlSchemaContentProcessing.Lax,
 
-        [EnumItem("Strict", "Строгая")]
+        [EnumValue("Strict", "Строгая")]
         Strict = XmlSchemaContentProcessing.Strict
     }
 }

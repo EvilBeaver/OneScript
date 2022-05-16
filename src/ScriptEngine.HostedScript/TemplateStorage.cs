@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Contexts.Enums;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -85,9 +86,9 @@ namespace ScriptEngine.HostedScript
     [EnumerationType("ТипМакета", "TemplateKind")]
     public enum TemplateKind
     {
-        [EnumItem("Файл")]
+        [EnumValue("Файл")]
         File,
-        [EnumItem("ДвоичныеДанные")]
+        [EnumValue("ДвоичныеДанные")]
         BinaryData
     }
     

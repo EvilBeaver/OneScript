@@ -5,32 +5,32 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary
 {
     [EnumerationType("ТипПлатформы", "PlatformType")]
     public enum PlatformTypeEnum
     {
-        [EnumItem("Linux_x86")]
+        [EnumValue("Linux_x86")]
         Linux_x86,
         
-        [EnumItem("Linux_x86_64")]
+        [EnumValue("Linux_x86_64")]
         Linux_x86_64,
         
-        [EnumItem("MacOS_x86")]
+        [EnumValue("MacOS_x86")]
         MacOS_x86,
 
-        [EnumItem("MacOS_x86_64")]
+        [EnumValue("MacOS_x86_64")]
         MacOS_x86_64, 
 
-        [EnumItem("Windows_x86")]
+        [EnumValue("Windows_x86")]
         Windows_x86,
 
-        [EnumItem("Windows_x86_64")]
+        [EnumValue("Windows_x86_64")]
         Windows_x86_64,
 
-        [EnumItem("Unknown")]
+        [EnumValue("Unknown")]
         Unknown,
     }
 }

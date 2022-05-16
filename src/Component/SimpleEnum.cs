@@ -5,15 +5,15 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace Component
 {
 	[EnumerationType("ПростоПеречисление")]
 	public enum SimpleEnum
 	{
-		[EnumItem("Элемент1")] Item1,
+		[EnumValue("Элемент1")] Item1,
 
-		[EnumItem("Элемент2")] Item2
+		[EnumValue("Элемент2")] Item2
 	}
 }

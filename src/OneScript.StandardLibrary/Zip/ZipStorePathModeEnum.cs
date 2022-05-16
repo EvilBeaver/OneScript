@@ -5,18 +5,18 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.Zip
 {
     [EnumerationType("РежимСохраненияПутейZIP", "ZIPStorePathsMode")]
     public enum ZipStorePathMode
     {
-        [EnumItem("НеСохранятьПути", "DontStorePath")]
+        [EnumValue("НеСохранятьПути", "DontStorePath")]
         DontStorePath,
-        [EnumItem("СохранятьОтносительныеПути", "StoreRelativePath")]
+        [EnumValue("СохранятьОтносительныеПути", "StoreRelativePath")]
         StoreRelativePath,
-        [EnumItem("СохранятьПолныеПути", "StoreFullPath")]
+        [EnumValue("СохранятьПолныеПути", "StoreFullPath")]
         StoreFullPath
     }
 }

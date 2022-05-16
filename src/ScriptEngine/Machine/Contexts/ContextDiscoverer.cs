@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using OneScript.Contexts;
+using OneScript.Contexts.Enums;
 using OneScript.DependencyInjection;
 using OneScript.Types;
 using ScriptEngine.Types;

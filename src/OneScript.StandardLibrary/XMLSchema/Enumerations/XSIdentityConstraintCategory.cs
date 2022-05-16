@@ -6,8 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Xml.Schema;
+using OneScript.Contexts.Enums;
 using OneScript.StandardLibrary.XMLSchema.Objects;
-using ScriptEngine;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
@@ -22,21 +22,21 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
         /// Ограничение идентичности по ключу
         /// </summary>
         /// <see cref="XmlSchemaKey"/>
-        [EnumItem("Key", "Ключ")]
+        [EnumValue("Key", "Ключ")]
         Key,
 
         /// <summary>
         /// Ограничение идентичности по ссылке
         /// </summary>
         /// <see cref="XmlSchemaKey"/>
-        [EnumItem("KeyRef", "СсылкаНаКлюч")]
+        [EnumValue("KeyRef", "СсылкаНаКлюч")]
         KeyRef,
 
         /// <summary>
         /// Ограничение идентичности по опредению уникальности
         /// </summary>
         /// <see cref="XmlSchemaUnique"/>
-        [EnumItem("Unique", "Уникальность")]
+        [EnumValue("Unique", "Уникальность")]
         Unique
     }
 }

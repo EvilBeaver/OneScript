@@ -9,7 +9,6 @@ using OneScript.DependencyInjection;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using ScriptEngine.Compiler;
-using ScriptEngine.HostedScript;
 
 namespace ScriptEngine.Hosting
 {

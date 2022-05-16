@@ -5,20 +5,20 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.Text
 {
     [EnumerationType("ИспользованиеByteOrderMark", "ByteOrderMarkUsage")]
     public enum ByteOrderMarkUsageEnum
     {
-        [EnumItem("Авто", "Auto")]
+        [EnumValue("Авто", "Auto")]
         Auto,
 
-        [EnumItem("Использовать", "Use")]
+        [EnumValue("Использовать", "Use")]
         Use,
 
-        [EnumItem("НеИспользовать", "DontUse")]
+        [EnumValue("НеИспользовать", "DontUse")]
         DontUse
     }
 }

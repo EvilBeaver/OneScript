@@ -6,6 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Linq;
+using OneScript.Contexts;
+using OneScript.Contexts.Enums;
 using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
@@ -21,7 +23,7 @@ namespace ScriptEngine.Machine.Contexts
 
             foreach (var enumProperty in values)
             {
-                instance.AddValue(enumProperty.GetName(), enumProperty.GetAlias(), new SelfAwareEnumValue<T>(instance));
+                instance.AddValue(enumProperty.Name, enumProperty.Alias, new SelfAwareEnumValue<T>(instance));
             }
         }
 

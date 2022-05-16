@@ -5,20 +5,20 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XDTO
 {
     [EnumerationType("XMLForm", "ФормаXML")]
     public enum XMLForm
     {
-        [EnumItem("Element", "Элемент")]
+        [EnumValue("Element", "Элемент")]
         Element,
 
-        [EnumItem("Text", "Текст")]
+        [EnumValue("Text", "Текст")]
         Text,
 
-        [EnumItem("Attribute", "Атрибут")]
+        [EnumValue("Attribute", "Атрибут")]
         Attribute
     }
 }

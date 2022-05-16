@@ -8,9 +8,9 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Text;
 using OneScript.Contexts;
+using OneScript.Contexts.Enums;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Text;
-using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -148,9 +148,9 @@ namespace OneScript.StandardLibrary
     [EnumerationType("СпособКодированияСтроки", "StringEncodingMethod")]
     public enum StringEncodingMethod
     {
-        [EnumItem("КодировкаURL", "URLEncoding")]
+        [EnumValue("КодировкаURL", "URLEncoding")]
         UrlEncoding,
-        [EnumItem("URLВКодировкеURL", "URLInURLEncoding")]
+        [EnumValue("URLВКодировкеURL", "URLInURLEncoding")]
         UrlInUrlEncoding
     }
 }

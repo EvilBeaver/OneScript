@@ -5,20 +5,20 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.Tasks
 {
     [EnumerationType("СостояниеФоновогоЗадания", "BackgroundJobState")]
     public enum TaskStateEnum
     {
-        [EnumItem("НеВыполнялось", "NotRunned")]
+        [EnumValue("НеВыполнялось", "NotRunned")]
         NotRunned,
-        [EnumItem("Активно", "Active")]
+        [EnumValue("Активно", "Active")]
         Running,
-        [EnumItem("Завершено", "Completed")]
+        [EnumValue("Завершено", "Completed")]
         Completed,
-        [EnumItem("ЗавершеноАварийно", "Failed")]
+        [EnumValue("ЗавершеноАварийно", "Failed")]
         CompletedWithErrors
     }
 }

@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
@@ -15,13 +15,13 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
     [EnumerationType("XSContentModel", "МодельСодержимогоXS")]
     public enum XSContentModel
     {
-        [EnumItem("EmptyRef", "ПустаяСсылка")]
+        [EnumValue("EmptyRef", "ПустаяСсылка")]
         EmptyRef,
 
-        [EnumItem("Simple", "Простая")]
+        [EnumValue("Simple", "Простая")]
         Simple,
 
-        [EnumItem("Complex", "Составная")]
+        [EnumValue("Complex", "Составная")]
         Complex
     }
 }

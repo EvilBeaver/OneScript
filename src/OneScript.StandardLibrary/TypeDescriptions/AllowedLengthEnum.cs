@@ -5,17 +5,17 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.TypeDescriptions
 {
 	[EnumerationType("ДопустимаяДлина", "AllowedLength")]
 	public enum AllowedLengthEnum
 	{
-		[EnumItem("Переменная", "Variable")]
+		[EnumValue("Переменная", "Variable")]
 		Variable,
 
-		[EnumItem("Фиксированная", "Fixed")]
+		[EnumValue("Фиксированная", "Fixed")]
 		Fixed
 	}
 }

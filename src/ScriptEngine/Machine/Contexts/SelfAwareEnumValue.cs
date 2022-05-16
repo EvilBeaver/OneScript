@@ -5,8 +5,11 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+
 namespace ScriptEngine.Machine.Contexts
 {
+    [Obsolete("Use simple enums")]
     public class SelfAwareEnumValue<TOwner> : EnumerationValue where TOwner : EnumerationContext
     {
         public SelfAwareEnumValue(TOwner owner) : base(owner)

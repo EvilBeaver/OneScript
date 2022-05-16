@@ -5,20 +5,20 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.Zip
 {
     [EnumerationType("КодировкаИменФайловВZipФайле","FileNamesEncodingInZipFile")]
     public enum FileNamesEncodingInZipFile
     {
-        [EnumItem("Авто")]
+        [EnumValue("Авто")]
         Auto,
         
-        [EnumItem("UTF8")]
+        [EnumValue("UTF8")]
         Utf8,
         
-        [EnumItem("КодировкаОСДополнительноUTF8","OSEncodingWithUTF8")]
+        [EnumValue("КодировкаОСДополнительноUTF8","OSEncodingWithUTF8")]
         OsEncodingWithUtf8
     }
 }
