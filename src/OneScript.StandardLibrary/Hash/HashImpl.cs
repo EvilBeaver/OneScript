@@ -21,13 +21,13 @@ namespace OneScript.StandardLibrary.Hash
     [ContextClass("ХешированиеДанных", "DataHashing")]
     public class HashImpl : AutoContext<HashImpl>, IDisposable
     {
-        protected HashAlgorithm _provider;
-        protected IValue _enumValue;
-        protected CombinedStream _toCalculate=new CombinedStream();
-        protected bool _calculated;
-        protected byte[] _hash;
+        private HashAlgorithm _provider;
+        private HashFunctionEnum _enumValue;
+        private CombinedStream _toCalculate=new CombinedStream();
+        private bool _calculated;
+        private byte[] _hash;
 
-        public HashImpl(HashAlgorithm provider, IValue enumValue)
+        public HashImpl(HashAlgorithm provider, HashFunctionEnum enumValue)
         {
             _provider = provider;
             _enumValue = enumValue;
@@ -48,13 +48,7 @@ namespace OneScript.StandardLibrary.Hash
         }
 
         [ContextProperty("ХешФункция", "HashFunction")]
-        public IValue Extension
-        {
-            get
-            {
-                return _enumValue;
-            }
-        }
+        public HashFunctionEnum Extension => _enumValue;
 
         [ContextProperty("ХешСумма", "HashSum")]
         public IValue Hash
@@ -79,7 +73,7 @@ namespace OneScript.StandardLibrary.Hash
         {
             get
             {
-                StringBuilder sb = new StringBuilder();
+                var sb = new StringBuilder();
                 for (int i = 0; i < InternalHash.Length; i++)
                     sb.Append(InternalHash[i].ToString("X2"));
                 return sb.ToString();
@@ -130,10 +124,24 @@ namespace OneScript.StandardLibrary.Hash
 
 
         [ScriptConstructor(Name = "По указанной хеш-функции")]
-        public static HashImpl Constructor(IValue providerEnum)
+        public static HashImpl Constructor(HashFunctionEnum providerEnum)
         {
-            var objectProvider = HashFunctionEnum.GetProvider(providerEnum);
+            var objectProvider = GetProvider(providerEnum);
             return new HashImpl(objectProvider, providerEnum);
+        }
+
+        private static HashAlgorithm GetProvider(HashFunctionEnum algo)
+        {
+            switch (algo)
+            {
+                case HashFunctionEnum.CRC32:
+                    return new Crc32();
+                default:
+                    var ret = HashAlgorithm.Create(algo.ToString());
+                    if (ret == null)
+                        throw RuntimeException.InvalidArgumentType();
+                    return ret;
+            }
         }
 
         public void Dispose()
