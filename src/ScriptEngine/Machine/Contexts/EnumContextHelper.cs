@@ -5,8 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Linq;
-using OneScript.Contexts;
 using OneScript.Contexts.Enums;
 using OneScript.Types;
 
@@ -14,24 +12,6 @@ namespace ScriptEngine.Machine.Contexts
 {
     public static class EnumContextHelper
     {
-        private static void RegisterValues<T>(T instance) where T : EnumerationContext
-        {
-            var enumType = typeof(T);
-            var values = enumType.GetProperties()
-                .Where(x => x.GetCustomAttributes(typeof(EnumValueAttribute), false).Any())
-                .Select(x => (EnumValueAttribute)x.GetCustomAttributes(typeof(EnumValueAttribute), false)[0]);
-
-            foreach (var enumProperty in values)
-            {
-                instance.AddValue(enumProperty.Name, enumProperty.Alias, new SelfAwareEnumValue<T>(instance));
-            }
-        }
-
-        private static void RegisterSelfAwareEnumType<T>(ITypeManager typeManager, out TypeDescriptor enumType, out TypeDescriptor enumValueType) where T : EnumerationContext
-        {
-            (enumType, enumValueType) = RegisterEnumType<T, SelfAwareEnumValue<T>>(typeManager);
-        }
-        
         public static (TypeDescriptor, TypeDescriptor) RegisterEnumType<TEnum, TValue>(ITypeManager typeManager) 
             where TEnum : EnumerationContext 
             where TValue : EnumerationValue
@@ -86,22 +66,6 @@ namespace ScriptEngine.Machine.Contexts
             );
         }
 
-        public static T CreateSelfAwareEnumInstance<T>(ITypeManager typeManager, EnumCreationDelegate<T> creator) where T : EnumerationContext
-        {
-            T instance;
-
-            TypeDescriptor enumType;
-            TypeDescriptor enumValType;
-
-            EnumContextHelper.RegisterSelfAwareEnumType<T>(typeManager, out enumType, out enumValType);
-
-            instance = creator(enumType, enumValType);
-
-            EnumContextHelper.RegisterValues<T>(instance);
-
-            return instance;
-        }
-        
         public static TOwner CreateClrEnumInstance<TOwner, TEnum>(ITypeManager typeManager, EnumCreationDelegate<TOwner> creator) 
             where TOwner : EnumerationContext
             where TEnum : struct
