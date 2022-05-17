@@ -906,44 +906,48 @@ namespace ScriptEngine.Compiler
         {
             if (node.IsDynamic)
             {
-                VisitExpression(node.TypeNameNode);
+                MakeNewObjectDynamic(node);
             }
             else
             {
-                var cDef = new ConstDefinition()
-                {
-                    Type = DataType.String,
-                    Presentation = node.TypeNameNode.GetIdentifier()
-                };
-
-                AddCommand(OperationCode.PushConst, GetConstNumber(cDef));
+                MakeNewObjectStatic(node);
             }
+        }
+        
+        private void MakeNewObjectDynamic(NewObjectNode node)
+        {
+            VisitExpression(node.TypeNameNode);
 
-            if (node.IsDynamic)
+            var argsPassed = node.ConstructorArguments.Children.Count;
+            if (argsPassed == 1)
             {
-                var argsPassed = node.ConstructorArguments.Children.Count;
-                if (argsPassed == 1)
-                {
-                    PushArgumentsList(node.ConstructorArguments);
-                }
-                else if (argsPassed > 1)
-                {
-                    AddError(CompilerErrors.TooManyArgumentsPassed(), node.ConstructorArguments.Location);
-                }
-
-                AddCommand(OperationCode.NewFunc, argsPassed);
+                PushArgumentsList(node.ConstructorArguments);
             }
-            else
+            else if (argsPassed > 1)
             {
-                var callArgs = 0;
-                if (node.ConstructorArguments != default)
-                {
-                    PushArgumentsList(node.ConstructorArguments);
-                    callArgs = node.ConstructorArguments.Children.Count;
-                }
-
-                AddCommand(OperationCode.NewInstance, callArgs);
+                AddError(CompilerErrors.TooManyArgumentsPassed(), node.ConstructorArguments.Location);
             }
+
+            AddCommand(OperationCode.NewFunc, argsPassed);
+        }
+        
+        private void MakeNewObjectStatic(NewObjectNode node)
+        {
+            var cDef = new ConstDefinition()
+            {
+                Type = DataType.String,
+                Presentation = node.TypeNameNode.GetIdentifier()
+            };
+            AddCommand(OperationCode.PushConst, GetConstNumber(cDef));
+
+            var callArgs = 0;
+            if (node.ConstructorArguments != default)
+            {
+                PushArgumentsList(node.ConstructorArguments);
+                callArgs = node.ConstructorArguments.Children.Count;
+            }
+
+            AddCommand(OperationCode.NewInstance, callArgs);
         }
 
         private void ExitTryBlocks()
