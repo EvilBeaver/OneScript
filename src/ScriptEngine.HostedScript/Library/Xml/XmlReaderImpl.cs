@@ -15,7 +15,10 @@ namespace ScriptEngine.HostedScript.Library.Xml
     [ContextClass("ЧтениеXML","XMLReader")]
     public class XmlReaderImpl : AutoContext<XmlReaderImpl>, IDisposable
     {
-        XmlTextReader _reader;
+        XmlReader _reader;
+        XmlTextReader _txtReader;
+        XmlReaderSettingsImpl _settings = XmlReaderSettingsImpl.Constructor();
+
         EmptyElemCompabilityState _emptyElemReadState = EmptyElemCompabilityState.Off;
         bool _attributesLoopReset = false;
 
@@ -34,39 +37,40 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string path)
         {
-            if (_reader != null)
-                throw new RuntimeException("Поток XML уже открыт");
-            var textInput = new StreamReader(path);
-            InitReader(textInput);
+            var fs = File.OpenRead(path);
+
+            InitReader(fs);
         }
 
         [ContextMethod("УстановитьСтроку", "SetString")]
         public void SetString(string content)
         {
+            var ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content));
+
+            InitReader(ms);
+        }
+
+        private void InitReader(Stream textInput)
+        {
             if (_reader != null)
-                throw new RuntimeException("Поток XML уже открыт");
+            {
+                _reader.Dispose();
+            }
 
-            var textInput = new StringReader(content);
-            InitReader(textInput);
-        }
+            var settings = _settings.Settings;
+            settings.IgnoreComments = true;
 
-        private void InitReader(TextReader textInput)
-        {
-            _reader = new XmlTextReader(textInput);
-            _reader.WhitespaceHandling = WhitespaceHandling.Significant;
-        }
+            _settings = new XmlReaderSettingsImpl(_settings.Version, _settings.Context, settings);
 
-        private void CheckIfOpen()
-        {
-            if (_reader == null)
-                throw new RuntimeException("Файл не открыт");
+            _txtReader = new XmlTextReader(textInput, XmlNodeType.Document, _settings.Context);
+            _reader = XmlReader.Create(_txtReader, _settings.Settings);
         }
 
         #region Свойства
         
         [ContextProperty("URIПространстваИмен", "NamespaceURI")]
         public string NamespaceURI
-        {
+       {
             get
             {
                 return _reader.NamespaceURI;
@@ -92,13 +96,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextProperty("ВерсияXML", "XMLVersion")]
-        public string XMLVersion
-        {
-            get
-            {
-                return "1.0";
-            }
-        }
+        public string XMLVersion => _settings.Version;
 
         [ContextProperty("Значение", "Value")]
         public string Value
@@ -146,13 +144,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextProperty("КодировкаXML", "XMLEncoding")]
-        public string XMLEncoding
-        {
-            get
-            {
-                return _reader.Encoding.WebName;
-            }
-        }
+        public string XMLEncoding => _txtReader?.Encoding?.WebName ?? "UTF-8";
 
         [ContextProperty("КодировкаИсточника", "InputEncoding")]
         public string InputEncoding
@@ -182,7 +174,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             get
             {
-                return new XmlNamespaceContext(Depth, _reader.GetNamespacesInScope(XmlNamespaceScope.All));
+                return new XmlNamespaceContext(Depth, _txtReader.GetNamespacesInScope(XmlNamespaceScope.All));
             }
         }
 
@@ -239,7 +231,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextProperty("ЭтоАтрибутПоУмолчанию", "IsDefaultAttribute")]
-        public bool IsDefaultAttribute
+        public bool? IsDefaultAttribute
         {
             get
             {
@@ -257,45 +249,25 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextProperty("Язык", "Lang")]
-        public string Lang
-        {
-            get
-            {
-                return _reader.XmlLang;
-            }
-        }
+        public string Lang => _settings.Language;
 
         [ContextProperty("ИгнорироватьПробелы", "IgnoreWhitespace")]
         public bool IgnoreWhitespace
         {
-            get
-            {
-                return _reader.WhitespaceHandling == WhitespaceHandling.None;
-            }
+            get { return _settings.IgnoreWhitespace; }
             set
             {
-                _reader.WhitespaceHandling = value ? WhitespaceHandling.None : WhitespaceHandling.All;
+                _settings.SetIgnoringWhitespace(value);
+                if (_reader != null)
+                    _reader.Settings.IgnoreWhitespace = value;
             }
         }
 
         [ContextProperty("Параметры", "Settings")]
-        public object Settings
-        {
-            get
-            {
-                throw new NotSupportedException();
-            }
-        }
+        public IValue Settings => _settings;
 
         [ContextProperty("ПробельныеСимволы", "Space")]
-        public object Space
-        {
-            get
-            {
-                throw new NotImplementedException();
-                //return _reader.XmlSpace;
-            }
-        }
+        public IValue Space => _settings.Space;
 
         [ContextProperty("ЭтоСимвольныеДанные", "IsCharacters")]
         public bool IsCharacters
