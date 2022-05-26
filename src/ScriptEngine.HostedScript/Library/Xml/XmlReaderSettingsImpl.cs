@@ -81,19 +81,6 @@ namespace ScriptEngine.HostedScript.Library.Xml
             _settings.IgnoreWhitespace = val;
         }
 
-        private static T ConvertWrappedEnum<T>(IValue enumeration, T defValue) where T: struct 
-        {
-           if (enumeration == null)
-                return defValue;
-
-           if (enumeration.GetRawValue() is CLREnumValueWrapper<T> wrapped)
-           {
-                return wrapped.UnderlyingValue;
-           }
-
-            throw RuntimeException.InvalidArgumentValue();
-        }
-
         [ScriptConstructor]
         public static XmlReaderSettingsImpl Constructor(IValue version = null, IValue lang = null,
              IValue spaceChars = null, 
@@ -105,11 +92,14 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             var context = new XmlParserContext(null, null,
                 lang?.AsString() ?? "",
-                ConvertWrappedEnum(spaceChars, XmlSpace.Default) );
+                ContextValuesMarshaller.ConvertWrappedEnum(spaceChars, XmlSpace.Default))
+                {
+                    Encoding = System.Text.Encoding.UTF8
+                };
 
             var settings = new XmlReaderSettings
             {
-                ValidationType = ConvertWrappedEnum(validityCheckType, ValidationType.None),
+                ValidationType = ContextValuesMarshaller.ConvertWrappedEnum(validityCheckType, ValidationType.None),
                 IgnoreComments = ContextValuesMarshaller.ConvertParam(ignoreComments, false),
                 IgnoreProcessingInstructions = ContextValuesMarshaller.ConvertParam(ignoreDataProcessorInstructions, false),
                 IgnoreWhitespace = ContextValuesMarshaller.ConvertParam(ignoreSpaceCharacters, true),
@@ -120,6 +110,21 @@ namespace ScriptEngine.HostedScript.Library.Xml
                 ContextValuesMarshaller.ConvertParam(ignoreDocumentType, true),
                 ContextValuesMarshaller.ConvertParam(CDATASectionAsText, false),
                 ContextValuesMarshaller.ConvertParam(useIgnorableWhitespace, false) );
+        }
+
+        public static XmlReaderSettingsImpl Create()
+        {
+            var context = new XmlParserContext(null, null,"",XmlSpace.Default);
+
+            var settings = new XmlReaderSettings
+            {
+                ValidationType = ValidationType.None,
+                IgnoreComments = true, // отличается от конструктора скрипта
+                IgnoreProcessingInstructions = false,
+                IgnoreWhitespace =  true,
+            };
+
+            return new XmlReaderSettingsImpl("1.0", context, settings);
         }
     }
 }
