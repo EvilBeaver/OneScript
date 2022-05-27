@@ -210,8 +210,8 @@ namespace ScriptEngine.HostedScript.Library.Xml
             get
             {
                 return _reader != null && 
-                    _reader.NodeType == XmlNodeType.Text || _reader.NodeType == XmlNodeType.CDATA ||
-                    _reader.NodeType == XmlNodeType.SignificantWhitespace;
+                    (_reader.NodeType == XmlNodeType.Text || _reader.NodeType == XmlNodeType.CDATA ||
+                    _reader.NodeType == XmlNodeType.SignificantWhitespace);
             }
         }
 
@@ -229,9 +229,15 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             string attributeValue = null;
 
-            if (indexOrName.DataType == DataType.Number)
+            if (_reader == null)
             {
-                attributeValue = _reader.GetAttribute((int)indexOrName.AsNumber());
+                attributeValue = string.Empty;
+            }
+            else if (indexOrName.DataType == DataType.Number )
+            {
+                int index = (int)indexOrName.AsNumber();
+                if (index < _reader.AttributeCount)
+                    attributeValue = _reader.GetAttribute(index);
             }
             else if (indexOrName.DataType == DataType.String)
             {
@@ -255,6 +261,9 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("ИмяАтрибута", "AttributeName")]
         public string AttributeName(int index)
         {
+            if (_reader == null || index + 1 > _reader.AttributeCount)
+                return string.Empty;
+
             _reader.MoveToAttribute(index);
             var name = _reader.Name;
             _reader.MoveToElement();
@@ -264,12 +273,15 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("КоличествоАтрибутов", "AttributeCount")]
         public int AttributeCount()
         {
-            return _reader.AttributeCount;
+            return _reader?.AttributeCount ?? 0; // несовместимо: 1С возвращает 4294967295 (0xFFFF)
         }
 
         [ContextMethod("ЛокальноеИмяАтрибута", "AttributeLocalName")]
         public string AttributeLocalName(int index)
         {
+            if (_reader == null || index + 1 > _reader.AttributeCount)
+                return string.Empty;
+
             _reader.MoveToAttribute(index);
             var name = _reader.LocalName;
             _reader.MoveToElement();
