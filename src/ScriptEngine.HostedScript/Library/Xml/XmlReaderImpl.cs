@@ -18,6 +18,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         XmlReader _reader;
         XmlTextReader _txtReader;
         XmlReaderSettingsImpl _settings = XmlReaderSettingsImpl.Constructor();
+        bool _ignoreWhitespace = true;
 
         EmptyElemCompabilityState _emptyElemReadState = EmptyElemCompabilityState.Off;
         bool _attributesLoopReset = false;
@@ -59,6 +60,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
 
             _reader = XmlReader.Create(_txtReader, _settings.Settings);
 
+            _ignoreWhitespace = _settings.IgnoreWhitespace;
             _emptyElemReadState = EmptyElemCompabilityState.Off;
             _attributesLoopReset = false;
         }
@@ -80,11 +82,15 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextProperty("ИгнорироватьПробелы", "IgnoreWhitespace")]
         public bool IgnoreWhitespace
         {
-            get { return _settings.IgnoreWhitespace; }
+            get { return _ignoreWhitespace; }
             set
             {
-                _settings.SetIgnoringWhitespace(value);
-                _reader = XmlReader.Create(_txtReader, _settings.Settings);
+                if (value == _ignoreWhitespace)
+                    return;
+
+                var settings = _settings.Settings.Clone();
+                settings.IgnoreWhitespace = value;
+                _reader = XmlReader.Create(_txtReader, settings);
             }
         }
 
@@ -180,6 +186,10 @@ namespace ScriptEngine.HostedScript.Library.Xml
                 {
                     nodeType = XmlNodeType.Text;
                 }
+                else if (!_settings.UseIgnorableWhitespace && _reader.NodeType == XmlNodeType.Whitespace)
+                {
+                    nodeType = XmlNodeType.Text;
+                }
                 else
                 {
                     nodeType = _reader.NodeType;
@@ -202,7 +212,15 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextProperty("ЭтоПробельныеСимволы", "IsWhitespace")]
-        public bool IsWhitespace => throw new NotSupportedException();
+        public bool IsWhitespace
+        {
+            get
+            {
+                return _reader != null &&
+                    (_reader.NodeType == XmlNodeType.Whitespace ||
+                    IsCharacters && string.IsNullOrWhiteSpace(_reader.Value) );
+            }
+        }
 
         [ContextProperty("ЭтоСимвольныеДанные", "IsCharacters")]
         public bool IsCharacters

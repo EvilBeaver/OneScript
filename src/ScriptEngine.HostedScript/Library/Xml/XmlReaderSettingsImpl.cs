@@ -76,11 +76,6 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextProperty("ИспользоватьИгнорируемыеПробельныеСимволы", "UseIgnorableWhitespace")]
         public bool UseIgnorableWhitespace { get; }
 
-        public void SetIgnoringWhitespace(bool val)
-        {
-            _settings.IgnoreWhitespace = val;
-        }
-
         [ScriptConstructor]
         public static XmlReaderSettingsImpl Constructor(IValue version = null, IValue lang = null,
              IValue spaceChars = null, 
