@@ -1175,7 +1175,7 @@ namespace ScriptEngine.Machine
             
             var context = objIValue.AsObject();
             var propName = _module.Constants[arg].AsString();
-            var propNum = context.FindProperty(propName);
+            var propNum = context.GetPropertyNumber(propName);
 
             var propReference = Variable.CreateContextPropertyReference(context, propNum, "stackvar");
             _operationStack.Push(propReference);
@@ -1226,7 +1226,7 @@ namespace ScriptEngine.Machine
             
             context = objIValue.AsObject();
             var methodName = _module.Constants[arg].AsString();
-            methodId = context.FindMethod(methodName);
+            methodId = context.GetMethodNumber(methodName);
             var methodInfo = context.GetMethodInfo(methodId);
             var methodParams = methodInfo.GetParameters();
             

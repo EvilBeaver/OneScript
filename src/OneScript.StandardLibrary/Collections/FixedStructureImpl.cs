@@ -52,9 +52,9 @@ namespace OneScript.StandardLibrary.Collections
            throw new RuntimeException("Свойство только для чтения");
         }
 
-        public override int FindProperty(string name)
+        public override int GetPropertyNumber(string name)
         {
-        	return _structure.FindProperty(name);
+        	return _structure.GetPropertyNumber(name);
         }
 
         public override BslMethodInfo GetMethodInfo(int methodNumber)
@@ -100,7 +100,7 @@ namespace OneScript.StandardLibrary.Collections
             }
         }
 
-        public override int FindMethod(string name)
+        public override int GetMethodNumber(string name)
         {
             return _methods.FindMethod(name);
         }

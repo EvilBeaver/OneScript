@@ -33,7 +33,7 @@ namespace OneScript.StandardLibrary.Tasks
             
             Identifier = new GuidWrapper();
             
-            _methIndex = Target.FindMethod(MethodName);
+            _methIndex = Target.GetMethodNumber(MethodName);
             _method = Target.GetMethodInfo(_methIndex);
         }
 

@@ -39,7 +39,7 @@ namespace ScriptEngine.Machine
 
         public static IValue GetPropValue(this IRuntimeContextInstance context, string propName)
         {
-            int propNum = context.FindProperty(propName);
+            int propNum = context.GetPropertyNumber(propName);
 
             if (propNum == -1)
             {
@@ -51,7 +51,7 @@ namespace ScriptEngine.Machine
         
         public static void SetPropValue(this IRuntimeContextInstance context, string propName, IValue value)
         {
-            int propNum = context.FindProperty(propName);
+            int propNum = context.GetPropertyNumber(propName);
 
             if (propNum == -1)
             {

@@ -61,7 +61,7 @@ namespace ScriptEngine.Machine.Contexts
             return GetPropertyName(propNum);
         }
 
-        public override int FindProperty(string name)
+        public override int GetPropertyNumber(string name)
         {
             try
             {

@@ -214,7 +214,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             return new CollectionEnumerator(GetEnumerator());
         }
 
-        public override int FindProperty(string name)
+        public override int GetPropertyNumber(string name)
         {
             var column = FindColumnByName(name);
             if (column == null)
@@ -306,7 +306,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             }
         }
 
-        public override int FindMethod(string name)
+        public override int GetMethodNumber(string name)
         {
             return _methods.FindMethod(name);
         }

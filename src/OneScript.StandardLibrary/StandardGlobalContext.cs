@@ -220,7 +220,7 @@ namespace OneScript.StandardLibrary
                 // Проверка существования заявленных свойств
                 foreach (var item in sourceProperties)
                 {
-                    acceptor.FindProperty(item); // бросает PropertyAccessException если свойства нет
+                    acceptor.GetPropertyNumber(item); // бросает PropertyAccessException если свойства нет
                 }
             }
 
@@ -229,8 +229,8 @@ namespace OneScript.StandardLibrary
             {
                 try
                 {
-                    var srcPropIdx = source.FindProperty(srcProperty);
-                    var accPropIdx = acceptor.FindProperty(srcProperty); // бросает PropertyAccessException если свойства нет
+                    var srcPropIdx = source.GetPropertyNumber(srcProperty);
+                    var accPropIdx = acceptor.GetPropertyNumber(srcProperty); // бросает PropertyAccessException если свойства нет
 
                     if (source.IsPropReadable(srcPropIdx) && acceptor.IsPropWritable(accPropIdx))
                         acceptor.SetPropValue(accPropIdx, source.GetPropValue(srcPropIdx));

@@ -225,7 +225,7 @@ namespace ScriptEngine.HostedScript.Library
             throw new NotImplementedException();
         }
 
-        public int FindProperty(string name)
+        public int GetPropertyNumber(string name)
         {
             return _propHolder.GetPropertyNumber(name);
         }
@@ -260,7 +260,7 @@ namespace ScriptEngine.HostedScript.Library
             return _propHolder.GetProperties().First(x => x.Value == index).Key;
         }
 
-        public int FindMethod(string name)
+        public int GetMethodNumber(string name)
         {
             return _methods.FindMethod(name);
         }

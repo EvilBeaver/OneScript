@@ -57,7 +57,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             get
             {
-                int id = FindProperty(name);
+                int id = GetPropertyNumber(name);
                 return _values[id];
             }
         }
@@ -72,13 +72,13 @@ namespace ScriptEngine.Machine.Contexts
             return _values.Count;
         }
 
-        public override int FindProperty(string name)
+        public override int GetPropertyNumber(string name)
         {
             int id;
             if (_nameIds.TryGetIdOfName(name, out id))
                 return id;
             else
-                return base.FindProperty(name);
+                return base.GetPropertyNumber(name);
         }
 
         public override bool IsPropReadable(int propNum)

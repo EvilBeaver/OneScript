@@ -272,7 +272,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IRuntimeContextInstance Members
 
-        public override int FindProperty(string name)
+        public override int GetPropertyNumber(string name)
         {
             var idx = FindOwnProperty(name);
             if (idx >= 0)
@@ -289,7 +289,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public override int FindMethod(string name)
+        public override int GetMethodNumber(string name)
         {
             var idx = FindOwnMethod(name);
             if (idx >= 0)

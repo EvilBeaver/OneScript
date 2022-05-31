@@ -107,17 +107,17 @@ namespace OneScript.StandardLibrary.NativeApi
 
         public IValue GetIndexedValue(IValue index)
         {
-            var propNum = FindProperty(index.AsString());
+            var propNum = GetPropertyNumber(index.AsString());
             return GetPropValue(propNum);
         }
 
         public void SetIndexedValue(IValue index, IValue value)
         {
-            var propNum = FindProperty(index.AsString());
+            var propNum = GetPropertyNumber(index.AsString());
             SetPropValue(propNum, value);
         }
 
-        public int FindProperty(string name)
+        public int GetPropertyNumber(string name)
         {
             var propNumber = NativeApiProxy.FindProp(_object, name);
             if (propNumber < 0)
@@ -172,7 +172,7 @@ namespace OneScript.StandardLibrary.NativeApi
             return NativeApiProxy.GetNMethods(_object);
         }
 
-        public int FindMethod(string name)
+        public int GetMethodNumber(string name)
         {
             var methodNumber = NativeApiProxy.FindMethod(_object, name);
             if (methodNumber < 0)

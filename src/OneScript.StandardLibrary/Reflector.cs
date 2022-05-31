@@ -40,7 +40,7 @@ namespace OneScript.StandardLibrary
         [ContextMethod("ВызватьМетод", "CallMethod")]
         public IValue CallMethod(IRuntimeContextInstance target, string methodName, ArrayImpl arguments = null)
         {
-            var methodIdx = target.FindMethod(methodName);
+            var methodIdx = target.GetMethodNumber(methodName);
             var methInfo = target.GetMethodInfo(methodIdx);
 
             var argsToPass = GetArgsToPass(arguments, methInfo.GetParameters());
@@ -115,7 +115,7 @@ namespace OneScript.StandardLibrary
         {
             try
             {
-                var idx = target.FindMethod(methodName);
+                var idx = target.GetMethodNumber(methodName);
                 return idx >= 0;
             }
             catch (RuntimeException)
@@ -345,7 +345,7 @@ namespace OneScript.StandardLibrary
             if (target is ScriptDrivenObject script)
                 propIdx = script.FindAnyProperty(prop);
             else
-                propIdx = target.FindProperty(prop);
+                propIdx = target.GetPropertyNumber(prop);
             return target.GetPropValue(propIdx);
         }
 
@@ -362,7 +362,7 @@ namespace OneScript.StandardLibrary
             if (target is ScriptDrivenObject script)
                 propIdx = script.FindAnyProperty(prop);
             else
-                propIdx = target.FindProperty(prop);
+                propIdx = target.GetPropertyNumber(prop);
             target.SetPropValue(propIdx, value);
         }
 

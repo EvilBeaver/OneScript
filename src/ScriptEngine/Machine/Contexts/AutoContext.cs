@@ -37,7 +37,7 @@ namespace ScriptEngine.Machine.Contexts
             return _properties.GetProperty(propNum).CanWrite;
         }
 
-        public override int FindProperty(string name)
+        public override int GetPropertyNumber(string name)
         {
             return _properties.FindProperty(name);
         }
@@ -78,7 +78,7 @@ namespace ScriptEngine.Machine.Contexts
             return _properties.GetProperty(propNum).Name;
         }
 
-        public override int FindMethod(string name)
+        public override int GetMethodNumber(string name)
         {
             return _methods.FindMethod(name);
         }

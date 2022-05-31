@@ -208,7 +208,7 @@ namespace oscript
 			throw new NotImplementedException();
 		}
 
-		public int FindProperty(string name)
+		public int GetPropertyNumber(string name)
 		{
 			throw PropertyAccessException.PropNotFoundException(name);
 		}
@@ -233,7 +233,7 @@ namespace oscript
 			throw new InvalidOperationException("global props are not writable");
 		}
 
-		public int FindMethod(string name)
+		public int GetMethodNumber(string name)
 		{
 			return _methods.FindMethod(name);
 		}

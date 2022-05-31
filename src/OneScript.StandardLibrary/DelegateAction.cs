@@ -47,7 +47,7 @@ namespace OneScript.StandardLibrary
         
         public override bool DynamicMethodSignatures => true;
 
-        public override int FindMethod(string name)
+        public override int GetMethodNumber(string name)
         {
             if (string.Compare(name, MethodName_En, StringComparison.OrdinalIgnoreCase) == 0
                 || string.Compare(name, MethodName_Ru, StringComparison.OrdinalIgnoreCase) == 0)
@@ -55,7 +55,7 @@ namespace OneScript.StandardLibrary
                 return 0;
             }
 
-            return base.FindMethod(name);
+            return base.GetMethodNumber(name);
         }
 
         public override int GetMethodsCount()
@@ -83,7 +83,7 @@ namespace OneScript.StandardLibrary
         [ScriptConstructor]
         public static DelegateAction Create(IRuntimeContextInstance target, string methodName)
         {
-            var method = target.FindMethod(methodName);
+            var method = target.GetMethodNumber(methodName);
 
             Func<IValue[], IValue> action = (parameters) =>
             {

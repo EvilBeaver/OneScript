@@ -36,7 +36,7 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        public virtual int FindProperty(string name)
+        public virtual int GetPropertyNumber(string name)
         {
             return Properties.FindProperty(name);
         }
@@ -86,7 +86,7 @@ namespace ScriptEngine.Machine.Contexts
             return prop.Name;
         }
 
-        public virtual int FindMethod(string name)
+        public virtual int GetMethodNumber(string name)
         {
             return Methods.FindMethod(name);
         }

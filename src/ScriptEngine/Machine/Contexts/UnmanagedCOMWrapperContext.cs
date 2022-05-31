@@ -82,7 +82,7 @@ namespace ScriptEngine.Machine.Contexts
         public override string GetPropName(int propNum) 
             => _props[propNum].Name;
 
-        public override int FindProperty(string name)
+        public override int GetPropertyNumber(string name)
         {
             if(!TryFindProperty(name, out var md))
                 throw PropertyAccessException.PropNotFoundException(name);
@@ -166,7 +166,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public override int FindMethod(string name)
+        public override int GetMethodNumber(string name)
         {
             if (!TryFindMethod(name, out var md))
                 throw RuntimeException.MethodNotFoundException(name);

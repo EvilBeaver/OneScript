@@ -17,7 +17,7 @@ namespace OneScript.Contexts
         IValue GetIndexedValue(IValue index);
         void SetIndexedValue(IValue index, IValue val);
 
-        int FindProperty(string name);
+        int GetPropertyNumber(string name);
         bool IsPropReadable(int propNum);
         bool IsPropWritable(int propNum);
         IValue GetPropValue(int propNum);
@@ -26,7 +26,7 @@ namespace OneScript.Contexts
         int GetPropCount();
         string GetPropName(int propNum);
 
-        int FindMethod(string name);
+        int GetMethodNumber(string name);
         int GetMethodsCount();
 
         BslMethodInfo GetMethodInfo(int methodNumber);

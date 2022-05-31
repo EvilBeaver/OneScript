@@ -124,7 +124,7 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        public virtual int FindProperty(string name)
+        public virtual int GetPropertyNumber(string name)
         {
             throw PropertyAccessException.PropNotFoundException(name);
         }
@@ -161,7 +161,7 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        public virtual int FindMethod(string name)
+        public virtual int GetMethodNumber(string name)
         {
             throw RuntimeException.MethodNotFoundException(name);
         }
@@ -193,7 +193,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             try
             {
-                var propIdx = FindProperty(binder.Name);
+                var propIdx = GetPropertyNumber(binder.Name);
                 if (!IsPropReadable(propIdx))
                 {
                     result = null;
@@ -219,7 +219,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             try
             {
-                var propIdx = FindProperty(binder.Name);
+                var propIdx = GetPropertyNumber(binder.Name);
                 if (!IsPropWritable(propIdx))
                 {
                     return false;
@@ -269,7 +269,7 @@ namespace ScriptEngine.Machine.Contexts
             int methIdx;
             try
             {
-                methIdx = FindMethod(binder.Name);
+                methIdx = GetMethodNumber(binder.Name);
             }
             catch (MethodAccessException)
             {

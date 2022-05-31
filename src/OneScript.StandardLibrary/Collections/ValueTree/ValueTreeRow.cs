@@ -169,7 +169,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             return Owner().Columns.GetPropName(GetColumnIndex(propNum));
         }
 
-        public override int FindProperty(string name)
+        public override int GetPropertyNumber(string name)
         {
             if(_properties.ContainsProperty(name))
                 return _properties.FindProperty(name);
@@ -279,7 +279,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             }
         }
 
-        public override int FindMethod(string name)
+        public override int GetMethodNumber(string name)
         {
             return _methods.FindMethod(name);
         }

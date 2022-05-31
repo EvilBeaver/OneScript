@@ -131,9 +131,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             return Owner().Columns.GetPropName(propNum);
         }
 
-        public override int FindProperty(string name)
+        public override int GetPropertyNumber(string name)
         {
-            return Owner().Columns.FindProperty(name);
+            return Owner().Columns.GetPropertyNumber(name);
         }
 
         public override bool IsPropReadable(int propNum)
@@ -209,7 +209,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             }
         }
 
-        public override int FindMethod(string name)
+        public override int GetMethodNumber(string name)
         {
             return _methods.FindMethod(name);
         }

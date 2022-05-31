@@ -298,7 +298,7 @@ namespace ScriptEngine.Machine.Contexts
 
         void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
         {
-            var thisId = FindProperty(THISOBJ_RU);
+            var thisId = GetPropertyNumber(THISOBJ_RU);
             var total = GetPropCount();
             var props = new List<IVariable>(total);
             for (int i = 0; i < total; i++)

@@ -77,7 +77,7 @@ namespace OneScript.StandardLibrary.Collections
             int propIndex;
             try
             {
-                propIndex = FindProperty(name);
+                propIndex = GetPropertyNumber(name);
             }
             catch (PropertyAccessException)
             {
@@ -97,7 +97,7 @@ namespace OneScript.StandardLibrary.Collections
             int propIndex;
             try
             {
-                propIndex = FindProperty(name);
+                propIndex = GetPropertyNumber(name);
             }
             catch (PropertyAccessException)
             {
@@ -163,7 +163,7 @@ namespace OneScript.StandardLibrary.Collections
             }
         }
 
-        public override int FindMethod(string name)
+        public override int GetMethodNumber(string name)
         {
             return _methods.FindMethod(name);
         }

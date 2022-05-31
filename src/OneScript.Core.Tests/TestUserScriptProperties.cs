@@ -25,16 +25,16 @@ namespace OneScript.Core.Tests
 
             var instance = CompileUserScript(code);
 
-            var thisObjIndex = instance.FindProperty("ThisObject");
+            var thisObjIndex = instance.GetPropertyNumber("ThisObject");
             var thisPropVal = instance.GetPropValue(thisObjIndex);
             thisPropVal.Should().BeSameAs((IValue)instance);
             
-            var myVarPropertyIndex = instance.FindProperty("МояПеременная");
+            var myVarPropertyIndex = instance.GetPropertyNumber("МояПеременная");
             var myVarValue = instance.GetPropValue(myVarPropertyIndex);
             myVarValue.Should().Be(BslUndefinedValue.Instance);
 
             thisObjIndex.Should().Be(0);
-            instance.FindProperty("МояПеременная").Should().Be(1);
+            instance.GetPropertyNumber("МояПеременная").Should().Be(1);
         }
         
         [Fact]
@@ -46,7 +46,7 @@ namespace OneScript.Core.Tests
             var code = "Перем МояПеременная Экспорт;";
 
             var instance = CompileUserScript(code, context);
-            var externalVar = instance.FindProperty("ContextVariable");
+            var externalVar = instance.GetPropertyNumber("ContextVariable");
             var value = instance.GetPropValue(externalVar);
             value.AsNumber().Should().Be(18);
 

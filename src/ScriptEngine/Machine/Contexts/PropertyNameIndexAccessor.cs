@@ -39,7 +39,7 @@ namespace ScriptEngine.Machine.Contexts
                 throw RuntimeException.InvalidArgumentType();
             }
 
-            var n = FindProperty(index.AsString());
+            var n = GetPropertyNumber(index.AsString());
             if (IsPropReadable(n))
                 return GetPropValue(n);
             else
@@ -53,7 +53,7 @@ namespace ScriptEngine.Machine.Contexts
                 throw RuntimeException.InvalidArgumentType();
             }
 
-            var n = FindProperty(index.AsString());
+            var n = GetPropertyNumber(index.AsString());
             if (IsPropWritable(n))
                 SetPropValue(n, val);
             else

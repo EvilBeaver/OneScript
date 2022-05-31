@@ -156,7 +156,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             return new CollectionEnumerator(GetEnumerator());
         }
 
-        public override int FindProperty(string name)
+        public override int GetPropertyNumber(string name)
         {
             int idx = _columns.FindIndex(column => _namesComparer.Equals(name, column.Name));
             if (idx == -1)
@@ -216,7 +216,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         {
             if (index.SystemType == BasicTypes.String)
             {
-                return FindProperty(index.AsString());
+                return GetPropertyNumber(index.AsString());
             }
 
             if (index.SystemType == BasicTypes.Number)
@@ -273,7 +273,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             }
         }
 
-        public override int FindMethod(string name)
+        public override int GetMethodNumber(string name)
         {
             return _methods.FindMethod(name);
         }

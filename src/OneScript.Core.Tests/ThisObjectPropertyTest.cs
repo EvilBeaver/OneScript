@@ -26,10 +26,10 @@ namespace OneScript.Core.Tests
             var instance = engine.AttachedScriptsFactory.LoadFromString(engine.GetCompilerService(), "");
             
             instance.Should().BeOfType<UserScriptContextInstance>();
-            instance.FindProperty("ЭтотОбъект").Should().NotBe(-1);
-            instance.FindProperty("ThisObject").Should().NotBe(-1);
+            instance.GetPropertyNumber("ЭтотОбъект").Should().NotBe(-1);
+            instance.GetPropertyNumber("ThisObject").Should().NotBe(-1);
 
-            var id = instance.FindProperty("ThisObject");
+            var id = instance.GetPropertyNumber("ThisObject");
             instance.GetPropValue(id).Should().BeSameAs((IValue)instance);
             instance.IsPropReadable(id).Should().BeTrue();
             instance.IsPropWritable(id).Should().BeFalse();

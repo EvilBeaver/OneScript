@@ -77,7 +77,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public override int FindProperty(string name)
+        public override int GetPropertyNumber(string name)
         {
             return _nameMapper.FindProperty(name);
         }
@@ -140,7 +140,7 @@ namespace ScriptEngine.Machine.Contexts
             member.Invoke(Instance, MarshalArgumentsStrict(new[] {index, value}, GetMethodParametersTypes(member)));
         }
 
-        public override int FindMethod(string name)
+        public override int GetMethodNumber(string name)
         {
             return _nameMapper.FindMethod(Instance, name);
         }
