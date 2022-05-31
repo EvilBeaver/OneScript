@@ -7,23 +7,22 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Reflection;
+using OneScript.Contexts.Internal;
 using OneScript.Language;
 
 namespace OneScript.Native.Compiler
 {
     public abstract class ReflectedMembersCache<T> where T : MemberInfo
     {
-        protected LexemTrie<T> _cache = new LexemTrie<T>();
-        protected int _cacheSize;
+        private readonly LruCache<string, T> _cache;
 
-        public ReflectedMembersCache()
+        public ReflectedMembersCache() : this(128)
         {
-            _cacheSize = 128;
         }
 
         public ReflectedMembersCache(int size)
         {
-            _cacheSize = size;
+            _cache = new LruCache<string, T>(size);
         }
 
         public virtual T GetOrAdd(Type type, string name)
@@ -34,19 +33,8 @@ namespace OneScript.Native.Compiler
         public T GetOrAdd(Type type, string name, BindingFlags flags)
         {
             var key = $"{type.Name}.{name}";
-            if (!_cache.TryGetValue(key, out var result))
-            {
-                result = SearchImpl(type, name, flags);
-                if (result == null)
-                    throw new InvalidOperationException($"No method found {key}");
-
-                if (_cache.Count >= _cacheSize)
-                    _cache = new LexemTrie<T>();
-                
-                _cache.Add(key, result);
-            }
-
-            return result;
+            return _cache.GetOrAdd(key, x => SearchImpl(type, name, flags) 
+                                             ?? throw new InvalidOperationException($"No method found {key}"));
         }
 
         protected abstract T SearchImpl(Type type, string name, BindingFlags flags);

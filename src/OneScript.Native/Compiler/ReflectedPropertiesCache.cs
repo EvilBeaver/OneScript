@@ -12,7 +12,7 @@ namespace OneScript.Native.Compiler
 {
     public class ReflectedPropertiesCache : ReflectedMembersCache<PropertyInfo>
     {
-        public ReflectedPropertiesCache() : base()
+        public ReflectedPropertiesCache()
         {
         }
 

@@ -12,7 +12,7 @@ namespace OneScript.Native.Compiler
 {
     public class ReflectedMethodsCache : ReflectedMembersCache<MethodInfo>
     {
-        public ReflectedMethodsCache() : base()
+        public ReflectedMethodsCache()
         {
         }
         
