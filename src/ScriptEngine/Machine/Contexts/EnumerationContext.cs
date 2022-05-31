@@ -11,7 +11,7 @@ using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class EnumerationContext : PropertyNameIndexAccessor
+    public class EnumerationContext : PropertyNameIndexAccessor, ICollectionContext
     {
         private readonly List<EnumerationValue> _values = new List<EnumerationValue>();
 
@@ -67,6 +67,11 @@ namespace ScriptEngine.Machine.Contexts
             return _values.IndexOf(enumVal);
         }
 
+        public override int GetPropCount()
+        {
+            return _values.Count;
+        }
+
         public override int FindProperty(string name)
         {
             int id;
@@ -86,6 +91,12 @@ namespace ScriptEngine.Machine.Contexts
             return _values[propNum];
         }
 
+        public override string GetPropName(int propNum)
+        {
+            return _values[propNum].AsString();
+        }
+
+
         protected IList<EnumerationValue> ValuesInternal
         {
             get
@@ -93,5 +104,26 @@ namespace ScriptEngine.Machine.Contexts
                 return _values;
             }
         }
+
+        #region ICollectionContext Members
+
+        public int Count()
+        {
+            return _values.Count;
+        }
+
+        public CollectionEnumerator GetManagedIterator()
+        {
+            return new CollectionEnumerator(GetEnumerator());
+        }
+        public IEnumerator<IValue> GetEnumerator()
+        {
+            foreach (var item in _values)
+            {
+                yield return item;
+            }
+        }
+
+        #endregion
     }
 }
