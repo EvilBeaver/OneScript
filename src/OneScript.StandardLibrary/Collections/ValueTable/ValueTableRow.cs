@@ -15,7 +15,7 @@ using ScriptEngine.Types;
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {
     [ContextClass("СтрокаТаблицыЗначений", "ValueTableRow", TypeUUID = "DBFCD195-4B87-4AB7-9BA7-AE2E791E04ED")]
-    public class ValueTableRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>, IDebugPresentationAcceptor
+    public class ValueTableRow : PropertyNameIndexAccessor, ICollectionContext<IValue>, IDebugPresentationAcceptor
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
         private readonly ValueTable _owner;
@@ -114,11 +114,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
         }
 
         public override int GetPropCount()

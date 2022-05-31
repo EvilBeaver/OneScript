@@ -79,7 +79,7 @@ namespace OneScript.DebugServices
                         presenter.ShowProperties(objectValue);
                     }
 
-                    if (HasIndexes(objectValue as ICollectionContext))
+                    if (HasIndexes(objectValue as ICollectionContext<IValue>))
                     {
                         var context = value.AsObject();
                         if (context is IEnumerable<IValue> collection)
@@ -97,10 +97,10 @@ namespace OneScript.DebugServices
         {
             var rawValue = variable?.GetRawValue();
             return HasProperties(rawValue as IRuntimeContextInstance) 
-                   || HasIndexes(rawValue as ICollectionContext);
+                   || HasIndexes(rawValue as ICollectionContext<IValue>);
         }
 
-        private bool HasIndexes(ICollectionContext collection)
+        private bool HasIndexes(ICollectionContext<IValue> collection)
         {
             return collection?.Count() > 0;
         }

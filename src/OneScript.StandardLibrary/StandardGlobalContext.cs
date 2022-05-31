@@ -129,7 +129,7 @@ namespace OneScript.StandardLibrary
                     return !emptyHandler.IsEmpty;
                 case BslStringValue v:
                     return !string.IsNullOrWhiteSpace(v.ToString());
-                case ICollectionContext collection:
+                case ICollectionContext<IValue> collection:
                     return collection.Count() != 0;
                 case BslNumericValue v:
                     return v != 0;

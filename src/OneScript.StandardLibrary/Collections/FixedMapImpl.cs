@@ -73,11 +73,6 @@ namespace OneScript.StandardLibrary.Collections
             return _map.Count();
         }
 
-        public override CollectionEnumerator GetManagedIterator()
-        {
-            return _map.GetManagedIterator();
-        }
-
         public override IEnumerator<KeyAndValueImpl> GetEnumerator()
         {
             return _map.GetEnumerator();

@@ -21,7 +21,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
     /// Коллекция колонок таблицы значений
     /// </summary>
     [ContextClass("КоллекцияКолонокТаблицыЗначений", "ValueTableColumnCollection", TypeUUID = "E1584766-C053-4644-B4C2-9642C0F53EFA")]
-    public class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTableColumn>, IDebugPresentationAcceptor
+    public class ValueTableColumnCollection : DynamicPropertiesAccessor, ICollectionContext<ValueTableColumn>, IDebugPresentationAcceptor
     {
         private readonly List<ValueTableColumn> _columns = new List<ValueTableColumn>();
         private readonly StringComparer _namesComparer = StringComparer.OrdinalIgnoreCase;
@@ -149,11 +149,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
         }
 
         public override int GetPropertyNumber(string name)

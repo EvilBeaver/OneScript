@@ -15,7 +15,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.Collections
 {
     [ContextClass("Структура", "Structure")]
-    public class StructureImpl : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<KeyAndValueImpl>, IDebugPresentationAcceptor
+    public class StructureImpl : DynamicPropertiesAccessor, ICollectionContext<KeyAndValueImpl>, IDebugPresentationAcceptor
     {
         private readonly List<IValue> _values = new List<IValue>();
         private static readonly ContextMethodsMapper<StructureImpl> _methods = new ContextMethodsMapper<StructureImpl>();
@@ -190,11 +190,6 @@ namespace OneScript.StandardLibrary.Collections
         {
             ClearProperties();
             _values.Clear();
-        }
-
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
         }
 
         #endregion

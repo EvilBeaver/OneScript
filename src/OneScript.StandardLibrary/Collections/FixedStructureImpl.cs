@@ -15,7 +15,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.Collections
 {
     [ContextClass("ФиксированнаяСтруктура", "FixedStructure")]
-    public class FixedStructureImpl : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<KeyAndValueImpl>
+    public class FixedStructureImpl : DynamicPropertiesAccessor, ICollectionContext<KeyAndValueImpl>
     {
         private readonly StructureImpl _structure = new StructureImpl();
 
@@ -122,11 +122,6 @@ namespace OneScript.StandardLibrary.Collections
         	return _structure.Count();
         }
 
-        public CollectionEnumerator GetManagedIterator()
-        {
-        	return new CollectionEnumerator(_structure.GetManagedIterator());
-        }
-        
         #endregion
 
         #region IEnumerable<IValue> Members

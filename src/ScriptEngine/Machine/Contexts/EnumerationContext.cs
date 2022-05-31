@@ -5,13 +5,15 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class EnumerationContext : PropertyNameIndexAccessor, ICollectionContext
+    public class EnumerationContext : PropertyNameIndexAccessor, ICollectionContext<IValue>
     {
         private readonly List<EnumerationValue> _values = new List<EnumerationValue>();
 
@@ -112,10 +114,6 @@ namespace ScriptEngine.Machine.Contexts
             return _values.Count;
         }
 
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
-        }
         public IEnumerator<IValue> GetEnumerator()
         {
             foreach (var item in _values)
@@ -124,6 +122,11 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+        
         #endregion
     }
 }

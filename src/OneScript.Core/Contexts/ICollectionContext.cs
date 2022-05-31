@@ -5,11 +5,14 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace ScriptEngine.Machine.Contexts
+using System.Collections.Generic;
+using ScriptEngine.Machine;
+
+namespace OneScript.Contexts
 {
-    public interface ICollectionContext
+    public interface ICollectionContext<out T> : IEnumerable<T>
+        where T : IValue
     {
         int Count();
-        CollectionEnumerator GetManagedIterator();
     }
 }

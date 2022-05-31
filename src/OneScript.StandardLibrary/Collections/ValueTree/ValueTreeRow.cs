@@ -19,7 +19,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
     /// Строка дерева значений.
     /// </summary>
     [ContextClass("СтрокаДереваЗначений", "ValueTreeRow", TypeUUID = "4EE26F99-54A8-4640-B2F8-3DA1CB102113")]
-    public class ValueTreeRow : PropertyNameIndexAccessor, ICollectionContext, IEnumerable<IValue>, IDebugPresentationAcceptor
+    public class ValueTreeRow : PropertyNameIndexAccessor, ICollectionContext<IValue>, IDebugPresentationAcceptor
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
         private readonly ValueTreeRow _parent;
@@ -150,11 +150,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
         }
 
         public override int GetPropCount()

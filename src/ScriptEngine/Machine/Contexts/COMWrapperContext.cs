@@ -19,11 +19,10 @@ namespace ScriptEngine.Machine.Contexts
 {
     [ContextClass("COMОбъект", "COMObject", TypeUUID = "5E4FA60E-9724-494A-A5C8-5BB0A4F914E0")]
     public abstract class COMWrapperContext : PropertyNameIndexAccessor, 
-        ICollectionContext,
+        ICollectionContext<IValue>,
         IEmptyValueCheck,
         IDisposable,
-        IObjectWrapper,
-        IEnumerable<IValue>
+        IObjectWrapper
     {
         private static readonly DateTime MIN_OLE_DATE = new DateTime(100,1,1);
         protected static readonly TypeDescriptor ComObjectType = typeof(COMWrapperContext).GetTypeFromClassMarkup();
@@ -274,11 +273,6 @@ namespace ScriptEngine.Machine.Contexts
         public virtual void Clear()
         {
             throw new NotImplementedException();
-        }
-
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
         }
 
         public abstract IEnumerator<IValue> GetEnumerator();

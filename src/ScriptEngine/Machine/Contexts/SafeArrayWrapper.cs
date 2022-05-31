@@ -17,7 +17,7 @@ namespace ScriptEngine.Machine.Contexts
     /// На данный момент класс не является полноценной заменой для COMSafeArray и его нельзя создать вручную.
     /// </summary>
     [ContextClass("SafeArrayWrapper")]
-    public class SafeArrayWrapper : AutoContext<SafeArrayWrapper>, ICollectionContext, IObjectWrapper, IEnumerable<IValue>
+    public class SafeArrayWrapper : AutoContext<SafeArrayWrapper>, ICollectionContext<IValue>, IObjectWrapper
     {
         private readonly object[] _array;
 
@@ -74,11 +74,6 @@ namespace ScriptEngine.Machine.Contexts
         {
             var intIndex = (int)index.AsNumber();
             SetValue(intIndex, val);
-        }
-
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
         }
 
         public IEnumerator<IValue> GetEnumerator()

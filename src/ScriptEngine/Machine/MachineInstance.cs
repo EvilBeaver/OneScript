@@ -1428,7 +1428,7 @@ namespace ScriptEngine.Machine
             // Если "Значение не явл. значением объектного типа" 1С не выдает, а всегда выдает "Итератор не определен"
             // то можем удалить данный вызов .AsObject, т.к. он здесь оставлен только ради исключения ValueIsNotObjectException
             var rci = collection.AsObject();
-            if (rci is ICollectionContext context)
+            if (rci is ICollectionContext<IValue> context)
             {
                 var iterator = context.GetManagedIterator();
                 _currentFrame.LocalFrameStack.Push(iterator);

@@ -22,7 +22,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
     /// Коллекция колонок дерева значений.
     /// </summary>
     [ContextClass("КоллекцияКолонокДереваЗначений", "ValueTreeColumnCollection", TypeUUID = "7FEEB150-ECAB-4971-865B-6CCBECC7D947")]
-    public class ValueTreeColumnCollection : DynamicPropertiesAccessor, ICollectionContext, IEnumerable<ValueTreeColumn>, IDebugPresentationAcceptor
+    public class ValueTreeColumnCollection : DynamicPropertiesAccessor, ICollectionContext<ValueTreeColumn>, IDebugPresentationAcceptor
     {
         private readonly List<ValueTreeColumn> _columns = new List<ValueTreeColumn>();
         
@@ -207,11 +207,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        public CollectionEnumerator GetManagedIterator()
-        {
-            return new CollectionEnumerator(GetEnumerator());
         }
 
         public override int GetPropertyNumber(string name)
