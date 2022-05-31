@@ -14,7 +14,6 @@ namespace OneScript.Commons
 {
     /// <summary>
     /// Универсальный класс для коллекций доступных по имени и номеру.
-    /// Уже создано много с похожим функционалом по всему проекту. Постепенно можно переводить сюда.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class IndexedNameValueCollection<T> : IEnumerable<T>
