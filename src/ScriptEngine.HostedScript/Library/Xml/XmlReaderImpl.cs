@@ -19,6 +19,7 @@ namespace ScriptEngine.HostedScript.Library.Xml
         XmlTextReader _txtReader;
         XmlReaderSettingsImpl _settings = XmlReaderSettingsImpl.Constructor();
         bool _ignoreWhitespace = true;
+        bool _ignoreWSChanged = false;
 
         EmptyElemCompabilityState _emptyElemReadState = EmptyElemCompabilityState.Off;
         bool _attributesLoopReset = false;
@@ -58,9 +59,13 @@ namespace ScriptEngine.HostedScript.Library.Xml
             if (_reader != null)
                 _reader.Dispose();
 
+            _ignoreWhitespace = _settings.IgnoreWhitespace;
+            if (_settings.UseIgnorableWhitespace)
+                _settings.Settings.IgnoreWhitespace = false;
+
             _reader = XmlReader.Create(_txtReader, _settings.Settings);
 
-            _ignoreWhitespace = _settings.IgnoreWhitespace;
+            _ignoreWSChanged = false;
             _emptyElemReadState = EmptyElemCompabilityState.Off;
             _attributesLoopReset = false;
         }
@@ -88,9 +93,16 @@ namespace ScriptEngine.HostedScript.Library.Xml
                 if (value == _ignoreWhitespace)
                     return;
 
+                _ignoreWhitespace = value;
+
+                if (_settings.UseIgnorableWhitespace)
+                    return;
+
                 var settings = _settings.Settings.Clone();
-                settings.IgnoreWhitespace = value;
+                settings.IgnoreWhitespace = _ignoreWhitespace;
+                
                 _reader = XmlReader.Create(_txtReader, settings);
+                _ignoreWSChanged = (_reader.ReadState != _txtReader.ReadState);
             }
         }
 
@@ -381,10 +393,26 @@ namespace ScriptEngine.HostedScript.Library.Xml
             }
             else
             {
-                bool readingDone = _reader.Read();
+                bool readingDone = _ignoreWSChanged ? ReadWhenStateChanged() : _reader.Read();
                 CheckEmptyElementEntering();
                 return readingDone;
             }
+        }
+
+        private bool ReadWhenStateChanged()
+        {
+            bool readingDone;
+            var ln = _txtReader.LineNumber;
+            var lp = _txtReader.LinePosition;
+            do
+            {
+                readingDone = _reader.Read();
+                if (!readingDone)
+                    break;
+            }
+            while (ln == _txtReader.LineNumber && lp == _txtReader.LinePosition);
+            
+            return readingDone;
         }
 
         private void CheckEmptyElementEntering()
