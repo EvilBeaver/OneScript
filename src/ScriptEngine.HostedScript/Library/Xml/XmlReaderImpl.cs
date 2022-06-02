@@ -15,7 +15,12 @@ namespace ScriptEngine.HostedScript.Library.Xml
     [ContextClass("ЧтениеXML","XMLReader")]
     public class XmlReaderImpl : AutoContext<XmlReaderImpl>, IDisposable
     {
-        XmlTextReader _reader;
+        XmlReader _reader;
+        XmlTextReader _txtReader;
+        XmlReaderSettingsImpl _settings = XmlReaderSettingsImpl.Constructor();
+        bool _ignoreWhitespace = true;
+        bool _ignoreWSChanged = false;
+
         EmptyElemCompabilityState _emptyElemReadState = EmptyElemCompabilityState.Off;
         bool _attributesLoopReset = false;
 
@@ -32,136 +37,109 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextMethod("ОткрытьФайл", "OpenFile")]
-        public void OpenFile(string path)
+        public void OpenFile(string path, XmlReaderSettingsImpl settings=null)
         {
-            if (_reader != null)
-                throw new RuntimeException("Поток XML уже открыт");
-            var textInput = new StreamReader(path);
-            InitReader(textInput);
+            _settings = settings ?? XmlReaderSettingsImpl.Create();
+            _txtReader = new XmlTextReader(File.OpenRead(path), XmlNodeType.Document, _settings.Context);
+
+            InitReader();
         }
 
         [ContextMethod("УстановитьСтроку", "SetString")]
-        public void SetString(string content)
+        public void SetString(string content, XmlReaderSettingsImpl settings = null)
+        {
+            _settings = settings ?? XmlReaderSettingsImpl.Create();
+            _txtReader = new XmlTextReader(content, XmlNodeType.Document, _settings.Context);
+
+            InitReader();
+        }
+
+        private void InitReader()
         {
             if (_reader != null)
-                throw new RuntimeException("Поток XML уже открыт");
+                _reader.Dispose();
 
-            var textInput = new StringReader(content);
-            InitReader(textInput);
-        }
+            _ignoreWhitespace = _settings.IgnoreWhitespace;
+            if (_settings.UseIgnorableWhitespace)
+                _settings.Settings.IgnoreWhitespace = false;
 
-        private void InitReader(TextReader textInput)
-        {
-            _reader = new XmlTextReader(textInput);
-            _reader.WhitespaceHandling = WhitespaceHandling.Significant;
-        }
+            _reader = XmlReader.Create(_txtReader, _settings.Settings);
 
-        private void CheckIfOpen()
-        {
-            if (_reader == null)
-                throw new RuntimeException("Файл не открыт");
+            _ignoreWSChanged = false;
+            _emptyElemReadState = EmptyElemCompabilityState.Off;
+            _attributesLoopReset = false;
         }
 
         #region Свойства
         
-        [ContextProperty("URIПространстваИмен", "NamespaceURI")]
-        public string NamespaceURI
-        {
-            get
-            {
-                return _reader.NamespaceURI;
-            }
-        }
+        [ContextProperty("Параметры", "Settings")]
+        public IValue Settings => _settings;
 
-        [ContextProperty("Автономный", "Standalone")]
-        public bool Standalone
-        {
-            get
-            {
-                throw new NotSupportedException();
-            }
-        }
-
-        [ContextProperty("БазовыйURI", "BaseURI")]
-        public string BaseURI
-        {
-            get
-            {
-                return _reader.BaseURI;
-            }
-        }
+        [ContextProperty("ПробельныеСимволы", "Space")]
+        public IValue Space => _settings.Space;
 
         [ContextProperty("ВерсияXML", "XMLVersion")]
-        public string XMLVersion
-        {
-            get
-            {
-                return "1.0";
-            }
-        }
+        public string XMLVersion => _settings.Version;
 
-        [ContextProperty("Значение", "Value")]
-        public string Value
-        {
-            get
-            {
-                return _reader.Value;
-            }
-        }
+        [ContextProperty("Язык", "Lang")]
+        public string Lang => _settings.Language;
 
-        [ContextProperty("ИмеетЗначение", "HasValue")]
-        public bool HasValue
+        [ContextProperty("ИгнорироватьПробелы", "IgnoreWhitespace")]
+        public bool IgnoreWhitespace
         {
-            get
+            get { return _ignoreWhitespace; }
+            set
             {
-                return _reader.HasValue;
-            }
-        }
+                if (value == _ignoreWhitespace)
+                    return;
 
-        [ContextProperty("ИмеетИмя", "HasName")]
-        public bool HasName
-        {
-            get
-            {
-                return _reader.LocalName != String.Empty;
-            }
-        }
+                _ignoreWhitespace = value;
 
-        [ContextProperty("Имя", "Name")]
-        public string Name
-        {
-            get
-            {
-                return _reader.Name;
-            }
-        }
+                if (_settings.UseIgnorableWhitespace)
+                    return;
 
-        [ContextProperty("ИмяНотации", "NotationName")]
-        public string NotationName
-        {
-            get
-            {
-                throw new NotSupportedException();
+                var settings = _settings.Settings.Clone();
+                settings.IgnoreWhitespace = _ignoreWhitespace;
+                
+                _reader = XmlReader.Create(_txtReader, settings);
+                _ignoreWSChanged = (_reader.ReadState != _txtReader.ReadState);
             }
         }
 
         [ContextProperty("КодировкаXML", "XMLEncoding")]
-        public string XMLEncoding
-        {
-            get
-            {
-                return _reader.Encoding.WebName;
-            }
-        }
+        public string XMLEncoding => _txtReader?.Encoding?.WebName ?? "UTF-8";
 
         [ContextProperty("КодировкаИсточника", "InputEncoding")]
-        public string InputEncoding
-        {
-            get
-            {
-                return XMLEncoding;
-            }
-        }
+        public string InputEncoding => XMLEncoding;
+
+        [ContextProperty("Автономный", "Standalone")]
+        public bool Standalone => throw new NotSupportedException();
+
+        #endregion
+
+        #region Свойства текущего узла
+
+        [ContextProperty("URIПространстваИмен", "NamespaceURI")]
+        public string NamespaceURI => _reader?.NamespaceURI ?? string.Empty;
+
+        [ContextProperty("БазовыйURI", "BaseURI")]
+        public string BaseURI => _reader?.BaseURI ?? string.Empty;
+
+        [ContextProperty("ИмеетЗначение", "HasValue")]
+        public bool HasValue => _reader?.HasValue ?? false;
+
+        [ContextProperty("Значение", "Value")]
+        public string Value => HasValue ? _reader.Value : string.Empty;
+
+
+        [ContextProperty("ИмеетИмя", "HasName")]
+        public bool HasName => _reader != null ? _reader.LocalName != String.Empty : false;
+
+        [ContextProperty("Имя", "Name")]
+        public string Name => _reader?.Name ?? string.Empty;
+
+        [ContextProperty("ИмяНотации", "NotationName")]
+        public string NotationName => throw new NotSupportedException();
 
         private int Depth
         {
@@ -178,72 +156,70 @@ namespace ScriptEngine.HostedScript.Library.Xml
         }
 
         [ContextProperty("КонтекстПространствИмен", "NamespaceContext")]
-        public XmlNamespaceContext NamespaceContext
+        public IValue NamespaceContext
         {
             get
             {
-                return new XmlNamespaceContext(Depth, _reader.GetNamespacesInScope(XmlNamespaceScope.All));
+                if (_reader == null)
+                    return ValueFactory.Create();
+
+                return new XmlNamespaceContext(Depth, _txtReader.GetNamespacesInScope(XmlNamespaceScope.All));
             }
         }
 
         [ContextProperty("ЛокальноеИмя", "LocalName")]
-        public string LocalName
-        {
-            get
-            {
-                return _reader.LocalName;
-            }
-        }
+        public string LocalName => _reader?.LocalName ?? string.Empty;
+
 
         [ContextProperty("Префикс", "Prefix")]
-        public string Prefix
-        {
-            get
-            {
-                return _reader.Prefix;
-            }
-        }
+        public string Prefix => _reader?.Prefix ?? string.Empty;
 
         [ContextProperty("ПубличныйИдентификатор", "PublicId")]
-        public string PublicId
-        {
-            get
-            {
-                throw new NotSupportedException();
-            }
-        }
+        public string PublicId => throw new NotSupportedException();
 
         [ContextProperty("СистемныйИдентификатор", "SystemId")]
-        public string SystemId
-        {
-            get
-            {
-                throw new NotSupportedException();
-            }
-        }
+        public string SystemId => throw new NotSupportedException();
 
         [ContextProperty("ТипУзла", "NodeType")]
         public IValue NodeType
         {
             get
             {
-                if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead)
+                XmlNodeType nodeType;
+                if (_reader == null)
                 {
-                    return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(XmlNodeType.EndElement);
+                    nodeType = XmlNodeType.None;
+                }
+                else if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementRead)
+                {
+                    nodeType = XmlNodeType.EndElement;
+                }
+                else if (_settings.CDATASectionAsText && _reader.NodeType == XmlNodeType.CDATA)
+                {
+                    nodeType = XmlNodeType.Text;
+                }
+                else if (!_settings.UseIgnorableWhitespace && _reader.NodeType == XmlNodeType.Whitespace)
+                {
+                    nodeType = XmlNodeType.Text;
                 }
                 else
                 {
-                    return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(_reader.NodeType);
+                    nodeType = _reader.NodeType;
                 }
+
+                return GlobalsManager.GetEnum<XmlNodeTypeEnum>().FromNativeValue(nodeType);
             }
         }
 
         [ContextProperty("ЭтоАтрибутПоУмолчанию", "IsDefaultAttribute")]
-        public bool IsDefaultAttribute
+        public bool? IsDefaultAttribute
         {
             get
             {
-                return _reader.IsDefault;
+                if (_reader == null || _reader.NodeType != XmlNodeType.Attribute)
+                    return null;
+
+                 return _reader.IsDefault;
             }
         }
 
@@ -252,48 +228,9 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             get
             {
-                throw new NotSupportedException();
-            }
-        }
-
-        [ContextProperty("Язык", "Lang")]
-        public string Lang
-        {
-            get
-            {
-                return _reader.XmlLang;
-            }
-        }
-
-        [ContextProperty("ИгнорироватьПробелы", "IgnoreWhitespace")]
-        public bool IgnoreWhitespace
-        {
-            get
-            {
-                return _reader.WhitespaceHandling == WhitespaceHandling.None;
-            }
-            set
-            {
-                _reader.WhitespaceHandling = value ? WhitespaceHandling.None : WhitespaceHandling.All;
-            }
-        }
-
-        [ContextProperty("Параметры", "Settings")]
-        public object Settings
-        {
-            get
-            {
-                throw new NotSupportedException();
-            }
-        }
-
-        [ContextProperty("ПробельныеСимволы", "Space")]
-        public object Space
-        {
-            get
-            {
-                throw new NotImplementedException();
-                //return _reader.XmlSpace;
+                return _reader != null &&
+                    (_reader.NodeType == XmlNodeType.Whitespace ||
+                    IsCharacters && string.IsNullOrWhiteSpace(_reader.Value) );
             }
         }
 
@@ -302,9 +239,12 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             get
             {
-                return _reader.NodeType == XmlNodeType.Text || _reader.NodeType == XmlNodeType.CDATA || _reader.NodeType == XmlNodeType.SignificantWhitespace;
+                return _reader != null && 
+                    (_reader.NodeType == XmlNodeType.Text || _reader.NodeType == XmlNodeType.CDATA ||
+                    _reader.NodeType == XmlNodeType.SignificantWhitespace);
             }
-        } 
+        }
+
         #endregion
 
         #region Методы
@@ -319,9 +259,15 @@ namespace ScriptEngine.HostedScript.Library.Xml
         {
             string attributeValue = null;
 
-            if (indexOrName.DataType == DataType.Number)
+            if (_reader == null)
             {
-                attributeValue = _reader.GetAttribute((int)indexOrName.AsNumber());
+                attributeValue = string.Empty;
+            }
+            else if (indexOrName.DataType == DataType.Number )
+            {
+                int index = (int)indexOrName.AsNumber();
+                if (index < _reader.AttributeCount)
+                    attributeValue = _reader.GetAttribute(index);
             }
             else if (indexOrName.DataType == DataType.String)
             {
@@ -345,6 +291,9 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("ИмяАтрибута", "AttributeName")]
         public string AttributeName(int index)
         {
+            if (_reader == null || index + 1 > _reader.AttributeCount)
+                return string.Empty;
+
             _reader.MoveToAttribute(index);
             var name = _reader.Name;
             _reader.MoveToElement();
@@ -354,12 +303,15 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("КоличествоАтрибутов", "AttributeCount")]
         public int AttributeCount()
         {
-            return _reader.AttributeCount;
+            return _reader?.AttributeCount ?? 0; // несовместимо: 1С возвращает 4294967295 (0xFFFF)
         }
 
         [ContextMethod("ЛокальноеИмяАтрибута", "AttributeLocalName")]
         public string AttributeLocalName(int index)
         {
+            if (_reader == null || index + 1 > _reader.AttributeCount)
+                return string.Empty;
+
             _reader.MoveToAttribute(index);
             var name = _reader.LocalName;
             _reader.MoveToElement();
@@ -375,8 +327,8 @@ namespace ScriptEngine.HostedScript.Library.Xml
 
         [ContextMethod("ПервыйАтрибут", "FirstAttribute")]
         public bool FirstAttribute()
-        {
-            return _reader.MoveToFirstAttribute();
+        { 
+            return _reader?.MoveToFirstAttribute() ?? false;
         }
 
         [ContextMethod("ПолучитьАтрибут", "GetAttribute")]
@@ -388,6 +340,9 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("ПрефиксАтрибута", "AttributePrefix")]
         public string AttributePrefix(int index)
         {
+            if (_reader == null || index+1 > _reader.AttributeCount)
+                return string.Empty;
+
             _reader.MoveToAttribute(index);
             var name = _reader.Prefix;
             _reader.MoveToElement();
@@ -398,7 +353,10 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("Пропустить", "Skip")]
         public void Skip()
         {
-            if(_emptyElemReadState == EmptyElemCompabilityState.EmptyElementEntered)
+            if (_reader == null)
+                return;
+
+            if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementEntered)
             {
                 _emptyElemReadState = EmptyElemCompabilityState.EmptyElementRead;
                 return;
@@ -425,6 +383,9 @@ namespace ScriptEngine.HostedScript.Library.Xml
         [ContextMethod("Прочитать", "Read")]
         public bool Read()
         {
+            if (_reader == null)
+                return false;
+
             if (_emptyElemReadState == EmptyElemCompabilityState.EmptyElementEntered)
             {
                 _emptyElemReadState = EmptyElemCompabilityState.EmptyElementRead;
@@ -432,10 +393,26 @@ namespace ScriptEngine.HostedScript.Library.Xml
             }
             else
             {
-                bool readingDone = _reader.Read();
+                bool readingDone = _ignoreWSChanged ? ReadWhenStateChanged() : _reader.Read();
                 CheckEmptyElementEntering();
                 return readingDone;
             }
+        }
+
+        private bool ReadWhenStateChanged()
+        {
+            bool readingDone;
+            var ln = _txtReader.LineNumber;
+            var lp = _txtReader.LinePosition;
+            do
+            {
+                readingDone = _reader.Read();
+                if (!readingDone)
+                    break;
+            }
+            while (ln == _txtReader.LineNumber && lp == _txtReader.LinePosition);
+            
+            return readingDone;
         }
 
         private void CheckEmptyElementEntering()
@@ -455,6 +432,9 @@ namespace ScriptEngine.HostedScript.Library.Xml
 
         private bool ReadAttributeInternal()
         {
+            if (_reader == null)
+                return false;
+
             if (IsEndElement() && !_attributesLoopReset)
             {
                 _attributesLoopReset = true;
