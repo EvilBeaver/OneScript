@@ -20,7 +20,6 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Compiler;
 using OneScript.Native.Runtime;
-using OneScript.Runtime.Binding;
 using OneScript.Sources;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;

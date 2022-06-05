@@ -5,20 +5,20 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
     [EnumerationType("XSSimpleTypeVariety", "ВариантПростогоТипаXS")]
     public enum XSSimpleTypeVariety
     {
-        [EnumItem("Atomic", "Атомарная")]
+        [EnumValue("Atomic", "Атомарная")]
         Atomic,
 
-        [EnumItem("Union", "Объединение")]
+        [EnumValue("Union", "Объединение")]
         Union,
 
-        [EnumItem("List", "Список")]
+        [EnumValue("List", "Список")]
         List
     }
 }

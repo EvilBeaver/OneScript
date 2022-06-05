@@ -10,7 +10,6 @@ using OneScript.Sources;
 using OneScript.StandardLibrary;
 using ScriptEngine;
 using ScriptEngine.Hosting;
-using ScriptEngine.Machine;
 using Xunit;
 
 namespace OneScript.Core.Tests

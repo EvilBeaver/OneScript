@@ -4,19 +4,10 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using System;
-using System.IO;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+
 using ScriptEngine.HostedScript;
-using System.Collections.Generic;
-using OneScript.StandardLibrary;
 using ScriptEngine;
 using ScriptEngine.Compiler;
-using OneScript.Commons;
-using OneScript.Sources;
 using ScriptEngine.HostedScript.Extensions;
 using ScriptEngine.Hosting;
 

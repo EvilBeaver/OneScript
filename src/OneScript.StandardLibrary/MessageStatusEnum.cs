@@ -5,29 +5,29 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary
 {
     [EnumerationType("СтатусСообщения", "MessageStatus")]
 	public enum MessageStatusEnum
     {
-        [EnumItem("БезСтатуса", "WithoutStatus")]
+        [EnumValue("БезСтатуса", "WithoutStatus")]
 		WithoutStatus,
 
-		[EnumItem("Важное", "Important")]
+		[EnumValue("Важное", "Important")]
 		Important,
 
-		[EnumItem("Внимание", "Attention")]
+		[EnumValue("Внимание", "Attention")]
 		Attention,
 
-		[EnumItem("Информация", "Information")]
+		[EnumValue("Информация", "Information")]
 		Information,
 
-		[EnumItem("Обычное", "Ordinary")]
+		[EnumValue("Обычное", "Ordinary")]
 		Ordinary,
 
-		[EnumItem("ОченьВажное", "VeryImportant")]
+		[EnumValue("ОченьВажное", "VeryImportant")]
 		VeryImportant
 
     }

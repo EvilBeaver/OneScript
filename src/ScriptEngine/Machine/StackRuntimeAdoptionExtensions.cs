@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using OneScript.Contexts;
-using OneScript.Execution;
 using OneScript.Values;
 using ScriptEngine.Machine.Contexts;
 

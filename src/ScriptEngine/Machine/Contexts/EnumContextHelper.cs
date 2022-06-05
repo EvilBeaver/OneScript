@@ -5,31 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Linq;
+using OneScript.Contexts.Enums;
 using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
     public static class EnumContextHelper
     {
-        private static void RegisterValues<T>(T instance) where T : EnumerationContext
-        {
-            var enumType = typeof(T);
-            var values = enumType.GetProperties()
-                .Where(x => x.GetCustomAttributes(typeof(EnumValueAttribute), false).Any())
-                .Select(x => (EnumValueAttribute)x.GetCustomAttributes(typeof(EnumValueAttribute), false)[0]);
-
-            foreach (var enumProperty in values)
-            {
-                instance.AddValue(enumProperty.GetName(), enumProperty.GetAlias(), new SelfAwareEnumValue<T>(instance));
-            }
-        }
-
-        private static void RegisterSelfAwareEnumType<T>(ITypeManager typeManager, out TypeDescriptor enumType, out TypeDescriptor enumValueType) where T : EnumerationContext
-        {
-            (enumType, enumValueType) = RegisterEnumType<T, SelfAwareEnumValue<T>>(typeManager);
-        }
-        
         public static (TypeDescriptor, TypeDescriptor) RegisterEnumType<TEnum, TValue>(ITypeManager typeManager) 
             where TEnum : EnumerationContext 
             where TValue : EnumerationValue
@@ -53,37 +35,37 @@ namespace ScriptEngine.Machine.Contexts
             Type enumClass,
             Type enumValueClass,
             ITypeManager typeManager,
-            INameAndAliasProvider enumMetadata)
+            IEnumMetadataProvider enumMetadata)
         {
-            var enumType = typeManager.RegisterType(
-                "Перечисление" + enumMetadata.Name,
-                enumMetadata.Alias != default? "Enum" + enumMetadata.Alias : default,
-                enumClass);
+            var enumType = CreateEnumType(enumClass, enumMetadata);
+            typeManager.RegisterType(enumType);
 
-            var enumValueType = typeManager.RegisterType(
-                enumMetadata.Name,
-                enumMetadata.Alias,
-                enumValueClass);
+            var enumValueType = CreateEnumValueType(enumValueClass, enumMetadata);
+            typeManager.RegisterType(enumValueType);
             
             return (enumType, enumValueType);
         }
 
-        public static T CreateSelfAwareEnumInstance<T>(ITypeManager typeManager, EnumCreationDelegate<T> creator) where T : EnumerationContext
+        private static TypeDescriptor CreateEnumType(Type enumType, IEnumMetadataProvider metadata)
         {
-            T instance;
-
-            TypeDescriptor enumType;
-            TypeDescriptor enumValType;
-
-            EnumContextHelper.RegisterSelfAwareEnumType<T>(typeManager, out enumType, out enumValType);
-
-            instance = creator(enumType, enumValType);
-
-            EnumContextHelper.RegisterValues<T>(instance);
-
-            return instance;
+            return new TypeDescriptor(
+                metadata.TypeUUID == default ? Guid.NewGuid() : Guid.Parse(metadata.TypeUUID),
+                "Перечисление" + metadata.Name,
+                metadata.Alias != default? "Enum" + metadata.Alias : default,
+                enumType
+            );
         }
-        
+
+        private static TypeDescriptor CreateEnumValueType(Type enumValueClass, IEnumMetadataProvider metadata)
+        {
+            return new TypeDescriptor(
+                metadata.ValueTypeUUID == default ? Guid.NewGuid() : Guid.Parse(metadata.ValueTypeUUID),
+                metadata.Name,
+                metadata.Alias,
+                enumValueClass
+            );
+        }
+
         public static TOwner CreateClrEnumInstance<TOwner, TEnum>(ITypeManager typeManager, EnumCreationDelegate<TOwner> creator) 
             where TOwner : EnumerationContext
             where TEnum : struct

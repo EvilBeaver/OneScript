@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Linq;
 using OneScript.Commons;
-using OneScript.Contexts;
+using OneScript.Contexts.Enums;
 using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
@@ -196,12 +196,12 @@ namespace ScriptEngine.Machine.Contexts
 
             var memberInfo = type.GetMember(objParam.ToString());
             var valueInfo = memberInfo.FirstOrDefault(x => x.DeclaringType == type);
-            var attrs = valueInfo.GetCustomAttributes(typeof(EnumItemAttribute), false);
+            var attrs = valueInfo.GetCustomAttributes(typeof(EnumValueAttribute), false);
 
             if (attrs.Length == 0)
                 throw new RuntimeException("Значение перечисления должно быть помечено атрибутом EnumItemAttribute");
 
-            var itemName = ((EnumItemAttribute)attrs[0]).Name;
+            var itemName = ((EnumValueAttribute)attrs[0]).Name;
             var enumImpl = GlobalsHelper.GetEnum(type);
 
             return enumImpl.GetPropValue(itemName);

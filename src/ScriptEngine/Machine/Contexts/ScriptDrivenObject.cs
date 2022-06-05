@@ -12,8 +12,6 @@ using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Execution;
 using OneScript.Sources;
-using OneScript.Values;
-using ScriptEngine.Machine;
 
 namespace ScriptEngine.Machine.Contexts
 {

@@ -4,12 +4,13 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 
-namespace ScriptEngine.Machine.Contexts
+namespace OneScript.Contexts.Enums
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class SystemEnumAttribute : Attribute, INameAndAliasProvider
+    public class SystemEnumAttribute : Attribute, IEnumMetadataProvider
     {
         public SystemEnumAttribute(string name, string alias = "")
         {
@@ -19,5 +20,9 @@ namespace ScriptEngine.Machine.Contexts
 
         public string Name { get; }
         public string Alias { get; }
+        
+        public string TypeUUID { get; set; }
+		
+        public string ValueTypeUUID { get; set; }
     }
 }

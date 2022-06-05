@@ -5,52 +5,23 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using OneScript.Contexts.Enums;
 using OneScript.Types;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Json
 {
-    [SystemEnum("ФорматДатыJSON", "JSONDateFormat")]
-    public class JSONDateFormatEnum : EnumerationContext
+    [EnumerationType("ФорматДатыJSON", "JSONDateFormat",
+        TypeUUID = "CDBA878E-FF5C-40A5-ADF3-E473176812BD",
+        ValueTypeUUID = "29E40EE6-57C7-4E5B-98D8-9B5DDE8CF667")]
+    public enum JSONDateFormatEnum
     {
-        private JSONDateFormatEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
-           : base(typeRepresentation, valuesType)
-        {
-        }
-
         [EnumValue("ISO")]
-        public EnumerationValue ISO
-        {
-            get
-            {
-                return this["ISO"];
-            }
-        }
-
+        ISO,
         [EnumValue("JavaScript")]
-        public EnumerationValue JavaScript
-        {
-            get
-            {
-                return this["JavaScript"];
-            }
-        }
-
+        JavaScript,
         [EnumValue("Microsoft")]
-        public EnumerationValue Microsoft
-        {
-            get
-            {
-                return this["Microsoft"];
-            }
-        }
-
-        public static JSONDateFormatEnum CreateInstance(ITypeManager typeManager)
-        {
-            return EnumContextHelper.CreateSelfAwareEnumInstance(typeManager, 
-                (t, v) => new JSONDateFormatEnum(t, v));
-        }
-
+        Microsoft
     }
-
 }

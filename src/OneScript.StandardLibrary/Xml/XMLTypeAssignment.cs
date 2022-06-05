@@ -5,17 +5,17 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.Xml
 {
     [EnumerationType("XMLTypeAssignment", "НазначениеТипаXML")]
     public enum XMLTypeAssignment
     {
-        [EnumItem("Implicit", "Неявное")]
+        [EnumValue("Implicit", "Неявное")]
         Implicit,
 
-        [EnumItem("Explicit", "Явное")]
+        [EnumValue("Explicit", "Явное")]
         Explicit
     }
 }

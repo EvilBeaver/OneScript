@@ -5,16 +5,16 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.Zip
 {
     [EnumerationType("РежимОбработкиПодкаталоговZIP", "ZIPSubDirProcessingMode")]
     public enum ZipSubDirProcessingMode
     {
-        [EnumItem("НеОбрабатывать", "DontProcess")]
+        [EnumValue("НеОбрабатывать", "DontProcess")]
         DontRecurse,
-        [EnumItem("ОбрабатыватьРекурсивно", "ProcessRecursively")]
+        [EnumValue("ОбрабатыватьРекурсивно", "ProcessRecursively")]
         Recurse
     }
 }

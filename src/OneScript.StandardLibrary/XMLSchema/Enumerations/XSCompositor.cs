@@ -6,7 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Xml.Schema;
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
@@ -21,21 +21,21 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
         /// Требует наличия элементов группы без требования последовательности
         /// </summary>
         /// <see cref="XmlSchemaAll"/>
-        [EnumItem("All", "Все")]
+        [EnumValue("All", "Все")]
         All,
 
         /// <summary>
         /// Требует наличия только одного из элементов группы
         /// </summary>
         /// <see cref="XmlSchemaChoice"/>
-        [EnumItem("Choice", "Выбор")]
+        [EnumValue("Choice", "Выбор")]
         Choice,
 
         /// <summary>
         /// Требует чтобы элементы следовали в указанной последовательности
         /// </summary>
         /// <see cref="XmlSchemaSequence"/>
-        [EnumItem("Sequence", "Последовательность")]
+        [EnumValue("Sequence", "Последовательность")]
         Sequence
     }
 }

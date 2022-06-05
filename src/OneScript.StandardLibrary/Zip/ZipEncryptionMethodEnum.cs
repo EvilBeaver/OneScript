@@ -5,20 +5,20 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.Zip
 {
     [EnumerationType("МетодШифрованияZIP", "ZIPEncryptionMethod")]
     public enum ZipEncryptionMethod
     {
-        [EnumItem("AES128")]
+        [EnumValue("AES128")]
         Aes128,
-        [EnumItem("AES192")]
+        [EnumValue("AES192")]
         Aes192,
-        [EnumItem("AES256")]
+        [EnumValue("AES256")]
         Aes256,
-        [EnumItem("Zip20")]
+        [EnumValue("Zip20")]
         Zip20
     }
 }

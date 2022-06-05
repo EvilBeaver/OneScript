@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Text;
 using OneScript.Commons;
+using OneScript.Contexts.Enums;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -16,71 +17,38 @@ namespace OneScript.StandardLibrary.Text
     [SystemEnum("КодировкаТекста", "TextEncoding")]
     public class TextEncodingEnum : EnumerationContext
     {
-        private const string ENCODING_ANSI = "ANSI";
-        private const string ENCODING_OEM = "OEM";
-        private const string ENCODING_UTF16 = "UTF16";
-        private const string ENCODING_UTF8 = "UTF8";
-        private const string ENCODING_UTF8NoBOM = "UTF8NoBOM";
-        private const string ENCODING_SYSTEM = "Системная";
+        private enum TextEncodingValues
+        {
+            System,
+            ANSI,
+            OEM,
+            UTF16,
+            UTF8,
+            UTF8NoBOM
+        }
 
         private TextEncodingEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
         {
+            System = this.WrapClrValue("Системная", "System", TextEncodingValues.System);
+            Ansi = this.WrapClrValue("ANSI", default, TextEncodingValues.ANSI);
+            Oem = this.WrapClrValue("OEM", default, TextEncodingValues.OEM);
+            Utf16 = this.WrapClrValue("UTF16", default, TextEncodingValues.UTF16);
+            Utf8 = this.WrapClrValue("UTF8", default, TextEncodingValues.UTF8);
+            Utf8NoBOM = this.WrapClrValue("UTF8БезBOM", "UTF8NoBOM", TextEncodingValues.UTF8NoBOM);
         }
 
-        [EnumValue(ENCODING_ANSI)]
-        public EnumerationValue Ansi
-        {
-            get
-            {
-                return this[ENCODING_ANSI];
-            }
-        }
+        public EnumerationValue Ansi { get; }
 
-        [EnumValue(ENCODING_OEM)]
-        public EnumerationValue Oem
-        {
-            get
-            {
-                return this[ENCODING_OEM];
-            }
-        }
+        public EnumerationValue Oem { get; }
 
-        [EnumValue(ENCODING_UTF16)]
-        public EnumerationValue Utf16
-        {
-            get
-            {
-                return this[ENCODING_UTF16];
-            }
-        }
+        public EnumerationValue Utf16 { get; }
 
-        [EnumValue(ENCODING_UTF8)]
-        public EnumerationValue Utf8
-        {
-            get
-            {
-                return this[ENCODING_UTF8];
-            }
-        }
+        public EnumerationValue Utf8 { get; }
 
-        [EnumValue(ENCODING_UTF8NoBOM)]
-        public EnumerationValue Utf8NoBOM
-        {
-            get
-            {
-                return this[ENCODING_UTF8NoBOM];
-            }
-        }
+        public EnumerationValue Utf8NoBOM { get; }
 
-        [EnumValue(ENCODING_SYSTEM, "System")]
-        public EnumerationValue System
-        {
-            get
-            {
-                return this[ENCODING_SYSTEM];
-            }
-        }
+        public EnumerationValue System { get; }
 
         public EnumerationValue GetValue(Encoding encoding)
         {
@@ -107,8 +75,11 @@ namespace OneScript.StandardLibrary.Text
 
         public static TextEncodingEnum CreateInstance(ITypeManager typeManager)
         {
-            return EnumContextHelper.CreateSelfAwareEnumInstance(typeManager, 
-                (t,v)=>new TextEncodingEnum(t,v));
+            var instance = EnumContextHelper.CreateClrEnumInstance<TextEncodingEnum, System.IO.DriveType>(
+                typeManager,
+                (t, v) => new TextEncodingEnum(t, v));
+
+            return instance;
         }
 
         public static Encoding GetEncodingByName(string encoding, bool addBOM = true)
@@ -167,10 +138,10 @@ namespace OneScript.StandardLibrary.Text
                 return GetEncodingByName(encoding.AsString(), addBOM);
             else
             {
-                if (!(encoding.GetRawValue() is SelfAwareEnumValue<TextEncodingEnum> encValue))
+                if (!(encoding.GetRawValue() is ClrEnumValueWrapper<TextEncodingValues> encValue))
                     throw RuntimeException.InvalidArgumentType();
 
-                var encodingEnum = GlobalsHelper.GetEnum<TextEncodingEnum>();
+                var encodingEnum = (TextEncodingEnum)encValue.Owner;
 
                 Encoding enc;
                 if (encValue == encodingEnum.Ansi)

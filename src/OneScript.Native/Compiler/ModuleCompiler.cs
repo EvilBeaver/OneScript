@@ -14,7 +14,6 @@ using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Runtime;
-using OneScript.Runtime.Binding;
 using OneScript.Sources;
 using OneScript.Values;
 

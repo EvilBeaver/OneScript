@@ -5,20 +5,20 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
     [EnumerationType("XSDerivationMethod", "МетодНаследованияXS")]
     public enum XSDerivationMethod
     {
-        [EnumItem("EmptyRef", "ПустаяСсылка")]
+        [EnumValue("EmptyRef", "ПустаяСсылка")]
         EmptyRef,
 
-        [EnumItem("Restriction", "Ограничение")]
+        [EnumValue("Restriction", "Ограничение")]
         Restriction,
 
-        [EnumItem("Extension", "Расширение")]
+        [EnumValue("Extension", "Расширение")]
         Extension
     }
 }

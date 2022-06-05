@@ -5,114 +5,38 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Security.Cryptography;
 using OneScript.Commons;
+using OneScript.Contexts.Enums;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Hash
 {
-    [SystemEnum("ХешФункция", "HashFunction")]
-    public class HashFunctionEnum : EnumerationContext
+    [EnumerationType("ХешФункция", "HashFunction",
+        TypeUUID = "FCD487D9-9C9A-423D-B4E8-90FB3248AACF",
+        ValueTypeUUID = "39B708B2-98ED-4B14-B112-60985A547526")]
+    public enum HashFunctionEnum
     {
-        const string MD5 = "MD5";
-        const string SHA1 = "SHA1";
-        const string SHA256 = "SHA256";
-        const string SHA384 = "SHA384";
-        const string SHA512 = "SHA512";
-        const string CRC32 = "CRC32";
+        [EnumValue("MD5")]
+        MD5,
+        
+        [EnumValue("SHA1")]
+        SHA1,
+        
+        [EnumValue("SHA256")]
+        SHA256,
+        
+        [EnumValue("SHA384")]
+        SHA384,
+        
+        [EnumValue("SHA512")]
+        SHA512,
+        
+        [EnumValue("CRC32")]
+        CRC32
 
-
-        [EnumValue(MD5)]
-        public EnumerationValue Md5
-        {
-            get
-            {
-                return this[MD5];
-            }
-        }
-
-
-        [EnumValue(SHA1)]
-        public EnumerationValue Sha1
-        {
-            get
-            {
-                return this[SHA1];
-            }
-        }
-
-
-        [EnumValue(SHA256)]
-        public EnumerationValue Sha256
-        {
-            get
-            {
-                return this[SHA256];
-            }
-        }
-
-
-        [EnumValue(SHA384)]
-        public EnumerationValue Sha384
-        {
-            get
-            {
-                return this[SHA384];
-            }
-        }
-
-
-        [EnumValue(SHA512)]
-        public EnumerationValue Sha512
-        {
-            get
-            {
-                return this[SHA512];
-            }
-        }
-
-
-        [EnumValue(CRC32)]
-        public EnumerationValue Crc32
-        {
-            get
-            {
-                return this[CRC32];
-            }
-        }
-
-
-
-        private HashFunctionEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
-            : base(typeRepresentation, valuesType)
-        {
-
-        }
-
-
-        public static HashFunctionEnum CreateInstance(ITypeManager typeManager)
-        {
-            return EnumContextHelper.CreateSelfAwareEnumInstance<HashFunctionEnum>(typeManager,
-                (t, v) => new HashFunctionEnum(t, v));
-        }
-
-        public static HashAlgorithm GetProvider(IValue provider)
-        {
-            var providerRaw = provider.GetRawValue();
-            if (!(providerRaw is SelfAwareEnumValue<HashFunctionEnum> neededProvider))
-                throw RuntimeException.InvalidArgumentType();
-            
-            var algName = neededProvider.AsString();
-            if (algName == "CRC32")
-                return new Crc32();
-
-            var ret = HashAlgorithm.Create(algName);
-            if (ret == null)
-                throw RuntimeException.InvalidArgumentType();
-            return ret;
-
-        }
     }
 }

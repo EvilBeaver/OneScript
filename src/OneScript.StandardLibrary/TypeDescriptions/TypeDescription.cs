@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
-using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using OneScript.Values;

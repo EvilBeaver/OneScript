@@ -5,8 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Contexts.Enums;
 using OneScript.StandardLibrary.XMLSchema.Objects;
-using ScriptEngine;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
@@ -20,13 +20,13 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
         /// <summary>
         /// Используется в качестве поля
         /// </summary>
-        [EnumItem("Field", "Поле")]
+        [EnumValue("Field", "Поле")]
         Field,
   
         /// <summary>
         /// Используется в качестве селектора
         /// </summary>
-        [EnumItem("Selector", "Селектор")]
+        [EnumValue("Selector", "Селектор")]
         Selector
     }
 }

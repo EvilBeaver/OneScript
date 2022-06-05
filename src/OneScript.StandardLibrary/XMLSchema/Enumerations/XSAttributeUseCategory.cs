@@ -6,23 +6,23 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Xml.Schema;
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
     [EnumerationType("XSAttributeUseCategory", "КатегорияИспользованияАтрибутаXS")]
     public enum XSAttributeUseCategory
     {
-        [EnumItem("EmptyRef", "ПустаяСсылка")]
+        [EnumValue("EmptyRef", "ПустаяСсылка")]
         EmptyRef = XmlSchemaUse.None,
 
-        [EnumItem("Optional", "Необязательно")]
+        [EnumValue("Optional", "Необязательно")]
         Optional = XmlSchemaUse.Optional,
 
-        [EnumItem("Prohibited", "Запрещено")]
+        [EnumValue("Prohibited", "Запрещено")]
         Prohibited = XmlSchemaUse.Prohibited,
 
-        [EnumItem("Required", "Обязательно")]
+        [EnumValue("Required", "Обязательно")]
         Required = XmlSchemaUse.Required
     }
 }

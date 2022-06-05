@@ -5,20 +5,20 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine;
+using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
     [EnumerationType("XSWhitespaceHandling", "ОбработкаПробельныхСимволовXS")]
     public enum XSWhitespaceHandling
     {
-        [EnumItem("Replace", "Заменять")]
+        [EnumValue("Replace", "Заменять")]
         Replace,
 
-        [EnumItem("Collapse", "Сворачивать")]
+        [EnumValue("Collapse", "Сворачивать")]
         Collapse,
 
-        [EnumItem("Preserve", "Сохранять")]
+        [EnumValue("Preserve", "Сохранять")]
         Preserve
     }
 }

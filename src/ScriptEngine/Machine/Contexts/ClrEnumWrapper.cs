@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Contexts.Enums;
 using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
@@ -50,9 +51,9 @@ namespace ScriptEngine.Machine.Contexts
             
             foreach (var field in enumType.GetFields())
             {
-                foreach (var contextFieldAttribute in field.GetCustomAttributes (typeof (EnumItemAttribute), false))
+                foreach (var contextFieldAttribute in field.GetCustomAttributes (typeof (EnumValueAttribute), false))
                 {
-                    var contextField = (EnumItemAttribute)contextFieldAttribute;
+                    var contextField = (EnumValueAttribute)contextFieldAttribute;
                     var osValue = new ClrEnumValueWrapper<T>(this, (T)field.GetValue(null));
 
                     if (contextField.Alias == null)

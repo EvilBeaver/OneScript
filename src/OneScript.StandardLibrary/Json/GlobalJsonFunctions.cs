@@ -198,19 +198,23 @@ namespace OneScript.StandardLibrary.Json
         /// Значения данного типа содержит дату григорианского календаря (с 01 января 0001 года) и время с точностью до секунды.</returns>
         ///
         [ContextMethod("ПрочитатьДатуJSON", "ReadJSONDate")]
-        public IValue ReadJSONDate(string String, IValue Format)
+        public IValue ReadJSONDate(string String, JSONDateFormatEnum? format)
         {
-         
-            var format = Format.GetRawValue() as SelfAwareEnumValue<JSONDateFormatEnum>;
-            var JSONDateFormatEnum = GlobalsHelper.GetEnum<JSONDateFormatEnum>();
-            DateFormatHandling dateFormatHandling = new DateFormatHandling();
+            DateFormatHandling dateFormatHandling;
 
-            if (format == JSONDateFormatEnum.ISO || format == null)
-                dateFormatHandling = DateFormatHandling.IsoDateFormat;
-            else if (format == JSONDateFormatEnum.Microsoft)
-                dateFormatHandling = DateFormatHandling.MicrosoftDateFormat;
-            else
-                throw new RuntimeException(Locale.NStr("ru='Формат даты JavaScript не поддерживается.'; en='JavaScript date format is not supported'"));
+            switch (format)
+            {
+                case JSONDateFormatEnum.ISO:
+                case null:
+                    dateFormatHandling = DateFormatHandling.IsoDateFormat;
+                    break;
+                case JSONDateFormatEnum.Microsoft:
+                    dateFormatHandling = DateFormatHandling.MicrosoftDateFormat;
+                    break;
+                case JSONDateFormatEnum.JavaScript:
+                default:
+                    throw new RuntimeException(Locale.NStr("ru='Формат даты JavaScript не поддерживается.'; en='JavaScript date format is not supported'"));
+            }
 
             string json = @"{""Date"":""" + String +  @"""}";
 

@@ -9,10 +9,9 @@ using System;
 using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Contexts.Enums;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
-using OneScript.Values;
-using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -263,9 +262,9 @@ namespace OneScript.StandardLibrary
     [EnumerationType("НаправлениеПоиска", "SearchDirection")]
     public enum SearchDirection
     {
-        [EnumItem("СНачала")]
+        [EnumValue("СНачала")]
         FromBegin,
-        [EnumItem("СКонца")]
+        [EnumValue("СКонца")]
         FromEnd
     }
 
