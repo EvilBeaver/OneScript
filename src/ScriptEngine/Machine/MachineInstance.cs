@@ -48,6 +48,19 @@ namespace ScriptEngine.Machine
             public int stackSize;
         }
         
+        private class EmptyExceptionInfo : ScriptException
+        {
+            public EmptyExceptionInfo() : base("")
+            {
+                LineNumber = 0;
+                ColumnNumber = 0;
+            }
+
+            public override string Message => "";
+
+            public override string ToString() => "";
+        }
+        
         public void AttachContext(IAttachableContext context)
         {
             IVariable[] vars;
@@ -2362,8 +2375,8 @@ namespace ScriptEngine.Machine
             if (_currentFrame.LastException != null)
             {
                 ExceptionInfoContext excInfo;
-                if (_currentFrame.LastException is ParametrizedRuntimeException)
-                    excInfo = new ExceptionInfoContext((ParametrizedRuntimeException)_currentFrame.LastException);
+                if (_currentFrame.LastException is ParametrizedRuntimeException exception)
+                    excInfo = new ExceptionInfoContext(exception);
                 else
                     excInfo = new ExceptionInfoContext(_currentFrame.LastException);
 
@@ -2371,7 +2384,8 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                _operationStack.Push(ValueFactory.Create());
+                var noDataException = new EmptyExceptionInfo();
+                _operationStack.Push(new ExceptionInfoContext(noDataException));
             }
             NextInstruction();
         }

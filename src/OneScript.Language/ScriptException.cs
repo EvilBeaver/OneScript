@@ -86,13 +86,7 @@ namespace OneScript.Language
             }
         }
 
-        public string ErrorDescription
-        {
-            get
-            {
-                return base.Message;
-            }
-        }
+        public string ErrorDescription => base.Message;
 
         public string MessageWithoutCodeFragment
         {
