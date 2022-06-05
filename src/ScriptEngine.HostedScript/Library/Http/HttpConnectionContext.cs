@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using RegExp = System.Text.RegularExpressions;
 
@@ -479,8 +480,12 @@ namespace ScriptEngine.HostedScript.Library.Http
                         break;
                            
                 }
-                
-                
+
+                // fix #1151
+                if (webRequest.UserAgent == default)
+                {
+                    webRequest.UserAgent = $"1Script v${Assembly.GetExecutingAssembly().GetName().Version}";
+                }
 
             }
         }
