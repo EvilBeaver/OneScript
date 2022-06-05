@@ -70,7 +70,7 @@ namespace oscript
 			
 			var request = new WebRequestContext();
 			engine.InjectGlobalProperty("ВебЗапрос", "WebRequest", request, true);
-			engine.InjectObject(this, false);
+			engine.InjectObject(this);
 
 			var source = engine.Loader.FromFile(scriptFile);
 

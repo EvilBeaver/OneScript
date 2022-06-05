@@ -117,7 +117,7 @@ namespace ScriptEngine
             using var scope = Services.CreateScope();
             var csFactory = scope.Resolve<ICompilerServiceFactory>();
             
-            var cs = csFactory.CreateInstance(Environment.SymbolsContext);
+            var cs = csFactory.CreateInstance(Environment.Symbols);
             switch (System.Environment.OSVersion.Platform)
             {
                 case PlatformID.Unix:

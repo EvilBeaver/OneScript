@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 
-namespace OneScript.Runtime.Binding
+namespace OneScript.Compilation.Binding
 {
     public interface IVariableSymbol : ISymbol
     {

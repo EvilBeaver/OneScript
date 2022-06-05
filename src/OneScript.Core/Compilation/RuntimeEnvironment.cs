@@ -50,8 +50,6 @@ namespace OneScript.Compilation
             var symbol = new BslBoundPropertySymbol
             {
                 Target = _globalPropertiesHolder,
-                Name = names.Russian,
-                Alias = names.English,
                 Property = propInfo
             };
 

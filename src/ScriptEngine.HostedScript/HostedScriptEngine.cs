@@ -43,11 +43,11 @@ namespace ScriptEngine.HostedScript
             _globalCtx = new SystemGlobalContext();
             _globalCtx.EngineInstance = _engine;
 
-            _env.InjectObject(_globalCtx, false);
+            _env.InjectObject(_globalCtx);
             manager.RegisterInstance(_globalCtx);
 
             var dynLoader = new DynamicLoadingFunctions(_engine);
-            _env.InjectObject(dynLoader, false);
+            _env.InjectObject(dynLoader);
             manager.RegisterInstance(dynLoader);
 
             var bgTasksManager = new BackgroundTasksManager(_engine.Services.Resolve<ExecutionContext>());
@@ -89,9 +89,9 @@ namespace ScriptEngine.HostedScript
             _env.InjectGlobalProperty(value, name, alias, readOnly);
         }
 
-        public void InjectObject(IAttachableContext obj, bool asDynamicScope)
+        public void InjectObject(IAttachableContext obj)
         {
-            _env.InjectObject(obj, asDynamicScope);
+            _env.InjectObject(obj);
         }
 
         public ScriptSourceFactory Loader => _engine.Loader;

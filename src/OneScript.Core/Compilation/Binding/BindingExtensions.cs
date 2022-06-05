@@ -18,6 +18,16 @@ namespace OneScript.Compilation.Binding
             scope.Variables.Add(symbol, symbol.Name, symbol.Alias);
             return scope;
         }
+
+        // удалить после переноса RuntimeEnvironment в Core
+        public static IVariableSymbol MakePropSymbol(this BslPropertyInfo propertyInfo, object target)
+        {
+            return new BslBoundPropertySymbol
+            {
+                Property = propertyInfo,
+                Target = target
+            };
+        }
         
         public static SymbolScope AddMethod(this SymbolScope scope, IMethodSymbol symbol)
         {
@@ -40,8 +50,6 @@ namespace OneScript.Compilation.Binding
             var symbol = new BslBoundMethodSymbol
             {
                 Method = method,
-                Name = method.Name,
-                Alias = method.Alias,
                 Target = target
             };
             
@@ -70,8 +78,6 @@ namespace OneScript.Compilation.Binding
 
             var symbol = new BslBoundPropertySymbol
             {
-                Name = property.Name,
-                Alias = property.Alias,
                 Property = property,
                 Target = target
             };

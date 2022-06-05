@@ -6,17 +6,17 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using System.Reflection;
+using OneScript.Contexts;
 
-namespace OneScript.Runtime.Binding
+namespace OneScript.Compilation.Binding
 {
     internal class BslPropertySymbol : IPropertySymbol
     {
-        public string Name { get; set; }
-        public string Alias { get; set; }
+        public string Name => Property?.Name;
+        public string Alias => Property?.Alias;
         
         public Type Type => Property.PropertyType;
         
-        public PropertyInfo Property { get; set; }
+        public BslPropertyInfo Property { get; set; }
     }
 }

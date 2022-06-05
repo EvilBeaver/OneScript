@@ -7,6 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Reflection;
+using OneScript.Compilation.Binding;
+using OneScript.Contexts;
 using OneScript.Runtime.Binding;
 
 namespace OneScript.Native.Compiler
@@ -29,11 +31,11 @@ namespace OneScript.Native.Compiler
     {
         public Type Type => Property.PropertyType;
         
-        public PropertyInfo Property { get; set; }
+        public BslPropertyInfo Property { get; set; }
     }
     
     public class MethodSymbol : RuntimeSymbol, IMethodSymbol
     {
-        public MethodInfo Method { get; set; }
+        public BslMethodInfo Method { get; set; }
     }
 }

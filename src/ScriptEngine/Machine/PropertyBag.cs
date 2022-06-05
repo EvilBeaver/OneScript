@@ -30,7 +30,7 @@ namespace ScriptEngine.Machine
             Insert(value, identifier, true, true);
         }
 
-        public void Insert(IValue value, string identifier, bool canRead, bool canWrite)
+        public int Insert(IValue value, string identifier, bool canRead, bool canWrite)
         {
             var num = RegisterProperty(identifier);
 
@@ -47,6 +47,7 @@ namespace ScriptEngine.Machine
 
             SetPropValue(num, value);
 
+            return num;
         }
 
         public override bool IsPropReadable(int propNum)

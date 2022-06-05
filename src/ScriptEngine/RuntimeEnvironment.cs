@@ -7,22 +7,46 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using OneScript.Commons;
-using ScriptEngine.Compiler;
+using OneScript.Compilation.Binding;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using SymbolScope = OneScript.Compilation.Binding.SymbolScope;
 
 namespace ScriptEngine
 {
     public class RuntimeEnvironment
     {
-        private readonly ICompilerContext _symbolScopes = new CompilerContext();
-        private SymbolScope _globalScope;
+        private readonly SymbolTable _symbols = new SymbolTable();
+        private readonly Lazy<SymbolScope> _scopeOfGlobalProperties;
+//***        
+        //private readonly ICompilerContext _symbolScopes = new CompilerContext();
+        //private SymbolScope _globalScope;
         private PropertyBag _injectedProperties;
 
         private readonly List<AttachedContext> _contexts = new List<AttachedContext>();
         private readonly List<ExternalLibraryDef> _externalLibs = new List<ExternalLibraryDef>();
+//***
 
-        public void InjectObject(IAttachableContext context, bool asDynamicScope = false)
+        public RuntimeEnvironment()
+        {
+            _scopeOfGlobalProperties = new Lazy<SymbolScope>(() =>
+            {
+                _injectedProperties = new PropertyBag();
+                var scope = SymbolScope.FromContext(_injectedProperties);
+                _symbols.PushScope(scope);
+                return scope;
+            });
+        }
+
+        private SymbolScope GlobalScope => _scopeOfGlobalProperties.Value;
+
+        public void InjectObject(IAttachableContext context)
+        {
+            // по факту DynamicScope нигде не пригодился, надо спилить
+            InjectObject(context, false);
+        }
+
+        private void InjectObject(IAttachableContext context, bool asDynamicScope)
         {
             var injectedContext =
                 asDynamicScope ? AttachedContext.CreateDynamic(context) : AttachedContext.Create(context);
@@ -41,15 +65,10 @@ namespace ScriptEngine
             {
                 throw new ArgumentException("Invalid identifier", nameof(alias));
             }
-
-            EnsureGlobalScopeExist();
             
-            if(readOnly)
-                _globalScope.DefineProperty(identifier, alias);
-            else
-                _globalScope.DefineVariable(identifier, alias);
-            
-            _injectedProperties.Insert(value, identifier, true, !readOnly);
+            var num = _injectedProperties.Insert(value, identifier, true, !readOnly);
+            // временный костыль для создания BslBoundProperty из другой сборки
+            GlobalScope.AddVariable(_injectedProperties.GetPropertyInfo(num).MakePropSymbol(_injectedProperties));
         }
         
         public void InjectGlobalProperty(IValue value, string identifier, bool readOnly)
@@ -57,46 +76,29 @@ namespace ScriptEngine
             InjectGlobalProperty(value, identifier, default, readOnly);
         }
 
-        private void EnsureGlobalScopeExist()
-        {
-            if (_globalScope == null)
-            {
-                lock (_symbolScopes)
-                {
-                    if (_globalScope == null)
-                    {
-                        _injectedProperties = new PropertyBag();
-                        var injected = AttachedContext.Create(_injectedProperties);
-                        _globalScope = injected.Symbols;
-                        RegisterObject(injected);
-                    }
-                }
-            }
-        }
-
         private void RegisterObject(AttachedContext context)
         {
-            _symbolScopes.PushScope(context.Symbols);
+            _symbols.PushScope(SymbolScope.FromContext(context.Instance));
             _contexts.Add(context);
         }
         
         public void SetGlobalProperty(string propertyName, IValue value)
         {
-            var binding = SymbolsContext.GetVariable(propertyName).binding;
+            _symbols.FindVariable(propertyName, out var binding);
 
-            var context = _contexts[binding.ContextIndex];
-            context.Instance.SetPropValue(binding.CodeIndex, value);
+            var context = _contexts[binding.ScopeNumber];
+            context.Instance.SetPropValue(binding.MemberNumber, value);
         }
 
         public IValue GetGlobalProperty(string propertyName)
         {
-            var binding = SymbolsContext.GetVariable(propertyName).binding;
+            _symbols.FindVariable(propertyName, out var binding);
 
-            var context = _contexts[binding.ContextIndex];
-            return context.Instance.GetPropValue(binding.CodeIndex);
+            var context = _contexts[binding.ScopeNumber];
+            return context.Instance.GetPropValue(binding.MemberNumber);
         }
 
-        internal ICompilerContext SymbolsContext => _symbolScopes;
+        internal SymbolTable Symbols => _symbols;
 
         internal IList<AttachedContext> AttachedContexts => _contexts;
 

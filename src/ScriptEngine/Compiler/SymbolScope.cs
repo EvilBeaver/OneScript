@@ -123,6 +123,7 @@ namespace ScriptEngine.Compiler
 
         public int MethodCount => _methods.Count;
 
+        [Obsolete("По факту нигде не используется")]
         public bool IsDynamicScope { get; set; }
     }
 

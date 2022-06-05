@@ -176,7 +176,7 @@ namespace ScriptEngine.Machine.Contexts
                 instance = (IAttachableContext)method.Invoke(null, resolvedArgs);
             }
             Globals.RegisterInstance(instance);
-            environment.InjectObject(instance, false);
+            environment.InjectObject(instance);
 
         }
     }

@@ -34,9 +34,7 @@ namespace OneScript.Compilation.Binding
                 
                 var symbol = new BslBoundMethodSymbol
                 {
-                    Name = attr.GetName(),
-                    Alias = attr.GetAlias(),
-                    Method = info,
+                    Method = new ContextMethodInfo(info),
                     Target = target
                 };
 
@@ -51,9 +49,7 @@ namespace OneScript.Compilation.Binding
                 
                 var symbol = new BslBoundPropertySymbol
                 {
-                    Name = attr.GetName(),
-                    Alias = attr.GetAlias(),
-                    Property = info,
+                    Property = new ContextPropertyInfo(info),
                     Target = target
                 };
 
@@ -62,7 +58,31 @@ namespace OneScript.Compilation.Binding
 
             return scope;
         }
-        
+
+        public static SymbolScope FromContext(IRuntimeContextInstance target)
+        {
+            var scope = new SymbolScope();
+            for (int i = 0; i < target.GetPropCount(); i++)
+            {
+                scope.AddVariable(new BslBoundPropertySymbol
+                {
+                    Target = target,
+                    Property = target.GetPropertyInfo(i)
+                });
+            }
+            
+            for (int i = 0; i < target.GetMethodsCount(); i++)
+            {
+                scope.AddMethod(new BslBoundMethodSymbol
+                {
+                    Target = target,
+                    Method = target.GetMethodInfo(i)
+                });
+            }
+
+            return scope;
+        }
+
         public static SymbolScope FromContext(IContext target)
         {
             var scope = new SymbolScope();
@@ -71,8 +91,6 @@ namespace OneScript.Compilation.Binding
             {
                 var symbol = new BslBoundMethodSymbol
                 {
-                    Name = info.Name,
-                    Alias = info.Alias,
                     Method = info,
                     Target = target
                 };
@@ -84,8 +102,6 @@ namespace OneScript.Compilation.Binding
             {
                 var symbol = new BslBoundPropertySymbol
                 {
-                    Name = info.Name,
-                    Alias = info.Alias,
                     Property = info,
                     Target = target
                 };
