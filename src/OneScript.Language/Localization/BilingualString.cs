@@ -29,6 +29,11 @@ namespace OneScript.Localization
             return new BilingualString(source);
         }
         
+        public static implicit operator string(BilingualString str)
+        {
+            return str.ToString();
+        }
+        
         public BilingualString(string ru, string en)
         {
             Russian = ru;
@@ -51,11 +56,6 @@ namespace OneScript.Localization
         }
 
         public static bool UseRussianLocale => CultureInfo.CurrentCulture.Parent.Equals(RussianCulture);
-
-        public static implicit operator string(BilingualString str)
-        {
-            return str.ToString();
-        }
 
         public static string Localize(string russian, string english)
         {

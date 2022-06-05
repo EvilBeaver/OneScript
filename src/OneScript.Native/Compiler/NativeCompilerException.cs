@@ -12,20 +12,20 @@ using OneScript.Localization;
 
 namespace OneScript.Native.Compiler
 {
-    public class CompilerException : BslCoreException
+    public class NativeCompilerException : BslCoreException
     {
         public ErrorPositionInfo Position { get; set; }
 
-        public CompilerException(BilingualString message) : base(message)
+        public NativeCompilerException(BilingualString message) : base(message)
         {
         }
         
-        public CompilerException(BilingualString message, ErrorPositionInfo position) : base(message)
+        public NativeCompilerException(BilingualString message, ErrorPositionInfo position) : base(message)
         {
             Position = position;
         }
         
-        public CompilerException(BilingualString message, ErrorPositionInfo position, Exception innerException) : base(message, innerException)
+        public NativeCompilerException(BilingualString message, ErrorPositionInfo position, Exception innerException) : base(message, innerException)
         {
             Position = position;
         }

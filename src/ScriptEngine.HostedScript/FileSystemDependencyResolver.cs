@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using OneScript.Commons;
+using OneScript.Compilation;
 using OneScript.Sources;
 using ScriptEngine.Compiler;
 
@@ -248,7 +249,7 @@ namespace ScriptEngine.HostedScript
         
         private static bool PathHasInvalidChars(string path)
         {
-            return (!string.IsNullOrEmpty(path) && path.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0);
+            return (!string.IsNullOrEmpty(path) && path.IndexOfAny(Path.GetInvalidPathChars()) >= 0);
         }
     }
 }

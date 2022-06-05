@@ -164,7 +164,7 @@ namespace OneScript.Native.Compiler
             catch (Exception e)
             {
                 RestoreNestingLevel(nestingLevel);
-                if (e is CompilerException ce)
+                if (e is NativeCompilerException ce)
                 {
                     ce.Position = ToCodePosition(statement.Location);
                     throw;
@@ -559,7 +559,7 @@ namespace OneScript.Native.Compiler
             {
                 return _binaryOperationCompiler.Compile(binaryOperationNode, left, right);
             }
-            catch (CompilerException e)
+            catch (NativeCompilerException e)
             {
                 AddError(e.Message, binaryOperationNode.Location);
                 return null;
@@ -1033,7 +1033,7 @@ namespace OneScript.Native.Compiler
 
             if (methodInfo.ReturnType == typeof(void))
             {
-                throw new CompilerException(new BilingualString(
+                throw new NativeCompilerException(new BilingualString(
                     $"Метод {targetType}.{name} не является функцией",
                     $"Method {targetType}.{name} is not a function"), ToCodePosition(node.Location));
             }
@@ -1052,7 +1052,7 @@ namespace OneScript.Native.Compiler
             }
             catch (InvalidOperationException)
             {
-                throw new CompilerException(new BilingualString(
+                throw new NativeCompilerException(new BilingualString(
                     $"Метод {name} не определен для типа {targetType}",
                     $"Method {name} is not defined for type {targetType}"), ToCodePosition(node.Location));
             }

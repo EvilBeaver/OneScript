@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Commons;
+using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.StandardLibrary.Collections;
@@ -53,7 +54,7 @@ namespace OneScript.StandardLibrary
                     Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
                     e);
             }
-            catch (CompilerException e)
+            catch (Compilation.CompilerException e)
             {
                 // обернем в RuntimeException
                 throw new RuntimeException(

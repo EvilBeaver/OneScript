@@ -48,7 +48,7 @@ namespace OneScript.Native.Compiler
             {
                 if (_opCode != ExpressionType.Add)
                 {
-                    throw new CompilerException($"Operator {_opCode} is not defined for strings");
+                    throw new NativeCompilerException($"Operator {_opCode} is not defined for strings");
                 }
                 
                 return StringAddition(left, right);
@@ -59,7 +59,7 @@ namespace OneScript.Native.Compiler
                 return MakeLogicalOperation(left, right);
             }
             
-            throw new CompilerException($"Operation {_opCode} is not defined for {left.Type} and {right.Type}");
+            throw new NativeCompilerException($"Operation {_opCode} is not defined for {left.Type} and {right.Type}");
         }
 
         private Expression MakeNumericOperation(Expression left, Expression right)
@@ -74,7 +74,7 @@ namespace OneScript.Native.Compiler
                 return AdjustArithmeticOperandTypesAndMakeBinary(left, right);
             }
 
-            throw new CompilerException($"Operation {_opCode} is not defined for Number and {right.Type}");
+            throw new NativeCompilerException($"Operation {_opCode} is not defined for Number and {right.Type}");
         }
 
         private Expression AdjustArithmeticOperandTypesAndMakeBinary(Expression left, Expression right)
@@ -138,7 +138,7 @@ namespace OneScript.Native.Compiler
 
             }
             
-            throw new CompilerException($"Operation {_opCode} is not defined for dates");
+            throw new NativeCompilerException($"Operation {_opCode} is not defined for dates");
         }
         
         private Expression DateDiffExpression(Expression left, Expression right)
@@ -163,7 +163,7 @@ namespace OneScript.Native.Compiler
                 arg = Expression.Negate(toDouble);
             else
             {
-                throw new CompilerException($"Operation {_opCode} is not defined for dates");
+                throw new NativeCompilerException($"Operation {_opCode} is not defined for dates");
             }
 
             return Expression.Call(left, adder, arg);
@@ -214,7 +214,7 @@ namespace OneScript.Native.Compiler
                         ExpressionHelpers.ToNumber(left),
                         ExpressionHelpers.ToNumber(right));
                 default:
-                    throw new CompilerException($"Operation {_opCode} is not defined for IValues");
+                    throw new NativeCompilerException($"Operation {_opCode} is not defined for IValues");
             }
         }
 
@@ -225,7 +225,7 @@ namespace OneScript.Native.Compiler
 
         private UnaryExpression CreateConversionException(Expression typeOfLeft)
         {
-            var exceptionConstructor = typeof(CompilerException).GetConstructor(new[] {typeof(string)});
+            var exceptionConstructor = typeof(NativeCompilerException).GetConstructor(new[] {typeof(string)});
             Debug.Assert(exceptionConstructor != null);
 
             var message = Expression.Add(

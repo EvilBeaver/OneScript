@@ -308,7 +308,7 @@ namespace OneScript.Native.Compiler
                         nameof(DynamicOperations.WrapClrObjectToValue));
                     return Expression.Call(meth, value);
                 }
-                throw new CompilerException(new BilingualString(
+                throw new NativeCompilerException(new BilingualString(
                     $"Преобразование из типа {value.Type} в тип BslValue не поддерживается",
                     $"Conversion from type {value.Type} into BslValue is not supported"));
             }
@@ -387,7 +387,7 @@ namespace OneScript.Native.Compiler
             if (canBeCasted)
                 return conversion;
             
-            throw new CompilerException(new BilingualString(
+            throw new NativeCompilerException(new BilingualString(
                 $"Преобразование из типа {source.Type} в тип {targetType} не поддерживается",
                 $"Conversion from type {source.Type} into {targetType} is not supported"));
         }

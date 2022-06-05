@@ -10,7 +10,6 @@ using System.Collections.Generic;
 
 namespace OneScript.Commons
 {
-    [Obsolete("Use IndexedNameValueCollection")]
     public class IndexedNamesCollection
     {
         private readonly List<string> _names = new List<string>();

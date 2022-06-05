@@ -6,7 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using OneScript.Commons;
+using OneScript.Compilation;
 using OneScript.Contexts;
+using OneScript.Localization;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
@@ -126,7 +128,8 @@ namespace ScriptEngine.Compiler
 
     class SymbolNotFoundException : CompilerException
     {
-        public SymbolNotFoundException(string symbol) : base($"Неизвестный символ: {symbol}")
+        public SymbolNotFoundException(string symbol) 
+            : base(BilingualString.Localize($"Неизвестный символ: {symbol}", $"Unknown symbol {symbol}"))
         {
             Symbol = symbol;
         }

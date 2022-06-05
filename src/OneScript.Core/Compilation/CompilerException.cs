@@ -28,7 +28,16 @@ namespace OneScript.Compilation
         {
         }
         
-        public void AppendCodeInfo(CompilerException exc, ErrorPositionInfo errorPosInfo)
+        public static CompilerException FromCodeError(CodeError error)
+        {
+            var exc = new CompilerException(error.Description);
+            if (error.Position != default)
+                AppendCodeInfo(exc, error.Position);
+
+            return exc;
+        }
+        
+        public static void AppendCodeInfo(CompilerException exc, ErrorPositionInfo errorPosInfo)
         {
             exc.LineNumber = errorPosInfo.LineNumber;
             exc.ColumnNumber = errorPosInfo.ColumnNumber;
