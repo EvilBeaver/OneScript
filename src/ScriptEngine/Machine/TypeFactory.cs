@@ -96,17 +96,14 @@ namespace ScriptEngine.Machine
                     argsToPass.Add(Expression.ArrayIndex(argsParam, Expression.Constant(i)));
                 else
                 {
-                    var conversionArg = Expression.ArrayIndex(argsParam, Expression.Constant(i));
-                    if (parameters[i].HasDefaultValue)
+                    if (parameters[i].HasDefaultValue && 
+                        (arguments[i] == null || arguments[i].DataType == DataType.NotAValidValue) )
                     {
-                        var convertMethod = _genTypeCast.MakeGenericMethod(parameters[i].ParameterType);
-                        var defaultArg = Expression.Constant(parameters[i].DefaultValue);
-
-                        var marshalledArg = Expression.Call(convertMethod, conversionArg, defaultArg);
-                        argsToPass.Add(marshalledArg);
+                        argsToPass.Add(Expression.Convert(Expression.Constant(parameters[paramIndex].DefaultValue), parameters[paramIndex].ParameterType));
                     }
                     else
                     {
+                        var conversionArg = Expression.ArrayIndex(argsParam, Expression.Constant(i));
                         var marshalledArg = Expression.Call(_typeCast, conversionArg, Expression.Constant(parameters[paramIndex].ParameterType));
                         argsToPass.Add(Expression.Convert(marshalledArg, parameters[paramIndex].ParameterType));
                     }
