@@ -28,7 +28,7 @@ namespace ScriptEngine.Machine
 
         static private readonly Refl.MethodInfo _genTypeCast =
             typeof(ContextValuesMarshaller).GetMethods()
-            .First(x => x.Name == "ConvertParam" && x.GetGenericArguments().Length == 1);
+            .First(x => x.Name == "ConvertParamDef" && x.GetGenericArguments().Length == 1);
 
 
         public TypeFactory(Type clrType)
