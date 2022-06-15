@@ -18,6 +18,12 @@ namespace ScriptEngine.Machine.Contexts
             return valueObj != null ? (T)valueObj : defaultValue;
         }
 
+        public static T ConvertParamDef<T>(IValue value, object defaultValue)
+        {
+            object valueObj = ConvertParam(value, typeof(T));
+            return valueObj != null ? (T)valueObj : (T)defaultValue;
+        }
+
         public static object ConvertParam(IValue value, Type type)
         {
             try
