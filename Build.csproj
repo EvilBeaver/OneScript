@@ -75,21 +75,21 @@
         <ItemGroup>
             <BuiltProjects Include="oscript" />
             <BuiltProjects Include="TestApp" />
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net48/**">
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net452/**">
                 <Dest>$(TempFolder)/bin</Dest>
             </BinaryFiles>
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net48/**">
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**">
                 <Dest>$(TempFolder)/bin32</Dest>
             </BinaryFiles>
-            <AspFiles Include="$(MSBuildProjectDirectory)/src/ASPNETHandler/bin/$(Configuration)/net48/ASPNETHandler.dll"/>
+            <AspFiles Include="$(MSBuildProjectDirectory)/src/ASPNETHandler/bin/$(Configuration)/net452/ASPNETHandler.dll"/>
         </ItemGroup>
 
         <ItemGroup>
             <BuiltProjects Include="ScriptEngine.NativeApi" />
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net48/*.dll">
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net452/*.dll">
                 <Dest>$(TempFolder)/bin</Dest>
             </BinaryFiles>
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net48/*.dll">
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/*.dll">
                 <Dest>$(TempFolder)/bin32</Dest>
             </BinaryFiles>
         </ItemGroup>
