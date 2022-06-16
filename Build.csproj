@@ -200,7 +200,7 @@
 			<NugetAbleProject Include="OneScript.DebugProtocol"/>
         </ItemGroup>
         
-        <MSBuild Projects="src/%(NugetAbleProject.Identity)/%(NugetAbleProject.Identity).csproj" Targets="pack" Properties="PackageOutputPath=$(ArtifactsRoot);ReleaseNumber=$(ReleaseNumber)"/>
+        <MSBuild Projects="src/%(NugetAbleProject.Identity)/%(NugetAbleProject.Identity).csproj" Targets="pack" Properties="PackageOutputPath=$(ArtifactsRoot);ReleaseNumber=$(ReleaseNumber);TargetFrameworkId=$(TargetFrameworkId)"/>
     
     </Target>
 

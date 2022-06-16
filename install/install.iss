@@ -20,7 +20,7 @@
 #endif
 
 ; duplicates ArtifactsRoot because ISPP can't resolve directives
-#expr ParseVersion(ArtifactRoot + "\" + Binaries + "\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
+#expr GetVersionComponents(ArtifactRoot + "\" + Binaries + "\ScriptEngine.dll",VerMajor,VerMinor,VerRelease,Build)
 
 [Setup]
 AppName={#AppName}
