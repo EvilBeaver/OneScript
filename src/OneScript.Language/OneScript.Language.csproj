@@ -2,7 +2,7 @@
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   
   <PropertyGroup>
-    <TargetFrameworks>net452;netstandard2.0;netstandard2.1;</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworkId);netstandard2.0;netstandard2.1;</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -17,7 +17,7 @@
     <PackageTags>BSL 1C 1Script OneScript</PackageTags>
   </PropertyGroup>
   
-  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
+  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == '$(TargetFrameworkId)'">
     <Message Text="Copying StandaloneRunner resources" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\StandaloneRunner\" />
   </Target>

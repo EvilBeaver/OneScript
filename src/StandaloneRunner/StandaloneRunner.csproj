@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   <PropertyGroup>
-    <TargetFrameworks>net452</TargetFrameworks>
+    <TargetFramework>$(TargetFrameworkId)</TargetFramework>
     <Platforms>AnyCPU;x86</Platforms>
     <Configurations>Debug;Release</Configurations>
     <ApplicationIcon />
@@ -37,7 +38,7 @@
     <Delete Files="@(EmbeddedResource)" />
   </Target>
   
-  <Target Name="CopyToOscript" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
+  <Target Name="CopyToOscript" AfterTargets="Build">
     <Message Text="Copying StandaloneRunner output" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SolutionDir)oscript\" />
   </Target>

@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   
   <PropertyGroup>
-    <TargetFrameworks>net452;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworkId);netstandard2.0;netstandard2.1</TargetFrameworks>
     <Configurations>Debug;Release</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
@@ -21,8 +21,8 @@
     <PackageTags>BSL 1C 1Script OneScript</PackageTags>
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net452|AnyCPU'">
-    <DocumentationFile>bin\Release\net452\ScriptEngine.xml</DocumentationFile>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|$(TargetFrameworkId)|AnyCPU'">
+    <DocumentationFile>bin\Release\$(TargetFrameworkId)\ScriptEngine.xml</DocumentationFile>
     <NoWarn>1701;1702;1705;1591</NoWarn>
   </PropertyGroup>
   
@@ -31,10 +31,10 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Reference Include="CustomMarshalers" Condition="'$(TargetFramework)' == 'net452'" />
+    <Reference Include="CustomMarshalers" Condition="'$(TargetFramework)' == '$(TargetFrameworkId)'" />
   </ItemGroup>
   
-  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
+  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == '$(TargetFrameworkId)'">
     <Message Text="Copying StandaloneRunner resources" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildProjectDirectory)\..\StandaloneRunner\" />
   </Target>

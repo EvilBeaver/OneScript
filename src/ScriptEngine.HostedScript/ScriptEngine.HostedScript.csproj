@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   <PropertyGroup>
-    <TargetFrameworks>net452;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworkId);netstandard2.0;netstandard2.1</TargetFrameworks>
     <Configurations>Debug;Release</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
@@ -26,11 +26,11 @@
     <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
     <PackageTags>BSL 1C 1Script OneScript</PackageTags>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|net452'">
-    <DocumentationFile>bin\Release\net452\ScriptEngine.HostedScript.xml</DocumentationFile>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|$(TargetFrameworkId)'">
+    <DocumentationFile>bin\Release\$(TargetFrameworkId)\ScriptEngine.HostedScript.xml</DocumentationFile>
     <NoWarn>1701;1702;1705;1591</NoWarn>
   </PropertyGroup>
-  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net452'">
+  <Target Name="CopyToRunner" AfterTargets="Build" Condition="'$(TargetFramework)' == '$(TargetFrameworkId)'">
     <Message Text="Copying StandaloneRunner resources" />
     <ItemGroup>
       <CopyToStandalone Include="$(TargetPath)" />

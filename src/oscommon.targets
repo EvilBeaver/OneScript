@@ -8,6 +8,7 @@
         <Configuration Condition="'$(Release)' == ''">Release</Configuration>
         <Platform Condition="'$(Platform)' == ''">x86</Platform>
         <LangVersion>7.3</LangVersion>
+        <TargetFrameworkId Condition="'$(TargetFrameworkId)' == ''">net462</TargetFrameworkId>
     </PropertyGroup>
 	
     <PropertyGroup>

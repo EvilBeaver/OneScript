@@ -9,6 +9,7 @@
         <ArtifactsRoot>$(MSBuildProjectDirectory)/built</ArtifactsRoot>
         <Solution>$(MSBuildProjectDirectory)/src/1Script.sln</Solution>
         <Configuration>Release</Configuration>
+        <TargetFrameworkId>net462</TargetFrameworkId>
     </PropertyGroup>
     
     <ItemGroup>
@@ -31,11 +32,11 @@
         <Delete Files="@(TestsResults)" />
         <DeleteTree Directories="$(ArtifactsRoot)" Condition="Exists($(ArtifactsRoot))" />
 
-        <MSBuild Projects="$(Solution)" Targets="Clean" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=%(PlatformItem.MSBuildName)"/>
+        <MSBuild Projects="$(Solution)" Targets="restore;Clean" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=%(PlatformItem.MSBuildName);TargetFrameworkId=$(TargetFrameworkId)"/>
         
     </Target>  
         <Target Name="Make">
-        <MSBuild Projects="$(Solution)" Targets="restore;Build" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=%(PlatformItem.MSBuildName);"/>
+        <MSBuild Projects="$(Solution)" Targets="restore;Build" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=%(PlatformItem.MSBuildName);TargetFrameworkId=$(TargetFrameworkId)"/>
     </Target>
 
     <Target Name="CreateDistributions" DependsOnTargets="CreateInstaller;CreateNuget;CreateZip">
@@ -75,21 +76,21 @@
         <ItemGroup>
             <BuiltProjects Include="oscript" />
             <BuiltProjects Include="TestApp" />
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net452/**">
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/$(TargetFrameworkId)/**">
                 <Dest>$(TempFolder)/bin</Dest>
             </BinaryFiles>
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/**">
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/$(TargetFrameworkId)/**">
                 <Dest>$(TempFolder)/bin32</Dest>
             </BinaryFiles>
-            <AspFiles Include="$(MSBuildProjectDirectory)/src/ASPNETHandler/bin/$(Configuration)/net452/ASPNETHandler.dll"/>
+            <AspFiles Include="$(MSBuildProjectDirectory)/src/ASPNETHandler/bin/$(Configuration)/$(TargetFrameworkId)/ASPNETHandler.dll"/>
         </ItemGroup>
 
         <ItemGroup>
             <BuiltProjects Include="ScriptEngine.NativeApi" />
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net452/*.dll">
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/$(TargetFrameworkId)/*.dll">
                 <Dest>$(TempFolder)/bin</Dest>
             </BinaryFiles>
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/*.dll">
+            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/$(TargetFrameworkId)/*.dll">
                 <Dest>$(TempFolder)/bin32</Dest>
             </BinaryFiles>
         </ItemGroup>
@@ -100,7 +101,7 @@
         <Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="%(BinaryFiles.Dest)"/>
 
         <PropertyGroup>
-            <DebugSrc>$(MSBuildProjectDirectory)/src/VSCode.DebugAdapter/bin/$(Configuration)/net452</DebugSrc>
+            <DebugSrc>$(MSBuildProjectDirectory)/src/VSCode.DebugAdapter/bin/$(Configuration)/$(TargetFrameworkId)</DebugSrc>
         </PropertyGroup>
         <ItemGroup>
             <DbgBinFiles Include="$(DebugSrc)/*.dll"/>

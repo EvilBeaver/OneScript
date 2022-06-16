@@ -5,7 +5,7 @@
         <AssemblyName>ASPNETHandler</AssemblyName>
         <AssemblyTitle>HTTP services for 1Script</AssemblyTitle>
         <RootNamespace>ASPNETHandler</RootNamespace>
-        <TargetFramework>net452</TargetFramework>
+        <TargetFramework>$(TargetFrameworkId)</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
       <Compile Remove="AspNetGlobalContextFunctions.cs" />

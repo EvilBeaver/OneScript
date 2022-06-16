@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
 
   <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
+    <TargetFramework>$(TargetFrameworkId)</TargetFramework>
     <OutputType>Exe</OutputType>
     <Authors />
     <Product>OneScript Libraries Documenter</Product>
