@@ -53,7 +53,7 @@ namespace NUnitTests
 			var moduleSource = host.Engine.Loader.FromString(
 				@"Для Инд = 1 По 10 Цикл
 					Прервать
-				КонецЕсли");
+				КонецЦикла");
 
 			var module = host.Engine.GetCompilerService().Compile(moduleSource);
 		}
@@ -72,7 +72,7 @@ namespace NUnitTests
 
 			var module = host.Engine.GetCompilerService().Compile(moduleSource);
 		}
-		
+
 
 		[Test]
 		public void TestEndFunctionDoesNotEndIf()
@@ -176,7 +176,118 @@ namespace NUnitTests
 			}
 			Assert.IsTrue(exceptionThrown, "Не должно было скомпилироваться!");
 		}
-		
-		
+
+		[Test]
+		public void TestReturnBeforeException()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Процедура Проц()
+					Попытка
+						Возврат
+					Исключение
+					КонецПопытки
+				КонецПроцедуры");
+            _ = host.Engine.GetCompilerService().Compile(moduleSource);
+        }
+
+		[Test]
+		public void TestEndFunctionDoesNotEndProcedure()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Процедура Проц()
+					Возврат
+				КонецФункции");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "КонецФункции закрыл Процедуру!!!");
+		}
+
+		[Test]
+		public void TestEndProcedureDoesNotEndFunction()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Функция Функ()
+					Возврат 0
+				КонецПроцедуры");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "КонецПроцедуры закрыл Функцию!!!");
+		}
+
+		[Test]
+		public void TestElseifDoesNotEndProcedure()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Процедура Проц()
+					Возврат
+				ИначеЕсли");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "ИначеЕсли закрыл Процедуру!!!");
+		}
+
+		[Test]
+		public void TestEndTryDoesNotEndProcedure()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Процедура Проц()
+					Возврат
+				КонецПопытки");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "КонецПопытки закрыл Процедуру!!!");
+		}
+
+		[Test]
+		public void TestElseifDoesNotDelimitAddHandler()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Если Истина Тогда 
+					ДобавитьОбработчик ЭтотОбъект.Событие ИначеЕсли ЭтотОбъект.Обработчик
+				КонецЕсли");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "ИначеЕсли разделяет параметры ДобавитьОбработчик!!!");
+		}
 	}
 }

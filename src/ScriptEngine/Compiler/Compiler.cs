@@ -749,7 +749,7 @@ namespace ScriptEngine.Compiler
 
                 if (_lastExtractedLexem.Token != Token.Semicolon)
                 {
-                    if (endTokens.Contains(_lastExtractedLexem.Token) || LanguageDef.IsEndOfBlockToken(_lastExtractedLexem.Token))
+                    if (endTokens.Contains(_lastExtractedLexem.Token))
                     {
                         break;
                     }
@@ -1108,7 +1108,7 @@ namespace ScriptEngine.Compiler
             AddLineNumber(_lexer.CurrentLine);
 
             NextToken();
-            if (_lastExtractedLexem.Token == Token.Semicolon)
+            if (_lastExtractedLexem.Token == Token.Semicolon || LanguageDef.IsEndOfBlockToken(_lastExtractedLexem.Token))
             {
                 if (_tokenStack.Any(x => x.Contains(Token.EndTry)))
                 {
@@ -1141,7 +1141,7 @@ namespace ScriptEngine.Compiler
             if(!IsUserSymbol(ref _lastExtractedLexem))
                 throw CompilerException.IdentifierExpected();
             
-            BuildExpression(Token.Comma);
+            BuildExpressionUpTo(Token.Comma);
             var lastCommand = _module.Code[_module.Code.Count - 1]; 
             if (lastCommand.Code != OperationCode.ResolveProp)
             {
