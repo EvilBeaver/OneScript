@@ -381,7 +381,9 @@ namespace OneScript.Language
                    || token == Token.EndLoop
                    || token == Token.EndTry
                    || token == Token.EndOfText
-                   || token == Token.ElseIf;
+                   || token == Token.ElseIf
+                   || token == Token.Exception
+                   ;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

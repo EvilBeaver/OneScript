@@ -788,7 +788,241 @@ namespace OneScript.Language.Tests
 
             batch.NoMoreChildren();
         }
+
+
+        [Fact]
+        public void Check_No_Semicolon_In_If()
+        {
+            var code =
+                @"Если А = 1 Тогда
+                    Б = 2
+                ИначеЕсли Б = 2 Тогда
+                    А = 2
+                Иначе
+                    А = 0
+                КонецЕсли";
+
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+
+            var node = batch.NextChild();
+            node.Is(NodeKind.Condition);
+            node.NextChildIs(NodeKind.BinaryOperation)
+                .NextChildIs(NodeKind.CodeBatch)
+                .NextChildIs(NodeKind.Condition)
+                .NextChildIs(NodeKind.CodeBatch)
+                .NextChildIs(NodeKind.BlockEnd)
+                .NoMoreChildren();
+        }
+
+        [Fact]
+        public void Check_No_Semicolon_Before_EndDo()
+        {
+            var code =
+                @"Пока А = 1 Цикл
+                    Б = 2
+                КонецЦикла";
+
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+
+            var node = batch.NextChild();
+            node.Is(NodeKind.WhileLoop);
+            node.NextChildIs(NodeKind.BinaryOperation)
+                .NextChildIs(NodeKind.CodeBatch)
+                .NextChildIs(NodeKind.BlockEnd)
+                .NoMoreChildren();
+        }
+
+        [Fact]
+        public void Check_No_Semicolon_Before_EndProcedure()
+        {
+            var code =
+                @"Процедура А()
+                    Возврат
+                КонецПроцедуры";
+
+            var node = ParseModuleAndGetValidator(code);
+
+            node.Is(NodeKind.MethodsSection);
+
+            var methodNode = node.NextChild();
+            methodNode.Is(NodeKind.Method)
+                .NextChildIs(NodeKind.MethodSignature)
+                .NextChildIs(NodeKind.CodeBatch)
+                .NextChildIs(NodeKind.BlockEnd)
+                .NoMoreChildren();
+        }
+
+        [Fact]
+        public void Check_No_Semicolon_Before_EndFunction()
+        {
+            var code =
+                @"Функция А()
+                    Возврат 0
+                КонецФункции";
+
+            var node = ParseModuleAndGetValidator(code);
+            node.Is(NodeKind.MethodsSection);
+
+            var methodNode = node.NextChild();
+            methodNode.Is(NodeKind.Method)
+                .NextChildIs(NodeKind.MethodSignature)
+                .NextChildIs(NodeKind.CodeBatch)
+                .NextChildIs(NodeKind.BlockEnd)
+                .NoMoreChildren();
+        }
         
+        [Fact]
+        public void Check_No_Semicolon_In_Try()
+        {
+            var code =
+                @"Процедура Проц()
+                    Попытка
+                        Возврат
+                    Исключение
+                        ВызватьИсключение
+                    КонецПопытки
+                КонецПроцедуры";
+
+            var node = ParseModuleAndGetValidator(code);
+            node.Is(NodeKind.MethodsSection);
+
+            var methodNode = node.NextChild().Is(NodeKind.Method)
+                .NextChildIs(NodeKind.MethodSignature);
+
+            var tryNode = methodNode.NextChild().Is(NodeKind.CodeBatch)
+                .NextChild().Is(NodeKind.TryExcept);
+            tryNode.NextChild().Is(NodeKind.CodeBatch)
+                     .NextChild().Is(NodeKind.ReturnStatement);
+            tryNode.NextChild().Is(NodeKind.CodeBatch)
+                     .NextChild().Is(NodeKind.RaiseException);
+            tryNode.NextChild().Is(NodeKind.BlockEnd);
+
+            methodNode.NextChildIs(NodeKind.BlockEnd);
+            node.NoMoreChildren();
+        }
+
+        [Fact]
+        public void Check_EndProcedure_Does_Not_End_Function()
+        {
+            var code =
+                @"Функция А()
+                    Возврат 0
+                КонецПроцедуры";
+
+            CatchParsingError(code);
+        }
+
+        [Fact]
+        public void Check_EndFunction_Does_Not_End_Procedure()
+        {
+            var code =
+                @"Процедура А()
+                    Возврат 0
+                КонецФункции";
+
+            CatchParsingError(code);
+        }
+
+        [Fact]
+        public void Check_ElseIf_Does_Not_End_Procedure()
+        {
+            var code =
+                @"Процедура Проц()
+					Возврат
+				ИначеЕсли";
+
+            CatchParsingError(code);
+        }
+
+
+        [Fact]
+        public void Check_EndTry_Does_Not_End_Procedure()
+        {
+            var code =
+                @"Процедура Проц()
+					Возврат
+				КонецПопытки";
+
+            CatchParsingError(code);
+        }
+
+        [Fact]
+        public void Check_Elseif_Does_Not_Delimit_AddHandler()
+        {
+            var code =
+                @"Если Истина Тогда 
+					ДобавитьОбработчик ЭтотОбъект.Событие ИначеЕсли ЭтотОбъект.Обработчик
+				КонецЕсли";
+
+            CatchParsingError(code);
+        }
+
+        [Fact]
+        public void Check_Semicolon_Before_Procedures()
+        {
+            var code =
+                @"Перем Глоб
+				Процедура Проц1()
+					Возврат
+				КонецПроцедуры";
+
+            CatchParsingError(code);
+        }
+
+        [Fact]
+        public void Check_Semicolon_After_Locals()
+        {
+            var code =
+                @"Процедура Проц1()
+					Перем Локал
+					Если Истина Тогда
+						Локал = 1
+					КонецЕсли
+				КонецПроцедуры";
+
+            CatchParsingError(code);
+        }
+
+        [Fact]
+        public void Check_No_Semicolon_Between_Procedures()
+        {
+            var code =
+                @"Процедура Проц1()
+					Возврат
+				КонецПроцедуры;
+				Процедура Проц2()
+					Возврат
+				КонецПроцедуры";
+
+            CatchParsingError(code);
+        }
+
+        [Fact]
+        public void Check_Semicolon_Between_Statements()
+        {
+            var code =
+                @"Если Истина Тогда 
+					Ф = 1
+				КонецЕсли
+				Если Ложь Тогда 
+					Ф = 2
+				КонецЕсли";
+
+            CatchParsingError(code);
+        }
+
+
+        private static void CatchParsingError(string code)
+        {
+            var parser = PrepareParser(code);
+            _ = parser.ParseStatefulModule();
+
+            parser.Errors.Should().NotBeEmpty("error has not been detected");
+        }
+
+
         private static SyntaxTreeValidator ParseModuleAndGetValidator(string code)
         {
             return MakeValidator(code, p => p.ParseStatefulModule());
