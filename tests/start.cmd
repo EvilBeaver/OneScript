@@ -3,21 +3,27 @@
 setlocal
 set pathdir=%~dp0
 
-rem echo самя┐╜ я┐╜я┐╜я┐╜я┐╜ %CD%
-rem echo я┐╜рипя┐╜я┐╜ я┐╜я┐╜я┐╜ровя┐╜я┐╜я┐╜я┐╜ %pathdir%
+rem echo сами тесты %CD%
+rem echo скрипты тестирования %pathdir%
 
-set progfiles=%ProgramFiles(x86)%
-if NOT EXIST "%progfiles%" set progfiles=%ProgramFiles%
+for /f "tokens=*" %%i in ('where oscript') do set OSCRIPT=%%i
+if NOT "%OSCRIPT%"=="" GOTO run
 
+set OS_EXE=\OneScript\bin\oscript.exe
+set OSCRIPT=%ProgramFiles(x86)%%OS_EXE%
+if NOT EXIST "%OSCRIPT%" set OSCRIPT=%ProgramFiles%%OS_EXE%
+if NOT EXIST "%OSCRIPT%" set OSCRIPT=%ProgramW6432%%OS_EXE%
+
+:run
 echo on
-"%progfiles%\OneScript\bin\oscript.exe" "%pathdir%testrunner.os" -run %1 %2 %3 %4 %5
+"%OSCRIPT%" "%pathdir%testrunner.os" -run %1 %2 %3 %4 %5
 @echo off
 
 rem echo %ERRORLEVEL%
 if NOT %ERRORLEVEL%==0 GOTO bad_exit
 
 :success_exit
-rem echo я┐╜спешно
+rem echo Успешно
 rem pause
 
 exit /B 0

@@ -613,11 +613,11 @@ namespace OneScript.Language.SyntaxAnalysis
 
                 if (_lastExtractedLexem.Token != Token.Semicolon)
                 {
-                    if (endTokens.Contains(_lastExtractedLexem.Token) || LanguageDef.IsEndOfBlockToken(_lastExtractedLexem.Token))
+                    if (!endTokens.Contains(_lastExtractedLexem.Token))
                     {
-                        break;
+                        AddError(LocalizedErrors.SemicolonExpected());
                     }
-                    AddError(LocalizedErrors.SemicolonExpected());
+                    break;
                 }
                 NextLexem();
             }
@@ -922,7 +922,7 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             var node = new NonTerminalNode(NodeKind.RaiseException, _lastExtractedLexem);
             NextLexem();
-            if (_lastExtractedLexem.Token == Token.Semicolon)
+            if (_lastExtractedLexem.Token == Token.Semicolon || LanguageDef.IsEndOfBlockToken(_lastExtractedLexem.Token))
             {
                 if (!_tokenStack.Any(x => x.Contains(Token.EndTry)))
                 {
@@ -954,14 +954,16 @@ namespace OneScript.Language.SyntaxAnalysis
 
             NextLexem();
             
-            var source = BuildExpression(node, Token.Comma);
+            var source = BuildExpressionUpTo(node, Token.Comma);
+            if (source == null)
+                return;
+
             if (source.Kind != NodeKind.DereferenceOperation || !_lastDereferenceIsWritable)
             {
                 AddError(LocalizedErrors.WrongEventName());
                 return;
             }
 
-            NextLexem();
             var expr = BuildExpression(node, Token.Semicolon);
 
             if (expr.Kind != NodeKind.Identifier &&
@@ -1168,7 +1170,16 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 NextLexem();
             }
-            
+            else
+            {
+                if (_lastExtractedLexem.Token == Token.EndOfText)
+                    AddError(LocalizedErrors.UnexpectedEof());
+                else
+                    AddError(LocalizedErrors.ExpressionSyntax());
+
+                node = default;
+            }
+
             return node;
         }
         
