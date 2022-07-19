@@ -29,9 +29,9 @@ namespace ScriptEngine
 
         public RuntimeEnvironment()
         {
+            _injectedProperties = new PropertyBag();
             _scopeOfGlobalProperties = new Lazy<SymbolScope>(() =>
             {
-                _injectedProperties = new PropertyBag();
                 var scope = SymbolScope.FromContext(_injectedProperties);
                 _symbols.PushScope(scope);
                 return scope;

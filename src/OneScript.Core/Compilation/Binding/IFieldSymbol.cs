@@ -5,14 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System.Reflection;
-using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 
-namespace OneScript.Runtime.Binding
+namespace OneScript.Compilation.Binding
 {
-    internal class BslBoundMethodSymbol : BslMethodSymbol, IBoundSymbol
+    public interface IFieldSymbol : IVariableSymbol
     {
-        public object Target { get; set; }
+        BslFieldInfo Field { get; }
     }
 }

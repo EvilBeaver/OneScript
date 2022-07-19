@@ -10,9 +10,11 @@ using System.Reflection;
 
 namespace OneScript.Contexts
 {
-    public abstract class BslFieldInfo : FieldInfo
+    public abstract class BslFieldInfo : FieldInfo, INameAndAliasProvider
     {
         private AnnotationHolder _annotations;
+        
+        public string Alias { get; }
         
         private AnnotationHolder Annotations
         {

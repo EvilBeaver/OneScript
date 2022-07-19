@@ -5,9 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Compilation.Binding;
+using System.Reflection;
 
-namespace OneScript.Runtime.Binding
+namespace OneScript.Compilation.Binding
 {
     public interface IBoundSymbol : ISymbol
     {

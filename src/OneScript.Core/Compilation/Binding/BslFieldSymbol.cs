@@ -6,16 +6,18 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using OneScript.Compilation.Binding;
+using OneScript.Contexts;
 
-namespace OneScript.Runtime.Binding
+namespace OneScript.Compilation.Binding
 {
-    internal class BoundVariableSymbol : IVariableSymbol
+    internal class BslFieldSymbol : IFieldSymbol
     {
-        public string Name { get; set; }
-        public string Alias { get; set; }
-        public object Target => null;
+        public BslFieldInfo Field { get; set; }
         
-        public Type Type { get; set; }
+        public string Name => Field.Name;
+        
+        public string Alias => Field.Alias;
+
+        public Type Type => Field.FieldType;
     }
 }
