@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Execution;
 using OneScript.Sources;
 
 namespace ScriptEngine.HostedScript

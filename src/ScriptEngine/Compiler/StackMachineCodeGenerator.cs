@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using OneScript.Compilation;
 using OneScript.Contexts;
+using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Language.Extensions;
 using OneScript.Language.LexicalAnalysis;

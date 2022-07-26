@@ -7,8 +7,9 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using OneScript.Contexts;
+using OneScript.Sources;
 
-namespace OneScript.Sources
+namespace OneScript.Execution
 {
     public interface IExecutableModule
     {
