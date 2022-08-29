@@ -5,7 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
@@ -56,11 +59,24 @@ namespace ScriptEngine.Machine
                 {
                     Identifier = context.GetPropName(i),
                     Type = SymbolType.ContextProperty,
-                    Index = i
+                    Index = i,
+                    Annotations = HackGetAnnotations(context, i)
                 };
             }
 
             return infos;
+        }
+
+        private static AnnotationDefinition[] HackGetAnnotations(IRuntimeContextInstance context, int i)
+        {
+            if (!(context is UserScriptContextInstance userScript)) 
+                return Array.Empty<AnnotationDefinition>();
+            
+            if (i == 0)
+                return Array.Empty<AnnotationDefinition>();
+            
+            var variable = userScript.Module.Variables[i - 1];
+            return variable.Annotations;
         }
 
         public static IValue GetPropValue(this IRuntimeContextInstance context, string propName)
