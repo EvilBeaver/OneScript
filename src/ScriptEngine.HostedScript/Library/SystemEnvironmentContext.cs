@@ -270,7 +270,6 @@ namespace ScriptEngine.HostedScript.Library
                     break;
                 case PlatformID.Win32NT:
                     _osKernelName = "WindowsNT";
-                    _platformId = PlatformID.Win32NT;
                     break;
                 case PlatformID.MacOSX:
                     _osKernelName = "Darwin";
