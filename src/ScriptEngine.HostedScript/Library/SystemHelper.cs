@@ -25,6 +25,8 @@ namespace ScriptEngine.HostedScript.Library
             IntPtr buf = IntPtr.Zero;
             try
             {
+                // https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_utsname.h.html
+                // стандартом размер структуры не определён, поэтому считаем, что 8K хватит всем
                 buf = Marshal.AllocHGlobal(8192);
                 if (uname(buf) == 0)
                 {
