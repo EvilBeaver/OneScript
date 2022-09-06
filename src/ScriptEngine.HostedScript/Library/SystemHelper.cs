@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 
 namespace ScriptEngine.HostedScript.Library
 {
-    public static class SystemHelper
+    internal static class SystemHelper
     {
         public static string UnixKernelName()
         {
