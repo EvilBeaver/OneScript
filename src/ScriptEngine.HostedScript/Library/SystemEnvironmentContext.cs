@@ -4,6 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+using System;
 using System.Collections;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -16,6 +17,10 @@ namespace ScriptEngine.HostedScript.Library
     [ContextClass("СистемнаяИнформация", "SystemInfo")]
     public class SystemEnvironmentContext : AutoContext<SystemEnvironmentContext>
     {
+
+        private static readonly string _osKernelName;
+        private static readonly PlatformID _platformId;
+        
         /// <summary>
         /// Имя машины, на которой выполняется сценарий
         /// </summary>
@@ -41,6 +46,12 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
+        /// Имя ядра ОС/
+        /// </summary>
+        [ContextProperty("ИмяЯдра", "KernelName")]
+        public string KernelName => _osKernelName; // позволит различать linux/mac/hp-ux/sunos/...
+
+        /// <summary>
         /// Версия OneScript, выполняющая данный сценарий
         /// </summary>
         [ContextProperty("Версия","Version")]
@@ -60,7 +71,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             get
             {
-                switch (System.Environment.OSVersion.Platform) {
+                switch (_platformId) {
                     case System.PlatformID.Win32NT: return Is64BitOperatingSystem ? PlatformTypeEnum.Windows_x86_64 : PlatformTypeEnum.Windows_x86;
                     case System.PlatformID.MacOSX: return Is64BitOperatingSystem ? PlatformTypeEnum.MacOS_x86_64 : PlatformTypeEnum.MacOS_x86;
                     case System.PlatformID.Unix: return Is64BitOperatingSystem ? PlatformTypeEnum.Linux_x86_64 : PlatformTypeEnum.Linux_x86;
@@ -244,6 +255,27 @@ namespace ScriptEngine.HostedScript.Library
         public static SystemEnvironmentContext Create()
         {
             return new SystemEnvironmentContext();
+        }
+
+        static SystemEnvironmentContext()
+        {
+            _platformId = System.Environment.OSVersion.Platform;
+            switch (_platformId)
+            {
+                case PlatformID.Unix:
+                    _osKernelName = SystemHelper.UnixKernelName();
+                    if (_osKernelName == "Darwin")
+                    {
+                        _platformId = PlatformID.MacOSX;
+                    }
+                    break;
+                case PlatformID.Win32NT:
+                    _osKernelName = "WindowsNT";
+                    break;
+                case PlatformID.MacOSX:
+                    _osKernelName = "Darwin";
+                    break;
+            }
         }
     }
 }
