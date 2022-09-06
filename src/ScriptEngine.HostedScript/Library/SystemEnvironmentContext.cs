@@ -48,6 +48,7 @@ namespace ScriptEngine.HostedScript.Library
         /// <summary>
         /// Имя ядра ОС/
         /// </summary>
+        [ContextProperty("ИмяЯдра", "KernelName")]
         public string KernelName => _osKernelName; // позволит различать linux/mac/hp-ux/sunos/...
 
         /// <summary>
