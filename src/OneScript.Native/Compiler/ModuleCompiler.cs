@@ -41,7 +41,7 @@ namespace OneScript.Native.Compiler
             {
                 Source = moduleInfo
             };
-
+            
             Visit(moduleNode);
 
             return _module;
@@ -140,6 +140,7 @@ namespace OneScript.Native.Compiler
             var context = MakeContext();
             var methCompiler = new MethodCompiler(context, methodInfo);
             methCompiler.CompileMethod(methodNode);
+            _module.Methods.Add(methodInfo);
         }
  
         protected override void VisitModuleBody(BslSyntaxNode moduleBody)

@@ -28,6 +28,7 @@ namespace OneScript.Dynamic.Tests
             var module = CreateModule("");
             Assert.Empty(module.Fields);
             Assert.Empty(module.Methods);
+            module.ModuleBody.Should().BeNull();
         }
 
         [Fact]
@@ -36,14 +37,86 @@ namespace OneScript.Dynamic.Tests
             var module = CreateModule("А = 1");
             module.Methods.Should().HaveCount(1);
         }
-    
+
+        [Fact]
+        public void CanCompile_Module_With_SeveralMethods()
+        {
+            var module = CreateModule(
+                @"Процедура А()
+                    Б = 1;
+                КонецПроцедуры
+
+                Процедура Б()
+                    Б = 1;
+                КонецПроцедуры
+
+                В = 4;
+                ");
+
+            module.Methods.Should().HaveCount(3);
+            module.ModuleBody.Should().NotBeNull();
+        }
+        
+        [Fact]
+        public void CanCompile_Module_With_AllSections()
+        {
+            var module = CreateModule(
+                @"Перем Ы;
+
+                Процедура А()
+                    Б = 1;
+                КонецПроцедуры
+
+                Процедура Б()
+                    Б = 1;
+                КонецПроцедуры
+
+                В = 4;
+                ");
+            
+            module.Methods.Should().HaveCount(3);
+            module.ModuleBody.Should().NotBeNull();
+            module.Fields.Should().HaveCount(1);
+        }
+        
         private class CompileHelper
         {
             private IErrorSink _errors = new ListErrorSink();
             private SourceCode _codeIndexer;
             private BslSyntaxNode _module;
 
-            public BslSyntaxNode Parse(string code)
+            public BslSyntaxNode ParseBatch(string code)
+            {
+                var parser = GetBslParser(code);
+
+                _module = parser.ParseCodeBatch(true);
+                ThrowOnErrors();
+
+                return _module;
+            }
+            
+            public BslSyntaxNode ParseModule(string code)
+            {
+                var parser = GetBslParser(code);
+
+                _module = parser.ParseStatefulModule();
+                ThrowOnErrors();
+
+                return _module;
+            }
+
+            private void ThrowOnErrors()
+            {
+                if (_errors.HasErrors)
+                {
+                    var prefix = Locale.NStr("ru = 'Ошибка комиляции модуля'; en = 'Module compilation error'");
+                    var text = string.Join('\n',
+                        (new[] { prefix }).Concat(_errors.Errors.Select(x => x.ToString(CodeError.ErrorDetails.Simple))));
+                    throw new Exception(text);
+                }
+            }
+
+            private DefaultBslParser GetBslParser(string code)
             {
                 var lexer = new DefaultLexer();
                 lexer.Iterator = SourceCodeBuilder.Create()
@@ -52,18 +125,9 @@ namespace OneScript.Dynamic.Tests
                     .Build()
                     .CreateIterator();
                 _codeIndexer = lexer.Iterator.Source;
-           
+
                 var parser = new DefaultBslParser(lexer, _errors, new PreprocessorHandlers());
-
-                _module = parser.ParseCodeBatch(true);
-                if (_errors.HasErrors)
-                {
-                    var prefix = Locale.NStr("ru = 'Ошибка комиляции модуля'; en = 'Module compilation error'");
-                    var text = string.Join('\n', (new[] {prefix}).Concat(_errors.Errors.Select(x => x.Description)));
-                    throw new Exception(text);
-                }
-
-                return _module;
+                return parser;
             }
 
             public DynamicModule Compile(SymbolTable scopes)
@@ -76,14 +140,14 @@ namespace OneScript.Dynamic.Tests
         private DynamicModule CreateModule(string code)
         {
             var helper = new CompileHelper();
-            helper.Parse(code);
+            helper.ParseModule(code);
             return helper.Compile(new SymbolTable());
         }
         
         private DynamicModule CreateModule(string code, SymbolTable scopes)
         {
             var helper = new CompileHelper();
-            helper.Parse(code);
+            helper.ParseBatch(code);
             return helper.Compile(scopes);
         }
     }

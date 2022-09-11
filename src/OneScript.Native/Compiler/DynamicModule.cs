@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using OneScript.Contexts;
 using OneScript.Execution;
 using OneScript.Sources;
@@ -23,7 +24,7 @@ namespace OneScript.Native.Compiler
 
         public IList<BslMethodInfo> Methods { get; } = new List<BslMethodInfo>();
 
-        public BslMethodInfo ModuleBody => throw new NotImplementedException();
+        public BslMethodInfo ModuleBody => Methods.FirstOrDefault(x => x.Name == IExecutableModule.BODY_METHOD_NAME);
 
         public SourceCode Source { get; set; }
     }

@@ -1094,7 +1094,14 @@ namespace OneScript.Native.Compiler
             var symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
             var args = PrepareCallArguments(node.ArgumentList, symbol.Method.GetParameters());
 
-            var context = Expression.Constant(((IBoundSymbol)symbol).Target);
+            var target = ((IBoundSymbol)symbol).Target;
+
+            Expression context = target switch
+            {
+                ParameterExpression pe => pe,
+                _ => Expression.Constant(target)
+            };
+            
             return Expression.Call(context, symbol.Method, args);
         }
         
