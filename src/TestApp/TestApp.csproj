@@ -9,13 +9,18 @@
     <OutputType>WinExe</OutputType>
     <StartupObject>TestApp.App</StartupObject>
     <Platforms>x86;AnyCPU</Platforms>
-    <Configurations>Debug;Release</Configurations>
+    <Configurations>Debug;Release;LinuxDebug</Configurations>
     <UseWPF>true</UseWPF>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <PropertyGroup>
     <AssemblyTitle>1Script ui host</AssemblyTitle>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'LinuxDebug' ">
+    <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+    <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

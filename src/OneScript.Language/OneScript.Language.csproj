@@ -3,6 +3,8 @@
   
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;</TargetFrameworks>
+    <Configurations>Debug;Release;LinuxDebug</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -15,6 +17,11 @@
     <PackageDescription>Parser components for 1Script and/or BSL</PackageDescription>
     <PackageCopyright>OneScript OpenSource Community 2019</PackageCopyright>
     <PackageTags>BSL 1C 1Script OneScript</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'LinuxDebug' ">
+    <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+    <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
   </PropertyGroup>
 
 </Project>

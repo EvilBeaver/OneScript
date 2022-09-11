@@ -7,10 +7,17 @@
     <OutputType>Exe</OutputType>
     <Authors />
     <Product>OneScript Libraries Documenter</Product>
+    <Configurations>Debug;Release;LinuxDebug</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
   <PropertyGroup>
     <AssemblyTitle>1C (BSL) language parser</AssemblyTitle>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'LinuxDebug' ">
+    <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+    <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

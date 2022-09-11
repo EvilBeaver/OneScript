@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <Configurations>Debug;Release</Configurations>
+    <Configurations>Debug;Release;LinuxDebug</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
   <ItemGroup>
@@ -28,5 +28,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|net452'">
     <DocumentationFile>bin\Release\net452\ScriptEngine.HostedScript.xml</DocumentationFile>
     <NoWarn>1701;1702;1705;1591</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'LinuxDebug' ">
+    <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+    <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
   </PropertyGroup>
 </Project>

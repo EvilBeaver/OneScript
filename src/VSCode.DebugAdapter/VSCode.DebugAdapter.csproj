@@ -6,13 +6,18 @@
     <TargetFramework>net461</TargetFramework>
     <OutputType>Exe</OutputType>
     <StartupObject>VSCode.DebugAdapter.Program</StartupObject>
-    <Configurations>Debug;Release</Configurations>
+    <Configurations>Debug;Release;LinuxDebug</Configurations>
     <AssemblyTitle>VSC debug adapter for 1Script</AssemblyTitle>
     <Platforms>AnyCPU</Platforms>
     <LangVersion>7.3</LangVersion>
     <Version>1.7.0.0</Version>
     <FileVersion>1.7.0.0</FileVersion>
     
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'LinuxDebug' ">
+    <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+    <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />

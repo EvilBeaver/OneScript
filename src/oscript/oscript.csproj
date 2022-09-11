@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <StartupObject>oscript.Program</StartupObject>
     <Platforms>x86;AnyCPU</Platforms>
-    <Configurations>Debug;Release</Configurations>
+    <Configurations>Debug;Release;LinuxDebug</Configurations>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,6 +25,10 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
     <IntermediateOutputPath>obj\x86\Debug</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'LinuxDebug' ">
+    <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+    <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript.DebugProtocol\OneScript.DebugProtocol.csproj" />

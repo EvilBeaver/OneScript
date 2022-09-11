@@ -81,6 +81,19 @@
     <SuppressPdbOutput>True</SuppressPdbOutput>
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'LinuxDebug|AnyCPU' ">
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <DefineConstants>Debug;ProductVersion=$(Version);OutputPathForBuild=$(OutputPathForBuild);LibraryContentPath=$(OutputPathForBuild)lib;DocContentPath=$(OutputPathForBuild)doc</DefineConstants>
+    <CompilerAdditionalOptions>
+    </CompilerAdditionalOptions>
+    <LinkerAdditionalOptions>-cultures:ru-RU</LinkerAdditionalOptions>
+    <SuppressAllWarnings>False</SuppressAllWarnings>
+    <Pedantic>False</Pedantic>
+    <VerboseOutput>True</VerboseOutput>
+    <WixVariables>
+    </WixVariables>
+    <OutputPath>bin\LinuxDebug\</OutputPath>
+  </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
 	Other similar extension points exist, see Wix.targets.
