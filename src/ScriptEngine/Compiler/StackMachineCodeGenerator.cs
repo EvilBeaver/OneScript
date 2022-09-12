@@ -290,7 +290,7 @@ namespace ScriptEngine.Compiler
             }
             catch (CompilerException)
             {
-                AddError(CompilerErrors.AmbiguousMethod(signature.MethodName), signature.Location);
+                AddError(LocalizedErrors.DuplicateMethodDefinition(signature.MethodName), signature.Location);
                 binding = default;
             }
             _module.MethodRefs.Add(binding);

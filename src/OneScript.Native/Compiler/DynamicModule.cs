@@ -5,12 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using OneScript.Contexts;
 using OneScript.Execution;
 using OneScript.Sources;
+using OneScript.Values;
 
 namespace OneScript.Native.Compiler
 {
@@ -25,6 +26,8 @@ namespace OneScript.Native.Compiler
         public IList<BslMethodInfo> Methods { get; } = new List<BslMethodInfo>();
 
         public BslMethodInfo ModuleBody => Methods.FirstOrDefault(x => x.Name == IExecutableModule.BODY_METHOD_NAME);
+
+        public ParameterExpression ThisObjectField { get; } = Expression.Variable(typeof(BslObjectValue), "$this");
 
         public SourceCode Source { get; set; }
     }

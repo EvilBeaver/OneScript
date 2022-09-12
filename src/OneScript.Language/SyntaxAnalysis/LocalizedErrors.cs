@@ -122,5 +122,11 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public static CodeError UseBuiltInFunctionAsProcedure() =>
             Create("Использование встроенной функции, как процедуры", "Using build-in function as procedure");
+        
+        public static CodeError DuplicateVarDefinition(string varName) =>
+            Create($"Переменная {varName} уже определена", $"Variable {varName} already defined");
+        
+        public static CodeError DuplicateMethodDefinition(string methodName) =>
+            Create($"Метод {methodName} уже определен", $"Method {methodName} already defined");
     }
 }

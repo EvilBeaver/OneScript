@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using OneScript.Contexts;
+using OneScript.Values;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
@@ -23,7 +24,7 @@ namespace ScriptEngine.Machine
         }
 
         private readonly List<IValue> _values = new List<IValue>();
-        private readonly List<PropertyAccessFlags> _accessFlags = new List<PropertyAccessFlags>();
+        private readonly List<BslPropertyInfo> _definitions = new List<BslPropertyInfo>();
 
         public void Insert(IValue value, string identifier)
         {
@@ -37,13 +38,17 @@ namespace ScriptEngine.Machine
             if (num == _values.Count)
             {
                 _values.Add(null);
-                _accessFlags.Add(new PropertyAccessFlags() { CanRead = canRead, CanWrite = canWrite });
+                _definitions.Add(BslPropertyBuilder.Create()
+                    .Name(identifier)
+                    .CanRead(canRead)
+                    .CanWrite(canWrite)
+                    .SetDispatchingIndex(num)
+                    .ReturnType(typeof(BslValue))
+                    .Build()
+                );
             }
 
-            if (value == null)
-            {
-                value = ValueFactory.Create();
-            }
+            value ??= ValueFactory.Create();
 
             SetPropValue(num, value);
 
@@ -52,12 +57,12 @@ namespace ScriptEngine.Machine
 
         public override bool IsPropReadable(int propNum)
         {
-            return _accessFlags[propNum].CanRead;
+            return _definitions[propNum].CanRead;
         }
 
         public override bool IsPropWritable(int propNum)
         {
-            return _accessFlags[propNum].CanWrite;
+            return _definitions[propNum].CanWrite;
         }
 
         public override IValue GetPropValue(int propNum)
@@ -70,13 +75,12 @@ namespace ScriptEngine.Machine
             _values[propNum] = newVal;
         }
 
-        public int Count
+        public override BslPropertyInfo GetPropertyInfo(int propertyNumber)
         {
-            get
-            {
-                return _values.Count;
-            }
+            return _definitions[propertyNumber];
         }
+
+        public int Count => _values.Count;
 
         public override int GetMethodsCount()
         {

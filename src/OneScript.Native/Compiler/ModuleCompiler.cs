@@ -42,7 +42,15 @@ namespace OneScript.Native.Compiler
                 Source = moduleInfo
             };
             
-            Visit(moduleNode);
+            symbols.PushScope(new SymbolScope());
+            try
+            {
+                Visit(moduleNode);
+            }
+            finally
+            {
+                symbols.PopScope();
+            }
 
             return _module;
         }
@@ -67,6 +75,13 @@ namespace OneScript.Native.Compiler
             
             foreach (var methodNode in methodsSection.Children.Cast<MethodNode>())
             {
+                var signature = methodNode.Signature;
+                if (Symbols.FindMethod(signature.MethodName, out _))
+                {
+                    AddError(LocalizedErrors.DuplicateMethodDefinition(signature.MethodName), signature.Location);
+                    continue;
+                }
+                
                 var factory = new BslMethodInfoFactory<BslNativeMethodInfo>(() => new BslNativeMethodInfo());
                 var builder = factory.NewMethod();
                 VisitMethodSignature(builder, methodNode.Signature);
@@ -75,7 +90,8 @@ namespace OneScript.Native.Compiler
                 var symbol = new MethodSymbol
                 {
                     Name = methodInfo.Name,
-                    Method = methodInfo
+                    Method = methodInfo,
+                    Target = _module.ThisObjectField
                 };
                 
                 Symbols.TopScope().Methods.Add(symbol, methodInfo.Name);
@@ -122,6 +138,21 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitModuleVariable(VariableDefinitionNode varNode)
         {
+            if (Symbols.FindVariable(varNode.Name, out _))
+            {
+                AddError(LocalizedErrors.DuplicateVarDefinition(varNode.Name));
+                return;
+            }
+
+            var varSymbol = new VariableSymbol
+            {
+                Name = varNode.Name,
+                Target = _module.ThisObjectField,
+                Type = typeof(BslValue)
+            };
+
+            Symbols.TopScope().AddVariable(varSymbol);
+            
             var annotations = CompilerHelpers.GetAnnotations(varNode.Annotations);
             var field = BslFieldBuilder.Create()
                 .Name(varNode.Name)

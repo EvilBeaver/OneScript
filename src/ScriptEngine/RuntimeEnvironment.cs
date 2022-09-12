@@ -68,7 +68,7 @@ namespace ScriptEngine
             
             var num = _injectedProperties.Insert(value, identifier, true, !readOnly);
             // временный костыль для создания BslBoundProperty из другой сборки
-            GlobalScope.AddVariable(_injectedProperties.GetPropertyInfo(num).MakePropSymbol(_injectedProperties));
+            //GlobalScope.AddVariable(_injectedProperties.GetPropertyInfo(num).MakePropSymbol(_injectedProperties));
         }
         
         public void InjectGlobalProperty(IValue value, string identifier, bool readOnly)

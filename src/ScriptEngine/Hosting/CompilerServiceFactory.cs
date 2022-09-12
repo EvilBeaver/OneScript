@@ -6,7 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Commons;
 using OneScript.Compilation.Binding;
+using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
@@ -36,7 +38,17 @@ namespace ScriptEngine.Hosting
 
         public ICompilerService CreateInstance(SymbolTable context)
         {
-            throw new NotImplementedException();
+            var obsoleteCtx = new CompilerContext();
+            for (int i = 0; i < context.ScopeCount; i++)
+            {
+                var scope = context.GetScope(i);
+                var goodOldScope = new ScriptEngine.Compiler.SymbolScope();
+                scope.Methods.ForEach(x => goodOldScope.DefineMethod(x.Method));
+                scope.Variables.ForEach(x => goodOldScope.DefineProperty(x.Name, x.Alias));
+                obsoleteCtx.PushScope(goodOldScope);
+            }
+
+            return CreateInstance(obsoleteCtx);
         }
         
         public ICompilerService CreateInstance(ICompilerContext context)

@@ -74,6 +74,12 @@ namespace OneScript.Native.Compiler
             Errors.AddError(err);
         }
         
+        protected void AddError(CodeError err, CodeRange location)
+        {
+            err.Position = ToCodePosition(location);
+            Errors.AddError(err);
+        }
+        
         protected ErrorPositionInfo ToCodePosition(CodeRange range)
         {
             return new ErrorPositionInfo

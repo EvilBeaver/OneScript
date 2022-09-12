@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using OneScript.Commons;
@@ -79,11 +80,44 @@ namespace OneScript.Dynamic.Tests
             module.Fields.Should().HaveCount(1);
         }
         
+        [Fact]
+        public void Detects_DuplicateVars_InModule()
+        {
+            List<CodeError> errors = new List<CodeError>();
+            CreateModule(
+                @"Перем Ы;
+                Перем О;
+                Перем Ы;
+                ", errors);
+
+            errors.Should().HaveCount(1);
+            errors[0].ErrorId.Should().Be(nameof(LocalizedErrors.DuplicateVarDefinition));
+        }
+        
+        [Fact]
+        public void Detects_DuplicateMethods_InModule()
+        {
+            List<CodeError> errors = new List<CodeError>();
+            CreateModule(
+                @"Процедура А()
+                    Б = 1;
+                КонецПроцедуры
+
+                Процедура А()
+                    Б = 1;
+                КонецПроцедуры
+                ", errors);
+
+            errors.Should().HaveCount(1);
+            errors[0].ErrorId.Should().Be(nameof(LocalizedErrors.DuplicateMethodDefinition));
+        }
+        
         private class CompileHelper
         {
             private IErrorSink _errors = new ListErrorSink();
             private SourceCode _codeIndexer;
             private BslSyntaxNode _module;
+            public IEnumerable<CodeError> Errors => _errors.Errors;
 
             public BslSyntaxNode ParseBatch(string code)
             {
@@ -142,6 +176,15 @@ namespace OneScript.Dynamic.Tests
             var helper = new CompileHelper();
             helper.ParseModule(code);
             return helper.Compile(new SymbolTable());
+        }
+        
+        private DynamicModule CreateModule(string code, List<CodeError> errors)
+        {
+            var helper = new CompileHelper();
+            helper.ParseModule(code);
+            var result = helper.Compile(new SymbolTable());
+            errors.AddRange(helper.Errors);
+            return result;
         }
         
         private DynamicModule CreateModule(string code, SymbolTable scopes)

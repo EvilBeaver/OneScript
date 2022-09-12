@@ -143,6 +143,11 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitMethodVariable(MethodNode method, VariableDefinitionNode variableDefinition)
         {
+            if (Symbols.FindVariable(variableDefinition.Name, out _))
+            {
+                AddError(LocalizedErrors.DuplicateVarDefinition(variableDefinition.Name));
+                return;
+            }
             var expr = Expression.Variable(typeof(BslValue), variableDefinition.Name);
             _localVariables.Add(expr);
         }
@@ -1101,8 +1106,13 @@ namespace OneScript.Native.Compiler
                 ParameterExpression pe => pe,
                 _ => Expression.Constant(target)
             };
-            
-            return Expression.Call(context, symbol.Method, args);
+
+            return symbol.Method switch
+            {
+                ContextMethodInfo contextMethod => Expression.Call(context, contextMethod.GetWrappedMethod(), args),
+                BslNativeMethodInfo native => Expression.Invoke(native.Implementation, args),
+                _ => throw new InvalidOperationException($"Unknown method type {symbol.Method.GetType()}")
+            };
         }
         
         private Expression CreateBuiltInFunctionCall(CallNode node)

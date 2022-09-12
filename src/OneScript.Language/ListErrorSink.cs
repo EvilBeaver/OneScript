@@ -13,7 +13,7 @@ namespace OneScript.Language
     {
         private List<CodeError> _errors;
 
-        public IEnumerable<CodeError> Errors => _errors;
+        public IEnumerable<CodeError> Errors => _errors ?? new List<CodeError>();
 
         public bool HasErrors => _errors != default && _errors.Count > 0;
         
