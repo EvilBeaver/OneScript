@@ -1378,7 +1378,7 @@ namespace OneScript.Language.SyntaxAnalysis
             PushStructureToken(Token.ClosePar);
             try
             {
-                BuildExpressionUpTo(nameArg, Token.Comma);
+                BuildExpression(nameArg, Token.Comma);
                 node.AddChild(nameArg);
                 var callArgs = new NonTerminalNode(NodeKind.CallArgumentList, _lastExtractedLexem);
                 WalkCallArguments(callArgs);
