@@ -17,12 +17,6 @@ namespace ScriptEngine.Machine
 {
     class PropertyBag : DynamicPropertiesAccessor, IAttachableContext
     {
-        private struct PropertyAccessFlags
-        {
-            public bool CanRead;
-            public bool CanWrite;
-        }
-
         private readonly List<IValue> _values = new List<IValue>();
         private readonly List<BslPropertyInfo> _definitions = new List<BslPropertyInfo>();
 
