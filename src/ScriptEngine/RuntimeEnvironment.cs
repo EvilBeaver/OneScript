@@ -17,23 +17,34 @@ namespace ScriptEngine
     public class RuntimeEnvironment
     {
         private readonly SymbolTable _symbols = new SymbolTable();
-        private readonly Lazy<SymbolScope> _scopeOfGlobalProperties;
+        private SymbolScope _scopeOfGlobalProperties;
+
 //***        
         //private readonly ICompilerContext _symbolScopes = new CompilerContext();
         //private SymbolScope _globalScope;
-        private PropertyBag _injectedProperties;
+        private readonly PropertyBag _injectedProperties;
 
         private readonly List<AttachedContext> _contexts = new List<AttachedContext>();
+
         private readonly List<ExternalLibraryDef> _externalLibs = new List<ExternalLibraryDef>();
 //***
 
         public RuntimeEnvironment()
         {
             _injectedProperties = new PropertyBag();
-            _scopeOfGlobalProperties = new Lazy<SymbolScope>(() => _symbols.PushContext(_injectedProperties));
         }
 
-        private SymbolScope GlobalScope => _scopeOfGlobalProperties.Value;
+        private void CreateGlobalScopeIfNeeded()
+        {
+            if (_scopeOfGlobalProperties != null) 
+                return;
+            
+            lock (_injectedProperties)
+            {
+                _scopeOfGlobalProperties ??= _symbols.PushContext(_injectedProperties);
+                _contexts.Add(AttachedContext.Create(_injectedProperties));
+            }
+        }
 
         public void InjectObject(IAttachableContext context)
         {
@@ -60,10 +71,9 @@ namespace ScriptEngine
             {
                 throw new ArgumentException("Invalid identifier", nameof(alias));
             }
-            
+            CreateGlobalScopeIfNeeded();
             var num = _injectedProperties.Insert(value, identifier, true, !readOnly);
-            // временный костыль для создания BslBoundProperty из другой сборки
-            //GlobalScope.AddVariable(_injectedProperties.GetPropertyInfo(num).MakePropSymbol(_injectedProperties));
+            _scopeOfGlobalProperties.Variables.Add(_injectedProperties.GetPropertyInfo(num).ToSymbol(), identifier, alias);
         }
         
         public void InjectGlobalProperty(IValue value, string identifier, bool readOnly)
