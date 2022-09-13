@@ -32,13 +32,12 @@ namespace OneScript.Compilation.Binding
                 if(attr == null)
                     continue;
                 
-                var symbol = new BslBoundMethodSymbol
+                var symbol = new BslMethodSymbol
                 {
                     Method = new ContextMethodInfo(info),
-                    Target = target
                 };
 
-                scope.AddMethod(symbol);
+                scope.Methods.Add(symbol, symbol.Name, symbol.Alias);
             }
             
             foreach (var info in type.GetProperties())
@@ -47,13 +46,12 @@ namespace OneScript.Compilation.Binding
                 if(attr == null)
                     continue;
                 
-                var symbol = new BslBoundPropertySymbol
+                var symbol = new BslPropertySymbol
                 {
                     Property = new ContextPropertyInfo(info),
-                    Target = target
                 };
 
-                scope.AddVariable(symbol);
+                scope.Variables.Add(symbol, symbol.Name, symbol.Alias);
             }
 
             return scope;
@@ -64,20 +62,14 @@ namespace OneScript.Compilation.Binding
             var scope = new SymbolScope();
             for (int i = 0; i < target.GetPropCount(); i++)
             {
-                scope.AddVariable(new BslBoundPropertySymbol
-                {
-                    Target = target,
-                    Property = target.GetPropertyInfo(i)
-                });
+                var targetProp = target.GetPropertyInfo(i);
+                scope.Variables.Add(new BslPropertySymbol { Property = targetProp }, targetProp.Name, targetProp.Alias);
             }
             
             for (int i = 0; i < target.GetMethodsCount(); i++)
             {
-                scope.AddMethod(new BslBoundMethodSymbol
-                {
-                    Target = target,
-                    Method = target.GetMethodInfo(i)
-                });
+                var targetMeth = target.GetMethodInfo(i);
+                scope.Methods.Add(new BslMethodSymbol { Method = targetMeth }, targetMeth.Name, targetMeth.Alias);
             }
 
             return scope;
@@ -89,24 +81,22 @@ namespace OneScript.Compilation.Binding
             
             foreach (var info in target.GetMethods())
             {
-                var symbol = new BslBoundMethodSymbol
+                var symbol = new BslMethodSymbol
                 {
-                    Method = info,
-                    Target = target
+                    Method = info
                 };
 
-                scope.AddMethod(symbol);
+                scope.Methods.Add(symbol, symbol.Name, symbol.Alias);
             }
             
             foreach (var info in target.GetProperties())
             {
-                var symbol = new BslBoundPropertySymbol
+                var symbol = new BslPropertySymbol
                 {
-                    Property = info,
-                    Target = target
+                    Property = info
                 };
 
-                scope.AddVariable(symbol);
+                scope.Variables.Add(symbol, symbol.Name, symbol.Alias);
             }
 
             return scope;

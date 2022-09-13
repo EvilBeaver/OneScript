@@ -13,7 +13,7 @@ using OneScript.Types;
 
 namespace OneScript.Values
 {
-    public class BslNumericValue : BslPrimitiveValue, IEquatable<BslNumericValue>
+    public sealed class BslNumericValue : BslPrimitiveValue, IEquatable<BslNumericValue>
     {
         private static readonly BslNumericValue[] _popularValues = new BslNumericValue[10];
         static BslNumericValue()

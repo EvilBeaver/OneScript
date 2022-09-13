@@ -9,7 +9,7 @@ using OneScript.Types;
 
 namespace OneScript.Values
 {
-    public class BslUndefinedValue : BslPrimitiveValue
+    public sealed class BslUndefinedValue : BslPrimitiveValue
     {
         public static BslUndefinedValue Instance { get; } = new BslUndefinedValue();
 

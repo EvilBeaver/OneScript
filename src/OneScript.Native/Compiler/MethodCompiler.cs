@@ -95,7 +95,7 @@ namespace OneScript.Native.Compiler
             {
                 MethodReturn = Expression.Label(typeof(BslValue))
             });
-            Symbols.PushScope(new SymbolScope());
+            Symbols.PushScope(new SymbolScope(), null);
             FillParameterVariables();
 
             try
@@ -133,10 +133,15 @@ namespace OneScript.Native.Compiler
         private void FillParameterVariables()
         {
             _declaredParameters = _method.GetBslParameters();
-            var localScope = Symbols.TopScope();
+            var localScope = Symbols.GetScope(Symbols.ScopeCount-1);
             foreach (var parameter in _declaredParameters)
             {
-                localScope.AddVariable(parameter.Name, parameter.ParameterType);
+                var paramSymbol = new LocalVariableSymbol
+                {
+                    Name = parameter.Name,
+                    Type = parameter.ParameterType
+                };
+                localScope.Variables.Add(paramSymbol, paramSymbol.Name);
                 _localVariables.Add(Expression.Parameter(parameter.ParameterType, parameter.Name));
             }
         }
@@ -201,10 +206,10 @@ namespace OneScript.Native.Compiler
             }
 
             var symbol = Symbols.GetScope(binding.ScopeNumber).Variables[binding.MemberNumber];
-            if (symbol is IPropertySymbol && symbol is IBoundSymbol boundSymbol)
+            if (symbol is IPropertySymbol)
             {
                 // prop read
-                var target = boundSymbol.Target;
+                var target = GetPropertyBinding(binding, symbol);
                 _statementBuildParts.Push(Expression.Constant(target));
             }
             else
@@ -213,6 +218,18 @@ namespace OneScript.Native.Compiler
                 var expr = _localVariables[binding.MemberNumber];
                 _statementBuildParts.Push(expr);
             }
+        }
+
+        private object GetPropertyBinding(SymbolBinding binding, IVariableSymbol symbol)
+        {
+            return Symbols.GetBinding(binding.ScopeNumber) ?? 
+                   throw new InvalidOperationException($"Property {symbol.Name} is not bound to a value");
+        }
+        
+        private object GetMethodBinding(SymbolBinding binding, IMethodSymbol symbol)
+        {
+            return Symbols.GetBinding(binding.ScopeNumber) ?? 
+                   throw new InvalidOperationException($"Method {symbol.Name} is not bound to a value");
         }
 
         private void MakeReadPropertyAccess(TerminalNode operand)
@@ -295,15 +312,16 @@ namespace OneScript.Native.Compiler
             if (hasVar)
             {
                 var symbol = Symbols.GetScope(varBinding.ScopeNumber).Variables[varBinding.MemberNumber];
-                if (!(symbol is PropertySymbol propSymbol))
+                if (!(symbol is IPropertySymbol propSymbol))
                 {
                     var local = _localVariables[varBinding.MemberNumber];
                     _statementBuildParts.Push(local);
                 }
                 else
                 {
-                    var convert = Expression.Convert(Expression.Constant(propSymbol.Target),
-                            propSymbol.Target.GetType());
+                    var target = GetPropertyBinding(varBinding, propSymbol);
+                    var convert = Expression.Convert(Expression.Constant(target),
+                            target.GetType());
                     
                    var accessExpression = Expression.Property(convert, propSymbol.Property.SetMethod);
                    _statementBuildParts.Push(accessExpression);
@@ -318,9 +336,14 @@ namespace OneScript.Native.Compiler
                     typeOnStack = typeof(BslValue);
                 if (typeOnStack.IsNumeric())
                     typeOnStack = typeof(decimal);
-                
-                var scope = Symbols.TopScope();
-                scope.AddVariable(identifier, typeOnStack);
+
+                var varSymbol = new LocalVariableSymbol
+                {
+                    Name = identifier,
+                    Type = typeOnStack
+                };
+                var scope = Symbols.GetScope(Symbols.ScopeCount - 1);
+                scope.Variables.Add(varSymbol, varSymbol.Name);
                 var variable = Expression.Variable(typeOnStack, identifier);
                 _localVariables.Add(variable);
                 _statementBuildParts.Push(variable);
@@ -1099,7 +1122,7 @@ namespace OneScript.Native.Compiler
             var symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
             var args = PrepareCallArguments(node.ArgumentList, symbol.Method.GetParameters());
 
-            var target = ((IBoundSymbol)symbol).Target;
+            var target = GetMethodBinding(binding, symbol);
 
             Expression context = target switch
             {

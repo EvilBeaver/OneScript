@@ -1,38 +1,38 @@
-﻿/*----------------------------------------------------------
-This Source Code Form is subject to the terms of the
-Mozilla Public License, v.2.0. If a copy of the MPL
-was not distributed with this file, You can obtain one
-at http://mozilla.org/MPL/2.0/.
-----------------------------------------------------------*/
-
-using System;
 using OneScript.Contexts;
 using OneScript.Runtime.Binding;
+using OneScript.Values;
 
 namespace OneScript.Compilation.Binding
 {
-    public static class HelperExtensions
+    public static class BindingExtensions
     {
-        public static SymbolScope AddVariable(this SymbolScope scope, IVariableSymbol symbol)
+        public static SymbolScope PushObject(this SymbolTable table, BslObjectValue target)
         {
-            scope.Variables.Add(symbol, symbol.Name, symbol.Alias);
+            var scope = SymbolScope.FromObject(target);
+            table.PushScope(scope, target);
+            return scope;
+        }
+        
+        public static SymbolScope PushContext(this SymbolTable table, IRuntimeContextInstance target)
+        {
+            var scope = SymbolScope.FromContext(target);
+            table.PushScope(scope, target);
             return scope;
         }
 
-        // удалить после переноса RuntimeEnvironment в Core
-        public static IVariableSymbol MakePropSymbol(this BslPropertyInfo propertyInfo, object target)
+        public static IMethodSymbol ToSymbol(this BslMethodInfo info)
         {
-            return new BslBoundPropertySymbol
-            {
-                Property = propertyInfo,
-                Target = target
-            };
+            return new BslMethodSymbol { Method = info };
         }
         
-        public static SymbolScope AddMethod(this SymbolScope scope, IMethodSymbol symbol)
+        public static IPropertySymbol ToSymbol(this BslPropertyInfo info)
         {
-            scope.Methods.Add(symbol, symbol.Name, symbol.Alias);
-            return scope;
+            return new BslPropertySymbol { Property = info };
+        }
+        
+        public static IFieldSymbol ToSymbol(this BslFieldInfo info)
+        {
+            return new BslFieldSymbol { Field = info };
         }
     }
 }

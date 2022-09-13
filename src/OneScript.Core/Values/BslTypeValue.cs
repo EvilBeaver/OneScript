@@ -9,7 +9,7 @@ using OneScript.Types;
 
 namespace OneScript.Values
 {
-    public class BslTypeValue : BslPrimitiveValue
+    public sealed class BslTypeValue : BslPrimitiveValue
     {
         private readonly TypeDescriptor _type;
 

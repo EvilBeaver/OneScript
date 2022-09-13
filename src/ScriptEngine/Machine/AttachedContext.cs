@@ -13,31 +13,9 @@ namespace ScriptEngine.Machine
     {
         private AttachedContext(IAttachableContext instance, bool asDynamic)
         {
-            Symbols = new SymbolScope
-            {
-                IsDynamicScope = asDynamic
-            };
-            
             Instance = instance;
-
-            LoadSymbols();
         }
 
-        private void LoadSymbols()
-        {
-            foreach (var item in Instance.GetProperties())
-            {
-                Symbols.DefineVariable(item.Name, item.Alias);
-            }
-
-            foreach (var item in Instance.GetMethods())
-            {
-                Symbols.DefineMethod(item);
-            }
-        }
-
-        public SymbolScope Symbols { get; }
-        
         public IAttachableContext Instance { get; }
 
         public static AttachedContext Create(IAttachableContext context) => 

@@ -29,14 +29,14 @@ namespace OneScript.Compilation
             _scopeOfGlobalProperties = new Lazy<SymbolScope>(() =>
             {
                 var scope = new SymbolScope();
-                _symbols.PushScope(scope);
+                _symbols.PushScope(scope, _globalPropertiesHolder);
                 return scope;
             });
         }
 
         public void InjectObject(IContext context)
         {
-            _symbols.PushScope(SymbolScope.FromContext(context));
+            _symbols.PushScope(SymbolScope.FromContext(context), context);
         }
         
         public void InjectGlobalProperty(BilingualString names, BslValue value)
@@ -47,13 +47,12 @@ namespace OneScript.Compilation
             }
             
             var propInfo = _globalPropertiesHolder.Register(names, value);
-            var symbol = new BslBoundPropertySymbol
+            var symbol = new BslPropertySymbol
             {
-                Target = _globalPropertiesHolder,
                 Property = propInfo
             };
 
-            ScopeOfGlobalProps.AddVariable(symbol);
+            ScopeOfGlobalProps.Variables.Add(symbol, propInfo.Name, propInfo.Alias);
         }
 
         public void SetGlobalProperty(string name, BslValue value)

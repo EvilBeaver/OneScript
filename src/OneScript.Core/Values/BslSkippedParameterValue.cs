@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace OneScript.Values
 {
-    public class BslSkippedParameterValue : BslPrimitiveValue
+    public sealed class BslSkippedParameterValue : BslPrimitiveValue
     {
         public static BslSkippedParameterValue Instance { get; } = new BslSkippedParameterValue();
 

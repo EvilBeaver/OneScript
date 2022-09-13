@@ -6,39 +6,48 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using OneScript.Values;
 
 namespace OneScript.Compilation.Binding
 {
     public class SymbolTable
     {
-        private List<SymbolScope> _scopes = new List<SymbolScope>();
-        
-        public SymbolScope GetScope(int index) => _scopes[index];
-
-        public SymbolScope TopScope() => _scopes.Count == 0?null:_scopes[_scopes.Count - 1];
-
-        public int ScopeCount => _scopes.Count;
-        
-        public void PushScope(SymbolScope scope)
+        private struct BindingRecord
         {
-            _scopes.Add(scope);
+            public SymbolScope scope;
+            public object target;
+        }
+        
+        private List<BindingRecord> _bindings = new List<BindingRecord>();
+        
+        public SymbolScope GetScope(int index) => _bindings[index].scope;
+
+        public object GetBinding(int scopeIndex) => _bindings[scopeIndex].target;
+        
+        public int ScopeCount => _bindings.Count;
+        
+        public int PushScope(SymbolScope scope, object target)
+        {
+            var idx = _bindings.Count;
+            _bindings.Add(new BindingRecord
+            {
+                scope = scope,
+                target = target
+            });
+            
+            return idx;
         }
 
         public void PopScope()
         {
-            _scopes.RemoveAt(_scopes.Count - 1);
+            _bindings.RemoveAt(_bindings.Count - 1);
         }
 
-        public int IndexOf(SymbolScope scope)
-        {
-            return _scopes.IndexOf(scope);
-        }
-        
         public bool FindVariable(string name, out SymbolBinding binding)
         {
-            for (int i = _scopes.Count - 1; i >= 0; i--)
+            for (int i = _bindings.Count - 1; i >= 0; i--)
             {
-                var scope = _scopes[i];
+                var scope = _bindings[i].scope;
                 var idx = scope.Variables.IndexOf(name);
                 if (idx >= 0)
                 {
@@ -57,9 +66,9 @@ namespace OneScript.Compilation.Binding
         
         public bool FindMethod(string name, out SymbolBinding binding)
         {
-            for (int i = _scopes.Count - 1; i >= 0; i--)
+            for (int i = _bindings.Count - 1; i >= 0; i--)
             {
-                var scope = _scopes[i];
+                var scope = _bindings[i].scope;
                 var idx = scope.Methods.IndexOf(name);
                 if (idx >= 0)
                 {
@@ -74,6 +83,11 @@ namespace OneScript.Compilation.Binding
 
             binding = default;
             return false;
+        }
+
+        public void DefineMethod(IMethodSymbol symbol)
+        {
+            _bindings[ScopeCount - 1].scope.Methods.Add(symbol, symbol.Name, symbol.Alias);
         }
     }
 }

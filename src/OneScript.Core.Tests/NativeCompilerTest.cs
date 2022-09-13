@@ -463,7 +463,7 @@ namespace OneScript.Core.Tests
             var block = new CompiledBlock(default);
             var context = new StandardGlobalContext();
             block.Symbols = new SymbolTable();
-            block.Symbols.PushScope(SymbolScope.FromObject(context));
+            block.Symbols.PushObject(context);
             block.CodeBlock = "Возврат ТекущаяУниверсальнаяДатаВМиллисекундах();";
             
             var func = block.CreateDelegate<Func<BslValue>>();
@@ -510,10 +510,10 @@ namespace OneScript.Core.Tests
             blockCompiler.Parameters.Insert("Н", new BslTypeValue(BasicTypes.Number));
             blockCompiler.Parameters.Insert("Массив", new BslTypeValue(arrayType));
             blockCompiler.Symbols = new SymbolTable();
-            blockCompiler.Symbols.PushScope(SymbolScope.FromObject(new StandardGlobalContext()));
+            blockCompiler.Symbols.PushObject(new StandardGlobalContext());
             blockCompiler.CodeBlock = code;
             
-            var lambda = blockCompiler.MakeExpression();
+            blockCompiler.MakeExpression();
             var eratosphenes = blockCompiler.CreateDelegate<Func<decimal, ArrayImpl, BslValue>>();
             var time = (decimal)(BslNumericValue)eratosphenes(N, arr);
             time.Should().NotBe(0);

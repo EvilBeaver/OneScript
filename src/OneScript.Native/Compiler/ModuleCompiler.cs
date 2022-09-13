@@ -23,10 +23,12 @@ namespace OneScript.Native.Compiler
     {
         private readonly IServiceContainer _runtimeServices;
         private DynamicModule _module;
+        private readonly BslMethodInfoFactory<BslNativeMethodInfo> _methodsFactory;
 
         public ModuleCompiler(IErrorSink errors, IServiceContainer runtimeServices) : base(errors)
         {
             _runtimeServices = runtimeServices;
+            _methodsFactory = new BslMethodInfoFactory<BslNativeMethodInfo>(() => new BslNativeMethodInfo());
         }
         
         public DynamicModule Compile(
@@ -42,7 +44,8 @@ namespace OneScript.Native.Compiler
                 Source = moduleInfo
             };
             
-            symbols.PushScope(new SymbolScope());
+            symbols.PushScope(new SymbolScope(), _module.ThisObjectField);
+            // TODO MakeConstructor - метод инициализации и установки значения в переменную this
             try
             {
                 Visit(moduleNode);
@@ -81,20 +84,14 @@ namespace OneScript.Native.Compiler
                     AddError(LocalizedErrors.DuplicateMethodDefinition(signature.MethodName), signature.Location);
                     continue;
                 }
-                
-                var factory = new BslMethodInfoFactory<BslNativeMethodInfo>(() => new BslNativeMethodInfo());
-                var builder = factory.NewMethod();
+
+                var builder = _methodsFactory.NewMethod();
                 VisitMethodSignature(builder, methodNode.Signature);
 
                 var methodInfo = builder.Build();
-                var symbol = new MethodSymbol
-                {
-                    Name = methodInfo.Name,
-                    Method = methodInfo,
-                    Target = _module.ThisObjectField
-                };
+                var symbol = methodInfo.ToSymbol();
                 
-                Symbols.TopScope().Methods.Add(symbol, methodInfo.Name);
+                Symbols.DefineMethod(symbol);
             }
         }
 
@@ -128,7 +125,7 @@ namespace OneScript.Native.Compiler
         protected override void VisitModule(ModuleNode node)
         {
             var moduleScope = new SymbolScope();
-            Symbols.PushScope(moduleScope);
+            Symbols.PushScope(moduleScope, _module.ThisObjectField);
             
             RegisterLocalMethods(node);
             base.VisitModule(node);
@@ -144,28 +141,22 @@ namespace OneScript.Native.Compiler
                 return;
             }
 
-            var varSymbol = new VariableSymbol
-            {
-                Name = varNode.Name,
-                Target = _module.ThisObjectField,
-                Type = typeof(BslValue)
-            };
-
-            Symbols.TopScope().AddVariable(varSymbol);
-            
             var annotations = CompilerHelpers.GetAnnotations(varNode.Annotations);
-            var field = BslFieldBuilder.Create()
+            var varSymbol = BslFieldBuilder.Create()
                 .Name(varNode.Name)
                 .IsExported(varNode.IsExported)
                 .SetAnnotations(annotations)
-                .Build();
-            
-            _module.Fields.Add(field);
+                .ValueType(typeof(BslValue))
+                .Build()
+                .ToSymbol();
+
+            Symbols.GetScope(Symbols.ScopeCount - 1).Variables.Add(varSymbol, varNode.Name);
+            _module.Fields.Add(varSymbol.Field);
         }
 
         protected override void VisitMethod(MethodNode methodNode)
         {
-            var methodSymbol = Symbols.TopScope().Methods[methodNode.Signature.MethodName];
+            var methodSymbol = Symbols.GetScope(Symbols.ScopeCount - 1).Methods[methodNode.Signature.MethodName];
             var methodInfo = (BslNativeMethodInfo)methodSymbol.Method;
 
             var context = MakeContext();

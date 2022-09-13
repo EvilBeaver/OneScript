@@ -30,12 +30,7 @@ namespace ScriptEngine
         public RuntimeEnvironment()
         {
             _injectedProperties = new PropertyBag();
-            _scopeOfGlobalProperties = new Lazy<SymbolScope>(() =>
-            {
-                var scope = SymbolScope.FromContext(_injectedProperties);
-                _symbols.PushScope(scope);
-                return scope;
-            });
+            _scopeOfGlobalProperties = new Lazy<SymbolScope>(() => _symbols.PushContext(_injectedProperties));
         }
 
         private SymbolScope GlobalScope => _scopeOfGlobalProperties.Value;
@@ -78,7 +73,7 @@ namespace ScriptEngine
 
         private void RegisterObject(AttachedContext context)
         {
-            _symbols.PushScope(SymbolScope.FromContext(context.Instance));
+            _symbols.PushContext(context.Instance);
             _contexts.Add(context);
         }
         

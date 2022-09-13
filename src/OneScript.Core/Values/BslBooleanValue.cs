@@ -12,7 +12,7 @@ using OneScript.Types;
 
 namespace OneScript.Values
 {
-    public class BslBooleanValue : BslPrimitiveValue
+    public sealed class BslBooleanValue : BslPrimitiveValue
     {
         public static readonly BslBooleanValue True = new BslBooleanValue(true);
         public static readonly BslBooleanValue False = new BslBooleanValue(false);

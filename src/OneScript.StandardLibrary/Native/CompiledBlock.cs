@@ -166,7 +166,7 @@ namespace OneScript.StandardLibrary.Native
             if (Symbols == null)
                 Symbols = new SymbolTable();
             
-            Symbols.PushScope(SymbolScope.FromObject(new StandardGlobalContext()));
+            Symbols.PushObject(new StandardGlobalContext());
             
             var methodInfo = CreateMethodInfo();
             var methodCompiler = new MethodCompiler(new BslWalkerContext
