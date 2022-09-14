@@ -132,39 +132,40 @@ namespace ScriptEngine.Machine
             SetFrame(_callStack.Peek());
         } 
 
-        [Obsolete]
-        internal void ExecuteModuleBody(IRunnable sdo)
-        {
-            var module = sdo.Module;
-            if (module.EntryMethodIndex >= 0)
-            {
-                var entryRef = module.MethodRefs[module.EntryMethodIndex];
-                PrepareReentrantMethodExecution(sdo, (MachineMethodInfo)module.Methods[entryRef.CodeIndex]);
-                ExecuteCode();
-                if (_callStack.Count > 1)
-                    PopFrame();
-            }
-        }
+        // [Obsolete]
+        // internal void ExecuteModuleBody(IRunnable sdo)
+        // {
+        //     var module = sdo.Module;
+        //     if (module.EntryMethodIndex >= 0)
+        //     {
+        //         var entryRef = module.MethodRefs[module.EntryMethodIndex];
+        //         PrepareReentrantMethodExecution(sdo, (MachineMethodInfo)module.Methods[entryRef.CodeIndex]);
+        //         ExecuteCode();
+        //         if (_callStack.Count > 1)
+        //             PopFrame();
+        //     }
+        // }
         
-        internal async Task ExecuteModuleBodyAsync(IRunnable sdo)
-        {
-            if (sdo.Module.EntryMethodIndex < 0)
-            {
-                return;
-            }
-
-            var state = SaveState();
-            void Startup()
-            {
-                var m = MachineInstance.Current;
-                m.Reset();
-                m._scopes = state.Scopes;
-                m._mem = state.Memory;
-                m.ExecuteModuleBody(sdo);
-            };
-
-            await Task.Run(Startup);
-        }
+        // [Obsolete]
+        // internal async Task ExecuteModuleBodyAsync(IRunnable sdo)
+        // {
+        //     if (sdo.Module.EntryMethodIndex < 0)
+        //     {
+        //         return;
+        //     }
+        //
+        //     var state = SaveState();
+        //     void Startup()
+        //     {
+        //         var m = MachineInstance.Current;
+        //         m.Reset();
+        //         m._scopes = state.Scopes;
+        //         m._mem = state.Memory;
+        //         m.ExecuteModuleBody(sdo);
+        //     };
+        //
+        //     await Task.Run(Startup);
+        // }
 
         internal Task<IValue> ExecuteMethodAsync(IRunnable sdo, int methodIndex, IValue[] arguments)
         {
@@ -441,7 +442,8 @@ namespace ScriptEngine.Machine
         
         private void PrepareReentrantMethodExecution(IRunnable sdo, MachineMethodInfo methodInfo)
         {
-            var module = sdo.Module;
+            var module = sdo.Module as StackRuntimeModule;
+            Debug.Assert(module != null);
             var methDescr = methodInfo.GetRuntimeMethod();
             var frame = CreateNewFrame();
             frame.MethodName = methodInfo.Name;

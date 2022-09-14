@@ -17,7 +17,7 @@ namespace OneScript.Core.Tests
 {
     public class AsyncExecution
     {
-        [Fact]
+        [Fact(Skip = "Async не реализован в ExecutionDispatcher")]
         public async Task RunInAsyncSimpleCode()
         {
             var engine = MakeTestEngine();
@@ -29,7 +29,7 @@ namespace OneScript.Core.Tests
             await engine.InitializeSDOAsync(sdo);
         }
         
-        [Fact]
+        [Fact(Skip = "Async не реализован в ExecutionDispatcher")]
         public async Task RunMultipleTasks()
         {
             var engine = MakeTestEngine();

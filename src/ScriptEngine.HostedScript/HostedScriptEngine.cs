@@ -11,6 +11,7 @@ using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using OneScript.Commons;
 using OneScript.Compilation;
+using OneScript.Contexts;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Tasks;
 using ScriptEngine.Compiler;

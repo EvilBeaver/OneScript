@@ -25,9 +25,7 @@ namespace ScriptEngine.Machine.Contexts
         private readonly Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _allPropertiesSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-        StackRuntimeModule IRunnable.Module => (StackRuntimeModule)_module;
-
-        protected IExecutableModule Module => _module; 
+        public IExecutableModule Module => _module; 
 
         protected ScriptDrivenObject(IExecutableModule module, bool deferred)
         {
@@ -124,7 +122,7 @@ namespace ScriptEngine.Machine.Contexts
         
         protected virtual Task OnInstanceCreationAsync()
         {
-            return MachineInstance.Current.ExecuteModuleBodyAsync(this);
+            return Task.Run(() => ExecutionDispatcher.Current.ExecuteModuleBody(this, _module));
         }
 
         public void Initialize()
