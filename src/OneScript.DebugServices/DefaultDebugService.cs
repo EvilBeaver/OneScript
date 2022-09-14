@@ -8,12 +8,13 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OneScript.Contexts;
 using OneScript.DebugProtocol;
 using OneScript.Language;
 using ScriptEngine.Machine;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 using Variable = OneScript.DebugProtocol.Variable;
-using MachineVariable = ScriptEngine.Machine.Variable;
+using MachineVariable = OneScript.Contexts.Variable;
 
 namespace OneScript.DebugServices
 {

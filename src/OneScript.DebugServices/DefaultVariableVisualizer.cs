@@ -12,7 +12,7 @@ using OneScript.DebugProtocol;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using Variable = OneScript.DebugProtocol.Variable;
-using MachineVariable = ScriptEngine.Machine.Variable;
+using MachineVariable = OneScript.Contexts.Variable;
 
 namespace OneScript.DebugServices
 {

@@ -1,8 +1,8 @@
-using OneScript.Contexts;
 using OneScript.Types;
 using OneScript.Values;
+using ScriptEngine.Machine;
 
-namespace ScriptEngine.Machine
+namespace OneScript.Contexts
 {
     public class Variable : IVariable
     {

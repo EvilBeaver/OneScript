@@ -60,7 +60,7 @@ namespace OneScript.DebugProtocol.Test
         {
             var str = ValueFactory.Create("string value");
             
-            var debuggerVar = Visualizer.GetVariable(Machine.Variable.Create(str,"myString"));
+            var debuggerVar = Visualizer.GetVariable(Contexts.Variable.Create(str,"myString"));
 
             debuggerVar.Name.Should().Be("myString");
             
@@ -69,7 +69,7 @@ namespace OneScript.DebugProtocol.Test
             debuggerVar.IsStructured.Should().BeFalse();
             
             var number = ValueFactory.Create(27.2m);
-            debuggerVar = Visualizer.GetVariable(Machine.Variable.Create(number,"myInt"));
+            debuggerVar = Visualizer.GetVariable(Contexts.Variable.Create(number,"myInt"));
             debuggerVar.Name.Should().Be("myInt");
             debuggerVar.TypeName.Should().Be("Число");
             debuggerVar.Presentation.Should().Be("27.2");
@@ -81,7 +81,7 @@ namespace OneScript.DebugProtocol.Test
         {
             var obj = GetInstance<FileContext>(ValueFactory.Create("somefile.txt")); 
 
-            var debuggerVar = Visualizer.GetVariable(Machine.Variable.Create(obj,"myFile"));
+            var debuggerVar = Visualizer.GetVariable(Contexts.Variable.Create(obj,"myFile"));
             debuggerVar.Name.Should().Be("myFile");
             debuggerVar.TypeName.Should().Be("Файл");
             debuggerVar.Presentation.Should().Be("Файл");
@@ -108,7 +108,7 @@ namespace OneScript.DebugProtocol.Test
             obj.Add(ValueFactory.Create(1));
             obj.Add(ValueFactory.Create(2));
 
-            var debuggerVar = Visualizer.GetVariable(Machine.Variable.Create(obj, "myArray"));
+            var debuggerVar = Visualizer.GetVariable(Contexts.Variable.Create(obj, "myArray"));
             Assert.Equal("Массив", debuggerVar.Presentation);
             Assert.True(debuggerVar.IsStructured);
 
@@ -127,7 +127,7 @@ namespace OneScript.DebugProtocol.Test
             obj.Insert("first", ValueFactory.Create(1));
             obj.Insert("second", ValueFactory.Create(2));
 
-            var debuggerVar = Visualizer.GetVariable(Machine.Variable.Create(obj, "myVar"));
+            var debuggerVar = Visualizer.GetVariable(Contexts.Variable.Create(obj, "myVar"));
             Assert.Equal("Структура", debuggerVar.Presentation);
             Assert.True(debuggerVar.IsStructured);
 
@@ -157,7 +157,7 @@ namespace OneScript.DebugProtocol.Test
             obj.Insert(ValueFactory.Create("first"), ValueFactory.Create(1));
             obj.Insert(ValueFactory.Create("second"), ValueFactory.Create(2));
 
-            var debuggerVar = Visualizer.GetVariable(Machine.Variable.Create(obj, "myVar"));
+            var debuggerVar = Visualizer.GetVariable(Contexts.Variable.Create(obj, "myVar"));
             Assert.Equal("Соответствие", debuggerVar.Presentation);
             Assert.True(debuggerVar.IsStructured);
 
