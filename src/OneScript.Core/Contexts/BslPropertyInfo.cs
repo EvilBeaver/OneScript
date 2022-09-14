@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace OneScript.Contexts
 {
-    public abstract class BslPropertyInfo : PropertyInfo, INameAndAliasProvider
+    public abstract class BslPropertyInfo : PropertyInfo, INameAndAliasProvider, IEquatable<BslPropertyInfo>
     {
         public abstract string Alias { get; }
         
@@ -51,5 +51,7 @@ namespace OneScript.Contexts
         {
             return Annotations.IsDefined(attributeType, inherit);
         }
+
+        public abstract bool Equals(BslPropertyInfo other);
     }
 }

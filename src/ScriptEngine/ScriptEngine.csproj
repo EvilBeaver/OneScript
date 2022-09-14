@@ -44,6 +44,7 @@
     <ProjectReference Include="..\OneScript.Core\OneScript.Core.csproj" />
     <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
     <ProjectReference Include="..\OneScript.Native\OneScript.Native.csproj" />
+    <ProjectReference Include="..\OneScript.StackRuntime\OneScript.StackRuntime.csproj" />
   </ItemGroup>
   
   <ItemGroup>

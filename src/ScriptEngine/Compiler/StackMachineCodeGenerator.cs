@@ -22,6 +22,7 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Sources;
 using OneScript.Values;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Compiler
 {
@@ -39,7 +40,7 @@ namespace ScriptEngine.Compiler
         public StackMachineCodeGenerator(IErrorSink errorSink)
         {
             _errorSink = errorSink;
-            _module = new StackRuntimeModule();
+            _module = new StackRuntimeModule(typeof(IRuntimeContextInstance));
         }
         
         public CodeGenerationFlags ProduceExtraCode { get; set; }

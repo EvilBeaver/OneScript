@@ -5,8 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Types;
@@ -16,6 +18,8 @@ namespace OneScript.Core.Tests
 	[ContextClass("ТестовыйКласс", "TestClass", TypeUUID = "65E99482-F711-4FBC-AAC7-4BF7E2A124A5")]
 	public class TestContextClass : AutoContext<TestContextClass>
 	{
+		private IDictionary<BslValue, BslValue> _indexedValues = new Dictionary<BslValue, BslValue>();
+
 		public TestContextClass()
 		{
 			DefineType(GetType().GetTypeFromClassMarkup());
@@ -35,6 +39,21 @@ namespace OneScript.Core.Tests
 		public void GoodMethod()
 		{
 			// Do nothing
+		}
+		
+		[ContextProperty("СвойствоBsl","BslProp")]
+		public string BslProp { get; set; }
+
+		public override bool IsIndexed => true;
+
+		public override IValue GetIndexedValue(IValue index)
+		{
+			return _indexedValues[(BslValue)index];
+		}
+
+		public override void SetIndexedValue(IValue index, IValue val)
+		{
+			_indexedValues[(BslValue)index] = (BslValue)val;
 		}
 
 		[ScriptConstructor]

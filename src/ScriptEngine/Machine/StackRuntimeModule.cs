@@ -21,10 +21,6 @@ namespace ScriptEngine.Machine
         {
             ClassType = ownerType;
         }
-        
-        public StackRuntimeModule() : this(typeof(UserScriptContextInstance))
-        {
-        }
 
         public Type ClassType { get; }
 

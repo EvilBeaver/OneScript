@@ -27,7 +27,7 @@ namespace OneScript.Values
         
         private readonly decimal _value;
 
-        protected BslNumericValue(decimal value)
+        private BslNumericValue(decimal value)
         {
             _value = value;
         }

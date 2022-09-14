@@ -37,6 +37,17 @@ namespace OneScript.Contexts
         public override Type DeclaringType => _declaringType;
         public override string Name => _name;
         public override string Alias => _alias;
+        public override bool Equals(BslPropertyInfo other)
+        {
+            if (!(other is BslScriptPropertyInfo scriptProp))
+                return false;
+
+            return scriptProp._declaringType == _declaringType
+                   && scriptProp._name == _name
+                   && scriptProp._alias == _alias
+                   && scriptProp.DispatchId == DispatchId;
+        }
+
         public override Type ReflectedType => _declaringType;
         
         public int DispatchId { get; private set; } = -1;

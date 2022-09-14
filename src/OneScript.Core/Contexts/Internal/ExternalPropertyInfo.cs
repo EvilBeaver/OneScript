@@ -71,6 +71,13 @@ namespace OneScript.Contexts.Internal
         public override Type DeclaringType { get; }
         
         public override string Alias { get; }
+        public override bool Equals(BslPropertyInfo other)
+        {
+            return other is ExternalPropertyInfo ext 
+                    && ext._valueIndex == _valueIndex
+                    && ext.DeclaringType == DeclaringType;
+        }
+
         public override string Name { get; }
         
         public override Type ReflectedType { get; }

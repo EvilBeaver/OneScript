@@ -39,6 +39,11 @@ namespace OneScript.Contexts
             return _realProperty.IsDefined(attributeType, inherit);
         }
 
+        public override bool Equals(BslPropertyInfo other)
+        {
+            return (other is ContextPropertyInfo ctxProp) && ctxProp._realProperty.Equals(_realProperty);
+        }
+
         public override Type DeclaringType => _realProperty.DeclaringType;
         public override Type ReflectedType => _realProperty.ReflectedType;
         
