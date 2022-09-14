@@ -57,14 +57,14 @@ namespace OneScript.StandardLibrary.Text
 
             if (encoding.Equals(Encoding.GetEncoding(1251)))
                 return Ansi;
-
+            
             if (encoding.Equals(new UnicodeEncoding(false, true)))
                 return Utf16;
 
             if (encoding.Equals(new UTF8Encoding(true)))
                 return Utf8;
 
-            if (encoding.Equals(new UTF8Encoding(false)))
+            if (encoding.Equals(new UTF8Encoding(false)) || encoding.CodePage == 65001)
                 return Utf8NoBOM;
 
             if (encoding.Equals(Encoding.Default))
