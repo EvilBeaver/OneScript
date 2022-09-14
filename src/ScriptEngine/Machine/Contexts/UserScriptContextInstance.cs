@@ -31,7 +31,7 @@ namespace ScriptEngine.Machine.Contexts
         
         public IValue[] ConstructorParams { get; private set; }
         
-        public UserScriptContextInstance(IExecutableModule module, bool deffered = false) : base(module, deffered)
+        public UserScriptContextInstance(IExecutableModule module, bool deferred = false) : base(module, deferred)
         {
             ConstructorParams = Array.Empty<IValue>();
         }

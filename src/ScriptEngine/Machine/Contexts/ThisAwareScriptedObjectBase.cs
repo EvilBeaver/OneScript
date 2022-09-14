@@ -21,7 +21,7 @@ namespace ScriptEngine.Machine.Contexts
         protected const string THISOBJ_EN = "ThisObject";
         protected const string THISOBJ_RU = "ЭтотОбъект";
 
-        protected ThisAwareScriptedObjectBase(IExecutableModule module, bool deffered) : base(module, deffered)
+        protected ThisAwareScriptedObjectBase(IExecutableModule module, bool deferred) : base(module, deferred)
         {
         }
         

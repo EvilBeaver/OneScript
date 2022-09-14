@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Execution;
-using OneScript.Sources;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -30,10 +29,10 @@ namespace ScriptEngine.Machine.Contexts
 
         protected IExecutableModule Module => _module; 
 
-        protected ScriptDrivenObject(IExecutableModule module, bool deffered)
+        protected ScriptDrivenObject(IExecutableModule module, bool deferred)
         {
             _module = module;
-            if (!deffered)
+            if (!deferred)
             {
                 InitOwnData();
             }

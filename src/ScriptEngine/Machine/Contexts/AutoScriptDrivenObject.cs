@@ -21,11 +21,11 @@ namespace ScriptEngine.Machine.Contexts
 
         #region SDO Methods
 
-        protected AutoScriptDrivenObject(IExecutableModule module, bool deffered)
-            : base(module, deffered)
+        protected AutoScriptDrivenObject(IExecutableModule module, bool deferred)
+            : base(module, deferred)
         {
             _privatePropsOffset = base.GetOwnVariableCount();
-            if (!deffered)
+            if (!deferred)
                 InitOwnData();
         }
 
