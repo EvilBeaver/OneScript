@@ -10,6 +10,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using OneScript.Contexts;
 using OneScript.Execution;
+using OneScript.Native.Runtime;
 using OneScript.Sources;
 using OneScript.Values;
 
@@ -27,7 +28,7 @@ namespace OneScript.Native.Compiler
 
         public BslMethodInfo ModuleBody => Methods.FirstOrDefault(x => x.Name == IExecutableModule.BODY_METHOD_NAME);
 
-        public ParameterExpression ThisObjectField { get; } = Expression.Variable(typeof(BslObjectValue), "$this");
+        internal ParameterExpression ThisObjectField { get; } = Expression.Parameter(typeof(NativeClassInstanceWrapper), "$this");
 
         public SourceCode Source { get; set; }
     }

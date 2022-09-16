@@ -24,7 +24,6 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
-using OneScript.Runtime.Binding;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -38,14 +37,15 @@ namespace OneScript.Native.Compiler
         private readonly StatementBlocksWriter _blocks = new StatementBlocksWriter();
         private readonly Stack<Expression> _statementBuildParts = new Stack<Expression>();
         private BslParameterInfo[] _declaredParameters;
+        private ParameterExpression _thisParameter;
         
-        private BinaryOperationCompiler _binaryOperationCompiler = new BinaryOperationCompiler();
+        private readonly BinaryOperationCompiler _binaryOperationCompiler = new BinaryOperationCompiler();
         private ITypeManager _typeManager;
         private readonly IServiceContainer _services;
         private readonly BuiltInFunctionsCache _builtInFunctions = new BuiltInFunctionsCache();
 
-        private ContextMethodsCache _methodsCache = new ContextMethodsCache();
-        private ReflectedPropertiesCache _propertiesCache = new ReflectedPropertiesCache();
+        private readonly ContextMethodsCache _methodsCache = new ContextMethodsCache();
+        private readonly ContextPropertiesCache _propertiesCache = new ContextPropertiesCache();
 
         public MethodCompiler(BslWalkerContext walkContext, BslNativeMethodInfo method) : base(walkContext)
         {
@@ -53,16 +53,16 @@ namespace OneScript.Native.Compiler
             _services = walkContext.Services;
         }
 
-        public ITypeManager CurrentTypeManager
+        private ITypeManager CurrentTypeManager
         {
             get
             {
+                if (_typeManager != default) 
+                    return _typeManager;
+                
+                _typeManager = _services.TryResolve<ITypeManager>();
                 if (_typeManager == default)
-                {
-                    _typeManager = _services.TryResolve<ITypeManager>();
-                    if (_typeManager == default)
-                        throw new NotSupportedException("Type manager is not registered in services.");
-                }
+                    throw new NotSupportedException("Type manager is not registered in services.");
 
                 return _typeManager;
             }
@@ -70,10 +70,6 @@ namespace OneScript.Native.Compiler
         
         public void CompileMethod(MethodNode methodNode)
         {
-            _localVariables.AddRange(
-                _method.GetParameters()
-                    .Select(x => Expression.Parameter(x.ParameterType, x.Name)));
-            
             CompileFragment(methodNode, x=>VisitMethodBody((MethodNode)x));
         }
         
@@ -117,9 +113,8 @@ namespace OneScript.Native.Compiler
                 block.MethodReturn, 
                 Expression.Constant(BslUndefinedValue.Instance)));
             
-            var parameters = _localVariables.Take(_declaredParameters.Length).ToArray();
-
-            var blockVariables = _localVariables.Skip(parameters.Length);
+            var parameters = _localVariables.Take(_declaredParameters.Length).ToList();
+            var blockVariables = _localVariables.Skip(parameters.Count);
             
             var body = Expression.Block(
                 blockVariables.ToArray(),
@@ -132,7 +127,19 @@ namespace OneScript.Native.Compiler
 
         private void FillParameterVariables()
         {
-            _declaredParameters = _method.GetBslParameters();
+            var methodParams = _method.GetBslParameters();
+            if (_method.IsInstance)
+            {
+                var thisParam = methodParams[0];
+                _thisParameter = Expression.Parameter(thisParam.ParameterType, thisParam.Name);
+                _declaredParameters = methodParams.Skip(1).ToArray();
+            }
+            else
+            {
+                _thisParameter = null;
+                _declaredParameters = methodParams;
+            }
+
             var localScope = Symbols.GetScope(Symbols.ScopeCount-1);
             foreach (var parameter in _declaredParameters)
             {
@@ -215,7 +222,7 @@ namespace OneScript.Native.Compiler
             else
             {
                 // local read
-                var expr = _localVariables[binding.MemberNumber];
+                var expr = GetLocalVariable(binding.MemberNumber);
                 _statementBuildParts.Push(expr);
             }
         }
@@ -237,7 +244,7 @@ namespace OneScript.Native.Compiler
             var memberName = operand.Lexem.Content;
             var instance = _statementBuildParts.Pop();
             var instanceType = instance.Type;
-            var prop = FindPropertyOfType(operand, instanceType, memberName);
+            var prop = TryFindPropertyOfType(operand, instanceType, memberName);
 
             if (prop != null)
             {
@@ -273,7 +280,7 @@ namespace OneScript.Native.Compiler
             var memberName = operand.Lexem.Content;
             var instance = _statementBuildParts.Pop();
             var instanceType = instance.Type;
-            var prop = FindPropertyOfType(operand, instanceType, memberName);
+            var prop = TryFindPropertyOfType(operand, instanceType, memberName);
 
             if (prop != null)
             {
@@ -305,6 +312,8 @@ namespace OneScript.Native.Compiler
             MakeReadPropertyAccess(operand);
         }
 
+        private ParameterExpression GetLocalVariable(int index) => _localVariables[index/* + (_method.IsInstance ? 1 : 0)*/];
+
         protected override void VisitVariableWrite(TerminalNode node)
         {
             var identifier = node.GetIdentifier();
@@ -314,7 +323,7 @@ namespace OneScript.Native.Compiler
                 var symbol = Symbols.GetScope(varBinding.ScopeNumber).Variables[varBinding.MemberNumber];
                 if (!(symbol is IPropertySymbol propSymbol))
                 {
-                    var local = _localVariables[varBinding.MemberNumber];
+                    var local = GetLocalVariable(varBinding.MemberNumber);
                     _statementBuildParts.Push(local);
                 }
                 else
@@ -1088,27 +1097,36 @@ namespace OneScript.Native.Compiler
             return methodInfo;
         }
 
-        private PropertyInfo FindPropertyOfType(BslSyntaxNode node, Type targetType, string name)
+        private PropertyInfo TryFindPropertyOfType(BslSyntaxNode node, Type targetType, string name)
         {
-            var props = targetType.FindMembers(
-                MemberTypes.Field | MemberTypes.Property,
-                BindingFlags.Public | BindingFlags.Instance,
-                (info, criteria) =>
-                {
-                    var a = info.CustomAttributes.FirstOrDefault(data =>
-                        data.AttributeType == typeof(ContextPropertyAttribute));
-                    if (a == null) return false;
-                    return a.ConstructorArguments.Any(alias =>
-                        StringComparer.CurrentCultureIgnoreCase.Equals(alias.Value.ToString(), name));
-                },
-                null);
-
-            if (props.Length != 1)
+            PropertyInfo propertyInfo;
+            try
             {
-                return null;
+                propertyInfo = _propertiesCache.GetOrAdd(targetType, name);
+            }
+            catch (InvalidOperationException)
+            {
+                propertyInfo = null;
             }
 
-            return props[0] as PropertyInfo;
+            return propertyInfo;
+        }
+        
+        private PropertyInfo FindPropertyOfType(BslSyntaxNode node, Type targetType, string name)
+        {
+            PropertyInfo propertyInfo;
+            try
+            {
+                propertyInfo = _propertiesCache.GetOrAdd(targetType, name);
+            }
+            catch (InvalidOperationException)
+            {
+                throw new NativeCompilerException(new BilingualString(
+                    $"Свойство {name} не определено для типа {targetType}",
+                    $"Property {name} is not defined for type {targetType}"));
+            }
+
+            return propertyInfo;
         }
 
         private Expression CreateMethodCall(CallNode node)

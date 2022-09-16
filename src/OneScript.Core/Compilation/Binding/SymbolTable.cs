@@ -89,5 +89,10 @@ namespace OneScript.Compilation.Binding
         {
             _bindings[ScopeCount - 1].scope.Methods.Add(symbol, symbol.Name, symbol.Alias);
         }
+        
+        public void DefineVariable(IVariableSymbol symbol)
+        {
+            _bindings[ScopeCount - 1].scope.Variables.Add(symbol, symbol.Name, symbol.Alias);
+        }
     }
 }

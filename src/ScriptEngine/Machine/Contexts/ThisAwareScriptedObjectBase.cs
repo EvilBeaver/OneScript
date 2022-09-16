@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Commons;
+using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Execution;
 using OneScript.Sources;
@@ -93,6 +94,19 @@ namespace ScriptEngine.Machine.Contexts
         protected static void RegisterSymbols(ICompilerService compiler)
         {
             compiler.DefineVariable(THISOBJ_RU, THISOBJ_EN, SymbolType.ContextProperty);
+        }
+        
+        protected static void RegisterSymbols(SymbolTable symbols)
+        {
+            var thisVar = BslFieldBuilder.Create()
+                .Name(THISOBJ_RU)
+                .Alias(THISOBJ_EN)
+                .ValueType(typeof(ThisAwareScriptedObjectBase))
+                .SetDispatchingIndex(0)
+                .Build()
+                .ToSymbol();
+            
+            symbols.DefineVariable(thisVar);
         }
     }
 }

@@ -44,16 +44,8 @@ namespace OneScript.Native.Compiler
                 Source = moduleInfo
             };
             
-            symbols.PushScope(new SymbolScope(), _module.ThisObjectField);
             // TODO MakeConstructor - метод инициализации и установки значения в переменную this
-            try
-            {
-                Visit(moduleNode);
-            }
-            finally
-            {
-                symbols.PopScope();
-            }
+            Visit(moduleNode);
 
             return _module;
         }
@@ -86,9 +78,15 @@ namespace OneScript.Native.Compiler
                 }
 
                 var builder = _methodsFactory.NewMethod();
+                builder.SetAnnotations(methodNode.Annotations);
+                builder.NewParameter()
+                    .Name(_module.ThisObjectField.Name)
+                    .ParameterType(_module.ThisObjectField.Type);
+                
                 VisitMethodSignature(builder, methodNode.Signature);
 
                 var methodInfo = builder.Build();
+                methodInfo.IsInstance = true;
                 var symbol = methodInfo.ToSymbol();
                 
                 Symbols.DefineMethod(symbol);
@@ -124,9 +122,6 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitModule(ModuleNode node)
         {
-            var moduleScope = new SymbolScope();
-            Symbols.PushScope(moduleScope, _module.ThisObjectField);
-            
             RegisterLocalMethods(node);
             base.VisitModule(node);
             
@@ -141,7 +136,7 @@ namespace OneScript.Native.Compiler
                 return;
             }
 
-            var annotations = CompilerHelpers.GetAnnotations(varNode.Annotations);
+            var annotations = CompilerHelpers.GetAnnotations(varNode.Annotations).ToArray();
             var varSymbol = BslFieldBuilder.Create()
                 .Name(varNode.Name)
                 .IsExported(varNode.IsExported)
@@ -150,8 +145,20 @@ namespace OneScript.Native.Compiler
                 .Build()
                 .ToSymbol();
 
-            Symbols.GetScope(Symbols.ScopeCount - 1).Variables.Add(varSymbol, varNode.Name);
+            var id = Symbols.GetScope(Symbols.ScopeCount - 1).Variables.Add(varSymbol, varNode.Name);
             _module.Fields.Add(varSymbol.Field);
+            
+            if (varNode.IsExported)
+            {
+                var propertyView = BslPropertyBuilder.Create()
+                    .Name(varNode.Name)
+                    .IsExported(true)
+                    .DeclaringType(varSymbol.Type)
+                    .SetAnnotations(annotations)
+                    .SetDispatchingIndex(id);
+                
+                _module.Properties.Add(propertyView.Build());
+            }
         }
 
         protected override void VisitMethod(MethodNode methodNode)

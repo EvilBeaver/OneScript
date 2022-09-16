@@ -66,6 +66,8 @@ namespace OneScript.Dynamic.Tests
 
         public DynamicModule Compile(SymbolTable scopes)
         {
+            if (scopes.ScopeCount == 0)
+                scopes.PushScope(new SymbolScope(), null);
             var compiler = new ModuleCompiler(_errors, null);
             return compiler.Compile(_codeIndexer, _module, scopes);
         }

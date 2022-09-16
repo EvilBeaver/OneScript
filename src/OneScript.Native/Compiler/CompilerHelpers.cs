@@ -13,6 +13,7 @@ using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
+using OneScript.Types;
 using OneScript.Values;
 
 namespace OneScript.Native.Compiler
@@ -61,13 +62,32 @@ namespace OneScript.Native.Compiler
             return mappedAnnotations;
         }
         
+        public static Type GetClrType(TypeDescriptor type)
+        {
+            Type clrType;
+            if (type == BasicTypes.String)
+                clrType = typeof(string);
+            else if (type == BasicTypes.Date)
+                clrType = typeof(DateTime);
+            else if (type == BasicTypes.Boolean)
+                clrType = typeof(bool);
+            else if (type == BasicTypes.Number)
+                clrType = typeof(decimal);
+            else if (type == BasicTypes.Type)
+                clrType = typeof(BslTypeValue);
+            else
+                clrType = type.ImplementingClass;
+
+            return clrType;
+        }
+        
         private static IEnumerable<BslAnnotationParameter> GetAnnotationParameters(AnnotationNode node)
         {
             return node.Children.Cast<AnnotationParameterNode>()
                 .Select(param => new BslAnnotationParameter(param.Name, ValueFromLiteral(param.Value)))
                 .ToList();
         }
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetIdentifier(this BslSyntaxNode node)
         {
