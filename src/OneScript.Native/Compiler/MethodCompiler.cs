@@ -112,9 +112,13 @@ namespace OneScript.Native.Compiler
             block.Add(Expression.Label(
                 block.MethodReturn, 
                 Expression.Constant(BslUndefinedValue.Instance)));
+
+            var parameters = new List<ParameterExpression>();
+            if (_method.IsInstance)
+                parameters.Add(_thisParameter);
             
-            var parameters = _localVariables.Take(_declaredParameters.Length).ToList();
-            var blockVariables = _localVariables.Skip(parameters.Count);
+            parameters.AddRange(_localVariables.Take(_declaredParameters.Length));
+            var blockVariables = _localVariables.Skip(_declaredParameters.Length);
             
             var body = Expression.Block(
                 blockVariables.ToArray(),
@@ -127,18 +131,8 @@ namespace OneScript.Native.Compiler
 
         private void FillParameterVariables()
         {
-            var methodParams = _method.GetBslParameters();
-            if (_method.IsInstance)
-            {
-                var thisParam = methodParams[0];
-                _thisParameter = Expression.Parameter(thisParam.ParameterType, thisParam.Name);
-                _declaredParameters = methodParams.Skip(1).ToArray();
-            }
-            else
-            {
-                _thisParameter = null;
-                _declaredParameters = methodParams;
-            }
+            _declaredParameters = _method.GetBslParameters();
+            _thisParameter = _method.IsInstance ? Expression.Parameter(typeof(NativeClassInstanceWrapper)) : null;
 
             var localScope = Symbols.GetScope(Symbols.ScopeCount-1);
             foreach (var parameter in _declaredParameters)
@@ -312,8 +306,12 @@ namespace OneScript.Native.Compiler
             MakeReadPropertyAccess(operand);
         }
 
-        private ParameterExpression GetLocalVariable(int index) => _localVariables[index/* + (_method.IsInstance ? 1 : 0)*/];
+        private ParameterExpression GetLocalVariable(int index) => _localVariables[index];
 
+        private bool IsLocalScope(int scopeNumber) => scopeNumber == Symbols.ScopeCount - 1;
+        
+        private bool IsModuleScope(int scopeNumber) => scopeNumber == Symbols.ScopeCount - 2;
+        
         protected override void VisitVariableWrite(TerminalNode node)
         {
             var identifier = node.GetIdentifier();
@@ -321,12 +319,12 @@ namespace OneScript.Native.Compiler
             if (hasVar)
             {
                 var symbol = Symbols.GetScope(varBinding.ScopeNumber).Variables[varBinding.MemberNumber];
-                if (!(symbol is IPropertySymbol propSymbol))
+                if (IsLocalScope(varBinding.ScopeNumber))
                 {
                     var local = GetLocalVariable(varBinding.MemberNumber);
                     _statementBuildParts.Push(local);
                 }
-                else
+                else if (symbol is IPropertySymbol propSymbol)
                 {
                     var target = GetPropertyBinding(varBinding, propSymbol);
                     var convert = Expression.Convert(Expression.Constant(target),
@@ -334,6 +332,16 @@ namespace OneScript.Native.Compiler
                     
                    var accessExpression = Expression.Property(convert, propSymbol.Property.SetMethod);
                    _statementBuildParts.Push(accessExpression);
+                }
+                else if (symbol is IFieldSymbol && _method.IsInstance)
+                {
+                    var iVariableVal = ExpressionHelpers.AccessModuleVariable(_thisParameter, varBinding.MemberNumber);
+                    _statementBuildParts.Push(iVariableVal);
+                }
+                else
+                {
+                    AddError(new BilingualString($"Unsupported symbol in non-local context: {symbol.Name} {symbol.GetType()}"), 
+                        node.Location);
                 }
             }
             else
@@ -1140,20 +1148,30 @@ namespace OneScript.Native.Compiler
             var symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
             var args = PrepareCallArguments(node.ArgumentList, symbol.Method.GetParameters());
 
-            var target = GetMethodBinding(binding, symbol);
-
-            Expression context = target switch
+            var methodInfo = symbol.Method;
+            if (methodInfo is ContextMethodInfo contextMethod)
             {
-                ParameterExpression pe => pe,
-                _ => Expression.Constant(target)
-            };
+                return DirectClrCall(
+                    GetMethodBinding(binding, symbol),
+                    contextMethod.GetWrappedMethod(),
+                    args);
+            }
 
-            return symbol.Method switch
+            if (methodInfo is BslNativeMethodInfo nativeMethod)
             {
-                ContextMethodInfo contextMethod => Expression.Call(context, contextMethod.GetWrappedMethod(), args),
-                BslNativeMethodInfo native => Expression.Invoke(native.Implementation, args),
-                _ => throw new InvalidOperationException($"Unknown method type {symbol.Method.GetType()}")
-            };
+                return ExpressionHelpers.InvokeBslNativeMethod(
+                    nativeMethod,
+                    IsModuleScope(binding.ScopeNumber) ? _thisParameter : GetMethodBinding(binding, symbol),
+                    args);
+            }
+
+            throw new InvalidOperationException($"Unknown method type {symbol.Method.GetType()}");
+
+        }
+
+        private Expression DirectClrCall(object target, MethodInfo clrMethod, IEnumerable<Expression> args)
+        {
+            return Expression.Call(Expression.Constant(target), clrMethod, args);   
         }
         
         private Expression CreateBuiltInFunctionCall(CallNode node)
@@ -1244,7 +1262,7 @@ namespace OneScript.Native.Compiler
                 type);
         }
 
-        private IEnumerable<Expression> PrepareCallArguments(BslSyntaxNode argList, ParameterInfo[] declaredParameters)
+        private List<Expression> PrepareCallArguments(BslSyntaxNode argList, ParameterInfo[] declaredParameters)
         {
             var factArguments = new List<Expression>();
 

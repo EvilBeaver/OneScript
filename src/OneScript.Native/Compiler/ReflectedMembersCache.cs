@@ -34,7 +34,7 @@ namespace OneScript.Native.Compiler
         {
             var key = $"{type.Name}.{name}";
             return _cache.GetOrAdd(key, x => SearchImpl(type, name, flags) 
-                                             ?? throw new InvalidOperationException($"No method found {key}"));
+                                             ?? throw new InvalidOperationException($"No member found {key}"));
         }
 
         protected abstract T SearchImpl(Type type, string name, BindingFlags flags);

@@ -79,9 +79,6 @@ namespace OneScript.Native.Compiler
 
                 var builder = _methodsFactory.NewMethod();
                 builder.SetAnnotations(methodNode.Annotations);
-                builder.NewParameter()
-                    .Name(_module.ThisObjectField.Name)
-                    .ParameterType(_module.ThisObjectField.Type);
                 
                 VisitMethodSignature(builder, methodNode.Signature);
 
@@ -175,10 +172,11 @@ namespace OneScript.Native.Compiler
         protected override void VisitModuleBody(BslSyntaxNode moduleBody)
         {
             var factory = new BslMethodInfoFactory<BslNativeMethodInfo>(() => new BslNativeMethodInfo());
-            var method = factory.NewMethod()
-                .Name("$entry")
-                .Build();
-
+            var builder = factory.NewMethod()
+                .Name("$entry");
+            
+            var method = builder.Build();
+            method.IsInstance = true;
             _module.Methods.Add(method);
             
             var context = MakeContext();

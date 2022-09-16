@@ -28,8 +28,6 @@ namespace OneScript.Native.Compiler
 
         public BslMethodInfo ModuleBody => Methods.FirstOrDefault(x => x.Name == IExecutableModule.BODY_METHOD_NAME);
 
-        internal ParameterExpression ThisObjectField { get; } = Expression.Parameter(typeof(NativeClassInstanceWrapper), "$this");
-
         public SourceCode Source { get; set; }
     }
 }

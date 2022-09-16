@@ -39,7 +39,7 @@ namespace OneScript.Dynamic.Tests
             return _module;
         }
 
-        private void ThrowOnErrors()
+        public void ThrowOnErrors()
         {
             if (_errors.HasErrors)
             {

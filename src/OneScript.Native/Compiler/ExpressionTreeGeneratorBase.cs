@@ -84,7 +84,7 @@ namespace OneScript.Native.Compiler
         {
             return new ErrorPositionInfo
             {
-                Code = _sourceCode.GetCodeLine(range.LineNumber),
+                Code = _sourceCode.GetCodeLine(range.LineNumber)?.Trim(),
                 LineNumber = range.LineNumber,
                 ColumnNumber = range.ColumnNumber,
                 ModuleName = _sourceCode.Name

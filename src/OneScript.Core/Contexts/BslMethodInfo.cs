@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace OneScript.Contexts
@@ -53,6 +54,11 @@ namespace OneScript.Contexts
         public override bool IsDefined(Type attributeType, bool inherit)
         {
             return Annotations.IsDefined(attributeType, inherit);
+        }
+
+        public override string ToString()
+        {
+            return $"{ReturnType} {Name}(${string.Join(',', GetParameters().Select(x=>x.ParameterType))})";
         }
     }
 }

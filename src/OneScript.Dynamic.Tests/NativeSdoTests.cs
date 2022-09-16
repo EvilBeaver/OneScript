@@ -82,7 +82,9 @@ namespace OneScript.Dynamic.Tests
         {
             var helper = new CompileHelper();
             helper.ParseModule(code);
-            return helper.Compile(symbols);
+            var result = helper.Compile(symbols);
+            helper.ThrowOnErrors();
+            return result;
         }
     }
 }

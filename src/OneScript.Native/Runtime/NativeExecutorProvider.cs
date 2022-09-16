@@ -24,7 +24,7 @@ namespace OneScript.Native.Runtime
             BslMethodInfo method,
             IValue[] arguments)
         {
-            if (!(module is DynamicModule dynamicModule))
+            if (!(module is DynamicModule))
             {
                 throw new InvalidOperationException();
             }
@@ -39,16 +39,7 @@ namespace OneScript.Native.Runtime
                 throw new InvalidOperationException();
             }
 
-            context.OnAttach(out var state, out var methods);
-            
-            var callableWrapper = new NativeClassInstanceWrapper
-            {
-                Context = context,
-                State = state,
-                Methods = methods
-            };
-            
-            return (BslValue) nativeMethod.Invoke(callableWrapper, BindingFlags.Default, null, arguments, CultureInfo.CurrentCulture);
+            return (BslValue) nativeMethod.Invoke(context, BindingFlags.Default, null, arguments, CultureInfo.CurrentCulture);
 
         }
     }

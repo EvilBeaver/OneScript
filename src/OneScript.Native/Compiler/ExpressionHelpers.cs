@@ -6,11 +6,14 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
+using OneScript.Contexts;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
@@ -91,14 +94,15 @@ namespace OneScript.Native.Compiler
             return opCode;
         }
 
-        private static ReflectedMethodsCache _operationsCache = new ReflectedMethodsCache();
+        private static readonly ReflectedMethodsCache OperationsCache = new ReflectedMethodsCache();
+        private static readonly ReflectedPropertiesCache PropertiesCache = new ReflectedPropertiesCache();
         
         public static Expression ToBoolean(Expression right)
         {
             if (right.Type == typeof(bool))
                 return right;
             
-            var method = _operationsCache.GetOrAdd(
+            var method = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.ToBoolean));
 
@@ -110,7 +114,7 @@ namespace OneScript.Native.Compiler
             if (right.Type == typeof(decimal))
                 return right;
             
-            var method = _operationsCache.GetOrAdd(
+            var method = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.ToNumber));
 
@@ -122,7 +126,7 @@ namespace OneScript.Native.Compiler
             if (right.Type == typeof(DateTime))
                 return right;
             
-            var method = _operationsCache.GetOrAdd(
+            var method = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.ToDate));
 
@@ -131,7 +135,7 @@ namespace OneScript.Native.Compiler
         
         public static Expression ToString(Expression right)
         {
-            var method = _operationsCache.GetOrAdd(
+            var method = OperationsCache.GetOrAdd(
                 typeof(object),
                 nameof(object.ToString),
                 BindingFlags.Public | BindingFlags.Instance);
@@ -141,7 +145,7 @@ namespace OneScript.Native.Compiler
 
         public static Expression Add(Expression left, Expression right)
         {
-            var operation = _operationsCache.GetOrAdd(
+            var operation = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.Add));
 
@@ -150,7 +154,7 @@ namespace OneScript.Native.Compiler
         
         public static Expression Subtract(Expression left, Expression right)
         {
-            var operation = _operationsCache.GetOrAdd(
+            var operation = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.Subtract));
 
@@ -303,7 +307,7 @@ namespace OneScript.Native.Compiler
                 {
                     // это результат динамической операции
                     // просто верим, что он BslValue
-                    var meth = _operationsCache.GetOrAdd(
+                    var meth = OperationsCache.GetOrAdd(
                         typeof(DynamicOperations),
                         nameof(DynamicOperations.WrapClrObjectToValue));
                     return Expression.Call(meth, value);
@@ -320,7 +324,7 @@ namespace OneScript.Native.Compiler
                 value = CastToDecimal(value);
             }
             
-            var factory = _operationsCache.GetOrAdd(factoryClass, "Create");
+            var factory = OperationsCache.GetOrAdd(factoryClass, "Create");
             return Expression.Call(factory, value);
         }
 
@@ -395,7 +399,7 @@ namespace OneScript.Native.Compiler
         public static Expression ConstructorCall(ITypeManager typeManager, Expression services, Expression type,
             Expression[] argsArray)
         {
-            var method = _operationsCache.GetOrAdd(
+            var method = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.ConstructorCall));
 
@@ -411,7 +415,7 @@ namespace OneScript.Native.Compiler
         public static Expression ConstructorCall(ITypeManager typeManager, Expression services, TypeDescriptor knownType,
             Expression[] argsArray)
         {
-            var genericMethod = _operationsCache.GetOrAdd(
+            var genericMethod = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.StrictConstructorCall));
 
@@ -428,7 +432,7 @@ namespace OneScript.Native.Compiler
 
         public static Expression TypeByNameCall(ITypeManager manager, Expression argument)
         {
-            var method = _operationsCache.GetOrAdd(typeof(DynamicOperations), nameof(DynamicOperations.GetTypeByName),
+            var method = OperationsCache.GetOrAdd(typeof(DynamicOperations), nameof(DynamicOperations.GetTypeByName),
                 BindingFlags.Instance | BindingFlags.Public);
             
             Debug.Assert(method != null);
@@ -438,11 +442,87 @@ namespace OneScript.Native.Compiler
 
         public static Expression GetExceptionInfo(ParameterExpression excVariable)
         {
-            var method = _operationsCache.GetOrAdd(
+            var method = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.GetExceptionInfo));
 
             return Expression.Call(method, excVariable);
         }
+
+        public static Expression AccessModuleVariable(ParameterExpression thisArg, int variableIndex)
+        {
+            var stateProperty = PropertiesCache.GetOrAdd(
+                typeof(NativeClassInstanceWrapper),
+                nameof(NativeClassInstanceWrapper.State),
+                BindingFlags.Instance | BindingFlags.Public);
+            
+            var propertyAccess = Expression.Property(thisArg, stateProperty);
+            var iVariable = Expression.ArrayIndex(propertyAccess, Expression.Constant(variableIndex));
+            var valueProperty = PropertiesCache.GetOrAdd(
+                typeof(IValueReference),
+                nameof(IValueReference.Value),
+                BindingFlags.Instance | BindingFlags.Public);
+            return Expression.Property(iVariable, valueProperty);
+        }
+
+        public static Expression InvokeBslNativeMethod(BslNativeMethodInfo nativeMethod, object target, List<Expression> args)
+        {
+            if (nativeMethod.Implementation != default)
+            {
+                return InvokeImplementation(nativeMethod, target, args);
+            }
+
+            return InvokeViaHelperMethod(nativeMethod, target, args);
+        }
+
+        private static Expression InvokeViaHelperMethod(BslNativeMethodInfo nativeMethod, object target, List<Expression> args)
+        {
+            var helperMethod = OperationsCache.GetOrAdd(
+                typeof(BslNativeMethodInfo),
+                nameof(BslNativeMethodInfo.InvokeInternal),
+                BindingFlags.Instance | BindingFlags.NonPublic
+            );
+
+            return Expression.Call(
+                Expression.Constant(nativeMethod),
+                helperMethod,
+                nativeMethod.IsInstance ?
+                    InvocationTargetExpression(target) :
+                    Expression.Constant(null, typeof(object)),
+                PackArgsToArgsArray(args));
+        }
+
+        private static Expression PackArgsToArgsArray(List<Expression> args)
+        {
+            return Expression.NewArrayInit(typeof(BslValue), args.Select(ConvertToBslValue));
+        }
+
+        private static Expression InvokeImplementation(BslNativeMethodInfo nativeMethod, object target, List<Expression> args)
+        {
+            if (nativeMethod.IsInstance)
+            {
+                var actualArgs = PrepareInstanceCallArguments(target, args);
+
+                return Expression.Invoke(nativeMethod.Implementation, actualArgs);
+            }
+
+            return Expression.Invoke(nativeMethod.Implementation, args);
+        }
+
+        private static Expression[] PrepareInstanceCallArguments(object target, List<Expression> args)
+        {
+            var actualArgs = new Expression[args.Count + 1];
+            actualArgs[0] = InvocationTargetExpression(target);
+            for (int i = 0; i < args.Count; i++)
+            {
+                actualArgs[i + 1] = args[i];
+            }
+
+            return actualArgs;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Expression InvocationTargetExpression(object target) =>
+            target as Expression ?? Expression.Constant(target, typeof(object));
     }
 }
