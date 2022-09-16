@@ -39,7 +39,7 @@ namespace OneScript.Language
             
             if ((details & ErrorDetails.Position) == ErrorDetails.Position)
             {
-                sb.Append('(')
+                sb.Append(" (")
                     .Append(Position.LineNumber)
                     .Append(",")
                     .Append(Position.ColumnNumber)
