@@ -82,9 +82,10 @@ namespace OneScript.Native.Compiler
         
         protected ErrorPositionInfo ToCodePosition(CodeRange range)
         {
+            var codeLine = range.LineNumber > 0 ? _sourceCode.GetCodeLine(range.LineNumber)?.Trim() : "no code line";
             return new ErrorPositionInfo
             {
-                Code = _sourceCode.GetCodeLine(range.LineNumber)?.Trim(),
+                Code = codeLine,
                 LineNumber = range.LineNumber,
                 ColumnNumber = range.ColumnNumber,
                 ModuleName = _sourceCode.Name

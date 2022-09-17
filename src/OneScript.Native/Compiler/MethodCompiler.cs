@@ -132,7 +132,7 @@ namespace OneScript.Native.Compiler
         private void FillParameterVariables()
         {
             _declaredParameters = _method.GetBslParameters();
-            _thisParameter = _method.IsInstance ? Expression.Parameter(typeof(NativeClassInstanceWrapper)) : null;
+            _thisParameter = _method.IsInstance ? Expression.Parameter(typeof(NativeClassInstanceWrapper), "$this") : null;
 
             var localScope = Symbols.GetScope(Symbols.ScopeCount-1);
             foreach (var parameter in _declaredParameters)
@@ -207,17 +207,27 @@ namespace OneScript.Native.Compiler
             }
 
             var symbol = Symbols.GetScope(binding.ScopeNumber).Variables[binding.MemberNumber];
-            if (symbol is IPropertySymbol)
+            if (IsLocalScope(binding.ScopeNumber))
+            {
+                // local read
+                var expr = GetLocalVariable(binding.MemberNumber);
+                _statementBuildParts.Push(expr);
+            }
+            else if (symbol is IPropertySymbol)
             {
                 // prop read
                 var target = GetPropertyBinding(binding, symbol);
                 _statementBuildParts.Push(Expression.Constant(target));
             }
+            else if (symbol is IFieldSymbol && _method.IsInstance)
+            {
+                var iVariableVal = ExpressionHelpers.AccessModuleVariable(_thisParameter, binding.MemberNumber);
+                _statementBuildParts.Push(Expression.Convert(iVariableVal, typeof(BslValue)));
+            }
             else
             {
-                // local read
-                var expr = GetLocalVariable(binding.MemberNumber);
-                _statementBuildParts.Push(expr);
+                AddError(new BilingualString($"Unsupported symbol in non-local context: {symbol.Name} {symbol.GetType()}"), 
+                    node.Location);
             }
         }
 

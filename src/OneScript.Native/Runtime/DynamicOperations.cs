@@ -29,9 +29,9 @@ namespace OneScript.Native.Runtime
                 return BslDateValue.Create(bslDate - (decimal) num);
             }
             
-            dynamic dLeft = left;
-            dynamic dRight = right;
-            return dLeft + dRight;
+            var dLeft = (decimal)left;
+            var dRight = (decimal)right;
+            return BslNumericValue.Create(dLeft + dRight);
         }
 
         public static BslValue Subtract(BslValue left, BslValue right)
@@ -59,9 +59,9 @@ namespace OneScript.Native.Runtime
             }
             else
             {
-                dynamic dLeft = left;
-                dynamic dRight = right;
-                return dLeft - dRight;
+                var dLeft = (decimal)left;
+                var dRight = (decimal)right;
+                return BslNumericValue.Create(dLeft - dRight);
             }
 
             throw BslExceptions.ConvertToNumberException();
@@ -69,31 +69,17 @@ namespace OneScript.Native.Runtime
         
         public static bool ToBoolean(BslValue value)
         {
-            return value switch
-            {
-                BslNumericValue n => (bool)n,
-                BslBooleanValue b => (bool)b,
-                _ => (bool)(dynamic)value
-            };
+            return (bool)value;
         }
         
         public static decimal ToNumber(BslValue value)
         {
-            return value switch
-            {
-                BslNumericValue n => (decimal)n,
-                BslBooleanValue b => (decimal)b,
-                _ => (decimal)(dynamic)value
-            };
+            return (decimal)value;
         }
         
         public static DateTime ToDate(BslValue value)
         {
-            return value switch
-            {
-                BslDateValue n => (DateTime)n,
-                _ => (DateTime)(dynamic)value
-            };
+            return (DateTime)value;
         }
 
         public static BslValue WrapClrObjectToValue(object value)

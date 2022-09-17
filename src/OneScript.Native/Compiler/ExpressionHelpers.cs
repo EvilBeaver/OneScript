@@ -149,7 +149,7 @@ namespace OneScript.Native.Compiler
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.Add));
 
-            return Expression.Call(operation, left, right);
+            return Expression.Call(operation, left, ConvertToBslValue(right));
         }
         
         public static Expression Subtract(Expression left, Expression right)
@@ -158,7 +158,7 @@ namespace OneScript.Native.Compiler
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.Subtract));
 
-            return Expression.Call(operation, left, right);
+            return Expression.Call(operation, left, ConvertToBslValue(right));
         }
 
         public static Expression ConvertToType(Expression value, Type targetType)

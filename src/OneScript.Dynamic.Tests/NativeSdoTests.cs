@@ -120,6 +120,33 @@ namespace OneScript.Dynamic.Tests
             val.GetPropValue("Г").AsNumber().Should().Be(4);
 
         }
+        
+        [Fact]
+        public void Test_Can_Read_Module_Variables()
+        {
+            var symbols = new SymbolTable();
+            symbols.PushScope(new SymbolScope(), null);
+            UserScriptContextInstance.PrepareCompilation(symbols);
+            var module = CreateModule(
+                @"Перем М Экспорт;
+
+                Процедура А() Экспорт
+                    М = М + 20;
+                КонецПроцедуры
+
+                М = 1;
+                А();
+                ", testServices.CreateContainer(), symbols);
+
+            var sdo = new UserScriptContextInstance(module,
+                new TypeDescriptor(new Guid(), "TestClass", default, typeof(UserScriptContextInstance)));
+            sdo.InitOwnData();
+            sdo.Initialize();
+            var n = sdo.GetPropertyNumber("М");
+            var val = sdo.GetPropValue(n);
+            val.SystemType.Should().Be(BasicTypes.Number);
+            val.AsNumber().Should().Be(21);
+        }
 
         private DynamicModule CreateModule(string code) => CreateModule(code, testServices.CreateContainer(), new SymbolTable());
         
