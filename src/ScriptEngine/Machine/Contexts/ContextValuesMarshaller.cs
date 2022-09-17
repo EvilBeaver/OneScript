@@ -131,7 +131,7 @@ namespace ScriptEngine.Machine.Contexts
             return valueObj;
         }
 
-        public static IValue ConvertReturnValue(object objParam, Type type)
+        private static IValue ConvertReturnValue(object objParam, Type type)
         {
             if (objParam == null)
                 return ValueFactory.Create();
@@ -208,12 +208,16 @@ namespace ScriptEngine.Machine.Contexts
 
             throw RuntimeException.InvalidArgumentValue();
         }
+ 
+        public static IValue ConvertReturnValue(object param)
+        {
+            return ConvertReturnValue(param, param.GetType());
+        }
+
 
         public static IValue ConvertReturnValue<TRet>(TRet param)
         {
-            var type = typeof(TRet);
-
-            return ConvertReturnValue(param, type);
+            return ConvertReturnValue(param, typeof(TRet));
         }
 
 		public static object ConvertToCLRObject(IValue val)

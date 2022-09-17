@@ -242,7 +242,7 @@ namespace ScriptEngine.Machine.Contexts
                     return false;
                 }
 
-                SetPropValue(propIdx, ContextValuesMarshaller.ConvertReturnValue(value, value.GetType()));
+                SetPropValue(propIdx, ContextValuesMarshaller.ConvertReturnValue(value));
 
                 return true;
             }
@@ -264,7 +264,7 @@ namespace ScriptEngine.Machine.Contexts
                 return false;
             }
 
-            var index = ContextValuesMarshaller.ConvertReturnValue(indexes[0], indexes[0].GetType());
+            var index = ContextValuesMarshaller.ConvertReturnValue(indexes[0]);
             result = ContextValuesMarshaller.ConvertToCLRObject(GetIndexedValue(index));
             return true;
         }
@@ -276,8 +276,8 @@ namespace ScriptEngine.Machine.Contexts
                 return false;
             }
 
-            var index = ContextValuesMarshaller.ConvertReturnValue(indexes[0], indexes[0].GetType());
-            SetIndexedValue(index, ContextValuesMarshaller.ConvertReturnValue(value, value.GetType()));
+            var index = ContextValuesMarshaller.ConvertReturnValue(indexes[0]);
+            SetIndexedValue(index, ContextValuesMarshaller.ConvertReturnValue(value));
             return true;
         }
 
@@ -296,7 +296,7 @@ namespace ScriptEngine.Machine.Contexts
 
             var methInfo = GetMethodInfo(methIdx);
             var valueArgs = new IValue[methInfo.Params.Length];
-            var passedArgs = args.Select(x => ContextValuesMarshaller.ConvertReturnValue(x, x.GetType())).ToArray();
+            var passedArgs = args.Select(x => ContextValuesMarshaller.ConvertReturnValue(x)).ToArray();
             for (int i = 0; i < valueArgs.Length; i++)
             {
                 if (i < passedArgs.Length)
