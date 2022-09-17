@@ -20,15 +20,20 @@ namespace OneScript.Native.Runtime
 {
     public class BslNativeMethodInfo : BslScriptMethodInfo
     {
-        private delegate BslValue NativeCallable(NativeClassInstanceWrapper target, BslValue[] args);
+        private Lazy<CallableMethod> _callable;
         
-        private Lazy<NativeCallable> _delegate;
-
         public void SetImplementation(LambdaExpression lambda)
         {
             Implementation = lambda;
-            _delegate = new Lazy<NativeCallable>(CreateDelegate, LazyThreadSafetyMode.PublicationOnly);
+            _callable = new Lazy<CallableMethod>(CreateCallable, LazyThreadSafetyMode.PublicationOnly);
         }
+
+        private CallableMethod CreateCallable()
+        {
+            return new CallableMethod(this);
+        }
+
+        internal CallableMethod GetCallable() => _callable.Value;
 
         public LambdaExpression Implementation { get; private set; }
 
@@ -36,84 +41,11 @@ namespace OneScript.Native.Runtime
 
         public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
-            var callableWrapper = GetCallableWrapper(obj);
-
             var bslArguments = new List<BslValue>(parameters.Length);
             bslArguments.AddRange(parameters.Cast<BslValue>());
 
-            return _delegate.Value.Invoke(callableWrapper, bslArguments.ToArray());
+            return _callable.Value.Invoke(obj, bslArguments.ToArray());
         }
-
-        internal BslValue InvokeInternal(object target, BslValue[] args)
-        {
-            var callableWrapper = GetCallableWrapper(target);
-            return _delegate.Value.Invoke(callableWrapper, args);
-        }
-
-        private NativeClassInstanceWrapper GetCallableWrapper(object obj)
-        {
-            NativeClassInstanceWrapper callableWrapper;
-            if (IsInstance)
-            {
-                if (obj == null)
-                    throw new InvalidOperationException($"Method {Name} is not static and requires target");
-                if (obj is NativeClassInstanceWrapper w)
-                {
-                    callableWrapper = w;
-                }
-                else if (obj is IAttachableContext context)
-                {
-                    context.OnAttach(out var state, out var methods);
-
-                    callableWrapper = new NativeClassInstanceWrapper
-                    {
-                        Context = context,
-                        State = state,
-                        Methods = methods
-                    };
-                }
-                else
-                {
-                    throw new ArgumentException($"Invalid argument type {obj.GetType()}", nameof(obj));
-                }
-            }
-            else
-            {
-                if (obj != null)
-                    throw new InvalidOperationException($"Method {Name} is static");
-
-                callableWrapper = null;
-            }
-
-            return callableWrapper;
-        }
-
-        private NativeCallable CreateDelegate()
-        {
-            if (Implementation == default)
-                throw new InvalidOperationException("Method has no implementation");
-
-            var targetParam = Expression.Parameter(typeof(NativeClassInstanceWrapper));
-            var arrayOfValuesParam = Expression.Parameter(typeof(BslValue[]));
-            var convertedAccessList = new List<Expression>();
-
-            if (IsInstance)
-                convertedAccessList.Add(targetParam);
-            
-            int index = 0;
-            foreach (var parameter in GetBslParameters())
-            {
-                var targetType = parameter.ParameterType;
-                var arrayAccess = Expression.ArrayIndex(arrayOfValuesParam, Expression.Constant(index));
-                var convertedParam = ExpressionHelpers.ConvertToType(arrayAccess, targetType);
-                convertedAccessList.Add(convertedParam);
-                ++index;
-            }
-            
-            var lambdaInvocation = Expression.Invoke(Implementation, convertedAccessList);
-            var func = Expression.Lambda<NativeCallable>(lambdaInvocation, targetParam, arrayOfValuesParam);
-
-            return func.Compile();
-        }
+        
     }
 }

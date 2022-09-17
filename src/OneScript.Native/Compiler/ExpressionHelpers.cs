@@ -467,24 +467,14 @@ namespace OneScript.Native.Compiler
 
         public static Expression InvokeBslNativeMethod(BslNativeMethodInfo nativeMethod, object target, List<Expression> args)
         {
-            if (nativeMethod.Implementation != default)
-            {
-                return InvokeImplementation(nativeMethod, target, args);
-            }
-
-            return InvokeViaHelperMethod(nativeMethod, target, args);
-        }
-
-        private static Expression InvokeViaHelperMethod(BslNativeMethodInfo nativeMethod, object target, List<Expression> args)
-        {
             var helperMethod = OperationsCache.GetOrAdd(
-                typeof(BslNativeMethodInfo),
-                nameof(BslNativeMethodInfo.InvokeInternal),
-                BindingFlags.Instance | BindingFlags.NonPublic
+                typeof(CallableMethod),
+                nameof(CallableMethod.Invoke),
+                BindingFlags.Instance | BindingFlags.Public
             );
 
             return Expression.Call(
-                Expression.Constant(nativeMethod),
+                Expression.Constant(nativeMethod.GetCallable()),
                 helperMethod,
                 nativeMethod.IsInstance ?
                     InvocationTargetExpression(target) :
@@ -495,18 +485,6 @@ namespace OneScript.Native.Compiler
         private static Expression PackArgsToArgsArray(List<Expression> args)
         {
             return Expression.NewArrayInit(typeof(BslValue), args.Select(ConvertToBslValue));
-        }
-
-        private static Expression InvokeImplementation(BslNativeMethodInfo nativeMethod, object target, List<Expression> args)
-        {
-            if (nativeMethod.IsInstance)
-            {
-                var actualArgs = PrepareInstanceCallArguments(target, args);
-
-                return Expression.Invoke(nativeMethod.Implementation, actualArgs);
-            }
-
-            return Expression.Invoke(nativeMethod.Implementation, args);
         }
 
         private static Expression[] PrepareInstanceCallArguments(object target, List<Expression> args)

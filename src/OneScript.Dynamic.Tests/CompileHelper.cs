@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OneScript.Commons;
 using OneScript.Compilation.Binding;
+using OneScript.DependencyInjection;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
@@ -14,9 +15,21 @@ namespace OneScript.Dynamic.Tests
 {
     internal class CompileHelper
     {
-        private IErrorSink _errors = new ListErrorSink();
+        private readonly IServiceContainer _services;
+        private readonly IErrorSink _errors = new ListErrorSink();
         private SourceCode _codeIndexer;
         private BslSyntaxNode _module;
+
+        public CompileHelper(IServiceContainer services)
+        {
+            _services = services;
+        }
+        
+        public CompileHelper()
+        {
+            _services = default;
+        }
+
         public IEnumerable<CodeError> Errors => _errors.Errors;
 
         public BslSyntaxNode ParseBatch(string code)
@@ -68,7 +81,7 @@ namespace OneScript.Dynamic.Tests
         {
             if (scopes.ScopeCount == 0)
                 scopes.PushScope(new SymbolScope(), null);
-            var compiler = new ModuleCompiler(_errors, null);
+            var compiler = new ModuleCompiler(_errors, _services);
             return compiler.Compile(_codeIndexer, _module, scopes);
         }
     }

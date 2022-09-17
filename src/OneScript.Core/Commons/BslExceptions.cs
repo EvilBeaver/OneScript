@@ -28,8 +28,8 @@ namespace OneScript.Commons
         {
             var sourceTypeInfo = SourceTypeInfo(source);
             return new TypeConversionException(new BilingualString(
-                $"{sourceTypeInfo}Преобразование к типу 'Число' не поддерживается",
-                $"{sourceTypeInfo}Conversion to type 'Number' is not supported"));
+                $"{sourceTypeInfo} Преобразование к типу 'Число' не поддерживается",
+                $"{sourceTypeInfo} Conversion to type 'Number' is not supported"));
         }
 
         public static RuntimeException ConvertToBooleanException()
