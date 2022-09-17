@@ -136,47 +136,27 @@ namespace ScriptEngine.Machine.Contexts
             if (objParam == null)
                 return ValueFactory.Create();
 
-            if (type == typeof(IValue))
+            switch (objParam)
             {
-                return (IValue)objParam;
+                case IValue v: return v;
+
+                case string s: return ValueFactory.Create(s);
+                case bool b: return ValueFactory.Create(b);
+                case DateTime d: return ValueFactory.Create(d);
+
+                case int n: return ValueFactory.Create(n);
+                case uint n: return ValueFactory.Create(n);
+                case long n: return ValueFactory.Create(n);
+                case ulong n: return ValueFactory.Create(n);
+                case byte n: return ValueFactory.Create(n);
+                case sbyte n: return ValueFactory.Create(n);
+                case short n: return ValueFactory.Create(n);
+                case ushort n: return ValueFactory.Create(n);
+                case decimal n: return ValueFactory.Create(n);
+                case double n: return ValueFactory.Create((decimal)n);
             }
-            else if (type == typeof(string))
-            {
-                return ValueFactory.Create((string)objParam);
-            }
-            else if (type == typeof(int))
-            {
-                return ValueFactory.Create((int)objParam);
-            }
-            else if (type == typeof(uint))
-            {
-                return ValueFactory.Create((uint)objParam);
-            }
-            else if (type == typeof(long))
-            {
-                return ValueFactory.Create((long)objParam);
-            }
-            else if (type == typeof(ulong))
-            {
-                return ValueFactory.Create((ulong)objParam);
-            }
-            else if (type == typeof(decimal))
-            {
-                return ValueFactory.Create((decimal)objParam);
-            }
-            else if (type == typeof(double))
-            {
-                return ValueFactory.Create((decimal)(double)objParam);
-            }
-            else if (type == typeof(DateTime))
-            {
-                return ValueFactory.Create((DateTime)objParam);
-            }
-            else if (type == typeof(bool))
-            {
-                return ValueFactory.Create((bool)objParam);
-            }
-            else if (type.IsEnum)
+
+            if (type.IsEnum)
             {
                 return ConvertEnum(objParam, type);
             }
