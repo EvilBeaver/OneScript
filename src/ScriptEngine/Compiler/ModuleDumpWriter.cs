@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Sources;
 using ScriptEngine.Machine;
@@ -78,7 +79,7 @@ namespace ScriptEngine.Compiler
             for (int i = 0; i < map.Count; i++)
             {
                 var item = map[i];
-                output.Write(string.Format("{0,-3}:({1},{2})\n", i, item.ContextIndex, item.CodeIndex));
+                output.Write(string.Format("{0,-3}:({1},{2})\n", i, item.ScopeNumber, item.MemberNumber));
             }
         }
 

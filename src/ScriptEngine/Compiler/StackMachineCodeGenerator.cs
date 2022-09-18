@@ -12,6 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using OneScript.Compilation;
+using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Execution;
 using OneScript.Language;
@@ -22,7 +23,6 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Sources;
 using OneScript.Values;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Compiler
 {
@@ -133,9 +133,9 @@ namespace ScriptEngine.Compiler
                         continue;
                     }
 
-                    var scope = _ctx.GetScope(methN.ContextIndex);
+                    var scope = _ctx.GetScope(methN.ScopeNumber);
 
-                    var methInfo = scope.GetMethod(methN.CodeIndex);
+                    var methInfo = scope.GetMethod(methN.MemberNumber);
                     Debug.Assert(StringComparer.OrdinalIgnoreCase.Compare(methInfo.Name, item.identifier) == 0);
                     if (item.asFunction && !methInfo.IsFunction())
                     {
@@ -161,7 +161,7 @@ namespace ScriptEngine.Compiler
             var fieldBuilder = BslFieldBuilder.Create()
                 .Name(symbolicName)
                 .SetAnnotations(annotations)
-                .SetDispatchingIndex(binding.CodeIndex)
+                .SetDispatchingIndex(binding.MemberNumber)
                 .DeclaringType(_module.ClassType);
             
             if (varNode.IsExported)
@@ -172,7 +172,7 @@ namespace ScriptEngine.Compiler
                     .IsExported(true)
                     .DeclaringType(_module.ClassType)
                     .SetAnnotations(annotations)
-                    .SetDispatchingIndex(binding.CodeIndex);
+                    .SetDispatchingIndex(binding.MemberNumber);
                 
                 _module.Properties.Add(propertyView.Build());
             }
@@ -215,8 +215,8 @@ namespace ScriptEngine.Compiler
                 var entryRefNumber = _module.MethodRefs.Count;
                 var bodyBinding = new SymbolBinding
                 {
-                    ContextIndex = topIdx,
-                    CodeIndex = _module.Methods.Count
+                    ScopeNumber = topIdx,
+                    MemberNumber = _module.Methods.Count
                 };
                 
                 _module.Methods.Add(methodInfo);
@@ -562,9 +562,9 @@ namespace ScriptEngine.Compiler
             var hasVar = _ctx.TryGetVariable(identifier, out var varBinding);
             if (hasVar)
             {
-                if (varBinding.binding.ContextIndex == _ctx.TopIndex())
+                if (varBinding.binding.ScopeNumber == _ctx.TopIndex())
                 {
-                    AddCommand(OperationCode.LoadLoc, varBinding.binding.CodeIndex);
+                    AddCommand(OperationCode.LoadLoc, varBinding.binding.MemberNumber);
                 }
                 else
                 {
@@ -576,7 +576,7 @@ namespace ScriptEngine.Compiler
             {
                 // can create variable
                 var binding = _ctx.DefineVariable(identifier);
-                AddCommand(OperationCode.LoadLoc, binding.CodeIndex);
+                AddCommand(OperationCode.LoadLoc, binding.MemberNumber);
             }
         }
 
@@ -703,9 +703,9 @@ namespace ScriptEngine.Compiler
 
         private int PushSimpleVariable(SymbolBinding binding)
         {
-            if (binding.ContextIndex == _ctx.TopIndex())
+            if (binding.ScopeNumber == _ctx.TopIndex())
             {
-                return AddCommand(OperationCode.PushLoc, binding.CodeIndex);
+                return AddCommand(OperationCode.PushLoc, binding.MemberNumber);
             }
             else
             {
@@ -734,12 +734,12 @@ namespace ScriptEngine.Compiler
             var hasMethod = _ctx.TryGetMethod(identifier, out var methBinding);
             if (hasMethod)
             {
-                var scope = _ctx.GetScope(methBinding.ContextIndex);
+                var scope = _ctx.GetScope(methBinding.ScopeNumber);
 
                 // dynamic scope checks signatures only at runtime
                 if (!scope.IsDynamicScope)
                 {
-                    var methInfo = scope.GetMethod(methBinding.CodeIndex);
+                    var methInfo = scope.GetMethod(methBinding.MemberNumber);
                     if (asFunction && !methInfo.IsFunction())
                     {
                         AddError(CompilerErrors.UseProcAsFunction(), identifierNode.Location);

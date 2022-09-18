@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using OneScript.Compilation.Binding;
 
 namespace ScriptEngine.Machine
 {
@@ -213,13 +214,6 @@ namespace ScriptEngine.Machine
             }
             return String.Format("{0}=[{1}]", Name, ValueIndex);
         }
-    }
-
-    [Serializable]
-    public struct SymbolBinding
-    {
-        public int CodeIndex;
-        public int ContextIndex;
     }
 
     public enum SymbolType

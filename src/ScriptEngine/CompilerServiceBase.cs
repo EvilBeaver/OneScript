@@ -41,9 +41,9 @@ namespace ScriptEngine
             {
                 int varIdx;
                 if (type == SymbolType.Variable)
-                    varIdx = _currentContext.DefineVariable(name, alias).CodeIndex;
+                    varIdx = _currentContext.DefineVariable(name, alias).MemberNumber;
                 else
-                    varIdx = _currentContext.DefineProperty(name, alias).CodeIndex;
+                    varIdx = _currentContext.DefineProperty(name, alias).MemberNumber;
 
                 return varIdx;
             }
@@ -59,7 +59,7 @@ namespace ScriptEngine
         {
             RegisterScopeIfNeeded();
 
-            return _currentContext.DefineMethod(methodSignature).CodeIndex;
+            return _currentContext.DefineMethod(methodSignature).MemberNumber;
         }
 
         public void DefinePreprocessorValue(string name)

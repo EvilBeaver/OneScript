@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using OneScript.Compilation;
+using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using ScriptEngine.Machine;
 
@@ -69,8 +70,8 @@ namespace ScriptEngine.Compiler
                     continue;
 
                 result = new SymbolBinding();
-                result.CodeIndex = number;
-                result.ContextIndex = i;
+                result.MemberNumber = number;
+                result.ScopeNumber = i;
                 return true;
 
             }
@@ -96,7 +97,7 @@ namespace ScriptEngine.Compiler
             var sb = GetSymbol(name, ExtractVariableIndex);
             return new VariableBinding
             {
-                type = _scopeStack[sb.ContextIndex].GetVariable(sb.CodeIndex).Type,
+                type = _scopeStack[sb.ScopeNumber].GetVariable(sb.MemberNumber).Type,
                 binding = sb
             };
         }
@@ -122,7 +123,7 @@ namespace ScriptEngine.Compiler
 
             vb = new VariableBinding()
             {
-                type = _scopeStack[sb.ContextIndex].GetVariable(sb.CodeIndex).Type,
+                type = _scopeStack[sb.ScopeNumber].GetVariable(sb.MemberNumber).Type,
                 binding = sb
             };
             return true;
@@ -170,8 +171,8 @@ namespace ScriptEngine.Compiler
                     var num = _scopeStack[TopIndex()].DefineMethod(method);
                     return new SymbolBinding()
                     {
-                        ContextIndex = idx,
-                        CodeIndex = num
+                        ScopeNumber = idx,
+                        MemberNumber = num
                     };
                 }
                 else
@@ -192,8 +193,8 @@ namespace ScriptEngine.Compiler
                     var num = scope.DefineVariable(name, alias);
                     return new SymbolBinding()
                     {
-                        ContextIndex = idx,
-                        CodeIndex = num
+                        ScopeNumber = idx,
+                        MemberNumber = num
                     };
                 }
                 else
@@ -211,8 +212,8 @@ namespace ScriptEngine.Compiler
                 var num = _scopeStack[idx].DefineProperty(name, alias);
                 return new SymbolBinding()
                 {
-                    ContextIndex = idx,
-                    CodeIndex = num
+                    ScopeNumber = idx,
+                    MemberNumber = num
                 };
             }
 

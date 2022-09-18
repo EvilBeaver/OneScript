@@ -782,8 +782,8 @@ namespace ScriptEngine.Machine
         private void PushVar(int arg)
         {
             var vm = _module.VariableRefs[arg];
-            var scope = _scopes[vm.ContextIndex];
-            _operationStack.Push(scope.Variables[vm.CodeIndex]);
+            var scope = _scopes[vm.ScopeNumber];
+            _operationStack.Push(scope.Variables[vm.MemberNumber]);
             NextInstruction();
         }
 
@@ -802,8 +802,8 @@ namespace ScriptEngine.Machine
         private void PushRef(int arg)
         {
             var vm = _module.VariableRefs[arg];
-            var scope = _scopes[vm.ContextIndex];
-            var reference = Variable.CreateContextPropertyReference(scope.Instance, vm.CodeIndex, "$stackvar");
+            var scope = _scopes[vm.ScopeNumber];
+            var reference = Variable.CreateContextPropertyReference(scope.Instance, vm.MemberNumber, "$stackvar");
             _operationStack.Push(reference);
             NextInstruction();
         }
@@ -811,8 +811,8 @@ namespace ScriptEngine.Machine
         private void LoadVar(int arg)
         {
             var vm = _module.VariableRefs[arg];
-            var scope = _scopes[vm.ContextIndex];
-            scope.Variables[vm.CodeIndex].Value = BreakVariableLink(_operationStack.Pop());
+            var scope = _scopes[vm.ScopeNumber];
+            scope.Variables[vm.MemberNumber].Value = BreakVariableLink(_operationStack.Pop());
             NextInstruction();
         }
 
@@ -993,8 +993,8 @@ namespace ScriptEngine.Machine
         private bool MethodCallImpl(int arg, bool asFunc)
         {
             var methodRef = _module.MethodRefs[arg];
-            var scope = _scopes[methodRef.ContextIndex];
-            var methodSignature = scope.Methods[methodRef.CodeIndex];
+            var scope = _scopes[methodRef.ScopeNumber];
+            var methodSignature = scope.Methods[methodRef.MemberNumber];
 
             var isLocalCall = scope.Instance == this.TopScope.Instance;
             
@@ -1012,12 +1012,12 @@ namespace ScriptEngine.Machine
                 var sdo = scope.Instance as ScriptDrivenObject;
                 System.Diagnostics.Debug.Assert(sdo != null);
 
-                if (sdo.MethodDefinedInScript(methodRef.CodeIndex))
+                if (sdo.MethodDefinedInScript(methodRef.MemberNumber))
                 {
                     // заранее переведем указатель на адрес возврата. В опкоде Return инкремента нет.
                     NextInstruction();
 
-                    var methodInfo = (MachineMethodInfo)_module.Methods[sdo.GetMethodDescriptorIndex(methodRef.CodeIndex)];
+                    var methodInfo = (MachineMethodInfo)_module.Methods[sdo.GetMethodDescriptorIndex(methodRef.MemberNumber)];
                     var methDescr = methodInfo.GetRuntimeMethod();
                     var frame = CreateNewFrame();
                     frame.Module = _module;
@@ -1079,7 +1079,7 @@ namespace ScriptEngine.Machine
                 else
                 {
                     needsDiscarding = _currentFrame.DiscardReturnValue;
-                    CallContext(scope.Instance, methodRef.CodeIndex, definedParameters, argValues, asFunc);
+                    CallContext(scope.Instance, methodRef.MemberNumber, definedParameters, argValues, asFunc);
                 }
 
             }
@@ -1089,7 +1089,7 @@ namespace ScriptEngine.Machine
                 // статус вызова текущего frames не должен изменяться.
                 //
                 needsDiscarding = _currentFrame.DiscardReturnValue;
-                CallContext(scope.Instance, methodRef.CodeIndex, definedParameters, argValues, asFunc);
+                CallContext(scope.Instance, methodRef.MemberNumber, definedParameters, argValues, asFunc);
             }
 
             return needsDiscarding;

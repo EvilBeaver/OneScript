@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using ScriptEngine.Machine;
 
@@ -156,7 +157,7 @@ namespace ScriptEngine.Compiler
 
         private void ShiftIndex(ref SymbolBinding symbolBinding)
         {
-            symbolBinding.ContextIndex += OUTER_CTX_SIZE;
+            symbolBinding.ScopeNumber += OUTER_CTX_SIZE;
         }
 
         public void Update()
