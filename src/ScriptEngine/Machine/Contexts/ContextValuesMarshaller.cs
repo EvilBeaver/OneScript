@@ -226,44 +226,33 @@ namespace ScriptEngine.Machine.Contexts
 
 		public static object ConvertToCLRObject(IValue val)
 		{
-			object result;
 			if (val == null)
-				return val;
-			
-			switch (val.DataType)
-			{
-			case Machine.DataType.Boolean:
-				result = val.AsBoolean();
-				break;
-			case Machine.DataType.Date:
-				result = val.AsDate();
-				break;
-			case Machine.DataType.Number:
-				result = val.AsNumber();
-				break;
-			case Machine.DataType.String:
-				result = val.AsString();
-				break;
-			case Machine.DataType.Undefined:
-				result = null;
-				break;
-			default:
-                if (val.DataType == DataType.Object)
-                    result = val.AsObject();
+				return null;
 
-				result = val.GetRawValue();
-				if (result is IObjectWrapper)
-					result = ((IObjectWrapper)result).UnderlyingObject;
-				else
-				    throw new ValueMarshallingException(Locale.NStr(
-                          $"ru='Тип {val.GetType()} не поддерживает преобразование в CLR-объект';"
-                         +$"en='Type {val.GetType()} does not support conversion to CLR object'"));
+            switch (val.DataType)
+            {
+                case DataType.Boolean: return val.AsBoolean();
+                case DataType.Date: return val.AsDate();
+                case DataType.Number: return val.AsNumber();
+                case DataType.String: return val.AsString();
+                case DataType.Undefined: return null;
+            }
 
-                break;
-			}
-			
-			return result;
-		}
+            object result;
+
+            if (val.DataType == DataType.Object)
+                result = val.AsObject();
+
+			if (val.GetRawValue() is IObjectWrapper wrapped)
+				result = wrapped.UnderlyingObject;
+			else
+				throw new ValueMarshallingException(Locale.NStr(
+                        $"ru='Тип {val.GetType()} не поддерживает преобразование в CLR-объект';"
+                        +$"en='Type {val.GetType()} does not support conversion to CLR object'"));
+
+                
+            return result;
+        }
 
         public static T CastToCLRObject<T>(IValue val)
         {
