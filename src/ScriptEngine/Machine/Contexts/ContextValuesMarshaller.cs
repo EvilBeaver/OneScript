@@ -174,21 +174,25 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                throw new NotSupportedException($"Type {type} is not supported");
+                throw new ValueMarshallingException(Locale.NStr(
+                    $"ru='Возвращаемый тип {type} не поддерживается'; en='Return type {type} is not supported'"));
             }
         }
 
         private static IValue ConvertEnum(object objParam, Type type)
         {
             if (!type.IsAssignableFrom(objParam.GetType()))
-                throw new RuntimeException("Некорректный тип конвертируемого перечисления");
+                throw new ValueMarshallingException(Locale.NStr(
+                    $"ru='Некорректный тип конвертируемого перечисления'; en='Invalid enum return type'"));
 
             var memberInfo = type.GetMember(objParam.ToString());
             var valueInfo = memberInfo.FirstOrDefault(x => x.DeclaringType == type);
             var attrs = valueInfo.GetCustomAttributes(typeof(EnumItemAttribute), false);
 
             if (attrs.Length == 0)
-                throw new RuntimeException("Значение перечисления должно быть помечено атрибутом EnumItemAttribute");
+                throw new ValueMarshallingException(Locale.NStr(
+                     "ru='Значение перечисления должно быть помечено атрибутом EnumItemAttribute';"
+                    +"en='An enumeration value must be marked with the EnumItemAttribute attribute"));
 
             var itemName = ((EnumItemAttribute)attrs[0]).Name;
             var enumImpl = GlobalsManager.GetSimpleEnum(type);
@@ -251,7 +255,9 @@ namespace ScriptEngine.Machine.Contexts
 				if (result is IObjectWrapper)
 					result = ((IObjectWrapper)result).UnderlyingObject;
 				else
-				    throw new ValueMarshallingException($"Тип {val.GetType()} не поддерживает преобразование в CLR-объект");
+				    throw new ValueMarshallingException(Locale.NStr(
+                          $"ru='Тип {val.GetType()} не поддерживает преобразование в CLR-объект';"
+                         +$"en='Type {val.GetType()} does not support conversion to CLR object'"));
 
                 break;
 			}
