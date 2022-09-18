@@ -10,7 +10,6 @@ using OneScript.Commons;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Execution;
-using OneScript.Sources;
 
 namespace ScriptEngine.Machine.Contexts
 {

@@ -591,7 +591,7 @@ namespace OneScriptDocumenter
             propElement.Add(new XElement("name", name));
             propElement.Add(new XElement("alias", alias));
 
-            var access = findAccess(attrib, prop);
+            var access = FindAccess(attrib, prop);
 
             propElement.Add(new XElement("readable", access["canRead"]));
             propElement.Add(new XElement("writeable", access["canWrite"]));
@@ -601,7 +601,7 @@ namespace OneScriptDocumenter
 
         }
 
-        private Dictionary<string, bool?> findAccess(System.Reflection.CustomAttributeData attrib, System.Reflection.PropertyInfo prop)
+        private static Dictionary<string, bool?> FindAccess(CustomAttributeData attrib, PropertyInfo prop)
         {
             bool? canRead = null;
             bool? canWrite = null;
@@ -643,7 +643,7 @@ namespace OneScriptDocumenter
             propElement.Add(new XElement("name", name));
             propElement.Add(new XElement("name_en", alias));
 
-            var access = findAccess(attrib, prop);
+            var access = FindAccess(attrib, prop);
 
             AppendXmlDocsJSON(propElement, "P:" + classType.FullName + "." + prop.Name);
             buildAccessProperty(access["canRead"], access["canWrite"], propElement);

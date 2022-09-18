@@ -16,18 +16,18 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("ОбъединениеЗапрещенныхПодстановокXS", "XSProhibitedSubstitutionsUnion")]
-    public class XSProhibitedSubstitutionsUnion : AutoContext<XSProhibitedSubstitutionsUnion>
+    public class XsProhibitedSubstitutionsUnion : AutoContext<XsProhibitedSubstitutionsUnion>
     {
         private readonly ArrayImpl _values;
 
-        private bool Contains(XmlSchemaDerivationMethod _value)
+        private bool Contains(XmlSchemaDerivationMethod value)
         {
-            XSProhibitedSubstitutions _enumValue = XSProhibitedSubstitutions.FromNativeValue(_value);
-            IValue _idx = _values.Find(_enumValue);
-            return (_idx.SystemType != BasicTypes.Undefined);
+            XSProhibitedSubstitutions enumValue = XSProhibitedSubstitutions.FromNativeValue(value);
+            IValue idx = _values.Find(enumValue);
+            return (idx.SystemType != BasicTypes.Undefined);
         }
 
-        internal XSProhibitedSubstitutionsUnion() => _values = ArrayImpl.Constructor();
+        internal XsProhibitedSubstitutionsUnion() => _values = ArrayImpl.Constructor();
 
         #region OneScript
 

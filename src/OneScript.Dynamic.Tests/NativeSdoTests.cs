@@ -4,7 +4,6 @@ using OneScript.Compilation.Binding;
 using OneScript.DependencyInjection;
 using OneScript.Execution;
 using OneScript.Native.Compiler;
-using OneScript.Native.Extensions;
 using OneScript.Native.Runtime;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;

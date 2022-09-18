@@ -58,11 +58,13 @@ namespace OneScript.Contexts.Internal
             return rawMethod.MakeGenericMethod(propType);
         }
 
+        // ReSharper disable once UnusedMember.Local
         private T GenericGetter<T>(GlobalPropertiesHolder holder) where T : BslValue
         {
             return (T)holder.GetPropValue(_valueIndex);
         }
         
+        // ReSharper disable once UnusedMember.Local
         private void GenericSetter<T>(GlobalPropertiesHolder holder, T value) where T : BslValue
         {
             holder.SetPropValue(_valueIndex, value);

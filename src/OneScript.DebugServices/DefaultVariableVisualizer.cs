@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.DebugProtocol;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 using Variable = OneScript.DebugProtocol.Variable;
 using MachineVariable = OneScript.Contexts.Variable;
 

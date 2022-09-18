@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Execution;
-using OneScript.Sources;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

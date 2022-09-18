@@ -14,7 +14,6 @@ using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Tasks;
-using ScriptEngine.Compiler;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.HostedScript
@@ -77,12 +76,9 @@ namespace ScriptEngine.HostedScript
             }
 
             // System language
-            var SystemLanguageCfg = GetWorkingConfig().SystemLanguage;
+            var systemLanguageCfg = GetWorkingConfig().SystemLanguage;
 
-            if (SystemLanguageCfg != null)
-                Locale.SystemLanguageISOName = SystemLanguageCfg;
-            else
-                Locale.SystemLanguageISOName = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+            Locale.SystemLanguageISOName = systemLanguageCfg ?? System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
         }
 
         public void InjectGlobalProperty(string name, string alias, IValue value, bool readOnly)

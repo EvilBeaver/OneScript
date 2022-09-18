@@ -17,8 +17,6 @@ using ScriptEngine.Machine;
 using ScriptEngine.Types;
 using Xunit;
 
-using Machine = ScriptEngine.Machine;
-
 namespace OneScript.DebugProtocol.Test
 {
     // TODO стандартный визуализатор ничего не знает про особенности коллекций

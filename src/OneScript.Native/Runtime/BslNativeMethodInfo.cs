@@ -13,7 +13,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using OneScript.Contexts;
-using OneScript.Native.Compiler;
 using OneScript.Values;
 
 namespace OneScript.Native.Runtime

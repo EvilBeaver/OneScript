@@ -13,7 +13,6 @@ using System.Text;
 using OneScript.Commons;
 using OneScript.Compilation;
 using OneScript.Sources;
-using ScriptEngine.Compiler;
 
 namespace ScriptEngine.HostedScript
 {

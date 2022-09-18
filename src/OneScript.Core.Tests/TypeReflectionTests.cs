@@ -8,7 +8,6 @@ using System;
 using System.Reflection;
 using OneScript.Contexts;
 using OneScript.Execution;
-using OneScript.Sources;
 using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Hosting;

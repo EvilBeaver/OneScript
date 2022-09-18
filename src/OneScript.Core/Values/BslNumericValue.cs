@@ -111,9 +111,7 @@ namespace OneScript.Values
             if (obj.GetType() != this.GetType()) return false;
             return Equals((BslNumericValue) obj);
         }
-        
-        protected decimal ActualValue => _value;
-        
+
         public override int GetHashCode()
         {
             return _value.GetHashCode();

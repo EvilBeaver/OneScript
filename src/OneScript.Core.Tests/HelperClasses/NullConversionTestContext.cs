@@ -21,11 +21,6 @@ namespace OneScript.Core.Tests
         TestNullClass _pClass;
 
 
-        public NullConversionTestContext()
-        {
-
-        }
-
         [ScriptConstructor(Name = "Без параметров")]
         public static NullConversionTestContext Constructor()
         {

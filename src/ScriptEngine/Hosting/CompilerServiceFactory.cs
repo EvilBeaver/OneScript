@@ -5,10 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
 using OneScript.Commons;
 using OneScript.Compilation.Binding;
-using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;

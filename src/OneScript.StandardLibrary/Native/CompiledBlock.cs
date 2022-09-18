@@ -26,7 +26,6 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using SymbolScope = OneScript.Compilation.Binding.SymbolScope;
 
 namespace OneScript.StandardLibrary.Native
 {

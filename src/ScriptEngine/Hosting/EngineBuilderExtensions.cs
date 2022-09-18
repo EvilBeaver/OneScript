@@ -12,7 +12,6 @@ using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Types;
-using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Hosting

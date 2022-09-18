@@ -20,9 +20,9 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
     {
         private ArrayImpl _values;
 
-        private bool Contains(XmlSchemaDerivationMethod _value)
+        private bool Contains(XmlSchemaDerivationMethod value)
         {
-            var enumValue = EnumerationXSSchemaFinal.Instance.FromNativeValue(_value);
+            var enumValue = EnumerationXSSchemaFinal.Instance.FromNativeValue(value);
             IValue idx = _values.Find(enumValue);
             return (idx.SystemType != BasicTypes.Undefined);
         }

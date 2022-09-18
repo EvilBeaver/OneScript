@@ -1,6 +1,4 @@
 using OneScript.Contexts;
-using OneScript.Native.Compiler;
-using OneScript.Values;
 
 namespace OneScript.Native.Runtime
 {

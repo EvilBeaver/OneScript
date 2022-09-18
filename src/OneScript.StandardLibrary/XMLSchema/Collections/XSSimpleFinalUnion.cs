@@ -22,9 +22,9 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
 
         private bool Contains(XmlSchemaDerivationMethod _value)
         {
-            XSSimpleFinal _enumValue = EnumerationXSSimpleFinal.FromNativeValue(_value);
-            IValue _idx = _values.Find(_enumValue);
-            return (_idx.SystemType != BasicTypes.Undefined);
+            XSSimpleFinal enumValue = EnumerationXSSimpleFinal.FromNativeValue(_value);
+            IValue idx = _values.Find(enumValue);
+            return idx.SystemType != BasicTypes.Undefined;
         }
 
         public XSSimpleFinalUnion() => _values = ArrayImpl.Constructor();

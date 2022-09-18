@@ -43,7 +43,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
             Content.Inserted += ContentInserted;
             Content.Cleared += ContentCleared;
 
-            BlockDefault = new XSDisallowedSubstitutionsUnion();
+            BlockDefault = new XsDisallowedSubstitutionsUnion();
             FinalDefault = new XSSchemaFinalUnion();
 
             AttributeDeclarations = new XSNamedComponentMap();
@@ -147,7 +147,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public XSComponentFixedList Annotations { get; }
 
         [ContextProperty("БлокировкаПоУмолчанию", "BlockDefault")]
-        public XSDisallowedSubstitutionsUnion BlockDefault { get; }
+        public XsDisallowedSubstitutionsUnion BlockDefault { get; }
 
         [ContextProperty("Версия", "Version")]
         public string Version

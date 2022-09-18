@@ -10,7 +10,6 @@ using System.Linq;
 using System.Reflection;
 using OneScript.Contexts.Internal;
 using OneScript.Execution;
-using OneScript.Sources;
 
 namespace OneScript.Contexts
 {

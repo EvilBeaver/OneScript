@@ -12,7 +12,6 @@ using OneScript.Commons;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Execution;
-using OneScript.Sources;
 using OneScript.Types;
 using OneScript.Values;
 

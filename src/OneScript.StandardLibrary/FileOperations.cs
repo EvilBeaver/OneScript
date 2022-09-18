@@ -13,7 +13,6 @@ using System.Net;
 using System.Security;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Collections;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary
@@ -290,7 +289,7 @@ namespace OneScript.StandardLibrary
                 var subfolders = Directory.GetDirectories(path);
                 foreach (var s in subfolders)
                 {
-                    DeleteDirectory(s, recursive);
+                    DeleteDirectory(s, true);
                 }
             }
 

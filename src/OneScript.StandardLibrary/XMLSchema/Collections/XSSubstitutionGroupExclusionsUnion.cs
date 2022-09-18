@@ -16,17 +16,17 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("ОбъединениеИсключенийГруппПодстановкиXS", "XSSubstitutionGroupExclusionsUnion")]
-    public class XSSubstitutionGroupExclusionsUnion : AutoContext<XSSubstitutionGroupExclusionsUnion>
+    public class XsSubstitutionGroupExclusionsUnion : AutoContext<XsSubstitutionGroupExclusionsUnion>
     {
         private readonly ArrayImpl _values;
-        private bool Contains(XmlSchemaDerivationMethod _value)
+        private bool Contains(XmlSchemaDerivationMethod value)
         {
-            XSSubstitutionGroupExclusions _enumValue = EnumerationXSSubstitutionGroupExclusions.FromNativeValue(_value);
-            IValue _idx = _values.Find(_enumValue);
-            return (_idx.SystemType != BasicTypes.Undefined);
+            XSSubstitutionGroupExclusions enumValue = EnumerationXSSubstitutionGroupExclusions.FromNativeValue(value);
+            IValue idx = _values.Find(enumValue);
+            return (idx.SystemType != BasicTypes.Undefined);
         }
 
-        internal XSSubstitutionGroupExclusionsUnion() => _values = ArrayImpl.Constructor();
+        internal XsSubstitutionGroupExclusionsUnion() => _values = ArrayImpl.Constructor();
 
         #region OneScript
 

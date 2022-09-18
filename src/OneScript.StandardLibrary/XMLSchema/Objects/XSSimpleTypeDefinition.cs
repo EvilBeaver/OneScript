@@ -182,8 +182,8 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
                 _baseTypeName = value;
                 if (Variety == XSSimpleTypeVariety.Atomic)
                 {
-                    XmlSchemaSimpleTypeRestriction __content = _type.Content as XmlSchemaSimpleTypeRestriction;
-                    __content.BaseTypeName = _baseTypeName.NativeValue;
+                    XmlSchemaSimpleTypeRestriction content = _type.Content as XmlSchemaSimpleTypeRestriction;
+                    content.BaseTypeName = _baseTypeName.NativeValue;
                 }
                 else
                     throw RuntimeException.InvalidArgumentValue();
@@ -199,8 +199,8 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
                 _itemTypeName = value;
                 if (Variety == XSSimpleTypeVariety.List)
                 {
-                    XmlSchemaSimpleTypeList __content = _type.Content as XmlSchemaSimpleTypeList;
-                    __content.ItemTypeName = _itemTypeName.NativeValue;
+                    XmlSchemaSimpleTypeList content = (XmlSchemaSimpleTypeList)_type.Content;
+                    content.ItemTypeName = _itemTypeName.NativeValue;
                 }
             }
         }

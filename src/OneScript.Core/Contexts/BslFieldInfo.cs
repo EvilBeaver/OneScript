@@ -13,8 +13,8 @@ namespace OneScript.Contexts
     public abstract class BslFieldInfo : FieldInfo, INameAndAliasProvider
     {
         private AnnotationHolder _annotations;
-        
-        public string Alias { get; }
+
+        public string Alias => null;
         
         private AnnotationHolder Annotations
         {

@@ -213,7 +213,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         [ContextProperty("Блокировка", "Block")]
-        public XSDisallowedSubstitutionsUnion Block { get; }
+        public XsDisallowedSubstitutionsUnion Block { get; }
 
         [ContextProperty("ВозможноПустой", "Nillable")]
         public bool Nillable
@@ -223,13 +223,13 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         [ContextProperty("Завершенность", "Final")]
-        public XSSubstitutionGroupExclusionsUnion Final { get; }
+        public XsSubstitutionGroupExclusionsUnion Final { get; }
 
         [ContextProperty("ИсключенияГруппПодстановки", "SubstitutionGroupExclusions")]
-        public XSSubstitutionGroupExclusionsUnion SubstitutionGroupExclusions { get; }
+        public XsSubstitutionGroupExclusionsUnion SubstitutionGroupExclusions { get; }
 
         [ContextProperty("НедопустимыеПодстановки", "DisallowedSubstitutions")]
-        public XSDisallowedSubstitutionsUnion DisallowedSubstitutions { get; }
+        public XsDisallowedSubstitutionsUnion DisallowedSubstitutions { get; }
 
         [ContextProperty("ОграниченияИдентичности", "IdentityConstraints")]
         public XSComponentList IdentityConstraints { get; }

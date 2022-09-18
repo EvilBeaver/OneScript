@@ -13,7 +13,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
-using OneScript.Contexts;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Localization;
 using OneScript.Native.Runtime;

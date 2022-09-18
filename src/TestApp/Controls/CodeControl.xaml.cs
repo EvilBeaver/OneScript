@@ -5,18 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Threading;
-using System.Xml;
-using ICSharpCode.AvalonEdit.Folding;
-using ICSharpCode.AvalonEdit.Highlighting;
-using ICSharpCode.AvalonEdit.Search;
-
 namespace V8Reader.Controls
 {
     /// <summary>

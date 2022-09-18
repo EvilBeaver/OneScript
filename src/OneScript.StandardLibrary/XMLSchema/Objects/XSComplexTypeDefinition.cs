@@ -361,13 +361,13 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public XSComponentList Attributes { get; }
 
         [ContextProperty("Блокировка", "Block")]
-        public XSProhibitedSubstitutionsUnion Block { get; }
+        public XsProhibitedSubstitutionsUnion Block { get; }
 
         [ContextProperty("Завершенность", "Final")]
         public XSComplexFinalUnion Final { get; }
 
         [ContextProperty("ЗапрещенныеПодстановки", "ProhibitedSubstitutions")]
-        public XSProhibitedSubstitutionsUnion ProhibitedSubstitutions { get; }
+        public XsProhibitedSubstitutionsUnion ProhibitedSubstitutions { get; }
 
         [ContextProperty("ИмяБазовогоТипа", "BaseTypeName")]
         public XMLExpandedName BaseTypeName

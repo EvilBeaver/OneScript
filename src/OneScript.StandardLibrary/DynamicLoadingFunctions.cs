@@ -12,7 +12,6 @@ using OneScript.Language;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.NativeApi;
 using ScriptEngine;
-using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

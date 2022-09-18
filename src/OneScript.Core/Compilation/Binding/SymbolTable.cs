@@ -6,7 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
-using OneScript.Values;
 
 namespace OneScript.Compilation.Binding
 {
