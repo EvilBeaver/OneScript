@@ -13,7 +13,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    public class SymbolScope
+    public class _SymbolScope
     {
         private readonly IndexedNameValueCollection<VariableInfo> _variables =
             new IndexedNameValueCollection<VariableInfo>();

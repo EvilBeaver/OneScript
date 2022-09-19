@@ -36,7 +36,7 @@ namespace OneScript.Compilation.Binding
             return new BslFieldSymbol { Field = info };
         }
 
-        private static (IVariableSymbol symbol, SymbolBinding binding) GetKnownVariable(this SymbolTable table, string name)
+        public static (IVariableSymbol symbol, SymbolBinding binding) GetKnownVariable(this SymbolTable table, string name)
         {
             if (!table.FindVariable(name, out var binding))
             {
@@ -48,7 +48,7 @@ namespace OneScript.Compilation.Binding
             return (variable, binding);
         }
         
-        private static (IMethodSymbol symbol, SymbolBinding binding) GetKnownMethod(this SymbolTable table, string name)
+        public static (IMethodSymbol symbol, SymbolBinding binding) GetKnownMethod(this SymbolTable table, string name)
         {
             if (!table.FindMethod(name, out var binding))
             {

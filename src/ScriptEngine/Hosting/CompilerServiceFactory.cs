@@ -40,10 +40,7 @@ namespace ScriptEngine.Hosting
             for (int i = 0; i < context.ScopeCount; i++)
             {
                 var scope = context.GetScope(i);
-                var goodOldScope = new ScriptEngine.Compiler.SymbolScope();
-                scope.GetMethods().ForEach(x => goodOldScope.DefineMethod(x.Method));
-                scope.GetVariables().ForEach(x => goodOldScope.DefineProperty(x.Name, x.Alias));
-                obsoleteCtx.PushScope(goodOldScope);
+                obsoleteCtx.PushScope(scope);
             }
 
             return CreateInstance(obsoleteCtx);

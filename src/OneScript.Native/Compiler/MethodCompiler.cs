@@ -202,7 +202,7 @@ namespace OneScript.Native.Compiler
                 return;
             }
 
-            var symbol = Symbols.GetScope(binding.ScopeNumber).GetVariable(binding.MemberNumber);
+            var symbol = Symbols.GetScope(binding.ScopeNumber).Variables[binding.MemberNumber];
             if (IsLocalScope(binding.ScopeNumber))
             {
                 // local read
@@ -324,7 +324,7 @@ namespace OneScript.Native.Compiler
             var hasVar = Symbols.FindVariable(identifier, out var varBinding);
             if (hasVar)
             {
-                var symbol = Symbols.GetScope(varBinding.ScopeNumber).GetVariable(varBinding.MemberNumber);
+                var symbol = Symbols.GetScope(varBinding.ScopeNumber).Variables[varBinding.MemberNumber];
                 if (IsLocalScope(varBinding.ScopeNumber))
                 {
                     var local = GetLocalVariable(varBinding.MemberNumber);
@@ -1146,7 +1146,7 @@ namespace OneScript.Native.Compiler
                 return null;
             }
 
-            var symbol = Symbols.GetScope(binding.ScopeNumber).GetMethod(binding.MemberNumber);
+            var symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
             var args = PrepareCallArguments(node.ArgumentList, symbol.Method.GetParameters());
 
             var methodInfo = symbol.Method;

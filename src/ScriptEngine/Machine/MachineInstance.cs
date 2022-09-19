@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using OneScript.Commons;
+using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Language;
 using OneScript.Sources;
@@ -2627,11 +2628,13 @@ namespace ScriptEngine.Machine
                 var symbolScope = new SymbolScope();
                 foreach (var methodInfo in scope.Methods)
                 {
-                    symbolScope.DefineMethod(methodInfo);
+                    symbolScope.DefineMethod(methodInfo.ToSymbol());
                 }
                 foreach (var variable in scope.Variables)
                 {
-                    symbolScope.DefineVariable(variable.Name);
+                    // TODO тут возможна двуязычность у свойств (приаттаченых, как IVariable)
+                    //  пока костыль в виде одного имени
+                    symbolScope.DefineVariable(new LocalVariableSymbol(variable.Name));
                 }
 
                 ctx.PushScope(symbolScope);
@@ -2640,7 +2643,7 @@ namespace ScriptEngine.Machine
             var locals = new SymbolScope();
             foreach (var variable in _currentFrame.Locals)
             {
-                locals.DefineVariable(variable.Name);
+                locals.DefineVariable(new LocalVariableSymbol(variable.Name));
             }
 
             ctx.PushScope(locals);

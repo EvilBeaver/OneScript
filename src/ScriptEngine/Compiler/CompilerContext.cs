@@ -95,9 +95,10 @@ namespace ScriptEngine.Compiler
         public VariableBinding GetVariable(string name)
         {
             var sb = GetSymbol(name, ExtractVariableIndex);
+            var varSymbol = _scopeStack[sb.ScopeNumber].Variables[sb.MemberNumber];
             return new VariableBinding
             {
-                type = _scopeStack[sb.ScopeNumber].GetVariable(sb.MemberNumber).Type,
+                type = varSymbol is IPropertySymbol? SymbolType.ContextProperty : SymbolType.Variable,
                 binding = sb
             };
         }
@@ -121,9 +122,10 @@ namespace ScriptEngine.Compiler
                 return false;
             }
 
+            var varSymbol = _scopeStack[sb.ScopeNumber].Variables[sb.MemberNumber];
             vb = new VariableBinding()
             {
-                type = _scopeStack[sb.ScopeNumber].GetVariable(sb.MemberNumber).Type,
+                type = varSymbol is IPropertySymbol? SymbolType.ContextProperty : SymbolType.Variable,
                 binding = sb
             };
             return true;
@@ -132,9 +134,9 @@ namespace ScriptEngine.Compiler
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int ExtractVariableIndex(string name, SymbolScope scope)
         {
-            if (scope.IsVarDefined(name))
+            if (scope.Variables.IsDefined(name))
             {
-                return scope.GetVariableNumber(name);
+                return scope.Variables.IndexOf(name);
             }
             else
                 return -1;
@@ -143,9 +145,9 @@ namespace ScriptEngine.Compiler
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int ExtractMethodIndex(string name, SymbolScope scope)
         {
-            if (scope.IsMethodDefined(name))
+            if (scope.Methods.IsDefined(name))
             {
-                return scope.GetMethodNumber(name);
+                return scope.Methods.IndexOf(name);
             }
             else
                 return -1;
@@ -165,10 +167,10 @@ namespace ScriptEngine.Compiler
         {
             if (_scopeStack.Count > 0)
             {
-                if (!HasSymbol(x => x.IsMethodDefined(method.Name)))
+                if (!HasSymbol(x => x.Methods.IsDefined(method.Name)))
                 {
                     var idx = TopIndex();
-                    var num = _scopeStack[TopIndex()].DefineMethod(method);
+                    var num = _scopeStack[TopIndex()].DefineMethod(method.ToSymbol());
                     return new SymbolBinding()
                     {
                         ScopeNumber = idx,
@@ -188,9 +190,9 @@ namespace ScriptEngine.Compiler
             {
                 var idx = TopIndex();
                 var scope = GetScope(idx);
-                if (!scope.IsVarDefined(name))
+                if (!scope.Variables.IsDefined(name))
                 {
-                    var num = scope.DefineVariable(name, alias);
+                    var num = scope.DefineVariable(new LocalVariableSymbol(name));
                     return new SymbolBinding()
                     {
                         ScopeNumber = idx,
@@ -206,10 +208,11 @@ namespace ScriptEngine.Compiler
 
         public SymbolBinding DefineProperty(string name, string alias = null)
         {
+            // TODO Выпилить вместе с CompilerServiceBase.DefineVariable
             if (_scopeStack.Count > 0)
             {
                 var idx = TopIndex();
-                var num = _scopeStack[idx].DefineProperty(name, alias);
+                var num = _scopeStack[idx].DefineVariable(new LocalVariableSymbol(name));
                 return new SymbolBinding()
                 {
                     ScopeNumber = idx,

@@ -160,7 +160,7 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitMethod(MethodNode methodNode)
         {
-            var methodSymbol = Symbols.GetScope(Symbols.ScopeCount - 1).GetMethod(methodNode.Signature.MethodName);
+            var methodSymbol = Symbols.GetScope(Symbols.ScopeCount - 1).Methods[methodNode.Signature.MethodName];
             var methodInfo = (BslNativeMethodInfo)methodSymbol.Method;
 
             var context = MakeContext();

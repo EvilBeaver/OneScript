@@ -131,7 +131,7 @@ namespace ScriptEngine.Compiler
 
                     var scope = _ctx.GetScope(methN.ScopeNumber);
 
-                    var methInfo = scope.GetMethod(methN.MemberNumber);
+                    var methInfo = scope.Methods[methN.MemberNumber].Method;
                     Debug.Assert(StringComparer.OrdinalIgnoreCase.Compare(methInfo.Name, item.identifier) == 0);
                     if (item.asFunction && !methInfo.IsFunction())
                     {
@@ -223,14 +223,8 @@ namespace ScriptEngine.Compiler
 
         private static string[] GetVariableNames(SymbolScope localCtx)
         {
-            var names = new string[localCtx.VariableCount];
+            return localCtx.Variables.Select(v => v.Name).ToArray();
 
-            for (int i = 0; i < localCtx.VariableCount; i++)
-            {
-                names[i] = localCtx.GetVariable(i).Identifier;
-            }
-
-            return names;
         }
 
         protected override void VisitMethod(MethodNode methodNode)
@@ -241,7 +235,7 @@ namespace ScriptEngine.Compiler
             methodBuilder.Name(signature.MethodName)
                 .ReturnType(signature.IsFunction ? typeof(BslValue) : typeof(void))
                 .IsExported(signature.IsExported)
-                .SetDispatchingIndex(_ctx.GetScope(_ctx.TopIndex()).MethodCount)
+                .SetDispatchingIndex(_ctx.GetScope(_ctx.TopIndex()).Methods.Count)
                 .SetAnnotations(GetAnnotationAttributes(methodNode));
             
             var methodCtx = new SymbolScope();
@@ -263,7 +257,7 @@ namespace ScriptEngine.Compiler
                         .CompileTimeBslConstant(defValueIndex);
                 }
                 
-                methodCtx.DefineVariable(paramNode.Name);
+                methodCtx.DefineVariable(new LocalVariableSymbol(paramNode.Name));
             }
             
             _ctx.PushScope(methodCtx);
@@ -732,19 +726,15 @@ namespace ScriptEngine.Compiler
             {
                 var scope = _ctx.GetScope(methBinding.ScopeNumber);
 
-                // dynamic scope checks signatures only at runtime
-                if (!scope.IsDynamicScope)
+                var methInfo = scope.Methods[methBinding.MemberNumber].Method;
+                if (asFunction && !methInfo.IsFunction())
                 {
-                    var methInfo = scope.GetMethod(methBinding.MemberNumber);
-                    if (asFunction && !methInfo.IsFunction())
-                    {
-                        AddError(CompilerErrors.UseProcAsFunction(), identifierNode.Location);
-                        return;
-                    }
-
-                    PushCallArguments(argList);
-                    CheckFactArguments(methInfo, argList);
+                    AddError(CompilerErrors.UseProcAsFunction(), identifierNode.Location);
+                    return;
                 }
+
+                PushCallArguments(argList);
+                CheckFactArguments(methInfo, argList);
 
                 if (asFunction)
                     AddCommand(OperationCode.CallFunc, GetMethodRefNumber(ref methBinding));

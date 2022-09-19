@@ -47,7 +47,7 @@ namespace OneScript.Compilation.Binding
             for (int i = _bindings.Count - 1; i >= 0; i--)
             {
                 var scope = _bindings[i].scope;
-                var idx = scope.GetVariableIndex(name);
+                var idx = scope.Variables.IndexOf(name);
                 if (idx >= 0)
                 {
                     binding = new SymbolBinding
@@ -68,7 +68,7 @@ namespace OneScript.Compilation.Binding
             for (int i = _bindings.Count - 1; i >= 0; i--)
             {
                 var scope = _bindings[i].scope;
-                var idx = scope.GetMethodIndex(name);
+                var idx = scope.Methods.IndexOf(name);
                 if (idx >= 0)
                 {
                     binding = new SymbolBinding
@@ -96,12 +96,12 @@ namespace OneScript.Compilation.Binding
 
         public IVariableSymbol GetVariable(SymbolBinding binding)
         {
-            return GetScope(binding.ScopeNumber).GetVariable(binding.MemberNumber);
+            return GetScope(binding.ScopeNumber).Variables[binding.MemberNumber];
         }
         
         public IMethodSymbol GetMethod(SymbolBinding binding)
         {
-            return GetScope(binding.ScopeNumber).GetMethod(binding.MemberNumber);
+            return GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
         }
     }
 }
