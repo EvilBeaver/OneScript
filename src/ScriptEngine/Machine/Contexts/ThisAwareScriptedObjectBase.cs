@@ -6,7 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using OneScript.Commons;
+using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Execution;
@@ -90,22 +92,19 @@ namespace ScriptEngine.Machine.Contexts
                 .Build();
         }
 
-        protected static void RegisterSymbols(ICompilerService compiler)
+        protected class CompileTimeSymbols : ICompileTimeSymbolsProvider
         {
-            compiler.DefineVariable(THISOBJ_RU, THISOBJ_EN, SymbolType.ContextProperty);
-        }
-        
-        protected static void RegisterSymbols(SymbolTable symbols)
-        {
-            var thisVar = BslFieldBuilder.Create()
-                .Name(THISOBJ_RU)
-                .Alias(THISOBJ_EN)
-                .ValueType(typeof(ThisAwareScriptedObjectBase))
-                .SetDispatchingIndex(0)
-                .Build()
-                .ToSymbol();
+            public IReadOnlyList<IVariableSymbol> Variables { get; } = new IVariableSymbol[] {
+                BslFieldBuilder.Create()
+                    .Name(THISOBJ_RU)
+                    .Alias(THISOBJ_EN)
+                    .ValueType(typeof(ThisAwareScriptedObjectBase))
+                    .SetDispatchingIndex(0)
+                    .Build()
+                    .ToSymbol()
+                };
             
-            symbols.DefineVariable(thisVar);
+            public IReadOnlyList<IMethodSymbol> Methods { get; } = Array.Empty<IMethodSymbol>();
         }
     }
 }

@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Execution;
@@ -111,28 +112,28 @@ namespace ScriptEngine
 
         public ScriptSourceFactory Loader { get; }
 
-        public ICompilerService GetCompilerService()
+        public ICompilerFrontend GetCompilerService()
         {
             using var scope = Services.CreateScope();
-            var csFactory = scope.Resolve<ICompilerServiceFactory>();
+            var compiler = scope.Resolve<CompilerFrontend>();
+            compiler.Symbols = Environment.Symbols;
             
-            var cs = csFactory.CreateInstance(Environment.Symbols);
             switch (System.Environment.OSVersion.Platform)
             {
                 case PlatformID.Unix:
-                    cs.DefinePreprocessorValue("Linux");
+                    compiler.PreprocessorDefinitions.Add("Linux");
                     break;
                 case PlatformID.MacOSX:
-                    cs.DefinePreprocessorValue("MacOS");
+                    compiler.PreprocessorDefinitions.Add("MacOS");
                     break;
                 case PlatformID.Win32NT:
-                    cs.DefinePreprocessorValue("Windows");
+                    compiler.PreprocessorDefinitions.Add("Windows");
                     break;
             }
             
-            cs.GenerateDebugCode = ProduceExtraCode.HasFlag(CodeGenerationFlags.DebugCode);
-            cs.GenerateCodeStat = ProduceExtraCode.HasFlag(CodeGenerationFlags.CodeStatistics);
-            return cs;
+            compiler.GenerateDebugCode = ProduceExtraCode.HasFlag(CodeGenerationFlags.DebugCode);
+            compiler.GenerateCodeStat = ProduceExtraCode.HasFlag(CodeGenerationFlags.CodeStatistics);
+            return compiler;
         }
         
         public IRuntimeContextInstance NewObject(IExecutableModule module, ExternalContextData externalContext = null)

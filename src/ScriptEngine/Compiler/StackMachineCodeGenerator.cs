@@ -26,7 +26,7 @@ using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
 {
-    public partial class StackMachineCodeGenerator : BslSyntaxWalker, ICompilerBackend
+    public partial class StackMachineCodeGenerator : BslSyntaxWalker
     {
         private readonly IErrorSink _errorSink;
         private readonly StackRuntimeModule _module;

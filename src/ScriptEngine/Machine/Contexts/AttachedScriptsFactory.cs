@@ -10,6 +10,7 @@ using System.Text;
 using OneScript.Sources;
 using System.Security.Cryptography;
 using OneScript.Commons;
+using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.Execution;
 using OneScript.Types;
@@ -174,7 +175,7 @@ namespace ScriptEngine.Machine.Contexts
             return _engine.NewObject(module, externalContext);
         }
 
-        public IExecutableModule CompileModuleFromSource(ICompilerService compiler, SourceCode code, ExternalContextData externalContext)
+        public IExecutableModule CompileModuleFromSource(ICompilerFrontend compiler, SourceCode code, ExternalContextData externalContext)
         {
             UserScriptContextInstance.PrepareCompilation(compiler);
                 

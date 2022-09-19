@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 
@@ -80,7 +81,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 case NodeKind.MethodCall:
                     return new CallNode(kind, startLexem);
                 case NodeKind.Module:
-                    return new ModuleNode(startLexem);
+                    throw new InvalidOperationException();
                 default:
                     return new NonTerminalNode(kind, startLexem);
             }

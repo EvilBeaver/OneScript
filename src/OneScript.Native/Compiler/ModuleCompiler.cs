@@ -19,7 +19,7 @@ using OneScript.Values;
 
 namespace OneScript.Native.Compiler
 {
-    public class ModuleCompiler : ExpressionTreeGeneratorBase, ICompilerBackend
+    public class ModuleCompiler : ExpressionTreeGeneratorBase
     {
         private readonly IServiceContainer _runtimeServices;
         private DynamicModule _module;

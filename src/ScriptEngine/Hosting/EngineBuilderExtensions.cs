@@ -44,7 +44,6 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<ITypeManager, DefaultTypeManager>();
             services.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
             services.RegisterSingleton<RuntimeEnvironment>();
-            services.RegisterSingleton<ICompilerServiceFactory, CompilerServiceFactory>();
             services.RegisterSingleton<IErrorSink>(svc => new ThrowingErrorSink(CompilerException.FromCodeError));
             
             services.Register<ExecutionDispatcher>();

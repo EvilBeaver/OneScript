@@ -59,7 +59,7 @@ namespace OneScript.Language.SyntaxAnalysis
             
             try
             {
-                node = new ModuleNode(_lastExtractedLexem);
+                node = new ModuleNode(_lexer.Iterator.Source, _lastExtractedLexem);
                 PushContext(node);
                 ParseModuleSections();
             }
@@ -76,7 +76,7 @@ namespace OneScript.Language.SyntaxAnalysis
         public BslSyntaxNode ParseCodeBatch(bool allowReturns = false)
         {
             NextLexem();
-            var node = new ModuleNode(_lastExtractedLexem);
+            var node = new ModuleNode(_lexer.Iterator.Source, _lastExtractedLexem);
             PushContext(node);
             try
             {
@@ -100,7 +100,7 @@ namespace OneScript.Language.SyntaxAnalysis
         public BslSyntaxNode ParseExpression()
         {
             NextLexem();
-            var module = new ModuleNode(_lastExtractedLexem);
+            var module = new ModuleNode(_lexer.Iterator.Source, _lastExtractedLexem);
             var parent = module.AddNode(new NonTerminalNode(NodeKind.TopLevelExpression, _lastExtractedLexem));
             BuildExpression(parent, Token.EndOfText);
             return module;

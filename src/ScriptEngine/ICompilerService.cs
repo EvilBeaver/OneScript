@@ -17,6 +17,7 @@ namespace ScriptEngine
     /// <summary>
     /// Сервис компиляции единичного модуля.
     /// </summary>
+    [Obsolete]
     public interface ICompilerService
     {
         bool GenerateDebugCode { get; set; }

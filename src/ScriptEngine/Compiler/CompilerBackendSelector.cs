@@ -11,17 +11,16 @@ using OneScript.Compilation;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Compiler;
-using ScriptEngine.Compiler;
 
-namespace ScriptEngine.HostedScript
+namespace ScriptEngine.Compiler
 {
     public class CompilerBackendSelector : BslSyntaxWalker
     {
         private bool _isNative;
         
-        public Func<StackMachineCodeGenerator> StackBackendInitializer { get; set; }
+        public Func<ICompilerBackend> StackBackendInitializer { get; set; }
         
-        public Func<ModuleCompiler> NativeBackendInitializer { get; set; }
+        public Func<ICompilerBackend> NativeBackendInitializer { get; set; }
 
         public ICompilerBackend Select(ModuleNode ast)
         {

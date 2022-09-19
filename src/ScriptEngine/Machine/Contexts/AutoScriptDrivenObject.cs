@@ -5,7 +5,11 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using System.Collections.Generic;
 using OneScript.Commons;
+using OneScript.Compilation;
+using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Execution;
 using OneScript.Sources;
@@ -130,26 +134,32 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
 
-        protected new static void RegisterSymbols(ICompilerService compiler)
+        protected new class CompileTimeSymbols : Contexts.CompileTimeSymbols
         {
-            for (int i = 0; i < _ownProperties.Count; i++)
+            public CompileTimeSymbols()
+                :base(new ThisAwareScriptedObjectBase.CompileTimeSymbols())
             {
-                var currentProp = _ownProperties.GetProperty(i);
-                compiler.DefineVariable(currentProp.Name, currentProp.Alias, SymbolType.ContextProperty);
             }
 
-            for (int i = 0; i < _ownMethods.Count; i++)
+            protected override void FillSymbols(List<IVariableSymbol> vars, List<IMethodSymbol> meths)
             {
-                compiler.DefineMethod(_ownMethods.GetRuntimeMethod(i));
+                for (int i = 0; i < _ownProperties.Count; i++)
+                {
+                    var currentProp = _ownProperties.GetProperty(i);
+                    vars.Add(currentProp.PropertyInfo.ToSymbol());
+                }
+
+                for (int i = 0; i < _ownMethods.Count; i++)
+                {
+                    meths.Add(_ownMethods.GetRuntimeMethod(i).ToSymbol());
+                }
             }
         }
         
-        public static IExecutableModule CompileModule(ICompilerService compiler, SourceCode src)
+        public static IExecutableModule CompileModule(ICompilerFrontend compiler, SourceCode src, Type type)
         {
-            ThisAwareScriptedObjectBase.RegisterSymbols(compiler);
-            RegisterSymbols(compiler);
-
-            return compiler.Compile(src);
+            compiler.ModuleSymbols = new CompileTimeSymbols();
+            return compiler.Compile(src, type);
         }
     }
 

@@ -2595,9 +2595,7 @@ namespace ScriptEngine.Machine
                 .WithName("<expression>")
                 .Build();
             
-            ctx.PushScope(new SymbolScope()); // скоуп выражения
-
-            var compiler = new DefaultCompilerService(new CompilerOptions(), ctx, _mem.Services);
+            var compiler = _mem.Services.Resolve<EvalCompiler>();
             var module = (StackRuntimeModule)compiler.CompileExpression(stringSource);
             
             return module;
@@ -2613,16 +2611,15 @@ namespace ScriptEngine.Machine
                 .WithName($"{entryId}:<exec>")
                 .Build();
             
-            var compiler = new DefaultCompilerService(new CompilerOptions(), ctx, _mem.Services);
-            ctx.PushScope(new SymbolScope()); // скоуп выражения
+            var compiler = _mem.Services.Resolve<EvalCompiler>();
             var module = (StackRuntimeModule)compiler.CompileBatch(stringSource);
             
             return module;
         }
 
-        private CompilerContext ExtractCompilerContext()
+        private SymbolTable ExtractCompilerContext()
         {
-            var ctx = new CompilerContext();
+            var ctx = new SymbolTable();
             foreach (var scope in _scopes)
             {
                 var symbolScope = new SymbolScope();
@@ -2637,7 +2634,7 @@ namespace ScriptEngine.Machine
                     symbolScope.DefineVariable(new LocalVariableSymbol(variable.Name));
                 }
 
-                ctx.PushScope(symbolScope);
+                ctx.PushScope(symbolScope, scope.Instance);
             }
 
             var locals = new SymbolScope();
@@ -2646,7 +2643,7 @@ namespace ScriptEngine.Machine
                 locals.DefineVariable(new LocalVariableSymbol(variable.Name));
             }
 
-            ctx.PushScope(locals);
+            ctx.PushScope(locals, _scopes.Last().Instance);
             return ctx;
         }
 

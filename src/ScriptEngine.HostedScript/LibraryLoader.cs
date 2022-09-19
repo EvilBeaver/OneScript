@@ -56,7 +56,7 @@ namespace ScriptEngine.HostedScript
         {
             var compiler = engine.GetCompilerService();
             var code = engine.Loader.FromFile(processingScript);
-            var module = CompileModule(compiler, code);
+            var module = CompileModule(compiler, code, typeof(LibraryLoader));
             
             return new LibraryLoader(module, engine.Environment, engine);
 

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Execution;
@@ -197,7 +198,7 @@ namespace ScriptEngine.Machine.Contexts
             return builder.Build();
         }
 
-        public static void PrepareCompilation(ICompilerService compiler)
+        public static void PrepareCompilation(ICompilerFrontend compiler)
         {
             RegisterSymbols(compiler);
             GetOwnMethodsDefinition().ForEach(x => compiler.DefineMethod(x));

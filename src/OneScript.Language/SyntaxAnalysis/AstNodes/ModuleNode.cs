@@ -6,14 +6,18 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Language.LexicalAnalysis;
+using OneScript.Sources;
 
 namespace OneScript.Language.SyntaxAnalysis.AstNodes
 {
     public class ModuleNode : AnnotatableNode
     {
-        public ModuleNode(Lexem startLexem) : base(NodeKind.Module)
+        public ModuleNode(SourceCode source, Lexem startLexem) : base(NodeKind.Module)
         {
+            Source = source;
             Location = startLexem.Location;
         }
+        
+        public SourceCode Source { get; }
     }
 }
