@@ -21,12 +21,6 @@ namespace ScriptEngine.Compiler
         private readonly IndexedNameValueCollection<BslMethodInfo> _methods =
             new IndexedNameValueCollection<BslMethodInfo>();
 
-        public BslMethodInfo GetMethod(string name)
-        {
-            var num = GetMethodNumber(name);
-            return _methods[num];
-        }
-
         public BslMethodInfo GetMethod(int number)
         {
             return _methods[number];

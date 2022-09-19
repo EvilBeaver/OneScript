@@ -5,9 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Language.SyntaxAnalysis;
 using OneScript.Runtime.Binding;
 using OneScript.Values;
 
@@ -15,11 +19,94 @@ namespace OneScript.Compilation.Binding
 {
     public class SymbolScope
     {
-        public IndexedNameValueCollection<IMethodSymbol> Methods { get; } =
+        private IndexedNameValueCollection<IMethodSymbol> Methods { get; } =
             new IndexedNameValueCollection<IMethodSymbol>();
 
-        public IndexedNameValueCollection<IVariableSymbol> Variables { get; } =
+        private IndexedNameValueCollection<IVariableSymbol> Variables { get; } =
             new IndexedNameValueCollection<IVariableSymbol>();
+
+
+        public int DefineVariable(IVariableSymbol symbol)
+        {
+            var index = AddItem(Variables, symbol);
+            if (index == -1)
+                throw new BindingException(LocalizedErrors.DuplicateVarDefinition(symbol.Name));
+
+            if (!AddAlias(Variables, index, symbol))
+                throw new BindingException(LocalizedErrors.DuplicateVarDefinition(symbol.Alias));
+
+            return index;
+        }
+
+        public int DefineMethod(IMethodSymbol symbol)
+        {
+            var index = AddItem(Methods, symbol);
+            if (index == -1)
+                throw new BindingException(LocalizedErrors.DuplicateMethodDefinition(symbol.Name));
+
+            if (!AddAlias(Methods, index, symbol))
+                throw new BindingException(LocalizedErrors.DuplicateMethodDefinition(symbol.Alias));
+
+            return index;
+        }
+
+        public IMethodSymbol GetMethod(int index) => Methods[index];
+        
+        public IMethodSymbol GetMethod(string name) => Methods[name];
+
+        public IEnumerable<IMethodSymbol> GetMethods() => Methods;
+
+        public int MethodCount => Methods.Count;
+
+        public IVariableSymbol GetVariable(int index) => Variables[index];
+        
+        public IVariableSymbol GetVariable(string name) => Variables[name];
+        
+        public IEnumerable<IVariableSymbol> GetVariables() => Variables;
+
+        public int VariableCount => Variables.Count;
+
+        public int GetVariableIndex(string name)
+        {
+            return Variables.IndexOf(name);
+        }
+
+        public int GetMethodIndex(string name)
+        {
+            return Methods.IndexOf(name);
+        }
+
+        private static int AddItem<T>(IndexedNameValueCollection<T> storage, T item)
+            where T : ISymbol
+        {
+            try
+            {
+                return storage.Add(item, item.Name);
+            }
+            catch (InvalidOperationException)
+            {
+                return -1;
+            }
+        }
+        
+        private static bool AddAlias<T>(IndexedNameValueCollection<T> storage, int index, T item)
+            where T : ISymbol
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(item.Alias))
+                    return true;
+                
+                storage.AddName(index, item.Alias);
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+        
+        #region Static part
         
         public static SymbolScope FromObject(BslObjectValue target)
         {
@@ -101,5 +188,7 @@ namespace OneScript.Compilation.Binding
 
             return scope;
         }
+        
+        #endregion
     }
 }

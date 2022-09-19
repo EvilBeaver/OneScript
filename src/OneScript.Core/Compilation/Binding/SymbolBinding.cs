@@ -5,8 +5,11 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+
 namespace OneScript.Compilation.Binding
 {
+    [Serializable]
     public struct SymbolBinding
     {
         public int ScopeNumber { get; set; }

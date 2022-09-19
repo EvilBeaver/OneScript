@@ -137,12 +137,8 @@ namespace OneScript.Native.Compiler
             var localScope = Symbols.GetScope(Symbols.ScopeCount-1);
             foreach (var parameter in _declaredParameters)
             {
-                var paramSymbol = new LocalVariableSymbol
-                {
-                    Name = parameter.Name,
-                    Type = parameter.ParameterType
-                };
-                localScope.Variables.Add(paramSymbol, paramSymbol.Name);
+                var paramSymbol = new LocalVariableSymbol(parameter.Name, parameter.ParameterType);
+                localScope.DefineVariable(paramSymbol);
                 _localVariables.Add(Expression.Parameter(parameter.ParameterType, parameter.Name));
             }
         }
@@ -206,7 +202,7 @@ namespace OneScript.Native.Compiler
                 return;
             }
 
-            var symbol = Symbols.GetScope(binding.ScopeNumber).Variables[binding.MemberNumber];
+            var symbol = Symbols.GetScope(binding.ScopeNumber).GetVariable(binding.MemberNumber);
             if (IsLocalScope(binding.ScopeNumber))
             {
                 // local read
@@ -328,7 +324,7 @@ namespace OneScript.Native.Compiler
             var hasVar = Symbols.FindVariable(identifier, out var varBinding);
             if (hasVar)
             {
-                var symbol = Symbols.GetScope(varBinding.ScopeNumber).Variables[varBinding.MemberNumber];
+                var symbol = Symbols.GetScope(varBinding.ScopeNumber).GetVariable(varBinding.MemberNumber);
                 if (IsLocalScope(varBinding.ScopeNumber))
                 {
                     var local = GetLocalVariable(varBinding.MemberNumber);
@@ -364,13 +360,9 @@ namespace OneScript.Native.Compiler
                 if (typeOnStack.IsNumeric())
                     typeOnStack = typeof(decimal);
 
-                var varSymbol = new LocalVariableSymbol
-                {
-                    Name = identifier,
-                    Type = typeOnStack
-                };
+                var varSymbol = new LocalVariableSymbol(identifier, typeOnStack);
                 var scope = Symbols.GetScope(Symbols.ScopeCount - 1);
-                scope.Variables.Add(varSymbol, varSymbol.Name);
+                scope.DefineVariable(varSymbol);
                 var variable = Expression.Variable(typeOnStack, identifier);
                 _localVariables.Add(variable);
                 _statementBuildParts.Push(variable);
@@ -1008,7 +1000,6 @@ namespace OneScript.Native.Compiler
         {
             if (LanguageDef.IsBuiltInFunction(node.Identifier.Lexem.Token))
             {   
-                // TODO поменять на BilingualString
                 AddError(LocalizedErrors.UseBuiltInFunctionAsProcedure());
                 return;
             }
@@ -1155,7 +1146,7 @@ namespace OneScript.Native.Compiler
                 return null;
             }
 
-            var symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
+            var symbol = Symbols.GetScope(binding.ScopeNumber).GetMethod(binding.MemberNumber);
             var args = PrepareCallArguments(node.ArgumentList, symbol.Method.GetParameters());
 
             var methodInfo = symbol.Method;

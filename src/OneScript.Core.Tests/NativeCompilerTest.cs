@@ -54,8 +54,8 @@ namespace OneScript.Core.Tests
             var context = new GlobalJsonFunctions();
             var scope = SymbolScope.FromObject(context);
 
-            scope.Methods.Should().HaveCount(3);
-            scope.Methods.IndexOf("ЗаписатьJSON").Should().BeGreaterOrEqualTo(0);
+            scope.GetMethods().Should().HaveCount(3);
+            scope.GetMethodIndex("ЗаписатьJSON").Should().BeGreaterOrEqualTo(0);
         }
 
         [Fact]

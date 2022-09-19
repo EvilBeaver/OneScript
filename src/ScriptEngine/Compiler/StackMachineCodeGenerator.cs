@@ -45,10 +45,6 @@ namespace ScriptEngine.Compiler
         
         public CodeGenerationFlags ProduceExtraCode { get; set; }
 
-        protected StackRuntimeModule Module => _module;
-
-        protected ICompilerContext CompilerContext => _ctx;
-        
         public IDependencyResolver DependencyResolver { get; set; }
         
         public StackRuntimeModule CreateModule(ModuleNode moduleNode, SourceCode source, ICompilerContext context)
@@ -129,7 +125,7 @@ namespace ScriptEngine.Compiler
                     }
                     catch (SymbolNotFoundException)
                     {
-                        AddError(CompilerErrors.SymbolNotFound(item.identifier), item.location);
+                        AddError(LocalizedErrors.SymbolNotFound(item.identifier), item.location);
                         continue;
                     }
 
@@ -552,7 +548,7 @@ namespace ScriptEngine.Compiler
             }
             catch (SymbolNotFoundException e)
             {
-                AddError(CompilerErrors.SymbolNotFound(e.Symbol), node.Location);
+                AddError(LocalizedErrors.SymbolNotFound(e.Symbol), node.Location);
             }
         }
 
@@ -652,7 +648,7 @@ namespace ScriptEngine.Compiler
         {
             if (LanguageDef.IsBuiltInFunction(node.Identifier.Lexem.Token))
             {   
-                AddError(CompilerErrors.UseBuiltInProcAsFunction(), node.Location);
+                AddError(LocalizedErrors.UseBuiltInFunctionAsProcedure(), node.Location);
                 return;
             }
             GlobalCall(node, false);

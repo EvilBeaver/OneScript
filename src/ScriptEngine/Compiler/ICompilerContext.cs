@@ -16,7 +16,6 @@ namespace ScriptEngine.Compiler
     public interface ICompilerContext
     {
         SymbolBinding DefineMethod(BslMethodInfo method);
-        SymbolBinding DefineProperty(string name, string alias = null);
         SymbolBinding DefineVariable(string name, string alias = null);
         SymbolBinding GetMethod(string name);
         SymbolScope GetScope(int scopeIndex);

@@ -35,7 +35,7 @@
   </PropertyGroup>
   
   <PropertyGroup Condition=" '$(Configuration)' == 'LinuxDebug' ">
-    <DefineConstants>TRACE;TINYIOC_INTERNAL</DefineConstants>
+    <DefineConstants>TRACE;TINYIOC_INTERNAL;DEBUG;</DefineConstants>
     <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
     <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
   </PropertyGroup>

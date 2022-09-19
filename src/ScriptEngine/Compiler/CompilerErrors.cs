@@ -21,15 +21,6 @@ namespace ScriptEngine.Compiler
 
         public static CodeError TooManyArgumentsPassed() =>
             Create("Слишком много фактических параметров", "Too many actual parameters");
-
-        public static CodeError UseBuiltInProcAsFunction() =>
-            Create("Использование встроенной функции, как процедуры", "Using build-in function as procedure");
-
-        public static CodeError AmbiguousMethod(string name) =>
-            Create($"Метод с таким именем уже определен: {name}", $"Method is already defined {name}");
-        
-        public static CodeError SymbolNotFound(string symbol) =>
-            Create($"Неизвестный символ: {symbol}", $"Symbol not found {symbol}");
         
         private static CodeError Create(string ru, string en, [CallerMemberName] string errorId = default)
         {

@@ -142,7 +142,7 @@ namespace OneScript.Native.Compiler
                 .Build()
                 .ToSymbol();
 
-            var id = Symbols.GetScope(Symbols.ScopeCount - 1).Variables.Add(varSymbol, varNode.Name);
+            var id = Symbols.GetScope(Symbols.ScopeCount - 1).DefineVariable(varSymbol);
             _module.Fields.Add(varSymbol.Field);
             
             if (varNode.IsExported)
@@ -160,7 +160,7 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitMethod(MethodNode methodNode)
         {
-            var methodSymbol = Symbols.GetScope(Symbols.ScopeCount - 1).Methods[methodNode.Signature.MethodName];
+            var methodSymbol = Symbols.GetScope(Symbols.ScopeCount - 1).GetMethod(methodNode.Signature.MethodName);
             var methodInfo = (BslNativeMethodInfo)methodSymbol.Method;
 
             var context = MakeContext();

@@ -52,7 +52,7 @@ namespace OneScript.Compilation
                 Property = propInfo
             };
 
-            ScopeOfGlobalProps.Variables.Add(symbol, propInfo.Name, propInfo.Alias);
+            ScopeOfGlobalProps.DefineVariable(symbol);
         }
 
         public void SetGlobalProperty(string name, BslValue value)

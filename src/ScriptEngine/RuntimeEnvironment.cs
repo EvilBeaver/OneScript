@@ -74,7 +74,14 @@ namespace ScriptEngine
             }
             CreateGlobalScopeIfNeeded();
             var num = _injectedProperties.Insert(value, identifier, true, !readOnly);
-            _scopeOfGlobalProperties.Variables.Add(_injectedProperties.GetPropertyInfo(num).ToSymbol(), identifier, alias);
+
+            var symbol = new WrappedPropertySymbol(_injectedProperties.GetPropertyInfo(num))
+            {
+                Name = identifier,
+                Alias = alias
+            };
+
+            _scopeOfGlobalProperties.DefineVariable(symbol);
         }
         
         public void InjectGlobalProperty(IValue value, string identifier, bool readOnly)
@@ -129,6 +136,19 @@ namespace ScriptEngine
             
             _externalLibs.Add(library);
             loadedObjects.ForEach(runtime.InitializeSDO);
+        }
+
+        private class WrappedPropertySymbol : IPropertySymbol
+        {
+            public WrappedPropertySymbol(BslPropertyInfo propInfo)
+            {
+                Property = propInfo;
+            }
+
+            public string Name { get; set; }
+            public string Alias { get; set; }
+            public Type Type => Property.PropertyType;
+            public BslPropertyInfo Property { get; }
         }
     }
 }

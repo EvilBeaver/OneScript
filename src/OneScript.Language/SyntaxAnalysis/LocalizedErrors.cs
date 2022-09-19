@@ -128,5 +128,8 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public static CodeError DuplicateMethodDefinition(string methodName) =>
             Create($"Метод {methodName} уже определен", $"Method {methodName} already defined");
+        
+        public static CodeError SymbolNotFound(string symbol) =>
+            Create($"Неизвестный символ: {symbol}", $"Symbol not found {symbol}");
     }
 }
