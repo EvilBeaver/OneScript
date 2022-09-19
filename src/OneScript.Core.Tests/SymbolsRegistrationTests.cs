@@ -37,7 +37,7 @@ namespace OneScript.Core.Tests
                 .Build();
 
             var compiler = engine.GetCompilerService();
-            UserScriptContextInstance.PrepareCompilation(compiler);
+            compiler.FillSymbols(typeof(UserScriptContextInstance));
             var module = compiler.Compile(engine.Loader.FromString("Перем А Экспорт; Перем Б Экспорт;\n" +
                                                                    "А = 1; Б = 2;"));
             engine.Initialize();

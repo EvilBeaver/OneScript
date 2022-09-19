@@ -16,8 +16,8 @@ namespace OneScript.Compilation
         IList<string> PreprocessorDefinitions { get; }
         
         SymbolTable Symbols { get; set; }
-        
-        ICompileTimeSymbolsProvider ModuleSymbols { get; set; }
+
+        SymbolScope FillSymbols(Type targetType);
         
         IErrorSink ErrorSink { get; }
         

@@ -134,31 +134,27 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
 
-        protected new class CompileTimeSymbols : Contexts.CompileTimeSymbols
+        [SymbolsProvider]
+        private static void FillSymbols(CompileTimeSymbolsProvider provider, SymbolScope moduleScope)
         {
-            public CompileTimeSymbols()
-                :base(new ThisAwareScriptedObjectBase.CompileTimeSymbols())
+            var baseProvider = provider.Get<ThisAwareScriptedObjectBase>();
+            baseProvider.FillSymbols(moduleScope);
+            
+            for (int i = 0; i < _ownProperties.Count; i++)
             {
+                var currentProp = _ownProperties.GetProperty(i);
+                moduleScope.Variables.Add(currentProp.PropertyInfo.ToSymbol());
             }
 
-            protected override void FillSymbols(List<IVariableSymbol> vars, List<IMethodSymbol> meths)
+            for (int i = 0; i < _ownMethods.Count; i++)
             {
-                for (int i = 0; i < _ownProperties.Count; i++)
-                {
-                    var currentProp = _ownProperties.GetProperty(i);
-                    vars.Add(currentProp.PropertyInfo.ToSymbol());
-                }
-
-                for (int i = 0; i < _ownMethods.Count; i++)
-                {
-                    meths.Add(_ownMethods.GetRuntimeMethod(i).ToSymbol());
-                }
+                moduleScope.Methods.Add(_ownMethods.GetRuntimeMethod(i).ToSymbol());
             }
         }
         
         public static IExecutableModule CompileModule(ICompilerFrontend compiler, SourceCode src, Type type)
         {
-            compiler.ModuleSymbols = new CompileTimeSymbols();
+            compiler.FillSymbols(typeof(AutoScriptDrivenObject<T>));
             return compiler.Compile(src, type);
         }
     }

@@ -72,7 +72,6 @@ namespace OneScript.Core.Tests
             engine.Initialize();
             var module = engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, context);
             
-            UserScriptContextInstance.PrepareCompilation(compiler);
             var instance = engine.NewObject(module, context);
             return instance;
         }

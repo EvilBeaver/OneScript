@@ -92,19 +92,17 @@ namespace ScriptEngine.Machine.Contexts
                 .Build();
         }
 
-        protected class CompileTimeSymbols : ICompileTimeSymbolsProvider
+        [SymbolsProvider]
+        // ReSharper disable once UnusedMember.Local
+        private static void CompileTimeSymbols(CompileTimeSymbolsProvider provider, SymbolScope moduleScope)
         {
-            public IReadOnlyList<IVariableSymbol> Variables { get; } = new IVariableSymbol[] {
-                BslFieldBuilder.Create()
-                    .Name(THISOBJ_RU)
-                    .Alias(THISOBJ_EN)
-                    .ValueType(typeof(ThisAwareScriptedObjectBase))
-                    .SetDispatchingIndex(0)
-                    .Build()
-                    .ToSymbol()
-                };
-            
-            public IReadOnlyList<IMethodSymbol> Methods { get; } = Array.Empty<IMethodSymbol>();
+            moduleScope.Variables.Add(BslFieldBuilder.Create()
+                .Name(THISOBJ_RU)
+                .Alias(THISOBJ_EN)
+                .ValueType(typeof(ThisAwareScriptedObjectBase))
+                .SetDispatchingIndex(0)
+                .Build()
+                .ToSymbol());
         }
     }
 }

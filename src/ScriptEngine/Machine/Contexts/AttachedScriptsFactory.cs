@@ -11,6 +11,7 @@ using OneScript.Sources;
 using System.Security.Cryptography;
 using OneScript.Commons;
 using OneScript.Compilation;
+using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Execution;
 using OneScript.Types;
@@ -54,7 +55,7 @@ namespace ScriptEngine.Machine.Contexts
             return sBuilder.ToString();
         }
 
-        public void AttachByPath(ICompilerService compiler, string path, string typeName)
+        public void AttachByPath(ICompilerFrontend compiler, string path, string typeName)
         {
             if (!Utils.IsValidIdentifier(typeName))
                 throw RuntimeException.InvalidArgumentValue();
@@ -67,7 +68,7 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        public void AttachFromString(ICompilerService compiler, string text, string typeName)
+        public void AttachFromString(ICompilerFrontend compiler, string text, string typeName)
         {
             var code = _engine.Loader.FromString(text);
             ThrowIfTypeExist(typeName, code);
@@ -75,18 +76,18 @@ namespace ScriptEngine.Machine.Contexts
             CompileAndRegister(typeof(AttachedScriptsFactory), compiler, typeName, code);
         }
 
-        public IRuntimeContextInstance LoadFromPath(ICompilerService compiler, string path)
+        public IRuntimeContextInstance LoadFromPath(ICompilerFrontend compiler, string path)
         {
             return LoadFromPath(compiler, path, null);
         }
 
-        public IRuntimeContextInstance LoadFromPath(ICompilerService compiler, string path, ExternalContextData externalContext)
+        public IRuntimeContextInstance LoadFromPath(ICompilerFrontend compiler, string path, ExternalContextData externalContext)
         {
             var code = _engine.Loader.FromFile(path);
             return LoadAndCreate(compiler, code, externalContext);
         }
 
-        public IRuntimeContextInstance LoadFromString(ICompilerService compiler, string text, ExternalContextData externalContext = null)
+        public IRuntimeContextInstance LoadFromString(ICompilerFrontend compiler, string text, ExternalContextData externalContext = null)
         {
             var code = _engine.Loader.FromString(text);
             return LoadAndCreate(compiler, code, externalContext);
@@ -112,7 +113,7 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private void CompileAndRegister(Type type, ICompilerService compiler, string typeName, SourceCode code)
+        private void CompileAndRegister(Type type, ICompilerFrontend compiler, string typeName, SourceCode code)
         {
             if(_loadedModules.ContainsKey(typeName))
             {
@@ -169,7 +170,7 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private IRuntimeContextInstance LoadAndCreate(ICompilerService compiler, SourceCode code, ExternalContextData externalContext)
+        private IRuntimeContextInstance LoadAndCreate(ICompilerFrontend compiler, SourceCode code, ExternalContextData externalContext)
         {
             var module = CompileModuleFromSource(compiler, code, externalContext);
             return _engine.NewObject(module, externalContext);
@@ -177,13 +178,12 @@ namespace ScriptEngine.Machine.Contexts
 
         public IExecutableModule CompileModuleFromSource(ICompilerFrontend compiler, SourceCode code, ExternalContextData externalContext)
         {
-            UserScriptContextInstance.PrepareCompilation(compiler);
-                
+            var scope = compiler.FillSymbols(typeof(UserScriptContextInstance));
             if (externalContext != null)
             {
                 foreach (var item in externalContext)
                 {
-                    compiler.DefineVariable(item.Key, null, SymbolType.ContextProperty);
+                    scope.Variables.Add(new LocalVariableSymbol(item.Key, item.Value.GetType()));
                 }
             }
 

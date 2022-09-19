@@ -12,6 +12,7 @@ using ScriptEngine.Machine;
 using OneScript.Commons;
 using OneScript.Compilation;
 using OneScript.Contexts;
+using OneScript.Execution;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Tasks;
 using ScriptEngine.Machine.Contexts;
@@ -93,10 +94,10 @@ namespace ScriptEngine.HostedScript
 
         public ScriptSourceFactory Loader => _engine.Loader;
 
-        public ICompilerService GetCompilerService()
+        public ICompilerFrontend GetCompilerService()
         {
             var compilerSvc = _engine.GetCompilerService();
-            UserScriptContextInstance.PrepareCompilation(compilerSvc);
+            compilerSvc.FillSymbols(typeof(UserScriptContextInstance));
             
             return compilerSvc;
         }
@@ -114,10 +115,10 @@ namespace ScriptEngine.HostedScript
 
             var compilerSvc = GetCompilerService();
             DefineConstants(compilerSvc);
-            StackRuntimeModule module;
+            IExecutableModule module;
             try
             {
-                module = compilerSvc.CompileStack(src);
+                module = compilerSvc.Compile(src);
             }
             catch (CompilerException)
             {
@@ -127,17 +128,17 @@ namespace ScriptEngine.HostedScript
             return InitProcess(host, module);
         }
 
-        private void DefineConstants(ICompilerService compilerSvc)
+        private void DefineConstants(ICompilerFrontend compilerSvc)
         {
             var definitions = GetWorkingConfig().PreprocessorDefinitions;
             foreach (var val in definitions)
             {
-                compilerSvc.DefinePreprocessorValue(val);
+                compilerSvc.PreprocessorDefinitions.Add(val);
             }
 
             if (Utils.IsMonoRuntime)
             {
-                compilerSvc.DefinePreprocessorValue("MONO");
+                compilerSvc.PreprocessorDefinitions.Add("MONO");
             }
         }
 
@@ -148,7 +149,7 @@ namespace ScriptEngine.HostedScript
             _globalCtx.InitInstance();
         }
 
-        private Process InitProcess(IHostApplication host, StackRuntimeModule module)
+        private Process InitProcess(IHostApplication host, IExecutableModule module)
         {
             Initialize();
             

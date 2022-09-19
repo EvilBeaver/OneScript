@@ -6,12 +6,14 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using OneScript.Compilation;
 using OneScript.DependencyInjection;
 using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Types;
+using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Hosting
@@ -36,6 +38,7 @@ namespace ScriptEngine.Hosting
             return b;
         }
         
+        [SuppressMessage("ReSharper", "RedundantTypeArgumentsOfMethod")]
         public static IEngineBuilder SetDefaultOptions(this IEngineBuilder builder)
         {
             var services = builder.Services;
@@ -44,6 +47,7 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<ITypeManager, DefaultTypeManager>();
             services.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
             services.RegisterSingleton<RuntimeEnvironment>();
+            services.RegisterSingleton<CompileTimeSymbolsProvider>();
             services.RegisterSingleton<IErrorSink>(svc => new ThrowingErrorSink(CompilerException.FromCodeError));
             
             services.Register<ExecutionDispatcher>();

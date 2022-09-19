@@ -1,5 +1,6 @@
 using System;
 using FluentAssertions;
+using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.DependencyInjection;
 using OneScript.Execution;
@@ -33,6 +34,7 @@ namespace OneScript.Dynamic.Tests
             testServices.Register(sp => sp);
             testServices.RegisterSingleton<ITypeManager, DefaultTypeManager>();
             testServices.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
+            testServices.RegisterSingleton<CompileTimeSymbolsProvider>();
         }
         
         [Fact]
@@ -63,8 +65,7 @@ namespace OneScript.Dynamic.Tests
         public void Test_Local_Method_Can_Be_Called_and_Field_Set()
         {
             var symbols = new SymbolTable();
-            symbols.PushScope(new SymbolScope(), null);
-            UserScriptContextInstance.PrepareCompilation(symbols);
+
             var module = CreateModule(
                 @"Перем Ы Экспорт;
 
@@ -89,8 +90,6 @@ namespace OneScript.Dynamic.Tests
         public void Test_Can_Pass_Arguments_To_Local_Method()
         {
             var symbols = new SymbolTable();
-            symbols.PushScope(new SymbolScope(), null);
-            UserScriptContextInstance.PrepareCompilation(symbols);
 
             var serviceContainer = testServices.CreateContainer();
             var discoverer = serviceContainer.Resolve<ContextDiscoverer>();
@@ -124,8 +123,6 @@ namespace OneScript.Dynamic.Tests
         public void Test_Can_Read_Module_Variables()
         {
             var symbols = new SymbolTable();
-            symbols.PushScope(new SymbolScope(), null);
-            UserScriptContextInstance.PrepareCompilation(symbols);
             var module = CreateModule(
                 @"Перем М Экспорт;
 
@@ -151,6 +148,11 @@ namespace OneScript.Dynamic.Tests
         
         private DynamicModule CreateModule(string code, IServiceContainer services, SymbolTable symbols)
         {
+            var symbolProvider = services.Resolve<CompileTimeSymbolsProvider>();
+            var moduleScope = new SymbolScope();
+            symbolProvider.Get<UserScriptContextInstance>().FillSymbols(moduleScope);
+            symbols.PushScope(moduleScope, null);
+            
             var helper = new CompileHelper(services);
             helper.ParseModule(code);
             var result = helper.Compile(symbols);

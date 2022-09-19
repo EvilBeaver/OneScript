@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using OneScript.Execution;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript
@@ -14,9 +15,9 @@ namespace ScriptEngine.HostedScript
         ScriptingEngine _engine;
 
         readonly IHostApplication _host;
-        readonly StackRuntimeModule _module;
+        readonly IExecutableModule _module;
 
-        internal Process(IHostApplication host, StackRuntimeModule src, ScriptingEngine runtime)
+        internal Process(IHostApplication host, IExecutableModule src, ScriptingEngine runtime)
         {
             _host = host;
             _engine = runtime;

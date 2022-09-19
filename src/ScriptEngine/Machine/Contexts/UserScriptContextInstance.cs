@@ -198,16 +198,12 @@ namespace ScriptEngine.Machine.Contexts
             return builder.Build();
         }
 
-        public static void PrepareCompilation(ICompilerFrontend compiler)
+        [SymbolsProvider]
+        private static void PrepareCompilation(CompileTimeSymbolsProvider provider, SymbolScope scope)
         {
-            RegisterSymbols(compiler);
-            GetOwnMethodsDefinition().ForEach(x => compiler.DefineMethod(x));
-        }
-        
-        public static void PrepareCompilation(SymbolTable symbols)
-        {
-            RegisterSymbols(symbols);
-            GetOwnMethodsDefinition().ForEach(x => symbols.DefineMethod(x.ToSymbol()));
+            var baseSymbols = provider.Get<ThisAwareScriptedObjectBase>();
+            baseSymbols.FillSymbols(scope);
+            GetOwnMethodsDefinition().ForEach(x => scope.DefineMethod(x.ToSymbol()));
         }
         
         private static BslMethodInfo[] GetOwnMethodsDefinition()

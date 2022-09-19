@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Sources;
@@ -18,9 +19,9 @@ namespace ScriptEngine.Compiler
 {
     public class ModuleDumpWriter
     {
-        readonly ICompilerService _compiler;
+        readonly ICompilerFrontend _compiler;
 
-        public ModuleDumpWriter(ICompilerService compilerService)
+        public ModuleDumpWriter(ICompilerFrontend compilerService)
         {
             _compiler = compilerService;
         }

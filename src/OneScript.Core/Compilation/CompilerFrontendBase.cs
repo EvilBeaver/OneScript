@@ -37,7 +37,17 @@ namespace OneScript.Compilation
         
         public SymbolTable Symbols { get; set; }
 
-        public ICompileTimeSymbolsProvider ModuleSymbols { get; set; }
+        public SymbolScope FillSymbols(Type type)
+        {
+            var symbolsProvider = Services.Resolve<CompileTimeSymbolsProvider>();
+            var typeSymbols = symbolsProvider.Get(type);
+            ModuleSymbols = new SymbolScope();
+            typeSymbols.FillSymbols(ModuleSymbols);
+
+            return ModuleSymbols;
+        }
+        
+        private SymbolScope ModuleSymbols { get; set; }
         
         public IExecutableModule Compile(SourceCode source, Type classType = null)
         {
@@ -86,25 +96,7 @@ namespace OneScript.Compilation
                 }
             }
 
-            if (ModuleSymbols != default)
-            {
-                var moduleScope = new SymbolScope();
-                foreach (var methodSymbol in ModuleSymbols.Methods)
-                {
-                    moduleScope.DefineMethod(methodSymbol);
-                }
-                
-                foreach (var variableSymbol in ModuleSymbols.Variables)
-                {
-                    moduleScope.DefineVariable(variableSymbol);
-                }
-
-                actualTable.PushScope(moduleScope, null);
-            }
-            else
-            {
-                actualTable.PushScope(new SymbolScope(), null);
-            }
+            actualTable.PushScope(ModuleSymbols ?? new SymbolScope(), null);
 
             return actualTable;
         }
