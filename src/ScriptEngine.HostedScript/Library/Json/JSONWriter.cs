@@ -285,7 +285,9 @@ namespace ScriptEngine.HostedScript.Library.Json
 
         /// <summary>
         /// 
-        /// Завершает запись текста JSON. Если производилась запись в файл, то файл закрывается. Если производилась запись в строку, то результирующая строка будет получена в качестве возвращаемого значения метода. Если производилась запись в файл, то метод вернет пустую строку.
+        /// Завершает запись текста JSON. Если производилась запись в файл, то файл закрывается.
+        /// Если производилась запись в строку, то результирующая строка будет получена в качестве возвращаемого значения метода.
+        /// Если производилась запись в файл, то метод вернет пустую строку.
         /// </summary>
         ///
         /// <returns name="String">
@@ -298,7 +300,9 @@ namespace ScriptEngine.HostedScript.Library.Json
             if (IsOpenForString())
             {
                 res = _stringWriter.ToString();
-			}
+                _stringWriter.Close();
+                _stringWriter = null;
+            }
 
             if (_writer != null)
             {
@@ -385,7 +389,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                     _writer.WriteNull();
                     break;
                 default:
-                            throw new RuntimeException("Тип переданного значения не поддерживается.");
+                    throw new RuntimeException("Тип переданного значения не поддерживается.");
             }
         }
 
@@ -473,9 +477,6 @@ namespace ScriptEngine.HostedScript.Library.Json
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string fileName, string encoding = null, IValue addBOM = null, IValue settings = null)
         {
-            if (IsOpen())
-                Close();
-
             bool bAddBOM = false;
             if (addBOM != null)
                 bAddBOM = addBOM.AsBoolean();
@@ -494,6 +495,8 @@ namespace ScriptEngine.HostedScript.Library.Json
                 throw new RuntimeException(e.Message, e);
             }
 
+            if (IsOpen())
+                Close();
 
             _writer = new JsonTextWriter(streamWriter);
             if (settings == null)
