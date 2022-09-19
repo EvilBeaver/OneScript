@@ -103,14 +103,6 @@ namespace ScriptEngine.Compiler
 
         }
 
-        public SymbolScope Peek()
-        {
-            if (_localScopesCount > 0)
-                return _moduleCtx.Peek();
-            else
-                return _outerCtx.Peek();
-        }
-
         public SymbolScope PopScope()
         {
             var scope = _moduleCtx.PopScope();
@@ -124,21 +116,6 @@ namespace ScriptEngine.Compiler
         {
             _moduleCtx.PushScope(scope);
             _localScopesCount++;
-        }
-
-        public int ScopeIndex(SymbolScope scope)
-        {
-            int idx = _moduleCtx.ScopeIndex(scope);
-            if (idx >= 0)
-            {
-                return idx + OUTER_CTX_SIZE;
-            }
-            else
-            {
-                idx = _outerCtx.ScopeIndex(scope);
-            }
-
-            return idx;
         }
 
         public int TopIndex()

@@ -22,10 +22,8 @@ namespace ScriptEngine.Compiler
         VariableBinding GetVariable(string name);
         bool TryGetVariable(string name, out VariableBinding binding);
         bool TryGetMethod(string name, out SymbolBinding binding);
-        SymbolScope Peek();
         SymbolScope PopScope();
         void PushScope(SymbolScope scope);
-        int ScopeIndex(SymbolScope scope);
         int TopIndex();
     }
 }
