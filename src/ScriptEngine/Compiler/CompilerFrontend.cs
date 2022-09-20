@@ -6,6 +6,7 @@ using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Compiler
 {
@@ -53,17 +54,20 @@ namespace ScriptEngine.Compiler
 
         protected override IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType)
         {
-            throw new NotImplementedException();
+            var backend = _backendSelector.Select(parsedModule);
+            return backend.Compile(parsedModule, classType);
         }
 
         protected override IExecutableModule CompileExpressionInternal(SymbolTable symbols, ModuleNode parsedModule)
         {
-            throw new NotImplementedException();
+            var backend = _backendSelector.Select(parsedModule);
+            return backend.Compile(parsedModule, typeof(UserScriptContextInstance));
         }
 
         protected override IExecutableModule CompileBatchInternal(SymbolTable symbols, ModuleNode parsedModule)
         {
-            throw new NotImplementedException();
+            var backend = _backendSelector.Select(parsedModule);
+            return backend.Compile(parsedModule, typeof(UserScriptContextInstance));
         }
     }
 }
