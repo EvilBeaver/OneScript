@@ -15,7 +15,6 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine.Values;
 
 namespace OneScript.StandardLibrary
 {

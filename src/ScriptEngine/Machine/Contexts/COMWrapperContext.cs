@@ -12,7 +12,6 @@ using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Types;
 using OneScript.Values;
-using ScriptEngine.Machine.Values;
 using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts

@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace ScriptEngine.Machine.Values
+namespace OneScript.Values
 {
     public interface IEmptyValueCheck
     {
