@@ -35,18 +35,28 @@ namespace OneScript.Native.Compiler
 
         protected override void ParseAnnotationInternal(ref Lexem lastExtractedLexem, ILexer lexer, ParserContext parserContext)
         {
-            var node = new PreprocessorDirectiveNode(lastExtractedLexem);
+            var node = new AnnotationNode(NodeKind.Annotation, lastExtractedLexem);
             _allLineContentLexer.Iterator = lexer.Iterator;
 
-            lastExtractedLexem = _allLineContentLexer.NextLexemOnSameLine();
-            if (lastExtractedLexem.Type != LexemType.EndOfText)
-            {
-                var child = new TerminalNode(NodeKind.Unknown, lastExtractedLexem);
-                node.AddChild(child);
-            }
-
-            lastExtractedLexem = lexer.NextLexem();
+            var child = new TerminalNode(NodeKind.Unknown, lastExtractedLexem);
+            node.AddChild(child);
             parserContext.AddChild(node);
+            
+            // после ничего не должно находиться
+            var nextLexem = _allLineContentLexer.NextLexemOnSameLine();
+            lastExtractedLexem = lexer.NextLexem(); // сдвиг основного лексера
+            if (nextLexem.Type != LexemType.EndOfText)
+            {
+                var err = LocalizedErrors.ExpressionSyntax();
+                err.Position = new ErrorPositionInfo
+                {
+                    LineNumber = node.Location.LineNumber,
+                    ColumnNumber = node.Location.ColumnNumber,
+                    Code = lexer.Iterator.GetCodeLine(node.Location.LineNumber),
+                    ModuleName = lexer.Iterator.Source.Name
+                };
+                ErrorSink.AddError(err);
+            }
         }
     }
 }

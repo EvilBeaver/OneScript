@@ -10,11 +10,15 @@ using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.DependencyInjection;
 using OneScript.Execution;
+using OneScript.Language;
 using OneScript.Native.Compiler;
+using OneScript.Native.Extensions;
 using OneScript.Native.Runtime;
+using OneScript.Sources;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using ScriptEngine;
+using ScriptEngine.Compiler;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -41,6 +45,7 @@ namespace OneScript.Dynamic.Tests
             testServices.RegisterSingleton<ITypeManager, DefaultTypeManager>();
             testServices.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
             testServices.RegisterSingleton<CompileTimeSymbolsProvider>();
+            testServices.UseImports();
         }
         
         [Fact]
@@ -148,6 +153,27 @@ namespace OneScript.Dynamic.Tests
             var val = sdo.GetPropValue(n);
             val.SystemType.Should().Be(BasicTypes.Number);
             val.AsNumber().Should().Be(21);
+        }
+
+        [Fact]
+        public void CanSelectNativeCompiler()
+        {
+            testServices.Register<IErrorSink, ThrowingErrorSink>();
+            testServices.UseNativeRuntime();
+
+            var code = 
+                @"
+                #native
+                A = 1;
+                N = 4;";
+            
+            var services = testServices.CreateContainer();
+            var compiler = services.Resolve<CompilerFrontend>();
+
+            var source = SourceCodeBuilder.Create().FromString(code).Build();
+            var module = compiler.Compile(source);
+
+            module.Should().BeOfType<DynamicModule>();
         }
 
         private DynamicModule CreateModule(string code) => CreateModule(code, testServices.CreateContainer(), new SymbolTable());
