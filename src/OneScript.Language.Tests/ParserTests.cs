@@ -541,7 +541,42 @@ namespace OneScript.Language.Tests
                 .NextChildIs(NodeKind.Identifier);
 
         }
+
+        [Fact]
+        public void Can_Create_DynamicNew_With_No_Args()
+        {
+            var code = @"Объект = Новый(""Рефлектор"");";
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Assignment);
+            node.NextChild();
+            var rightSide = node.NextChild();
+            rightSide.Is(NodeKind.NewObject)
+                .NextChildIs(NodeKind.CallArgument)
+                .NextChildIs(NodeKind.CallArgumentList);
+        }
         
+        [Fact]
+        public void Can_Create_DynamicNew_With_One_Arg()
+        {
+            var code = @"Объект = Новый(""Рефлектор"", Новый Массив);";
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Assignment);
+            node.NextChild();
+            var rightSide = node.NextChild();
+            rightSide.Is(NodeKind.NewObject)
+                .NextChildIs(NodeKind.CallArgument)
+                .NextChildIs(NodeKind.CallArgumentList);
+
+            var argsList = rightSide.CurrentNode.Children[1];
+            argsList.Children.Should().HaveCount(1);
+        }
+
         [Fact]
         public void Explicit_Parameter_Skipping()
         {

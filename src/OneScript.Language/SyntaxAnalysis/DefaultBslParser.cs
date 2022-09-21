@@ -1381,6 +1381,11 @@ namespace OneScript.Language.SyntaxAnalysis
                 BuildExpression(nameArg, Token.Comma);
                 node.AddChild(nameArg);
                 var callArgs = new NonTerminalNode(NodeKind.CallArgumentList, _lastExtractedLexem);
+                if (_lastExtractedLexem.Token == Token.Comma)
+                {
+                    // есть аргументы после имени
+                    NextLexem();
+                }
                 WalkCallArguments(callArgs);
                 node.AddChild(callArgs);
                 NextLexem();
