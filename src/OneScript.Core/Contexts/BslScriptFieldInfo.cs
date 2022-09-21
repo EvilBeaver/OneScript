@@ -23,7 +23,7 @@ namespace OneScript.Contexts
         private Type _dataType = typeof(BslValue);
         private int _dispId = -1;
         
-        public BslScriptFieldInfo(string name)
+        internal BslScriptFieldInfo(string name)
         {
             _name = name;
         }

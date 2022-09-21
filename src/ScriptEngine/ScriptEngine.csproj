@@ -50,8 +50,4 @@
     <Reference Include="CustomMarshalers" Condition="'$(TargetFramework)' == 'net452'" />
   </ItemGroup>
   
-  <ItemGroup>
-    <Folder Include="Machine\Values" />
-  </ItemGroup>
-  
 </Project>

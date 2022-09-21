@@ -100,7 +100,10 @@ namespace ScriptEngine
 
         public void UpdateContexts()
         {
-            ExecutionDispatcher.Current ??= Services.Resolve<ExecutionDispatcher>();
+            lock (this)
+            {
+                ExecutionDispatcher.Current ??= Services.Resolve<ExecutionDispatcher>();
+            }
             MachineInstance.Current.SetMemory(Services.Resolve<ExecutionContext>());
         }
 
@@ -116,7 +119,7 @@ namespace ScriptEngine
         {
             using var scope = Services.CreateScope();
             var compiler = scope.Resolve<CompilerFrontend>();
-            compiler.Symbols = Environment.Symbols;
+            compiler.SharedSymbols = Environment.Symbols;
             
             switch (System.Environment.OSVersion.Platform)
             {

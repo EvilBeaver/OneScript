@@ -15,7 +15,7 @@ namespace OneScript.Compilation
         
         IList<string> PreprocessorDefinitions { get; }
         
-        SymbolTable Symbols { get; set; }
+        SymbolTable SharedSymbols { get; set; }
 
         SymbolScope FillSymbols(Type targetType);
         

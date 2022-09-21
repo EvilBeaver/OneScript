@@ -35,7 +35,7 @@ namespace OneScript.Compilation
 
         public IList<string> PreprocessorDefinitions { get; } = new List<string>();
         
-        public SymbolTable Symbols { get; set; }
+        public SymbolTable SharedSymbols { get; set; }
 
         public SymbolScope FillSymbols(Type type)
         {
@@ -88,11 +88,11 @@ namespace OneScript.Compilation
         private SymbolTable PrepareSymbols()
         {
             var actualTable = new SymbolTable();
-            if (Symbols != default)
+            if (SharedSymbols != default)
             {
-                for (int i = 0; i < Symbols.ScopeCount; i++)
+                for (int i = 0; i < SharedSymbols.ScopeCount; i++)
                 {
-                    actualTable.PushScope(Symbols.GetScope(i), actualTable.GetBinding(i));
+                    actualTable.PushScope(SharedSymbols.GetScope(i), actualTable.GetBinding(i));
                 }
             }
 

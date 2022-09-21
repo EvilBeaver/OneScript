@@ -6,6 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using OneScript.Contexts;
+using OneScript.Values;
 
 namespace OneScript.Compilation.Binding
 {
@@ -14,18 +16,18 @@ namespace OneScript.Compilation.Binding
         private struct BindingRecord
         {
             public SymbolScope scope;
-            public object target;
+            public IRuntimeContextInstance target;
         }
         
         private List<BindingRecord> _bindings = new List<BindingRecord>();
         
         public SymbolScope GetScope(int index) => _bindings[index].scope;
 
-        public object GetBinding(int scopeIndex) => _bindings[scopeIndex].target;
+        public IRuntimeContextInstance GetBinding(int scopeIndex) => _bindings[scopeIndex].target;
         
         public int ScopeCount => _bindings.Count;
         
-        public int PushScope(SymbolScope scope, object target)
+        public int PushScope(SymbolScope scope, IRuntimeContextInstance target)
         {
             var idx = _bindings.Count;
             _bindings.Add(new BindingRecord
@@ -84,14 +86,24 @@ namespace OneScript.Compilation.Binding
             return false;
         }
 
-        public void DefineMethod(IMethodSymbol symbol)
+        public SymbolBinding DefineMethod(IMethodSymbol symbol)
         {
-            _bindings[ScopeCount - 1].scope.DefineMethod(symbol);
+            var index = _bindings[ScopeCount - 1].scope.DefineMethod(symbol);
+            return new SymbolBinding
+            {
+                ScopeNumber = ScopeCount - 1,
+                MemberNumber = index
+            };
         }
         
-        public void DefineVariable(IVariableSymbol symbol)
+        public SymbolBinding DefineVariable(IVariableSymbol symbol)
         {
-            _bindings[ScopeCount - 1].scope.DefineVariable(symbol);
+            var index = _bindings[ScopeCount - 1].scope.DefineVariable(symbol);
+            return new SymbolBinding
+            {
+                ScopeNumber = ScopeCount - 1,
+                MemberNumber = index
+            };
         }
 
         public IVariableSymbol GetVariable(SymbolBinding binding)

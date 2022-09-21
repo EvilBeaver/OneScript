@@ -31,7 +31,7 @@ namespace ScriptEngine.Compiler
         private ICompilerBackend StackInitializer()
         {
             var backend = new DefaultCompilerBackend(ErrorSink);
-            SetDefaultOptions(backend, Symbols);
+            SetDefaultOptions(backend);
             backend.DependencyResolver = _dependencyResolver;
 
             return backend;
@@ -40,33 +40,35 @@ namespace ScriptEngine.Compiler
         private ICompilerBackend NativeInitializer()
         {
             var backend = new NativeCompilerBackend(ErrorSink, Services);
-            SetDefaultOptions(backend, Symbols);
+            SetDefaultOptions(backend);
 
             return backend;
         }
 
-        private void SetDefaultOptions(ICompilerBackend backend, SymbolTable symbols)
+        private void SetDefaultOptions(ICompilerBackend backend)
         {
             backend.GenerateCodeStat = GenerateCodeStat;
             backend.GenerateDebugCode = GenerateDebugCode;
-            backend.Symbols = symbols;
         }
 
         protected override IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType)
         {
             var backend = _backendSelector.Select(parsedModule);
+            backend.Symbols = symbols;
             return backend.Compile(parsedModule, classType);
         }
 
         protected override IExecutableModule CompileExpressionInternal(SymbolTable symbols, ModuleNode parsedModule)
         {
             var backend = _backendSelector.Select(parsedModule);
+            backend.Symbols = symbols;
             return backend.Compile(parsedModule, typeof(UserScriptContextInstance));
         }
 
         protected override IExecutableModule CompileBatchInternal(SymbolTable symbols, ModuleNode parsedModule)
         {
             var backend = _backendSelector.Select(parsedModule);
+            backend.Symbols = symbols;
             return backend.Compile(parsedModule, typeof(UserScriptContextInstance));
         }
     }

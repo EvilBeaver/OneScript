@@ -10,7 +10,7 @@ namespace OneScript.Compilation.Binding
         public static SymbolScope PushObject(this SymbolTable table, BslObjectValue target)
         {
             var scope = SymbolScope.FromObject(target);
-            table.PushScope(scope, target);
+            table.PushScope(scope, (IRuntimeContextInstance)target);
             return scope;
         }
         
@@ -34,30 +34,6 @@ namespace OneScript.Compilation.Binding
         public static IFieldSymbol ToSymbol(this BslFieldInfo info)
         {
             return new BslFieldSymbol { Field = info };
-        }
-
-        public static (IVariableSymbol symbol, SymbolBinding binding) GetKnownVariable(this SymbolTable table, string name)
-        {
-            if (!table.FindVariable(name, out var binding))
-            {
-                throw new BindingException(LocalizedErrors.SymbolNotFound(name));
-            }
-
-            var variable = table.GetVariable(binding);
-
-            return (variable, binding);
-        }
-        
-        public static (IMethodSymbol symbol, SymbolBinding binding) GetKnownMethod(this SymbolTable table, string name)
-        {
-            if (!table.FindMethod(name, out var binding))
-            {
-                throw new BindingException(LocalizedErrors.SymbolNotFound(name));
-            }
-
-            var method = table.GetMethod(binding);
-
-            return (method, binding);
         }
     }
 }

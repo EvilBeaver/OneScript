@@ -28,7 +28,7 @@ namespace ScriptEngine.Compiler
         {
             _codeGen.ProduceExtraCode = GetCodeFlags();
             _codeGen.DependencyResolver = DependencyResolver;
-            return _codeGen.CreateModule(parsedModule, parsedModule.Source, default);
+            return _codeGen.CreateModule(parsedModule, parsedModule.Source, Symbols);
         }
 
         private CodeGenerationFlags GetCodeFlags()

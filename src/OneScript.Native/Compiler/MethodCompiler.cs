@@ -198,7 +198,7 @@ namespace OneScript.Native.Compiler
         {
             if (!Symbols.FindVariable(node.GetIdentifier(), out var binding))
             {
-                AddError($"Unknown variable {node.GetIdentifier()}", node.Location);
+                AddError(LocalizedErrors.SymbolNotFound(node.GetIdentifier()), node.Location);
                 return;
             }
 

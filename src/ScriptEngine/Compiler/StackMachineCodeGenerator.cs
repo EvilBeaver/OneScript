@@ -31,7 +31,7 @@ namespace ScriptEngine.Compiler
         private readonly IErrorSink _errorSink;
         private readonly StackRuntimeModule _module;
         private SourceCode _sourceCode;
-        private ICompilerContext _ctx;
+        private SymbolTable _ctx;
         private List<ConstDefinition> _constMap = new List<ConstDefinition>();
         
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
@@ -47,7 +47,7 @@ namespace ScriptEngine.Compiler
 
         public IDependencyResolver DependencyResolver { get; set; }
         
-        public StackRuntimeModule CreateModule(ModuleNode moduleNode, SourceCode source, ICompilerContext context)
+        public StackRuntimeModule CreateModule(ModuleNode moduleNode, SourceCode source, SymbolTable context)
         {
             if (moduleNode.Kind != NodeKind.Module)
             {
@@ -65,7 +65,7 @@ namespace ScriptEngine.Compiler
             VisitModule(moduleNode);
             CheckForwardedDeclarations();
             
-            _module.LoadAddress = _ctx.TopIndex();
+            _module.LoadAddress = _ctx.ScopeCount - 1;
             _module.Source = _sourceCode;
             
             return _module;
@@ -95,8 +95,9 @@ namespace ScriptEngine.Compiler
             try
             {
                 DependencyResolver.Resolve(_sourceCode, libName);
-                if(_ctx is ModuleCompilerContext moduleContext)
-                    moduleContext.Update();
+                // TODO: решить проблему с импортами
+                // if(_ctx is ModuleCompilerContext moduleContext)
+                //     moduleContext.Update();
             }
             catch (CompilerException e)
             {
@@ -118,12 +119,7 @@ namespace ScriptEngine.Compiler
             {
                 foreach (var item in _forwardedMethods)
                 {
-                    SymbolBinding methN;
-                    try
-                    {
-                        methN = _ctx.GetMethod(item.identifier);
-                    }
-                    catch (SymbolNotFoundException)
+                    if (!_ctx.FindMethod(item.identifier, out var methN))
                     {
                         AddError(LocalizedErrors.SymbolNotFound(item.identifier), item.location);
                         continue;
@@ -151,13 +147,12 @@ namespace ScriptEngine.Compiler
         {
             var symbolicName = varNode.Name;
             var annotations = GetAnnotations(varNode).ToList();
-            var binding = _ctx.DefineVariable(symbolicName);
-            _module.VariableRefs.Add(binding);
 
+            var varsCount = _ctx.GetScope(_ctx.ScopeCount - 1).Variables.Count;
             var fieldBuilder = BslFieldBuilder.Create()
                 .Name(symbolicName)
                 .SetAnnotations(annotations)
-                .SetDispatchingIndex(binding.MemberNumber)
+                .SetDispatchingIndex(varsCount)
                 .DeclaringType(_module.ClassType);
             
             if (varNode.IsExported)
@@ -168,12 +163,15 @@ namespace ScriptEngine.Compiler
                     .IsExported(true)
                     .DeclaringType(_module.ClassType)
                     .SetAnnotations(annotations)
-                    .SetDispatchingIndex(binding.MemberNumber);
+                    .SetDispatchingIndex(varsCount);
                 
                 _module.Properties.Add(propertyView.Build());
             }
-            
-            _module.Fields.Add(fieldBuilder.Build());
+
+            var field = fieldBuilder.Build();
+            _module.Fields.Add(field);
+            var binding = _ctx.DefineVariable(field.ToSymbol());
+            _module.VariableRefs.Add(binding);
         }
 
         protected override void VisitModuleBody(BslSyntaxNode child)
@@ -182,7 +180,8 @@ namespace ScriptEngine.Compiler
                 return;
 
             var entry = _module.Code.Count;
-            _ctx.PushScope(new SymbolScope());
+            var localCtx = new SymbolScope();
+            _ctx.PushScope(localCtx, null);
 
             try
             {
@@ -194,9 +193,9 @@ namespace ScriptEngine.Compiler
                 throw;
             }
 
-            var localCtx = _ctx.PopScope();
+            _ctx.PopScope();
             
-            var topIdx = _ctx.TopIndex();
+            var topIdx = _ctx.ScopeCount - 1;
 
             if (entry != _module.Code.Count)
             {
@@ -235,7 +234,7 @@ namespace ScriptEngine.Compiler
             methodBuilder.Name(signature.MethodName)
                 .ReturnType(signature.IsFunction ? typeof(BslValue) : typeof(void))
                 .IsExported(signature.IsExported)
-                .SetDispatchingIndex(_ctx.GetScope(_ctx.TopIndex()).Methods.Count)
+                .SetDispatchingIndex(_ctx.GetScope(_ctx.ScopeCount - 1).Methods.Count)
                 .SetAnnotations(GetAnnotationAttributes(methodNode));
             
             var methodCtx = new SymbolScope();
@@ -260,7 +259,7 @@ namespace ScriptEngine.Compiler
                 methodCtx.DefineVariable(new LocalVariableSymbol(paramNode.Name));
             }
             
-            _ctx.PushScope(methodCtx);
+            _ctx.PushScope(methodCtx, null);
             var entryPoint = _module.Code.Count;
             try
             {
@@ -277,7 +276,7 @@ namespace ScriptEngine.Compiler
             SymbolBinding binding;
             try
             {
-                binding = _ctx.DefineMethod(methodInfo);
+                binding = _ctx.DefineMethod(methodInfo.ToSymbol());
             }
             catch (CompilerException)
             {
@@ -321,7 +320,7 @@ namespace ScriptEngine.Compiler
 
         protected override void VisitMethodVariable(MethodNode method, VariableDefinitionNode variableDefinition)
         {
-            _ctx.DefineVariable(variableDefinition.Name);
+            _ctx.DefineVariable(new LocalVariableSymbol(variableDefinition.Name));
         }
 
         protected override void VisitStatement(BslSyntaxNode statement)
@@ -549,23 +548,23 @@ namespace ScriptEngine.Compiler
         protected override void VisitVariableWrite(TerminalNode node)
         {
             var identifier = node.GetIdentifier();
-            var hasVar = _ctx.TryGetVariable(identifier, out var varBinding);
+            var hasVar = _ctx.FindVariable(identifier, out var varBinding);
             if (hasVar)
             {
-                if (varBinding.binding.ScopeNumber == _ctx.TopIndex())
+                if (varBinding.ScopeNumber == _ctx.ScopeCount - 1)
                 {
-                    AddCommand(OperationCode.LoadLoc, varBinding.binding.MemberNumber);
+                    AddCommand(OperationCode.LoadLoc, varBinding.MemberNumber);
                 }
                 else
                 {
-                    var num = GetVariableRefNumber(ref varBinding.binding);
+                    var num = GetVariableRefNumber(ref varBinding);
                     AddCommand(OperationCode.LoadVar, num);
                 }
             }
             else
             {
                 // can create variable
-                var binding = _ctx.DefineVariable(identifier);
+                var binding = _ctx.DefineVariable(new LocalVariableSymbol(identifier));
                 AddCommand(OperationCode.LoadLoc, binding.MemberNumber);
             }
         }
@@ -680,20 +679,27 @@ namespace ScriptEngine.Compiler
 
         private int PushVariable(string identifier)
         {
-            var varNum = _ctx.GetVariable(identifier);
-            if (varNum.type == SymbolType.ContextProperty)
+            if (!_ctx.FindVariable(identifier, out var varNum))
             {
-                return PushPropertyReference(varNum.binding);
+                AddError(LocalizedErrors.SymbolNotFound(identifier));
+                return -1;
+            }
+
+            var symbol = _ctx.GetVariable(varNum);
+            
+            if (symbol is IPropertySymbol)
+            {
+                return PushPropertyReference(varNum);
             }
             else
             {
-                return PushSimpleVariable(varNum.binding);
+                return PushSimpleVariable(varNum);
             }
         }
 
         private int PushSimpleVariable(SymbolBinding binding)
         {
-            if (binding.ScopeNumber == _ctx.TopIndex())
+            if (binding.ScopeNumber == _ctx.ScopeCount - 1)
             {
                 return AddCommand(OperationCode.PushLoc, binding.MemberNumber);
             }
@@ -721,7 +727,7 @@ namespace ScriptEngine.Compiler
             
             var identifier = identifierNode.Lexem.Content;
             
-            var hasMethod = _ctx.TryGetMethod(identifier, out var methBinding);
+            var hasMethod = _ctx.FindMethod(identifier, out var methBinding);
             if (hasMethod)
             {
                 var scope = _ctx.GetScope(methBinding.ScopeNumber);
