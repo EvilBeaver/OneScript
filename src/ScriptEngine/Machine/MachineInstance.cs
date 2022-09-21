@@ -2596,6 +2596,7 @@ namespace ScriptEngine.Machine
                 .Build();
             
             var compiler = _mem.Services.Resolve<EvalCompiler>();
+            compiler.SharedSymbols = ctx;
             var module = (StackRuntimeModule)compiler.CompileExpression(stringSource);
             
             return module;
@@ -2612,6 +2613,7 @@ namespace ScriptEngine.Machine
                 .Build();
             
             var compiler = _mem.Services.Resolve<EvalCompiler>();
+            compiler.SharedSymbols = ctx;
             var module = (StackRuntimeModule)compiler.CompileBatch(stringSource);
             
             return module;

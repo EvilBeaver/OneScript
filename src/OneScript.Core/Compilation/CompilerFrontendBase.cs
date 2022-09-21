@@ -92,7 +92,7 @@ namespace OneScript.Compilation
             {
                 for (int i = 0; i < SharedSymbols.ScopeCount; i++)
                 {
-                    actualTable.PushScope(SharedSymbols.GetScope(i), actualTable.GetBinding(i));
+                    actualTable.PushScope(SharedSymbols.GetScope(i), SharedSymbols.GetBinding(i));
                 }
             }
 
