@@ -13,6 +13,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
+using OneScript.Contexts;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
@@ -464,6 +465,38 @@ namespace OneScript.Native.Compiler
             return Expression.Property(iVariable, valueProperty);
         }
 
+        public static Expression GetContextPropertyValue(IRuntimeContextInstance target, int propertyNumber)
+        {
+            var getter = OperationsCache.GetOrAdd(
+                typeof(IRuntimeContextInstance),
+                nameof(IRuntimeContextInstance.GetPropValue),
+                BindingFlags.Instance | BindingFlags.Public);
+
+            return Expression.Call(
+                Expression.Constant(target),
+                getter,
+                Expression.Constant(propertyNumber)
+            );
+        }
+
+        public static Expression GetIndexedValue(Expression target, Expression index)
+        {
+            var method = OperationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.GetIndexedValue));
+
+            return Expression.Call(target, method, ConvertToBslValue(index));
+        }
+        
+        public static Expression SetIndexedValue(Expression target, Expression index, Expression value)
+        {
+            var method = OperationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.SetIndexedValue));
+
+            return Expression.Call(target, method, ConvertToBslValue(index), ConvertToBslValue(value));
+        }
+        
         public static Expression InvokeBslNativeMethod(BslNativeMethodInfo nativeMethod, object target, List<Expression> args)
         {
             var helperMethod = OperationsCache.GetOrAdd(
@@ -501,5 +534,6 @@ namespace OneScript.Native.Compiler
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Expression InvocationTargetExpression(object target) =>
             target as Expression ?? Expression.Constant(target, typeof(object));
+        
     }
 }

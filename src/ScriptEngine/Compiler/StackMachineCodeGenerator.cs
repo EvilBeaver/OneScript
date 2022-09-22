@@ -394,7 +394,7 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.Inc);
             VisitVariableWrite(counter);
 
-            var counterIndex = PushVariable(counter.GetIdentifier());
+            var counterIndex = PushVariable(counter);
             CorrectCommandArgument(jmpIndex, counterIndex);
             var conditionIndex = AddCommand(OperationCode.JmpCounter, DUMMY_ADDRESS);
 
@@ -535,14 +535,7 @@ namespace ScriptEngine.Compiler
 
         protected override void VisitVariableRead(TerminalNode node)
         {
-            try
-            {
-                PushVariable(node.GetIdentifier());
-            }
-            catch (SymbolNotFoundException e)
-            {
-                AddError(LocalizedErrors.SymbolNotFound(e.Symbol), node.Location);
-            }
+            PushVariable(node);
         }
 
         protected override void VisitVariableWrite(TerminalNode node)
@@ -677,11 +670,12 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.ResolveProp, identifierConstIndex);
         }
 
-        private int PushVariable(string identifier)
+        private int PushVariable(TerminalNode node)
         {
+            var identifier = node.GetIdentifier();
             if (!_ctx.FindVariable(identifier, out var varNum))
             {
-                AddError(LocalizedErrors.SymbolNotFound(identifier));
+                AddError(LocalizedErrors.SymbolNotFound(identifier), node.Location);
                 return -1;
             }
 

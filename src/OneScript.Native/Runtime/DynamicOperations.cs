@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Language;
 using OneScript.Localization;
@@ -142,6 +143,26 @@ namespace OneScript.Native.Runtime
             }
 
             return firstTry;
+        }
+
+        public static BslValue GetIndexedValue(object target, BslValue index)
+        {
+            if (!(target is IRuntimeContextInstance context) || !context.IsIndexed)
+            {
+                throw RuntimeException.IndexedAccessIsNotSupportedException();
+            }
+
+            return (BslValue)context.GetIndexedValue((IValue)index);
+        }
+        
+        public static void SetIndexedValue(object target, BslValue index, BslValue value)
+        {
+            if (!(target is IRuntimeContextInstance context) || !context.IsIndexed)
+            {
+                throw RuntimeException.IndexedAccessIsNotSupportedException();
+            }
+
+            context.SetIndexedValue(index, value);
         }
     }
 }

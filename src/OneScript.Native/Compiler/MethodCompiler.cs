@@ -168,12 +168,23 @@ namespace OneScript.Native.Compiler
                 // а мы просто переходим к следующей строке кода
                 RestoreNestingLevel(nestingLevel);
             }
+            catch (NativeCompilerException e)
+            {
+                RestoreNestingLevel(nestingLevel);
+                e.Position ??= ToCodePosition(statement.Location);
+                AddError(new CodeError
+                {
+                    Description = e.Message,
+                    Position = e.Position,
+                    ErrorId = nameof(NativeCompilerException)
+                });
+            }
             catch (Exception e)
             {
                 RestoreNestingLevel(nestingLevel);
                 if (e is NativeCompilerException ce)
                 {
-                    ce.Position = ToCodePosition(statement.Location);
+                    ce.Position ??= ToCodePosition(statement.Location);
                     throw;
                 }
                 
@@ -209,11 +220,10 @@ namespace OneScript.Native.Compiler
                 var expr = GetLocalVariable(binding.MemberNumber);
                 _statementBuildParts.Push(expr);
             }
-            else if (symbol is IPropertySymbol)
+            else if (symbol is IPropertySymbol prop)
             {
-                // prop read
-                var target = GetPropertyBinding(binding, symbol);
-                _statementBuildParts.Push(Expression.Constant(target));
+                var expression = ReadGlobalProperty(Symbols.GetBinding(binding.ScopeNumber), prop);
+                _statementBuildParts.Push(expression);
             }
             else if (symbol is IFieldSymbol && _method.IsInstance)
             {
@@ -224,6 +234,23 @@ namespace OneScript.Native.Compiler
             {
                 AddError(new BilingualString($"Unsupported symbol in non-local context: {symbol.Name} {symbol.GetType()}"), 
                     node.Location);
+            }
+        }
+
+        private Expression ReadGlobalProperty(IRuntimeContextInstance target, IPropertySymbol prop)
+        {
+            var propInfo = prop.Property;
+
+            if (propInfo is ContextPropertyInfo contextProp)
+            {
+                return Expression.MakeMemberAccess(
+                    Expression.Constant(target),
+                    contextProp.GetUnderlying<PropertyInfo>());
+            }
+            else
+            {
+                var propIdx = target.GetPropertyNumber(prop.Name);
+                return ExpressionHelpers.GetContextPropertyValue(target, propIdx);
             }
         }
 
@@ -260,6 +287,12 @@ namespace OneScript.Native.Compiler
                 return;
             }
 
+            var expr = ReadDynamicProperty(instance, memberName);
+            _statementBuildParts.Push(expr);
+        }
+
+        private static DynamicExpression ReadDynamicProperty(Expression instance, string memberName)
+        {
             var args = new List<Expression>();
             args.Add(instance);
             var csharpArgs = new List<CSharpArgumentInfo>();
@@ -272,7 +305,7 @@ namespace OneScript.Native.Compiler
                 memberName,
                 typeof(BslObjectValue), csharpArgs);
             var expr = Expression.Dynamic(binder, typeof(object), args);
-            _statementBuildParts.Push((expr));
+            return expr;
         }
 
         private void MakeWritePropertyAccess(TerminalNode operand)
@@ -304,7 +337,7 @@ namespace OneScript.Native.Compiler
                 memberName,
                 typeof(BslObjectValue), csharpArgs);
             var expr = Expression.Dynamic(binder, typeof(object), args);
-            _statementBuildParts.Push((expr));
+            _statementBuildParts.Push(expr);
         }
 
         protected override void VisitResolveProperty(TerminalNode operand)
@@ -561,7 +594,6 @@ namespace OneScript.Native.Compiler
         {
             if (!typeof(BslObjectValue).IsAssignableFrom(target.Type))
             {
-                AddError($"Type {target.Type} is not indexed", node.Location);
                 return null;
             }
             
@@ -1074,19 +1106,43 @@ namespace OneScript.Native.Compiler
 
             var targetType = target.Type;
             var name = call.Identifier.GetIdentifier();
-
-            var methodInfo = FindMethodOfType(node, targetType, name);
-
-            if (methodInfo.ReturnType == typeof(void))
+            if (targetType.IsObjectValue())
             {
-                throw new NativeCompilerException(new BilingualString(
-                    $"Метод {targetType}.{name} не является функцией",
-                    $"Method {targetType}.{name} is not a function"), ToCodePosition(node.Location));
+                var methodInfo = FindMethodOfType(node, targetType, name);
+                if (methodInfo.ReturnType == typeof(void))
+                {
+                    throw new NativeCompilerException(new BilingualString(
+                        $"Метод {targetType}.{name} не является функцией",
+                        $"Method {targetType}.{name} is not a function"), ToCodePosition(node.Location));
+                }
+            
+                var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters());
+                _statementBuildParts.Push(Expression.Call(target, methodInfo, args));
             }
-            
-            var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters());
-            
-            _statementBuildParts.Push(Expression.Call(target, methodInfo, args));
+            else if (targetType.IsValue())
+            {
+                var args = new List<Expression>();
+                args.Add(target);
+                args.AddRange(PrepareDynamicCallArguments(call.ArgumentList));
+
+                var csharpArgs = new List<CSharpArgumentInfo>();
+                csharpArgs.Add(CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default));
+                csharpArgs.AddRange(args.Select(x => CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default)));
+
+                var binder = Microsoft.CSharp.RuntimeBinder.Binder.InvokeMember(
+                    CSharpBinderFlags.InvokeSimpleName,
+                    name,
+                    null,
+                    typeof(BslObjectValue),
+                    csharpArgs);
+
+                var objectExpr = Expression.Dynamic(binder, typeof(object), args);
+                _statementBuildParts.Push(ExpressionHelpers.ConvertToType(objectExpr, typeof(BslValue)));
+            }
+            else
+            {
+                AddError(new BilingualString($"Тип {targetType} не является объектным типом.",$"Type {targetType} is not an object type."), node.Location);
+            }
         }
 
         private MethodInfo FindMethodOfType(BslSyntaxNode node, Type targetType, string name)
