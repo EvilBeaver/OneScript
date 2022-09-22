@@ -67,6 +67,8 @@ namespace OneScript.Native.Compiler
             var methodsSection = module.Children.FirstOrDefault(x => x.Kind == NodeKind.MethodsSection);
             if(methodsSection == default)
                 return;
+
+            var ownMethodsCount = Symbols.GetScope(Symbols.ScopeCount - 1).Methods.Count;
             
             foreach (var methodNode in methodsSection.Children.Cast<MethodNode>())
             {
@@ -79,6 +81,7 @@ namespace OneScript.Native.Compiler
 
                 var builder = _methodsFactory.NewMethod();
                 builder.SetAnnotations(methodNode.Annotations);
+                builder.SetDispatchingIndex(ownMethodsCount++);
                 
                 VisitMethodSignature(builder, methodNode.Signature);
 
@@ -107,7 +110,7 @@ namespace OneScript.Native.Compiler
         {
             // TODO: Возможно, в native у нас будут все параметры как byval, даже без Знач
             param.Name(paramNode.Name);
-            if(paramNode.IsByValue)
+            //if(paramNode.IsByValue)
                 param.ByValue(true);
             
             if(paramNode.HasDefaultValue)

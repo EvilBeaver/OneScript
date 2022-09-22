@@ -48,7 +48,7 @@ namespace oscript
             builder.SetDefaultOptions()
                 .UseImports()
                 .UseFileSystemLibraries()
-                //.UseNativeRuntime()
+                .UseNativeRuntime()
                 ;
         }
     }
