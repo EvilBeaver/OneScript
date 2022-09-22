@@ -209,13 +209,7 @@ namespace ScriptEngine.Machine.Contexts
             throw RuntimeException.InvalidArgumentValue();
         }
  
-        public static IValue ConvertReturnValue(object param)
-        {
-            return ConvertReturnValue(param, param.GetType());
-        }
-
-
-        public static IValue ConvertReturnValue<TRet>(TRet param)
+         public static IValue ConvertReturnValue<TRet>(TRet param)
         {
             return ConvertReturnValue(param, typeof(TRet));
         }
