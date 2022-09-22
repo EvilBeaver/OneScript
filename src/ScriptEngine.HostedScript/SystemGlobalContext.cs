@@ -22,23 +22,14 @@ namespace ScriptEngine.HostedScript.Library
     [GlobalContext(Category="Процедуры и функции взаимодействия с системой", ManualRegistration=true)]
     public class SystemGlobalContext : IAttachableContext
     {
+        private static readonly ContextMethodsMapper<SystemGlobalContext> _methods 
+            = new ContextMethodsMapper<SystemGlobalContext>();
+
+        private static readonly ContextPropertyMapper<SystemGlobalContext> _properties =
+            new ContextPropertyMapper<SystemGlobalContext>();
+
         private IVariable[] _state;
         private FixedArrayImpl  _args;
-		
-        private readonly DynamicPropertiesHolder _propHolder = new DynamicPropertiesHolder();
-        private readonly List<Func<IValue>> _properties = new List<Func<IValue>>();
-
-        public SystemGlobalContext()
-        {
-            RegisterProperty("АргументыКоманднойСтроки", ()=>(IValue)CommandLineArguments);
-            RegisterProperty("CommandLineArguments", () => (IValue)CommandLineArguments);
-        }
-
-        private void RegisterProperty(string name, Func<IValue> getter)
-        {
-            _propHolder.RegisterProperty(name);
-            _properties.Add(getter);
-        }
 
         public ScriptingEngine EngineInstance{ get; set; }
 
@@ -50,11 +41,10 @@ namespace ScriptEngine.HostedScript.Library
         private void InitContextVariables()
         {
             _state = new IVariable[_properties.Count];
-
-            var propNames = _propHolder.GetProperties().OrderBy(x=>x.Value).Select(x=>x.Key).ToArray();
+            
             for (int i = 0; i < _properties.Count; i++)
             {
-                _state[i] = Variable.CreateContextPropertyReference(this, i, propNames[i]);
+                _state[i] = Variable.CreateContextPropertyReference(this, i, _properties.GetProperty(i).Name);
             }
         }
 
@@ -144,7 +134,7 @@ namespace ScriptEngine.HostedScript.Library
         /// Объект АргументыКоманднойСтроки представляет собой массив в режиме "только чтение".
         /// </summary>
         [ContextProperty("АргументыКоманднойСтроки", "CommandLineArguments", CanWrite = false)]
-        public IRuntimeContextInstance CommandLineArguments
+        public FixedArrayImpl CommandLineArguments
         {
             get
             {
@@ -227,22 +217,22 @@ namespace ScriptEngine.HostedScript.Library
 
         public int GetPropertyNumber(string name)
         {
-            return _propHolder.GetPropertyNumber(name);
+            return _properties.FindProperty(name);
         }
 
         public bool IsPropReadable(int propNum)
         {
-            return true;
+            return _properties.GetProperty(propNum).CanRead;
         }
 
         public bool IsPropWritable(int propNum)
         {
-            return false;
+            return _properties.GetProperty(propNum).CanWrite;
         }
 
         public IValue GetPropValue(int propNum)
         {
-            return _properties[propNum]();
+            return _properties.GetProperty(propNum).Getter(this);
         }
 
         public void SetPropValue(int propNum, IValue newVal)
@@ -257,7 +247,7 @@ namespace ScriptEngine.HostedScript.Library
 
         public string GetPropName(int index)
         {
-            return _propHolder.GetProperties().First(x => x.Value == index).Key;
+            return _properties.GetProperty(index).Name;
         }
 
         public int GetMethodNumber(string name)
@@ -272,7 +262,7 @@ namespace ScriptEngine.HostedScript.Library
         
         public BslPropertyInfo GetPropertyInfo(int propertyNumber)
         {
-            return _propHolder[propertyNumber];
+            return _properties.GetProperty(propertyNumber).PropertyInfo;
         }
 
         public int GetMethodsCount()
@@ -292,12 +282,5 @@ namespace ScriptEngine.HostedScript.Library
 
 #endregion
 
-        private static readonly ContextMethodsMapper<SystemGlobalContext> _methods;
-
-        static SystemGlobalContext()
-        {
-            _methods = new ContextMethodsMapper<SystemGlobalContext>();
-        }
-        
     }
 }
