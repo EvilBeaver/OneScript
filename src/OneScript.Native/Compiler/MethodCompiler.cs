@@ -529,7 +529,7 @@ namespace OneScript.Native.Compiler
             if (indexExpression == null)
             {
                 indexExpression = TryFindMagicGetterMethod(target, index) 
-                                  ?? ExpressionHelpers.DynamicGetIndex(target, index);
+                                  ?? ExpressionHelpers.GetIndexedValue(target, index);
             }
             
             _statementBuildParts.Push(indexExpression);
@@ -548,7 +548,7 @@ namespace OneScript.Native.Compiler
             {
                 var value = _statementBuildParts.Pop();
                 indexExpression = TryFindMagicSetterMethod(target, index, value) 
-                                  ?? ExpressionHelpers.DynamicSetIndex(target, index, value);
+                                  ?? ExpressionHelpers.SetIndexedValue(target, index, value);
             }
             
             _statementBuildParts.Push(indexExpression);
@@ -594,6 +594,7 @@ namespace OneScript.Native.Compiler
         {
             if (!typeof(BslObjectValue).IsAssignableFrom(target.Type))
             {
+                // Мы не знаем тип выражения и будем выяснять это в рантайме
                 return null;
             }
             
