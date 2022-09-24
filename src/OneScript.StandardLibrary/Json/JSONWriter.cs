@@ -282,7 +282,9 @@ namespace OneScript.StandardLibrary.Json
 
         /// <summary>
         /// 
-        /// Завершает запись текста JSON. Если производилась запись в файл, то файл закрывается. Если производилась запись в строку, то результирующая строка будет получена в качестве возвращаемого значения метода. Если производилась запись в файл, то метод вернет пустую строку.
+        /// Завершает запись текста JSON. Если производилась запись в файл, то файл закрывается.
+        /// Если производилась запись в строку, то результирующая строка будет получена в качестве возвращаемого значения метода.
+        /// Если производилась запись в файл, то метод вернет пустую строку.
         /// </summary>
         ///
         /// <returns name="String">
@@ -295,7 +297,9 @@ namespace OneScript.StandardLibrary.Json
             if (IsOpenForString())
             {
                 res = _stringWriter.ToString();
-			}
+                _stringWriter.Close();
+                _stringWriter = null;
+            }
 
             if (_writer != null)
             {
@@ -382,6 +386,8 @@ namespace OneScript.StandardLibrary.Json
                 case DateTime v:
                     WriteStringValue(v.ToString());
                     break;
+                default:
+                    throw new RuntimeException("Тип переданного значения не поддерживается.");
             }
         }
 
@@ -469,9 +475,6 @@ namespace OneScript.StandardLibrary.Json
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string fileName, string encoding = null, IValue addBOM = null, IValue settings = null)
         {
-            if (IsOpen())
-                Close();
-
             bool bAddBOM = false;
             if (addBOM != null)
                 bAddBOM = addBOM.AsBoolean();
@@ -490,6 +493,8 @@ namespace OneScript.StandardLibrary.Json
                 throw new RuntimeException(e.Message, e);
             }
 
+            if (IsOpen())
+                Close();
 
             _writer = new JsonTextWriter(streamWriter);
             if (settings == null)

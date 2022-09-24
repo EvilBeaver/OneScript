@@ -21,6 +21,12 @@ namespace ScriptEngine.Machine.Contexts
             return valueObj != null ? (T)valueObj : defaultValue;
         }
 
+        public static T ConvertParamDef<T>(IValue value, object defaultValue)
+        {
+            object valueObj = ConvertParam(value, typeof(T));
+            return valueObj != null ? (T)valueObj : (T)defaultValue;
+        }
+
         public static object ConvertParam(IValue value, Type type)
         {
             try
@@ -184,6 +190,10 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return (IValue)objParam;
             }
+            else if (Nullable.GetUnderlyingType(type) != null)
+            {
+                return ConvertReturnValue(objParam, Nullable.GetUnderlyingType(type));
+            }
             else
             {
                 throw new NotSupportedException($"Type {type} is not supported");
@@ -206,6 +216,19 @@ namespace ScriptEngine.Machine.Contexts
             var enumImpl = GlobalsHelper.GetEnum(type);
 
             return enumImpl.GetPropValue(itemName);
+        }
+
+        public static T ConvertWrappedEnum<T>(IValue enumeration, T defValue) where T : struct
+        {
+            if (enumeration == null)
+                return defValue;
+
+            if (enumeration.GetRawValue() is ClrEnumValueWrapper<T> wrapped)
+            {
+                return wrapped.UnderlyingValue;
+            }
+
+            throw RuntimeException.InvalidArgumentValue();
         }
 
         public static IValue ConvertReturnValue<TRet>(TRet param)

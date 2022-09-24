@@ -21,6 +21,8 @@ namespace NUnitTests
 			host.Engine.InitExternalLibraries(Path.Combine(solutionRoot, "oscript-library", "src"), null);
 		}
 
+		#region Отсутствие точки с запятой перед завершением блока
+
 		[Test]
 		public void TestNoSemicolonBeforeEndProcedure()
 		{
@@ -29,7 +31,7 @@ namespace NUnitTests
 					Возврат
 				КонецПроцедуры");
 
-		    var module = host.Engine.GetCompilerService().Compile(moduleSource);
+		    _ = host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
@@ -40,7 +42,7 @@ namespace NUnitTests
 					Возврат 4
 				КонецФункции");
 
-			var module = host.Engine.GetCompilerService().Compile(moduleSource);
+			_ = host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
@@ -49,13 +51,13 @@ namespace NUnitTests
 			var moduleSource = host.Engine.Loader.FromString(
 				@"Для Инд = 1 По 10 Цикл
 					Прервать
-				КонецЕсли");
+				КонецЦикла");
 
-			var module = host.Engine.GetCompilerService().Compile(moduleSource);
+			_ = host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
-		public void TestNoSemicolonBeforeEndIf()
+		public void TestNoSemicolonBeforeElseOrEndIf()
 		{
 			var moduleSource = host.Engine.Loader.FromString(
 				@"Если Истина Тогда
@@ -66,10 +68,115 @@ namespace NUnitTests
 					Ф = 3
 				КонецЕсли");
 
-			var module = host.Engine.GetCompilerService().Compile(moduleSource);
+			_ = host.Engine.GetCompilerService().Compile(moduleSource);
 		}
-		
 
+		[Test]
+		public void TestNoSemicolonBeforeExceptionOrEndTry()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Попытка
+					Ф = 1
+				Исключение
+					ВызватьИсключение
+				КонецПопытки");
+
+			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+		}
+
+
+		[Test]
+		public void TestNoSemicolonBeforeEndOfText()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Процедура Проц1()
+					Возврат
+				КонецПроцедуры
+				Ф = 0");
+
+			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+		}
+		#endregion
+
+		#region Точка с запятой перед завершением блока
+
+		[Test]
+		public void TestSemicolonBeforeEndProcedure()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Процедура Проц1()
+					Возврат;
+				КонецПроцедуры");
+
+			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+		}
+
+		[Test]
+		public void TestSemicolonBeforeEndFunction()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Функция Фун1()
+					Возврат 4;
+				КонецФункции");
+
+			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+		}
+
+		[Test]
+		public void TestSemicolonBeforeEndDo()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Для Инд = 1 По 10 Цикл
+					Прервать;
+				КонецЦикла");
+
+			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+		}
+
+		[Test]
+		public void TestSemicolonBeforeElseOrEndIf()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Если Истина Тогда
+					Ф = 1;
+				ИначеЕсли Истина Тогда
+					Ф = 2;
+				Иначе
+					Ф = 3;
+				КонецЕсли");
+
+			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+		}
+
+		[Test]
+		public void TestSemicolonBeforeExceptionOrEndTry()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Попытка
+					Ф = 1;
+				Исключение
+					ВызватьИсключение;
+				КонецПопытки");
+
+			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+		}
+
+
+		[Test]
+		public void TestSemicolonBeforeEndOfText()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Процедура Проц1()
+					Возврат
+				КонецПроцедуры
+				Ф = 0;");
+
+			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+		}
+		#endregion
+
+
+		#region Согласованное завершение структурных операторов
 		[Test]
 		public void TestEndFunctionDoesNotEndIf()
 		{
@@ -81,7 +188,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				var module = host.Engine.GetCompilerService().Compile(moduleSource);
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -101,7 +208,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				var module = host.Engine.GetCompilerService().Compile(moduleSource);
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -121,7 +228,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				var module = host.Engine.GetCompilerService().Compile(moduleSource);
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -129,6 +236,86 @@ namespace NUnitTests
 			}
 			Assert.IsTrue(exceptionThrown, "КонецЕсли закрыл Пока!!!");
 		}
+		[Test]
+		public void TestEndFunctionDoesNotEndProcedure()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Процедура Проц()
+					Возврат
+				КонецФункции");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "КонецФункции закрыл Процедуру!!!");
+		}
+
+		[Test]
+		public void TestEndProcedureDoesNotEndFunction()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Функция Функ()
+					Возврат 0
+				КонецПроцедуры");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "КонецПроцедуры закрыл Функцию!!!");
+		}
+
+		[Test]
+		public void TestElseifDoesNotEndProcedure()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Процедура Проц()
+					Возврат
+				ИначеЕсли");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "ИначеЕсли закрыл Процедуру!!!");
+		}
+
+		[Test]
+		public void TestEndTryDoesNotEndProcedure()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Процедура Проц()
+					Возврат
+				КонецПопытки");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "КонецПопытки закрыл Процедуру!!!");
+		}
+		#endregion
 
 		[Test(Description = "Компилируется вызов метода с пропуском параметров")]
 		public void TestCompileMethodCallWithoutAllParams()
@@ -148,7 +335,7 @@ namespace NUnitTests
 				Р = Ф1(,,) + Ф1(,);
 				");
 
-			var module = host.Engine.GetCompilerService().Compile(moduleSource);
+			_ = host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 		
 		[Test(Description = "Не компилируется вызов метода вообще без параметров")]
@@ -164,7 +351,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				var module = host.Engine.GetCompilerService().Compile(moduleSource);
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -172,7 +359,174 @@ namespace NUnitTests
 			}
 			Assert.IsTrue(exceptionThrown, "Не должно было скомпилироваться!");
 		}
-		
-		
+
+		[Test]
+		public void TestReturnBeforeException()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Процедура Проц()
+					Попытка
+						Возврат
+					Исключение
+					КонецПопытки
+				КонецПроцедуры");
+            _ = host.Engine.GetCompilerService().Compile(moduleSource);
+        }
+
+
+		[Test]
+		public void TestElseifDoesNotDelimitAddHandler()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Если Истина Тогда 
+					ДобавитьОбработчик ЭтотОбъект.Событие ИначеЕсли ЭтотОбъект.Обработчик
+				КонецЕсли");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "ИначеЕсли разделяет параметры ДобавитьОбработчик!!!");
+		}
+
+
+		[Test]
+		public void TestSemicolonBeforeProcedures()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Перем Глоб
+				Процедура Проц1()
+					Возврат
+				КонецПроцедуры");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "Нет точки с запятой между переменными модуля и процедурами!");
+		}
+
+		[Test]
+		public void TestSemicolonAfterLocals()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Процедура Проц1()
+					Перем Локал
+					Если Истина Тогда
+						Локал = 1
+					КонецЕсли
+				КонецПроцедуры");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "Нет точки с запятой между локалиными переменными и операторами!");
+		}
+
+		[Test]
+		public void TestNoSemicolonBetweenProcedures()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Процедура Проц1()
+					Возврат
+				КонецПроцедуры;
+				Процедура Проц2()
+					Возврат
+				КонецПроцедуры");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "Точка с запятой между процедурами!");
+		}
+
+		[Test]
+		public void TestSemicolonBetweenStatements1()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"
+				Ф = 1
+				Если Ложь Тогда 
+					Ф = 2
+				КонецЕсли");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "Отсутствует точка с запятой между операторами!");
+		}
+
+		[Test]
+		public void TestSemicolonBetweenStatements2()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"
+				Если Ложь Тогда 
+					Ф = 2
+				КонецЕсли
+				Ф = 1");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "Отсутствует точка с запятой между операторами!");
+		}
+
+		[Test]
+		public void TestSemicolonBetweenStatements3()
+		{
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Если Истина Тогда 
+					Ф = 1
+				КонецЕсли
+				Если Ложь Тогда 
+					Ф = 2
+				КонецЕсли");
+
+			bool exceptionThrown = false;
+			try
+			{
+				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			}
+			catch (CompilerException)
+			{
+				exceptionThrown = true;
+			}
+			Assert.IsTrue(exceptionThrown, "Отсутствует точка с запятой между операторами!");
+		}
 	}
 }

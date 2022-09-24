@@ -5,11 +5,14 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections;
+using System.Reflection;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
+using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -21,41 +24,33 @@ namespace OneScript.StandardLibrary
     [ContextClass("СистемнаяИнформация", "SystemInfo")]
     public class SystemEnvironmentContext : AutoContext<SystemEnvironmentContext>
     {
+
+        private static readonly string _osKernelName;
+        private static readonly PlatformID _platformId;
+        
         /// <summary>
         /// Имя машины, на которой выполняется сценарий
         /// </summary>
         [ContextProperty("ИмяКомпьютера", "MachineName")]
-        public string MachineName 
-        {
-            get
-            {
-                return System.Environment.MachineName;
-            }
-        }
+        public string MachineName => Environment.MachineName;
 
         /// <summary>
         /// Версия операционной системы, на которой выполняется сценарий
         /// </summary>
         [ContextProperty("ВерсияОС", "OSVersion")]
-        public string OSVersion
-        {
-            get
-            {
-                return System.Environment.OSVersion.VersionString;
-            }
-        }
+        public string OSVersion => Environment.OSVersion.VersionString;
+
+        /// <summary>
+        /// Имя ядра ОС/
+        /// </summary>
+        [ContextProperty("ИмяЯдра", "KernelName")]
+        public string KernelName => _osKernelName; // позволит различать linux/mac/hp-ux/sunos/...
 
         /// <summary>
         /// Версия OneScript, выполняющая данный сценарий
         /// </summary>
         [ContextProperty("Версия","Version")]
-        public string Version 
-        { 
-            get
-            {
-                return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            }
-        }
+        public string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         /// <summary>
         /// Тип операционной системы, на которой выполняется сценарий
@@ -65,10 +60,10 @@ namespace OneScript.StandardLibrary
         {
             get
             {
-                switch (System.Environment.OSVersion.Platform) {
-                    case System.PlatformID.Win32NT: return Is64BitOperatingSystem ? PlatformTypeEnum.Windows_x86_64 : PlatformTypeEnum.Windows_x86;
-                    case System.PlatformID.MacOSX: return Is64BitOperatingSystem ? PlatformTypeEnum.MacOS_x86_64 : PlatformTypeEnum.MacOS_x86;
-                    case System.PlatformID.Unix: return Is64BitOperatingSystem ? PlatformTypeEnum.Linux_x86_64 : PlatformTypeEnum.Linux_x86;
+                switch (_platformId) {
+                    case PlatformID.Win32NT: return Is64BitOperatingSystem ? PlatformTypeEnum.Windows_x86_64 : PlatformTypeEnum.Windows_x86;
+                    case PlatformID.MacOSX: return Is64BitOperatingSystem ? PlatformTypeEnum.MacOS_x86_64 : PlatformTypeEnum.MacOS_x86;
+                    case PlatformID.Unix: return Is64BitOperatingSystem ? PlatformTypeEnum.Linux_x86_64 : PlatformTypeEnum.Linux_x86;
                     default: return PlatformTypeEnum.Unknown;
                 }
             }
@@ -83,14 +78,14 @@ namespace OneScript.StandardLibrary
         {
             get
             {
-                string DomainName = System.Environment.UserDomainName;
+                string DomainName = Environment.UserDomainName;
 
                 if (DomainName != "")
                 {
-                    return @"\\" + DomainName + @"\" + System.Environment.UserName;
+                    return @"\\" + DomainName + @"\" + Environment.UserName;
                 }
 
-                return System.Environment.UserName;
+                return Environment.UserName;
             }
         }
 
@@ -98,10 +93,7 @@ namespace OneScript.StandardLibrary
         /// Определяет, является ли текущая операционная система 64-разрядной.
         /// </summary>
         [ContextProperty("Это64БитнаяОперационнаяСистема")]
-        public bool Is64BitOperatingSystem
-        {
-            get { return System.Environment.Is64BitOperatingSystem; }
-        }
+        public bool Is64BitOperatingSystem => Environment.Is64BitOperatingSystem;
 
         /// <summary>
         /// Возвращает число процессоров.
@@ -110,19 +102,13 @@ namespace OneScript.StandardLibrary
         /// данное свойство возвращает число логических процессоров, доступных для использования средой CLR
         /// </summary>
         [ContextProperty("КоличествоПроцессоров")]
-        public int ProcessorCount
-        {
-            get { return System.Environment.ProcessorCount; }
-        }
+        public int ProcessorCount => Environment.ProcessorCount;
 
         /// <summary>
         /// Возвращает количество байтов на странице памяти операционной системы
         /// </summary>
         [ContextProperty("РазмерСистемнойСтраницы")]
-        public int SystemPageSize
-        {
-            get { return System.Environment.SystemPageSize; }
-        }
+        public int SystemPageSize => Environment.SystemPageSize;
 
         /// <summary>
         /// Возвращает время, истекшее с момента загрузки системы (в миллисекундах).
@@ -132,7 +118,7 @@ namespace OneScript.StandardLibrary
         {
             get
             {
-                var unsig = (uint)System.Environment.TickCount;
+                var unsig = (uint)Environment.TickCount;
                 return unsig;
             }
         }
@@ -158,11 +144,11 @@ namespace OneScript.StandardLibrary
         [ContextMethod("ПолучитьПутьПапки")]
         public string GetFolderPath(IValue folder)
         {
-            var typedValue = folder as ClrEnumValueWrapper<System.Environment.SpecialFolder>;
+            var typedValue = folder as ClrEnumValueWrapper<Environment.SpecialFolder>;
             if (typedValue == null)
                 throw RuntimeException.InvalidArgumentType();
 
-            return System.Environment.GetFolderPath(typedValue.UnderlyingValue);
+            return Environment.GetFolderPath(typedValue.UnderlyingValue);
             
         }
 
@@ -175,7 +161,7 @@ namespace OneScript.StandardLibrary
             get
             {
                 var arr = new ArrayImpl();
-                var data = System.Environment.GetLogicalDrives();
+                var data = Environment.GetLogicalDrives();
                 foreach (var itm in data)
                 {
                     arr.Add(ValueFactory.Create(itm));
@@ -200,7 +186,7 @@ namespace OneScript.StandardLibrary
         {
             SystemLogger.Write("WARNING! Deprecated method: 'SystemInfo.EnvironmentVariables' is deprecated, use 'EnvironmentVariables' from global context");
             var varsMap = new MapImpl();
-            var allVars = System.Environment.GetEnvironmentVariables();
+            var allVars = Environment.GetEnvironmentVariables();
             foreach (DictionaryEntry item in allVars)
             {
                 varsMap.Insert(
@@ -223,7 +209,7 @@ namespace OneScript.StandardLibrary
             SystemLogger.Write(string.Format(Locale.NStr("en='{0}';ru='{1}'"),
                 "WARNING! Deprecated method: \"SystemInfo.SetEnvironmentVariable\" is deprecated, use \"SetEnvironmentVariable\" from global context",
                 "Предупреждение! Устаревший метод: \"СистемнаяИнформация.УстановитьПеременнуюСреды\" устарел, используйте метод глобального контекста \"УстановитьПеременнуюСреды\""));
-            System.Environment.SetEnvironmentVariable(varName, value);
+            Environment.SetEnvironmentVariable(varName, value);
         }
 
         /// <summary>
@@ -237,11 +223,10 @@ namespace OneScript.StandardLibrary
             SystemLogger.Write(string.Format(Locale.NStr("en='{0}';ru='{1}'"),
                "WARNING! Deprecated method: \"SystemInfo.GetEnvironmentVariable\" is deprecated, use \"GetEnvironmentVariable\" from global context",
                 "Предупреждение! Устаревший метод: \"СистемнаяИнформация.ПолучитьПеременнуюСреды\" устарел, используйте метод глобального контекста \"ПолучитьПеременнуюСреды\""));
-            string value = System.Environment.GetEnvironmentVariable(varName);
+            string value = Environment.GetEnvironmentVariable(varName);
             if (value == null)
                 return ValueFactory.Create();
-            else
-                return ValueFactory.Create(value);
+            return ValueFactory.Create(value);
 
         }
 
@@ -249,6 +234,27 @@ namespace OneScript.StandardLibrary
         public static SystemEnvironmentContext Create()
         {
             return new SystemEnvironmentContext();
+        }
+
+        static SystemEnvironmentContext()
+        {
+            _platformId = Environment.OSVersion.Platform;
+            switch (_platformId)
+            {
+                case PlatformID.Unix:
+                    _osKernelName = SystemHelper.UnixKernelName();
+                    if (_osKernelName == "Darwin")
+                    {
+                        _platformId = PlatformID.MacOSX;
+                    }
+                    break;
+                case PlatformID.Win32NT:
+                    _osKernelName = "WindowsNT";
+                    break;
+                case PlatformID.MacOSX:
+                    _osKernelName = "Darwin";
+                    break;
+            }
         }
     }
 }

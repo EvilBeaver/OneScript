@@ -50,6 +50,19 @@ namespace ScriptEngine.Machine
 
         public event EventHandler<MachineStoppedEventArgs> MachineStopped;
         
+        private class EmptyExceptionInfo : ScriptException
+        {
+            public EmptyExceptionInfo() : base("")
+            {
+                LineNumber = 0;
+                ColumnNumber = 0;
+            }
+
+            public override string Message => "";
+
+            public override string ToString() => "";
+        }
+        
         public void AttachContext(IAttachableContext context)
         {
             IVariable[] vars;
@@ -2514,7 +2527,8 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                _operationStack.Push(ValueFactory.Create());
+                var noDataException = new EmptyExceptionInfo();
+                _operationStack.Push(new ExceptionInfoContext(noDataException));
             }
             NextInstruction();
         }
