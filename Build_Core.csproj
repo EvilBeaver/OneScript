@@ -9,6 +9,7 @@
         <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
 
         <ArtifactsRoot>$(MSBuildProjectDirectory)/built</ArtifactsRoot>
+        <ArtifactsRoot>$(MSBuildProjectDirectory)/built</ArtifactsRoot>
 		<LibDir>$(ArtifactsRoot)/lib</LibDir>
 		<DebugAdapterDir>$(ArtifactsRoot)\vscode\</DebugAdapterDir>
         <Configuration>Release</Configuration>
@@ -119,7 +120,16 @@
 		
 	</Target>
 	
-	<Target Name="BuildAll" DependsOnTargets="CleanAll;MakeFDD;MakeSCD;BuildDebugger">
+	<Target Name="BuildAll">
+		<CallTarget Targets="BuildWithCpp" Condition="'$(NoCppCompiler)' == ''"/>
+		<CallTarget Targets="BuildWithoutCpp" Condition="'$(NoCppCompiler)' == 'True'"/>
+	</Target>
+	
+	<Target Name="BuildWithCpp" DependsOnTargets="CleanAll;MakeCPP;MakeFDD;MakeSCD;BuildDebugger">
+		<CallTarget Targets="CleanIntermediates"/>
+	</Target>
+
+	<Target Name="BuildWithoutCpp" DependsOnTargets="CleanAll;MakeFDD;MakeSCD;BuildDebugger">
 		<CallTarget Targets="CleanIntermediates"/>
 	</Target>
 
