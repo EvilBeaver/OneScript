@@ -208,8 +208,25 @@ namespace ScriptEngine.Machine.Contexts
 
             throw RuntimeException.InvalidArgumentValue();
         }
- 
-         public static IValue ConvertReturnValue<TRet>(TRet param)
+
+        public static IValue ConvertDynamicValue(object param)
+        {
+            if (param == null)
+                throw ValueMarshallingException.InvalidNullValue();
+
+            return ConvertReturnValue(param, param.GetType());
+        }
+
+        public static IValue ConvertDynamicIndex(object param)
+        {
+            if (param == null)
+                throw ValueMarshallingException.InvalidNullIndex();
+
+            return ConvertReturnValue(param, param.GetType());
+        }
+
+
+        public static IValue ConvertReturnValue<TRet>(TRet param)
         {
             return ConvertReturnValue(param, typeof(TRet));
         }

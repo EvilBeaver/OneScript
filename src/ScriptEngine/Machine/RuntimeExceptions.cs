@@ -224,22 +224,37 @@ namespace ScriptEngine.Machine
             return new ValueMarshallingException(string.Format(Locale.NStr
               ("ru='Возвращаемый тип {0} не поддерживается'; en='Return type {0} is not supported'"), type));
         }
+
         public static ValueMarshallingException InvalidEnum(Type type)
         {
             return new ValueMarshallingException(string.Format(Locale.NStr
               ("ru = 'Некорректный тип конвертируемого перечисления: {0}'; en = 'Invalid enum return type: {0}'"), type));
         }
+
         public static ValueMarshallingException EnumWithNoAttribute(Type type)
         {
             return new ValueMarshallingException(string.Format(Locale.NStr
               ("ru='Значение перечисления {0} должно быть помечено атрибутом EnumItemAttribute';"
               + "en='An enumeration value {0} must be marked with the EnumItemAttribute attribute"), type));
         }
+
         public static ValueMarshallingException NoConversionToCLR(Type type)
         {
             return new ValueMarshallingException(string.Format(Locale.NStr
               ("ru='Тип {0} не поддерживает преобразование в CLR-объект';"
               +"en='Type {0} does not support conversion to CLR object'"), type));
         }
+        public static ValueMarshallingException InvalidNullValue()
+        {
+            return new ValueMarshallingException(Locale.NStr
+              ("ru = 'Значение не может быть null'; en = 'Value cannot be null'"));
+        }
+
+        public static ValueMarshallingException InvalidNullIndex()
+        {
+            return new ValueMarshallingException(Locale.NStr
+                ("ru = 'Индекс не может быть null'; en = 'Index cannot be null'"));
+        }
+
     }
 }
