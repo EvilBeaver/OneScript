@@ -40,7 +40,6 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-
         private static object ConvertValueType(IValue value, Type type)
         {
             object valueObj;
@@ -225,7 +224,6 @@ namespace ScriptEngine.Machine.Contexts
             return ConvertReturnValue(param, param.GetType());
         }
 
-
         public static IValue ConvertReturnValue<TRet>(TRet param)
         {
             return ConvertReturnValue(param, typeof(TRet));
@@ -255,8 +253,6 @@ namespace ScriptEngine.Machine.Contexts
 			else
 				throw ValueMarshallingException.NoConversionToCLR(val.GetType());
 
-
-
             return result;
         }
 
@@ -279,7 +275,6 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             return objectRef;
-
         }
     }
 }

@@ -16,7 +16,6 @@ namespace ScriptEngine.Machine.Contexts
 
         public ContextIValueImpl()
         {
-
         }
 
         public ContextIValueImpl(TypeDescriptor type)
@@ -130,15 +129,9 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IRuntimeContextInstance Members
 
-        public virtual bool IsIndexed
-        {
-            get { return false; }
-        }
+        public virtual bool IsIndexed => false;
 
-        public virtual bool DynamicMethodSignatures
-        {
-            get { return false; }
-        }
+        public virtual bool DynamicMethodSignatures => false;
 
         public virtual IValue GetIndexedValue(IValue index)
         {
@@ -191,6 +184,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             throw RuntimeException.MethodNotFoundException(name);
         }
+
         public virtual MethodInfo GetMethodInfo(int methodNumber)
         {
             throw new NotImplementedException();
@@ -245,7 +239,6 @@ namespace ScriptEngine.Machine.Contexts
                 }
 
                 SetPropValue(propIdx, ContextValuesMarshaller.ConvertDynamicValue(value));
-
                 return true;
             }
             catch (PropertyAccessException)
@@ -299,6 +292,7 @@ namespace ScriptEngine.Machine.Contexts
             var methInfo = GetMethodInfo(methIdx);
             var valueArgs = new IValue[methInfo.Params.Length];
             var passedArgs = args.Select(x => ContextValuesMarshaller.ConvertDynamicValue(x)).ToArray();
+            
             for (int i = 0; i < valueArgs.Length; i++)
             {
                 if (i < passedArgs.Length)
