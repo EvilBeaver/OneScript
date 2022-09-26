@@ -237,6 +237,7 @@ namespace OneScript.StandardLibrary
                     .Select(field => BslPropertyBuilder.Create()
                         .Name(field.Name)
                         .IsExported(field.IsPublic)
+                        .SetAnnotations(field.GetAnnotations())
                         .SetDispatchingIndex(field.DispatchId)
                         .Build()
                     ).OrderBy(p => p.DispatchId)
