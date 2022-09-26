@@ -228,6 +228,35 @@ namespace OneScript.StandardLibrary
             FillMethodsTable(result, clrMethods.Select(x=>new Contexts.ContextMethodInfo(x)));
         }
 
+        private void FillPropertiesTableForObject(ValueTable result, IValue target)
+        {
+            if (target is ScriptDrivenObject scriptObject)
+            {
+                var fields = scriptObject.Module.Fields
+                    .Cast<BslScriptFieldInfo>()
+                    .Select(field => BslPropertyBuilder.Create()
+                        .Name(field.Name)
+                        .IsExported(field.IsPublic)
+                        .SetDispatchingIndex(field.DispatchId)
+                        .Build()
+                    ).OrderBy(p => p.DispatchId)
+                    .ToArray();
+
+                var fieldNames = fields.Select(x => x.Name)
+                    .ToHashSet();
+                
+                var properties = scriptObject.GetProperties()
+                    .Where(prop => !fieldNames.Contains(prop.Name));
+                
+                FillPropertiesTable(result, properties.Concat(fields));
+            }
+            else
+            {
+                var objectProperties = target.AsObject().GetProperties();
+                FillPropertiesTable(result, objectProperties);
+            }
+        }
+        
         private static void FillPropertiesTableForType(BslTypeValue type, ValueTable result)
         {
             var clrType = GetReflectableClrType(type);
@@ -245,13 +274,14 @@ namespace OneScript.StandardLibrary
             infos.AddRange(nativeProps);
             int indices = infos.Count;
 
-            if (clrType.BaseType == typeof(ScriptDrivenObject))
+            if (typeof(ScriptDrivenObject).IsAssignableFrom(clrType.BaseType))
             {
-                var nativeFields = clrType.GetFields();
+                var nativeFields = clrType.GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic);
                 foreach(var field in nativeFields)
                 {
                     var prop = BslPropertyBuilder.Create()
                         .Name(field.Name)
+                        .IsExported(field.IsPublic)
                         .SetDispatchingIndex(indices++)
                         .Build();
                     
@@ -320,7 +350,7 @@ namespace OneScript.StandardLibrary
             var result = new ValueTable();
 
             if(target.GetRawValue() is BslObjectValue)
-                FillPropertiesTable(result, target.AsObject().GetProperties());
+                FillPropertiesTableForObject(result, target);
             else if (target.SystemType == BasicTypes.Type)
             {
                 var type = target.GetRawValue() as BslTypeValue;
@@ -363,13 +393,19 @@ namespace OneScript.StandardLibrary
                 propIdx = script.FindAnyProperty(prop);
             else
                 propIdx = target.GetPropertyNumber(prop);
-            target.SetPropValue(propIdx, value);
+
+            if (target.IsPropWritable(propIdx))
+                target.SetPropValue(propIdx, value);
+            else
+                throw PropertyAccessException.PropIsNotWritableException(prop);
         }
 
         private static void FillPropertiesTable(ValueTable result, IEnumerable<BslPropertyInfo> properties)
         {
             var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
             var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
+            var isExportedColumn = result.Columns.Add("Экспорт", TypeDescription.BooleanType(), "Экспорт");
+            
             var systemVarNames = new string[] { "этотобъект", "thisobject" };
 
             foreach (var propInfo in properties)
@@ -381,6 +417,15 @@ namespace OneScript.StandardLibrary
 
                 var annotations = propInfo.GetAnnotations();
                 new_row.Set(annotationsColumn, annotations.Length != 0 ? CreateAnnotationTable(annotations) : EmptyAnnotationsTable());
+
+                if (propInfo is BslScriptPropertyInfo scriptProp)
+                {
+                    new_row.Set(isExportedColumn, BslBooleanValue.Create(scriptProp.IsExported));
+                }
+                else
+                {
+                    new_row.Set(isExportedColumn, BslBooleanValue.Create(propInfo.CanRead));
+                }
             }
         }
 
