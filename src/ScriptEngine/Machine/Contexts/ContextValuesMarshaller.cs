@@ -40,7 +40,6 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-
         private static object ConvertValueType(IValue value, Type type)
         {
             object valueObj;
@@ -131,52 +130,32 @@ namespace ScriptEngine.Machine.Contexts
             return valueObj;
         }
 
-        public static IValue ConvertReturnValue(object objParam, Type type)
+        private static IValue ConvertReturnValue(object objParam, Type type)
         {
             if (objParam == null)
                 return ValueFactory.Create();
 
-            if (type == typeof(IValue))
+            switch (objParam)
             {
-                return (IValue)objParam;
+                case IValue v: return v;
+
+                case string s: return ValueFactory.Create(s);
+                case bool b: return ValueFactory.Create(b);
+                case DateTime d: return ValueFactory.Create(d);
+
+                case int n: return ValueFactory.Create(n);
+                case uint n: return ValueFactory.Create(n);
+                case long n: return ValueFactory.Create(n);
+                case ulong n: return ValueFactory.Create(n);
+                case byte n: return ValueFactory.Create(n);
+                case sbyte n: return ValueFactory.Create(n);
+                case short n: return ValueFactory.Create(n);
+                case ushort n: return ValueFactory.Create(n);
+                case decimal n: return ValueFactory.Create(n);
+                case double n: return ValueFactory.Create((decimal)n);
             }
-            else if (type == typeof(string))
-            {
-                return ValueFactory.Create((string)objParam);
-            }
-            else if (type == typeof(int))
-            {
-                return ValueFactory.Create((int)objParam);
-            }
-            else if (type == typeof(uint))
-            {
-                return ValueFactory.Create((uint)objParam);
-            }
-            else if (type == typeof(long))
-            {
-                return ValueFactory.Create((long)objParam);
-            }
-            else if (type == typeof(ulong))
-            {
-                return ValueFactory.Create((ulong)objParam);
-            }
-            else if (type == typeof(decimal))
-            {
-                return ValueFactory.Create((decimal)objParam);
-            }
-            else if (type == typeof(double))
-            {
-                return ValueFactory.Create((decimal)(double)objParam);
-            }
-            else if (type == typeof(DateTime))
-            {
-                return ValueFactory.Create((DateTime)objParam);
-            }
-            else if (type == typeof(bool))
-            {
-                return ValueFactory.Create((bool)objParam);
-            }
-            else if (type.IsEnum)
+
+            if (type.IsEnum)
             {
                 return ConvertEnum(objParam, type);
             }
@@ -194,21 +173,21 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                throw new NotSupportedException($"Type {type} is not supported");
+                throw ValueMarshallingException.TypeNotSupported(type);
             }
         }
 
         private static IValue ConvertEnum(object objParam, Type type)
         {
             if (!type.IsAssignableFrom(objParam.GetType()))
-                throw new RuntimeException("Некорректный тип конвертируемого перечисления");
+                throw ValueMarshallingException.InvalidEnum(type);
 
             var memberInfo = type.GetMember(objParam.ToString());
             var valueInfo = memberInfo.FirstOrDefault(x => x.DeclaringType == type);
             var attrs = valueInfo.GetCustomAttributes(typeof(EnumItemAttribute), false);
 
             if (attrs.Length == 0)
-                throw new RuntimeException("Значение перечисления должно быть помечено атрибутом EnumItemAttribute");
+                throw ValueMarshallingException.EnumWithNoAttribute(type);
 
             var itemName = ((EnumItemAttribute)attrs[0]).Name;
             var enumImpl = GlobalsManager.GetSimpleEnum(type);
@@ -229,51 +208,53 @@ namespace ScriptEngine.Machine.Contexts
             throw RuntimeException.InvalidArgumentValue();
         }
 
+        public static IValue ConvertDynamicValue(object param)
+        {
+            if (param == null)
+                throw ValueMarshallingException.InvalidNullValue();
+
+            return ConvertReturnValue(param, param.GetType());
+        }
+
+        public static IValue ConvertDynamicIndex(object param)
+        {
+            if (param == null)
+                throw ValueMarshallingException.InvalidNullIndex();
+
+            return ConvertReturnValue(param, param.GetType());
+        }
+
         public static IValue ConvertReturnValue<TRet>(TRet param)
         {
-            var type = typeof(TRet);
-
-            return ConvertReturnValue(param, type);
+            return ConvertReturnValue(param, typeof(TRet));
         }
 
 		public static object ConvertToCLRObject(IValue val)
 		{
-			object result;
 			if (val == null)
-				return val;
-			
-			switch (val.DataType)
-			{
-			case Machine.DataType.Boolean:
-				result = val.AsBoolean();
-				break;
-			case Machine.DataType.Date:
-				result = val.AsDate();
-				break;
-			case Machine.DataType.Number:
-				result = val.AsNumber();
-				break;
-			case Machine.DataType.String:
-				result = val.AsString();
-				break;
-			case Machine.DataType.Undefined:
-				result = null;
-				break;
-			default:
-                if (val.DataType == DataType.Object)
-                    result = val.AsObject();
+				return null;
 
-				result = val.GetRawValue();
-				if (result is IObjectWrapper)
-					result = ((IObjectWrapper)result).UnderlyingObject;
-				else
-				    throw new ValueMarshallingException($"Тип {val.GetType()} не поддерживает преобразование в CLR-объект");
+            switch (val.DataType)
+            {
+                case DataType.Boolean: return val.AsBoolean();
+                case DataType.Date: return val.AsDate();
+                case DataType.Number: return val.AsNumber();
+                case DataType.String: return val.AsString();
+                case DataType.Undefined: return null;
+            }
 
-                break;
-			}
-			
-			return result;
-		}
+            object result;
+
+            if (val.DataType == DataType.Object)
+                result = val.AsObject();
+
+			if (val.GetRawValue() is IObjectWrapper wrapped)
+				result = wrapped.UnderlyingObject;
+			else
+				throw ValueMarshallingException.NoConversionToCLR(val.GetType());
+
+            return result;
+        }
 
         public static T CastToCLRObject<T>(IValue val)
         {
@@ -294,7 +275,6 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             return objectRef;
-
         }
     }
 }
