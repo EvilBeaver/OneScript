@@ -104,15 +104,9 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IRuntimeContextInstance Members
 
-        public virtual bool IsIndexed
-        {
-            get { return false; }
-        }
+        public virtual bool IsIndexed => false;
 
-        public virtual bool DynamicMethodSignatures
-        {
-            get { return false; }
-        }
+        public virtual bool DynamicMethodSignatures => false;
 
         public virtual IValue GetIndexedValue(IValue index)
         {
@@ -186,7 +180,9 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         #endregion
-        
+
+        #region DynamicObject Members
+
         #region DynamicObject members 
         
         public override bool TryGetMember(GetMemberBinder binder, out object result)
@@ -225,8 +221,7 @@ namespace ScriptEngine.Machine.Contexts
                     return false;
                 }
 
-                SetPropValue(propIdx, ContextValuesMarshaller.ConvertReturnValue(value, value.GetType()));
-
+                SetPropValue(propIdx, ContextValuesMarshaller.ConvertDynamicValue(value));
                 return true;
             }
             catch (PropertyAccessException)
@@ -247,7 +242,7 @@ namespace ScriptEngine.Machine.Contexts
                 return false;
             }
 
-            var index = ContextValuesMarshaller.ConvertReturnValue(indexes[0], indexes[0].GetType());
+            var index = ContextValuesMarshaller.ConvertDynamicIndex(indexes[0]);
             result = ContextValuesMarshaller.ConvertToClrObject(GetIndexedValue(index));
             return true;
         }
@@ -259,8 +254,8 @@ namespace ScriptEngine.Machine.Contexts
                 return false;
             }
 
-            var index = ContextValuesMarshaller.ConvertReturnValue(indexes[0], indexes[0].GetType());
-            SetIndexedValue(index, ContextValuesMarshaller.ConvertReturnValue(value, value.GetType()));
+            var index = ContextValuesMarshaller.ConvertDynamicIndex(indexes[0]);
+            SetIndexedValue(index, ContextValuesMarshaller.ConvertDynamicValue(value));
             return true;
         }
 
@@ -279,7 +274,8 @@ namespace ScriptEngine.Machine.Contexts
 
             var parameters = GetMethodInfo(methIdx).GetParameters();
             var valueArgs = new IValue[parameters.Length];
-            var passedArgs = args.Select(x => ContextValuesMarshaller.ConvertReturnValue(x, x.GetType())).ToArray();
+            var passedArgs = args.Select(x => ContextValuesMarshaller.ConvertDynamicValue(x)).ToArray();
+            
             for (int i = 0; i < valueArgs.Length; i++)
             {
                 if (i < passedArgs.Length)
@@ -288,13 +284,13 @@ namespace ScriptEngine.Machine.Contexts
                     valueArgs[i] = ValueFactory.CreateInvalidValueMarker();
             }
 
-            IValue methResult;
-            CallAsFunction(methIdx, valueArgs, out methResult);
-            result = methResult == null? null : ContextValuesMarshaller.ConvertToClrObject(methResult);
+            CallAsFunction(methIdx, valueArgs, out IValue methResult);
+            result = methResult == null ? null : ContextValuesMarshaller.ConvertToClrObject(methResult);
 
             return true;
-
         }
+
+        #endregion
 
         #endregion
         

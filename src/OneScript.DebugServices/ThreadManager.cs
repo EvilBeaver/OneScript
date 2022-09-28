@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -15,7 +16,7 @@ namespace OneScript.DebugServices
 {
     public class ThreadManager : IDisposable
     {
-        private readonly Dictionary<int, MachineWaitToken> _machinesOnThreads = new Dictionary<int, MachineWaitToken>();
+        private readonly IDictionary<int, MachineWaitToken> _machinesOnThreads = new ConcurrentDictionary<int, MachineWaitToken>();
 
         public MachineWaitToken GetTokenForThread(int threadId)
         {

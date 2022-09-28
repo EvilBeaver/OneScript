@@ -133,52 +133,32 @@ namespace ScriptEngine.Machine.Contexts
             return valueObj;
         }
 
-        public static IValue ConvertReturnValue(object objParam, Type type)
+        private static IValue ConvertReturnValue(object objParam, Type type)
         {
             if (objParam == null)
                 return ValueFactory.Create();
 
-            if (type == typeof(IValue))
+            switch (objParam)
             {
-                return (IValue)objParam;
+                case IValue v: return v;
+
+                case string s: return ValueFactory.Create(s);
+                case bool b: return ValueFactory.Create(b);
+                case DateTime d: return ValueFactory.Create(d);
+
+                case int n: return ValueFactory.Create(n);
+                case uint n: return ValueFactory.Create(n);
+                case long n: return ValueFactory.Create(n);
+                case ulong n: return ValueFactory.Create(n);
+                case byte n: return ValueFactory.Create(n);
+                case sbyte n: return ValueFactory.Create(n);
+                case short n: return ValueFactory.Create(n);
+                case ushort n: return ValueFactory.Create(n);
+                case decimal n: return ValueFactory.Create(n);
+                case double n: return ValueFactory.Create((decimal)n);
             }
-            else if (type == typeof(string))
-            {
-                return ValueFactory.Create((string)objParam);
-            }
-            else if (type == typeof(int))
-            {
-                return ValueFactory.Create((int)objParam);
-            }
-            else if (type == typeof(uint))
-            {
-                return ValueFactory.Create((uint)objParam);
-            }
-            else if (type == typeof(long))
-            {
-                return ValueFactory.Create((long)objParam);
-            }
-            else if (type == typeof(ulong))
-            {
-                return ValueFactory.Create((ulong)objParam);
-            }
-            else if (type == typeof(decimal))
-            {
-                return ValueFactory.Create((decimal)objParam);
-            }
-            else if (type == typeof(double))
-            {
-                return ValueFactory.Create((decimal)(double)objParam);
-            }
-            else if (type == typeof(DateTime))
-            {
-                return ValueFactory.Create((DateTime)objParam);
-            }
-            else if (type == typeof(bool))
-            {
-                return ValueFactory.Create((bool)objParam);
-            }
-            else if (type.IsEnum)
+
+            if (type.IsEnum)
             {
                 return ConvertEnum(objParam, type);
             }
@@ -196,21 +176,25 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                throw new NotSupportedException($"Type {type} is not supported");
+                throw ValueMarshallingException.TypeNotSupported(type);
             }
         }
 
         private static IValue ConvertEnum(object objParam, Type type)
         {
-            if (!type.IsAssignableFrom(objParam.GetType()))
-                throw new RuntimeException("Некорректный тип конвертируемого перечисления");
+            if (!type.IsInstanceOfType(objParam))
+                throw ValueMarshallingException.InvalidEnum(type);
 
             var memberInfo = type.GetMember(objParam.ToString());
             var valueInfo = memberInfo.FirstOrDefault(x => x.DeclaringType == type);
+            
+            if (valueInfo == null)
+                throw ValueMarshallingException.EnumWithNoAttribute(type);
+            
             var attrs = valueInfo.GetCustomAttributes(typeof(EnumValueAttribute), false);
 
             if (attrs.Length == 0)
-                throw new RuntimeException("Значение перечисления должно быть помечено атрибутом EnumItemAttribute");
+                throw ValueMarshallingException.EnumWithNoAttribute(type);
 
             var itemName = ((EnumValueAttribute)attrs[0]).Name;
             var enumImpl = GlobalsHelper.GetEnum(type);
@@ -231,14 +215,28 @@ namespace ScriptEngine.Machine.Contexts
             throw RuntimeException.InvalidArgumentValue();
         }
 
-        public static IValue ConvertReturnValue<TRet>(TRet param)
+        public static IValue ConvertDynamicValue(object param)
         {
-            var type = typeof(TRet);
+            if (param == null)
+                throw ValueMarshallingException.InvalidNullValue();
 
-            return ConvertReturnValue(param, type);
+            return ConvertReturnValue(param, param.GetType());
         }
 
-		public static object ConvertToClrObject(IValue value)
+        public static IValue ConvertDynamicIndex(object param)
+        {
+            if (param == null)
+                throw ValueMarshallingException.InvalidNullIndex();
+
+            return ConvertReturnValue(param, param.GetType());
+        }
+
+        public static IValue ConvertReturnValue<TRet>(TRet param)
+        {
+            return ConvertReturnValue(param, typeof(TRet));
+        }
+
+        public static object ConvertToClrObject(IValue value)
 		{
             if (value == null)
                 return null;
@@ -254,7 +252,8 @@ namespace ScriptEngine.Machine.Contexts
                 BslNullValue _ => null,
                 BslTypeValue type => type.SystemType.ImplementingClass,
                 IObjectWrapper wrapper => wrapper.UnderlyingObject,
-                _ => value
+                BslObjectValue obj => obj,
+                _ => throw ValueMarshallingException.NoConversionToCLR(raw.GetType())
             };
         }
 
@@ -272,7 +271,6 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             return objectRef;
-
         }
     }
 }
