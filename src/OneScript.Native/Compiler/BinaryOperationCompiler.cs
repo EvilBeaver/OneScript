@@ -44,7 +44,7 @@ namespace OneScript.Native.Compiler
                 return DateOperation(left, right);
             }
             
-            if (left.Type == typeof(string))
+            if (left.Type == typeof(string) || left.Type == typeof(BslStringValue))
             {
                 if (_opCode != ExpressionType.Add)
                 {
@@ -183,14 +183,23 @@ namespace OneScript.Native.Compiler
         
         private Expression StringAddition(Expression left, Expression right)
         {
-            if (IsValue(right.Type))
+            if (left.Type == typeof(BslStringValue))
             {
                 return Expression.Add(left, ExpressionHelpers.ToString(right));
             }
-            else
+            
+            var concatMethod = typeof(string).GetMethod(
+                nameof(string.Concat),
+                new[] { typeof(string), typeof(string) });
+
+            Debug.Assert(concatMethod != null);
+            
+            if (right.Type == typeof(string))
             {
-                return Expression.Add(left, right);
+                return Expression.Call(null, concatMethod, left, right);
             }
+
+            return Expression.Call(null, concatMethod, left, ExpressionHelpers.ToString(right));
         }
         
         private Expression CompileDynamicOperation(Expression left, Expression right)

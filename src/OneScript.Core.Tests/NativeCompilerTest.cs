@@ -90,6 +90,36 @@ namespace OneScript.Core.Tests
         }
         
         [Fact]
+        public void Can_Compile_String_Additons()
+        {
+            var blockOfCode = new CompiledBlock(default);
+            
+            blockOfCode.CodeBlock = @"MyVar = ""А"" + ""Б""";
+
+            var expr = blockOfCode.MakeExpression();
+
+            var body = expr.Body.As<BlockExpression>().Expressions;
+            
+            body[0].As<BinaryExpression>().NodeType.Should().Be(ExpressionType.Assign);
+            body[0].As<BinaryExpression>().Right.Should().BeAssignableTo<MethodCallExpression>();
+        }
+        
+        [Fact]
+        public void Can_Compile_String_Additons_With_No_String_at_Right()
+        {
+            var blockOfCode = new CompiledBlock(default);
+            
+            blockOfCode.CodeBlock = @"MyVar = ""А"" + 14";
+
+            var expr = blockOfCode.MakeExpression();
+
+            var body = expr.Body.As<BlockExpression>().Expressions;
+            
+            body[0].As<BinaryExpression>().NodeType.Should().Be(ExpressionType.Assign);
+            body[0].As<BinaryExpression>().Right.Should().BeAssignableTo<MethodCallExpression>();
+        }
+        
+        [Fact]
         public void Can_Compile_Unary_Expressions()
         {
             var blockOfCode = new CompiledBlock(default);
