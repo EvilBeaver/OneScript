@@ -11,7 +11,6 @@ using System.Xml.Xsl;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Types;
-using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -57,14 +56,16 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("ЗагрузитьТаблицуСтилейXSLИзУзла", "LoadXSLStylesheetFromNode")]
         public void LoadXSLStylesheetFromNode(IValue xmlNode)
         {
-            if (!(xmlNode.GetRawValue() is BslObjectValue))
-                throw RuntimeException.InvalidArgumentType();
+            throw new NotImplementedException();
 
-            IRuntimeContextInstance valueObject = xmlNode.AsObject();
-            if (valueObject is XmlNode node)
-                _xslTransform.Load(node);
-            else
-                throw RuntimeException.InvalidArgumentType();
+            //if (xmlNode.DataType != DataType.Object)
+            //    throw RuntimeException.InvalidArgumentType();
+
+            //IRuntimeContextInstance valueObject = xmlNode.AsObject();
+            //if (valueObject is XmlNode node)
+            //    _xslTransform.Load(node);
+            //else
+            //    throw RuntimeException.InvalidArgumentType();
         }
 
         /// <summary>
@@ -150,25 +151,27 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("ПреобразоватьИзУзла", "TransformFromNode")]
         public string TransformFromNode(IValue xmlNode, XmlWriterImpl xmlWriter = null)
         {
-            if (!(xmlNode.GetRawValue() is BslObjectValue))
-                throw RuntimeException.InvalidArgumentType();
+            throw new NotImplementedException();
 
-            XmlWriterImpl _writer = new XmlWriterImpl();
-            _writer.SetString();
-            XmlWriter _nativeWriter = _writer.GetNativeWriter();
+            //if (xmlNode.DataType != DataType.Object)
+            //    throw RuntimeException.InvalidArgumentType();
 
-            IRuntimeContextInstance valueObject = xmlNode.AsObject();
-            if (valueObject is XmlNode node)
-                _xslTransform.Transform(node, _nativeWriter);
-            else
-                throw RuntimeException.InvalidArgumentType();
+            //XmlWriterImpl _writer = new XmlWriterImpl();
+            //_writer.SetString();
+            //XmlWriter _nativeWriter = _writer.GetNativeWriter();
 
-            string result = _writer.Close().ToString();
+            //IRuntimeContextInstance valueObject = xmlNode.AsObject();
+            //if (valueObject is XmlNode node)
+            //    _xslTransform.Transform(node, _nativeWriter);
+            //else
+            //    throw RuntimeException.InvalidArgumentType();
 
-            if (xmlWriter != null)
-                xmlWriter.WriteRaw(result);
+            //string result = _writer.Close().ToString();
 
-            return result;
+            //if (xmlWriter != null)
+            //    xmlWriter.WriteRaw(result);
+
+            //return result;
         }
 
         /// <summary>
