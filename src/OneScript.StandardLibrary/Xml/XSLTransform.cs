@@ -183,16 +183,8 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("ДобавитьПараметр", "AddParameter")]
         public void AddParameter(string fullName, IValue value)
         {
-            if (value.SystemType == BasicTypes.Boolean)
-                _argumentList.AddParam(fullName, "", value.AsBoolean());
-            else if (value.SystemType == BasicTypes.Number)
-                _argumentList.AddParam(fullName, "", value.AsNumber());
-            else if (value.SystemType == BasicTypes.String)
-                _argumentList.AddParam(fullName, "", value.AsString());
-            else if (value.SystemType == BasicTypes.Date)
-                _argumentList.AddParam(fullName, "", value.AsDate());
-            else
-                _argumentList.AddParam(fullName, "", value.AsObject());
+            var _value = ContextValuesMarshaller.ConvertToClrObject(value);
+            _argumentList.AddParam(fullName, "", _value);
         }
 
         /// <summary>
