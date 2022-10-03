@@ -108,6 +108,25 @@ namespace OneScript.StandardLibrary.Binary
 
         /// <summary>
         /// 
+        /// Время в миллисекундах, отведенное потоку на операцию чтения.
+        /// </summary>
+        /// <value>Число (int)</value>
+        [ContextProperty("ТаймаутЧтения", "ReadTimeout")]
+        public int ReadTimeout
+        {
+            get
+            {
+                return _underlyingStream.ReadTimeout;
+            }
+            set
+            {
+                _underlyingStream.ReadTimeout = value;
+            }
+        }
+
+
+        /// <summary>
+        /// 
         /// Вызов данного метода завершает работу с потоком. При попытке вызвать любой метод объекта, кроме метода Закрыть, будет вызвано исключение. 
         /// При повторном вызове данного метода никаких действий выполняться не будет.
         /// Выполняемое действие зависит от используемого типа потока.

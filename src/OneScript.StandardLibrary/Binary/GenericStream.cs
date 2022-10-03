@@ -74,7 +74,26 @@ namespace OneScript.StandardLibrary.Binary
         /// <value>Булево (Boolean)</value>
         [ContextProperty("ДоступноЧтение", "CanRead")]
         public bool CanRead => _underlyingStream.CanRead;
-        
+
+
+        /// <summary>
+        /// 
+        /// Время в миллисекундах, отведенное потоку на операцию чтения.
+        /// </summary>
+        /// <value>Число (int)</value>
+        [ContextProperty("ТаймаутЧтения", "ReadTimeout")]
+        public int ReadTimeout
+        {
+            get
+            {
+                return _underlyingStream.ReadTimeout;
+            }
+            set
+            {
+                _underlyingStream.ReadTimeout = value;
+            }
+        }
+
 
         /// <summary>
         /// 

@@ -87,6 +87,24 @@ namespace OneScript.StandardLibrary.Binary
         public bool CanRead => _underlyingStream.CanRead;
 
         /// <summary>
+        /// 
+        /// Время в миллисекундах, отведенное потоку на операцию чтения.
+        /// </summary>
+        /// <value>Число (int)</value>
+        [ContextProperty("ТаймаутЧтения", "ReadTimeout")]
+        public int ReadTimeout
+        {
+            get
+            {
+                return _underlyingStream.ReadTimeout;
+            }
+            set
+            {
+                _underlyingStream.ReadTimeout = value;
+            }
+        }
+
+        /// <summary>
         /// Содержит полное имя файла, включая путь
         /// </summary>
         [ContextProperty("ИмяФайла")]
