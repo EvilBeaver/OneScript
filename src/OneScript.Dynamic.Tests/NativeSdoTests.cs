@@ -186,7 +186,9 @@ namespace OneScript.Dynamic.Tests
                 КонецПроцедуры
 
                 Процедура Процедура2()
-                КонецПроцедуры", testServices.CreateContainer(), symbols);
+                КонецПроцедуры
+
+                Процедура1()", testServices.CreateContainer(), symbols);
 
             var sdo = new UserScriptContextInstance(module,
                 new TypeDescriptor(new Guid(), "TestClass", default, typeof(UserScriptContextInstance)));
