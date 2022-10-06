@@ -176,6 +176,24 @@ namespace OneScript.Dynamic.Tests
             module.Should().BeOfType<DynamicModule>();
         }
 
+        [Fact]
+        public void Test_Can_Call_ForwardedDeclarationCall()
+        {
+            var symbols = new SymbolTable();
+            var module = CreateModule(
+                @"Процедура Процедура1()
+	                Процедура2();
+                КонецПроцедуры
+
+                Процедура Процедура2()
+                КонецПроцедуры", testServices.CreateContainer(), symbols);
+
+            var sdo = new UserScriptContextInstance(module,
+                new TypeDescriptor(new Guid(), "TestClass", default, typeof(UserScriptContextInstance)));
+            sdo.InitOwnData();
+            sdo.Initialize();
+        }
+
         private DynamicModule CreateModule(string code) => CreateModule(code, testServices.CreateContainer(), new SymbolTable());
         
         private DynamicModule CreateModule(string code, IServiceContainer services, SymbolTable symbols)

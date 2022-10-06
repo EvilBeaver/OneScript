@@ -19,12 +19,17 @@ namespace OneScript.Native.Runtime
 {
     public class BslNativeMethodInfo : BslScriptMethodInfo
     {
-        private Lazy<CallableMethod> _callable;
+        private CallableMethod _callable;
+
+        public BslNativeMethodInfo()
+        {
+            _callable = new CallableMethod(this);
+        }
         
         public void SetImplementation(LambdaExpression lambda)
         {
             Implementation = lambda;
-            _callable = new Lazy<CallableMethod>(CreateCallable, LazyThreadSafetyMode.PublicationOnly);
+            _callable.Compile();
         }
 
         private CallableMethod CreateCallable()
@@ -32,7 +37,7 @@ namespace OneScript.Native.Runtime
             return new CallableMethod(this);
         }
 
-        internal CallableMethod GetCallable() => _callable.Value;
+        internal CallableMethod GetCallable() => _callable;
 
         public LambdaExpression Implementation { get; private set; }
 
@@ -43,7 +48,7 @@ namespace OneScript.Native.Runtime
             var bslArguments = new List<BslValue>(parameters.Length);
             bslArguments.AddRange(parameters.Cast<BslValue>());
 
-            return _callable.Value.Invoke(obj, bslArguments.ToArray());
+            return _callable.Invoke(obj, bslArguments.ToArray());
         }
         
     }
