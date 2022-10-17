@@ -74,7 +74,6 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextProperty("ДоступноИзменениеПозиции", "CanSeek")]
         public bool CanSeek => _underlyingStream.CanSeek;
 
-
         /// <summary>
         /// 
         /// Признак доступности чтения из потока.
@@ -82,6 +81,30 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// <value>Булево (Boolean)</value>
         [ContextProperty("ДоступноЧтение", "CanRead")]
         public bool CanRead => _underlyingStream.CanRead;
+
+        /// <summary>
+        /// 
+        /// Признак доступности установки таймаута чтения/записи в потоке.
+        /// </summary>
+        /// <value>Булево (Boolean)</value>
+        [ContextProperty("ДоступнаУстановкаТаймаута", "CanTimeout")]
+        public bool CanTimeout => _underlyingStream.CanTimeout;
+
+        /// <summary>
+        /// 
+        /// Время в миллисекундах, отведенное потоку на операцию чтения.
+        /// </summary>
+        /// <value>Число (int)</value>
+        [ContextProperty("ТаймаутЧтения", "ReadTimeout")]
+        public int ReadTimeout => _underlyingStream.ReadTimeout;
+
+        /// <summary>
+        /// 
+        /// Время в миллисекундах, отведенное потоку на операцию записи.
+        /// </summary>
+        /// <value>Число (int)</value>
+        [ContextProperty("ТаймаутЗаписи", "WriteTimeout")]
+        public int WriteTimeout => _underlyingStream.WriteTimeout;
 
         /// <summary>
         /// Содержит полное имя файла, включая путь
