@@ -28,16 +28,20 @@ namespace OneScript.Native.Runtime
 
         private delegate BslValue NativeCallable(NativeClassInstanceWrapper target, BslValue[] args);
 
-        private readonly NativeCallable _delegate;
+        private NativeCallable _delegate;
         
         public CallableMethod(BslNativeMethodInfo method)
         {
             _method = method;
-            _delegate = CreateDelegate(method);
         }
 
         public BslValue Invoke(object target, BslValue[] args)
         {
+            if (_delegate == default)
+            {
+                throw new InvalidOperationException($"Method {_method} was not compiled");
+            }
+            
             var callableWrapper = GetCallableWrapper(target);
             return _delegate.Invoke(callableWrapper, args);
         }
@@ -106,6 +110,11 @@ namespace OneScript.Native.Runtime
             var func = Expression.Lambda<NativeCallable>(lambdaInvocation, targetParam, arrayOfValuesParam);
 
             return func.Compile();
+        }
+
+        public void Compile()
+        {
+            _delegate = CreateDelegate(_method);
         }
     }
 }
