@@ -96,7 +96,6 @@ namespace OneScript.StandardLibrary.Binary
         [ContextProperty("ДоступноИзменениеПозиции", "CanSeek")]
         public bool CanSeek => _underlyingStream.CanSeek;
 
-
         /// <summary>
         /// 
         /// Признак доступности чтения из потока.
@@ -105,6 +104,13 @@ namespace OneScript.StandardLibrary.Binary
         [ContextProperty("ДоступноЧтение", "CanRead")]
         public bool CanRead => _underlyingStream.CanRead;
 
+        /// <summary>
+        /// 
+        /// Признак доступности установки таймаута чтения/записи в потоке.
+        /// </summary>
+        /// <value>Булево (Boolean)</value>
+        [ContextProperty("ДоступнаУстановкаТаймаута", "CanTimeout")]
+        public bool CanTimeout => _underlyingStream.CanTimeout;
 
         /// <summary>
         /// 
@@ -112,18 +118,15 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <value>Число (int)</value>
         [ContextProperty("ТаймаутЧтения", "ReadTimeout")]
-        public int ReadTimeout
-        {
-            get
-            {
-                return _underlyingStream.ReadTimeout;
-            }
-            set
-            {
-                _underlyingStream.ReadTimeout = value;
-            }
-        }
+        public int ReadTimeout => _underlyingStream.ReadTimeout;
 
+        /// <summary>
+        /// 
+        /// Время в миллисекундах, отведенное потоку на операцию записи.
+        /// </summary>
+        /// <value>Число (int)</value>
+        [ContextProperty("ТаймаутЗаписи", "WriteTimeout")]
+        public int WriteTimeout => _underlyingStream.WriteTimeout;
 
         /// <summary>
         /// 

@@ -66,7 +66,6 @@ namespace OneScript.StandardLibrary.Binary
         [ContextProperty("ДоступноИзменениеПозиции", "CanSeek")]
         public bool CanSeek => _underlyingStream.CanSeek;
 
-
         /// <summary>
         /// 
         /// Признак доступности чтения из потока.
@@ -75,6 +74,13 @@ namespace OneScript.StandardLibrary.Binary
         [ContextProperty("ДоступноЧтение", "CanRead")]
         public bool CanRead => _underlyingStream.CanRead;
 
+        /// <summary>
+        /// 
+        /// Признак доступности установки таймаута чтения/записи в потоке.
+        /// </summary>
+        /// <value>Булево (Boolean)</value>
+        [ContextProperty("ДоступнаУстановкаТаймаута", "CanTimeout")]
+        public bool CanTimeout => _underlyingStream.CanTimeout;
 
         /// <summary>
         /// 
@@ -86,14 +92,39 @@ namespace OneScript.StandardLibrary.Binary
         {
             get
             {
-                return _underlyingStream.ReadTimeout;
+                if (_underlyingStream.CanTimeout)
+                    return _underlyingStream.ReadTimeout;
+                else
+                    return 0;
             }
             set
             {
-                _underlyingStream.ReadTimeout = value;
+                if (_underlyingStream.CanTimeout)
+                    _underlyingStream.ReadTimeout = value;
             }
         }
 
+        /// <summary>
+        /// 
+        /// Время в миллисекундах, отведенное потоку на операцию записи.
+        /// </summary>
+        /// <value>Число (int)</value>
+        [ContextProperty("ТаймаутЗаписи", "WriteTimeout")]
+        public int WriteTimeout
+        {
+            get
+            {
+                if (_underlyingStream.CanTimeout)
+                    return _underlyingStream.WriteTimeout;
+                else
+                    return 0;
+            }
+            set
+            {
+                if (_underlyingStream.CanTimeout)
+                    _underlyingStream.WriteTimeout = value;
+            }
+        }
 
         /// <summary>
         /// 
