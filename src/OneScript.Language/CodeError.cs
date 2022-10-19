@@ -64,14 +64,45 @@ namespace OneScript.Language
         [Flags]
         public enum ErrorDetails
         {
-            Full = 0,
-            ErrorId = 1,
-            Position = 2,
-            ModuleName = 4,
-            CodeFragment = 8,
-            Short = Position | ModuleName,
-            Simple = Position | ModuleName | CodeFragment
+            /// <summary>
+            /// Только текст сообщения
+            /// </summary>
+            Minimal = 0,
             
+            /// <summary>
+            /// Показывать идентификатор ошибки
+            /// </summary>
+            ErrorId = 1,
+            
+            /// <summary>
+            /// Показывать позицию (Строка,Колонка)
+            /// </summary>
+            Position = 2,
+            
+            /// <summary>
+            /// Показывать имя модуля с ошибкой
+            /// </summary>
+            ModuleName = 4,
+            
+            /// <summary>
+            /// Показывать фрагмент кода с ошибкой
+            /// </summary>
+            CodeFragment = 8,
+            
+            /// <summary>
+            /// Позиция и имя модуля
+            /// </summary>
+            Short = Position | ModuleName,
+            
+            /// <summary>
+            /// Позиция, имя модуля, фрагмент кода
+            /// </summary>
+            Simple = Position | ModuleName | CodeFragment,
+                
+            /// <summary>
+            /// Вся информация об ошибке
+            /// </summary>
+            Full = 16
         }
     }
 }

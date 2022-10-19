@@ -147,7 +147,7 @@ namespace OneScript.StandardLibrary.Native
                 sb.AppendLine(prefix);
                 foreach (var error in _errors.Errors)
                 {
-                    sb.AppendLine($"{error.Description.TrimEnd()} ({error.Position.LineNumber})");
+                    sb.AppendLine(error.ToString(CodeError.ErrorDetails.Position));
                 }
 
                 throw new RuntimeException(sb.ToString());

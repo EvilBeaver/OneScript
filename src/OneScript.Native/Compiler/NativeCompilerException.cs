@@ -29,7 +29,5 @@ namespace OneScript.Native.Compiler
         {
             Position = position;
         }
-
-        public override string Message => $"{base.Message} ({Position?.LineNumber ?? -1},{Position?.ColumnNumber ?? - 1})";
     }
 }

@@ -60,7 +60,8 @@ namespace OneScript.Language.LexicalAnalysis
                         var lex = new Lexem()
                         {
                             Type = LexemType.DateLiteral,
-                            Content = FullDateTimeString(numbers)
+                            Content = FullDateTimeString(numbers),
+                            Location = new CodeRange(iterator.CurrentLine, iterator.CurrentColumn)
                         };
 
                         return lex;
