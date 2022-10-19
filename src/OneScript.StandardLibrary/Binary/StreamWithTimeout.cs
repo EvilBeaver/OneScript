@@ -52,14 +52,8 @@ namespace OneScript.StandardLibrary.Binary
 
         public override int WriteTimeout
         {
-            get
-            {
-                return _underlyingStream.WriteTimeout;
-            }
-            set
-            {
-                _underlyingStream.WriteTimeout = value;
-            }
+            get => _underlyingStream.WriteTimeout;
+            set => _underlyingStream.WriteTimeout = value;
         }
 
         public override void Flush()

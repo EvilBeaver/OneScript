@@ -100,7 +100,11 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <value>Число (int)</value>
         [ContextProperty("ТаймаутЧтения", "ReadTimeout")]
-        public int ReadTimeout => _underlyingStream.ReadTimeout;
+        public int ReadTimeout
+        {
+            get => _underlyingStream.ReadTimeout;
+            set => _underlyingStream.ReadTimeout = value;
+        }
 
         /// <summary>
         /// 
@@ -108,12 +112,16 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <value>Число (int)</value>
         [ContextProperty("ТаймаутЗаписи", "WriteTimeout")]
-        public int WriteTimeout => _underlyingStream.WriteTimeout;
+        public int WriteTimeout
+        {
+            get => _underlyingStream.WriteTimeout;
+            set => _underlyingStream.WriteTimeout = value;
+        }
 
-        /// <summary>
-        /// Содержит полное имя файла, включая путь
-        /// </summary>
-        [ContextProperty("ИмяФайла")]
+    /// <summary>
+    /// Содержит полное имя файла, включая путь
+    /// </summary>
+    [ContextProperty("ИмяФайла")]
         public string FileName { get; }
 
         /// <summary>

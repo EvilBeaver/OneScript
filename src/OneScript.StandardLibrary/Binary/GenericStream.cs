@@ -90,18 +90,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextProperty("ТаймаутЧтения", "ReadTimeout")]
         public int ReadTimeout
         {
-            get
-            {
-                if (_underlyingStream.CanTimeout)
-                    return _underlyingStream.ReadTimeout;
-                else
-                    return 0;
-            }
-            set
-            {
-                if (_underlyingStream.CanTimeout)
-                    _underlyingStream.ReadTimeout = value;
-            }
+            get => _underlyingStream.ReadTimeout;
+            set => _underlyingStream.ReadTimeout = value;
         }
 
         /// <summary>
@@ -112,18 +102,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextProperty("ТаймаутЗаписи", "WriteTimeout")]
         public int WriteTimeout
         {
-            get
-            {
-                if (_underlyingStream.CanTimeout)
-                    return _underlyingStream.WriteTimeout;
-                else
-                    return 0;
-            }
-            set
-            {
-                if (_underlyingStream.CanTimeout)
-                    _underlyingStream.WriteTimeout = value;
-            }
+            get => _underlyingStream.WriteTimeout;
+            set => _underlyingStream.WriteTimeout = value;
         }
 
         /// <summary>
