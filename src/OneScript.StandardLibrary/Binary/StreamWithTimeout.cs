@@ -71,76 +71,10 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (_readTimeout > 0 && !_underlyingStream.CanTimeout)
             {
-                int read = -1;
-
-                AutoResetEvent gotInput = new AutoResetEvent(false);
-                Thread inputThread = new Thread(() =>
-                {
-                    try
-                    {
-                        read = _underlyingStream.Read(buffer, offset, count);
-                        gotInput.Set();
-                    }
-                    catch (ThreadAbortException)
-                    {
-                        Thread.ResetAbort();
-                    }
-                })
-                {
-                    IsBackground = true
-                };
-
-                inputThread.Start();
-
-                // Timeout expired?
-                if (!gotInput.WaitOne(_readTimeout))
-                {
-                    inputThread.Abort();
-                }
-
-                return read;
+                return ReadWithTimeout(buffer, offset, count);
             }
             else
                 return _underlyingStream.Read(buffer, offset, count);
-        }
-
-        public new void CopyTo(Stream destination, int bufferSize = 0)
-        {
-            if (_readTimeout > 0 && !_underlyingStream.CanTimeout)
-            {
-                AutoResetEvent gotInput = new AutoResetEvent(false);
-                Thread inputThread = new Thread(() =>
-                {
-                    try
-                    {
-                        if (bufferSize == 0)
-                            _underlyingStream.CopyTo(destination);
-                        else
-                            _underlyingStream.CopyTo(destination, bufferSize);
-                        gotInput.Set();
-                    }
-                    catch (ThreadAbortException)
-                    {
-                        Thread.ResetAbort();
-                    }
-                })
-                {
-                    IsBackground = true
-                };
-
-                inputThread.Start();
-
-                // Timeout expired?
-                if (!gotInput.WaitOne(_readTimeout))
-                {
-                    inputThread.Abort();
-                }
-            }
-            else
-                if (bufferSize == 0)
-                    _underlyingStream.CopyTo(destination);
-                else
-                    _underlyingStream.CopyTo(destination, bufferSize);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -156,6 +90,39 @@ namespace OneScript.StandardLibrary.Binary
         public override void Write(byte[] buffer, int offset, int count)
         {
             _underlyingStream.Write(buffer, offset, count);
+        }
+
+        private int ReadWithTimeout(byte[] buffer, int offset, int count)
+        {
+            int read = 0;
+
+            AutoResetEvent gotInput = new AutoResetEvent(false);
+            Thread inputThread = new Thread(() =>
+            {
+                try
+                {
+                    read = _underlyingStream.Read(buffer, offset, count);
+                    gotInput.Set();
+                }
+                catch (ThreadAbortException)
+                {
+                    Thread.ResetAbort();
+                }
+            })
+            {
+                IsBackground = true
+            };
+
+            inputThread.Start();
+
+            // Timeout expired?
+            if (!gotInput.WaitOne(_readTimeout))
+            {
+                inputThread.Abort();
+            }
+
+            return read;
+
         }
 
         public StreamWithTimeout(Stream underlyingStream)
