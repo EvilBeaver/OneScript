@@ -5,7 +5,7 @@ pipeline {
 
     environment {
         VersionPrefix = '2.0.4'
-        VersionSuffix = 'rc2'
+        VersionSuffix = 'rc2'+"-${(long)(currentBuild.startTimeInMillis/60000)}"
         outputEnc = '65001'
     }
 
