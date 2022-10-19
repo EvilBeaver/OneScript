@@ -34,6 +34,11 @@ namespace OneScript.Native.Compiler
 
         private Expression CompileStaticOperation(Expression left, Expression right)
         {
+            if (_opCode == ExpressionType.Equal || _opCode == ExpressionType.NotEqual)
+            {
+                return MakeStaticEqualityOperation(left, right);
+            }
+            
             if (IsNumeric(left.Type))
             {
                 return MakeNumericOperation(left, right);
@@ -60,6 +65,11 @@ namespace OneScript.Native.Compiler
             }
             
             throw new NativeCompilerException($"Operation {_opCode} is not defined for {left.Type} and {right.Type}");
+        }
+
+        private Expression MakeStaticEqualityOperation(Expression left, Expression right)
+        {
+            return Expression.MakeBinary(_opCode, left, right);
         }
 
         private Expression MakeNumericOperation(Expression left, Expression right)
@@ -101,9 +111,8 @@ namespace OneScript.Native.Compiler
         }
         
         private static MethodInfo GetUserDefinedBinaryOperator(string name, Type leftType, Type rightType) {
-            // 
  
-            Type[] types = new Type[] { leftType, rightType };
+            Type[] types = { leftType, rightType };
             
             BindingFlags flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
             MethodInfo method = leftType.GetMethod(name, flags, null, types, null);
@@ -126,6 +135,11 @@ namespace OneScript.Native.Compiler
             {
                 return DateDiffExpression(left, right);
             }
+            else if (IsComparisonOperation(_opCode))
+            {
+                var bslDateLeft = ExpressionHelpers.ToDate(left);
+                return Expression.MakeBinary(_opCode, bslDateLeft, right);
+            }
             else if (IsValue(right.Type))
             {
                 var isDate = Expression.TypeIs(right, typeof(BslDateValue));
@@ -140,8 +154,16 @@ namespace OneScript.Native.Compiler
             
             throw new NativeCompilerException($"Operation {_opCode} is not defined for dates");
         }
-        
-        private Expression DateDiffExpression(Expression left, Expression right)
+
+        private static bool IsComparisonOperation(ExpressionType opCode)
+        {
+            return opCode == ExpressionType.LessThan ||
+                   opCode == ExpressionType.LessThanOrEqual ||
+                   opCode == ExpressionType.GreaterThan ||
+                   opCode == ExpressionType.GreaterThanOrEqual;
+        }
+
+        private static Expression DateDiffExpression(Expression left, Expression right)
         {
             var spanExpr = Expression.Subtract(left, ExpressionHelpers.ToDate(right));
             var totalSeconds = Expression.Property(spanExpr, nameof(TimeSpan.TotalSeconds));
