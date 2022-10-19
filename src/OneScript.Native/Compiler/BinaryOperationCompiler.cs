@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
+using OneScript.Native.Runtime;
 using OneScript.Values;
 
 namespace OneScript.Native.Compiler
@@ -51,12 +52,19 @@ namespace OneScript.Native.Compiler
             
             if (left.Type == typeof(string) || left.Type == typeof(BslStringValue))
             {
-                if (_opCode != ExpressionType.Add)
+                if (_opCode == ExpressionType.Add)
                 {
-                    throw new NativeCompilerException($"Operator {_opCode} is not defined for strings");
+                    return StringAddition(left, right);
+                }
+
+                if (IsComparisonOperation(_opCode))
+                {
+                    return MakeDynamicComparison(
+                        ExpressionHelpers.ConvertToBslValue(left),
+                        ExpressionHelpers.ConvertToBslValue(right));
                 }
                 
-                return StringAddition(left, right);
+                throw new NativeCompilerException($"Operator {_opCode} is not defined for strings");
             }
             
             if (left.Type == typeof(bool))
@@ -226,27 +234,38 @@ namespace OneScript.Native.Compiler
         
         private Expression CompileDynamicOperation(Expression left, Expression right)
         {
+            Debug.Assert(left.Type.IsValue());
+            
             switch (_opCode)
             {
                 case ExpressionType.Add:
                     return MakeDynamicAddition(left, right);
                 case ExpressionType.Subtract:
                     return MakeDynamicSubtraction(left, right);
+                case ExpressionType.LessThan:
+                case ExpressionType.LessThanOrEqual:
+                case ExpressionType.GreaterThan:
+                case ExpressionType.GreaterThanOrEqual:
+                    return MakeDynamicComparison(left, right); 
                 case ExpressionType.Multiply:
                 case ExpressionType.Divide:
                 case ExpressionType.Modulo:
                 case ExpressionType.Equal:
                 case ExpressionType.NotEqual:
-                case ExpressionType.LessThan:
-                case ExpressionType.LessThanOrEqual:
-                case ExpressionType.GreaterThan:
-                case ExpressionType.GreaterThanOrEqual:
                     return MakeNumericOperation(
                         ExpressionHelpers.ToNumber(left),
                         ExpressionHelpers.ToNumber(right));
                 default:
                     throw new NativeCompilerException($"Operation {_opCode} is not defined for IValues");
             }
+        }
+
+        private Expression MakeDynamicComparison(Expression left, Expression right)
+        {
+            Debug.Assert(left.Type.IsValue());
+
+            var compareCall = ExpressionHelpers.CallCompareTo(left, right);
+            return Expression.MakeBinary(_opCode, compareCall, Expression.Constant(0));
         }
 
         private Expression MakeDynamicSubtraction(Expression left, Expression right)

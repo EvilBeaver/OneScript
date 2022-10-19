@@ -262,22 +262,23 @@ namespace OneScript.Core.Tests
             expr.Right.Type.Should().Be<decimal>();
         }
         
-        [Fact]
-        public void Date_Comparison_Available()
+        [Theory]
+        [MemberData(nameof(ArgsForComparisonOperators))]
+        public void StaticComparison_Available(TypeDescriptor argType, string literal)
         {
             var block = new CompiledBlock(default);
             block.CodeBlock =
-                "F = (Сегодня < '19840331');\n" +
-                "F = (Сегодня <= '19840331');\n" +
-                "F = (Сегодня > '19840331');\n" +
-                "F = (Сегодня >= '19840331');\n";
+                $"F = (Сегодня < {literal});\n" +
+                $"F = (Сегодня <= {literal});\n" +
+                $"F = (Сегодня > {literal});\n" +
+                $"F = (Сегодня >= {literal});\n";
             
-            block.Parameters.Insert("Сегодня", new BslTypeValue(BasicTypes.Date));
+            block.Parameters.Insert("Сегодня", new BslTypeValue(argType));
             var statements = block.MakeExpression()
                 .Body
                 .As<BlockExpression>()
                 .Expressions;
-
+            
             ExpressionType[] expectedOps =
             {
                 ExpressionType.LessThan,
@@ -287,7 +288,7 @@ namespace OneScript.Core.Tests
             };
             int i = 0;
             
-            foreach (var assignment in statements)
+            foreach (var assignment in statements.Take(4))
             {
                 assignment.NodeType.Should().Be(ExpressionType.Assign);
                 var expr = assignment.As<BinaryExpression>();
@@ -295,6 +296,13 @@ namespace OneScript.Core.Tests
                 expr.Right.Type.Should().Be<bool>();
                 expr.Right.NodeType.Should().Be(expectedOps[i++]);
             }
+        }
+
+        public static IEnumerable<object[]> ArgsForComparisonOperators()
+        {
+            yield return new object[] { BasicTypes.Number, "14" };
+            yield return new object[] { BasicTypes.Date, "'20010205'" };
+            yield return new object[] { BasicTypes.String, "\"20010205\"" };
         }
         
         [Theory]

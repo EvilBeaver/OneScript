@@ -295,7 +295,20 @@ namespace OneScript.Native.Compiler
             return ConvertToType(parameter, targetType);
         }
 
-        private static Expression ConvertToBslValue(Expression value)
+        public static Expression CallCompareTo(Expression target, Expression argument)
+        {
+            var compareToMethod = OperationsCache.GetOrAdd(
+                typeof(IComparable<BslValue>),
+                nameof(IComparable.CompareTo),
+                BindingFlags.Instance | BindingFlags.Public
+            );
+
+            var bslArgument = ConvertToBslValue(argument);
+
+            return Expression.Call(target, compareToMethod, argument);
+        }
+        
+        public static Expression ConvertToBslValue(Expression value)
         {
             if (value.Type.IsValue())
                 return value;
