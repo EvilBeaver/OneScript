@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using FluentAssertions;
@@ -242,6 +243,37 @@ namespace OneScript.Core.Tests
             expr.Right.Type.Should().Be<decimal>();
         }
         
+        [Theory]
+        [MemberData(nameof(TypesForTestEqualityOperators))]
+        public void EqualityOperators_Available(TypeDescriptor type)
+        {
+            var block = new CompiledBlock(default);
+            block.CodeBlock = 
+                @"Равенство = (Значение1 = Значение2);
+                  Неравенство = (Значение1 <> Значение2)";
+            
+            block.Parameters.Insert("Значение1", new BslTypeValue(type));
+            block.Parameters.Insert("Значение2", new BslTypeValue(type));
+            var statements = block.MakeExpression()
+                .Body
+                .As<BlockExpression>()
+                .Expressions;
+
+            statements[0].NodeType.Should().Be(ExpressionType.Assign);
+            statements[1].NodeType.Should().Be(ExpressionType.Assign);
+        }
+
+        public static IEnumerable<object[]> TypesForTestEqualityOperators()
+        {
+            yield return new object[] { BasicTypes.Undefined };
+            yield return new object[] { BasicTypes.String };
+            yield return new object[] { BasicTypes.Boolean };
+            yield return new object[] { BasicTypes.Date };
+            yield return new object[] { BasicTypes.Number };
+            yield return new object[] { BasicTypes.Null };
+            yield return new object[] { BasicTypes.Type };
+        }
+
         [Fact]
         public void Parameter_Passing_And_Return_Is_Available()
         {
