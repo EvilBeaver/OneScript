@@ -498,7 +498,7 @@ namespace OneScript.Native.Compiler
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.GetIndexedValue));
 
-            return Expression.Call(target, method, ConvertToBslValue(index));
+            return Expression.Call(null, method, target, ConvertToBslValue(index));
         }
         
         public static Expression SetIndexedValue(Expression target, Expression index, Expression value)
@@ -507,7 +507,7 @@ namespace OneScript.Native.Compiler
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.SetIndexedValue));
 
-            return Expression.Call(target, method, ConvertToBslValue(index), ConvertToBslValue(value));
+            return Expression.Call(null, method, target, ConvertToBslValue(index), ConvertToBslValue(value));
         }
         
         public static Expression InvokeBslNativeMethod(BslNativeMethodInfo nativeMethod, object target, List<Expression> args)

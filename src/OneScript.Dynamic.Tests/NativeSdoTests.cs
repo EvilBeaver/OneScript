@@ -22,6 +22,7 @@ using ScriptEngine.Compiler;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 using Xunit;
 
 namespace OneScript.Dynamic.Tests
@@ -194,6 +195,33 @@ namespace OneScript.Dynamic.Tests
                 new TypeDescriptor(new Guid(), "TestClass", default, typeof(UserScriptContextInstance)));
             sdo.InitOwnData();
             sdo.Initialize();
+        }
+        
+        [Fact]
+        public void Can_Assign_To_BslDictionary()
+        {
+            var code = string.Join('\n',
+                "Соответствие = Новый Соответствие;",
+                "Соответствие[\"1\"] = \"2\";"
+            );
+
+            var services = testServices.CreateContainer();
+            services.Resolve<ITypeManager>().RegisterClass(typeof(MapImpl));
+            CreateModule(code, services, new SymbolTable());
+        }
+        
+        [Fact]
+        public void Can_Read_From_BslDictionary()
+        {
+            var code = string.Join('\n',
+                "Соответствие = Новый Соответствие;",
+                "Соответствие.Вставить(\"1\",\"2\");",
+                "Рез = Соответствие[\"1\"];"
+            );
+
+            var services = testServices.CreateContainer();
+            services.Resolve<ITypeManager>().RegisterClass(typeof(MapImpl));
+            CreateModule(code, services, new SymbolTable());
         }
 
         private DynamicModule CreateModule(string code) => CreateModule(code, testServices.CreateContainer(), new SymbolTable());
