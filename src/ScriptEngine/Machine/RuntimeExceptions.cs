@@ -99,6 +99,11 @@ namespace ScriptEngine.Machine
             return new RuntimeException("Недостаточно фактических параметров");
         }
 
+        public static RuntimeException MissedArgument()
+        {
+            return new RuntimeException("Пропущен обязательный параметр");
+        }
+
         public static RuntimeException InvalidArgumentType()
         {
             return new RuntimeException("Неверный тип аргумента");
