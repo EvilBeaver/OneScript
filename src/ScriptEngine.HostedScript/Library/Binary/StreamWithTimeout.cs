@@ -14,6 +14,11 @@ namespace ScriptEngine.HostedScript.Library.Binary
         private readonly Stream _underlyingStream;
         private int _readTimeout;
 
+        public StreamWithTimeout(Stream underlyingStream)
+        {
+            _underlyingStream = underlyingStream;
+        }
+
         public override bool CanRead => _underlyingStream.CanRead;
 
         public override bool CanSeek => _underlyingStream.CanSeek;
@@ -52,14 +57,8 @@ namespace ScriptEngine.HostedScript.Library.Binary
 
         public override int WriteTimeout
         {
-            get
-            {
-                return _underlyingStream.WriteTimeout;
-            }
-            set
-            {
-                _underlyingStream.WriteTimeout = value;
-            }
+            get => _underlyingStream.WriteTimeout;
+            set => _underlyingStream.WriteTimeout = value;
         }
 
         public override void Flush()
@@ -125,9 +124,5 @@ namespace ScriptEngine.HostedScript.Library.Binary
 
         }
 
-        public StreamWithTimeout(Stream underlyingStream)
-        {
-            _underlyingStream = underlyingStream;
-        }
     }
 }

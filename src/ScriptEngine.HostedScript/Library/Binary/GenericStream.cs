@@ -77,7 +77,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Признак доступности установки таймаута чтения/записи в потоке.
         /// </summary>
         /// <value>Булево (Boolean)</value>
-        [ContextProperty("ДоступнаУстановкаТаймаута", "CanTimeout")]
+        [ContextProperty("ДоступенТаймаут", "CanTimeout")]
         public bool CanTimeout => _underlyingStream.CanTimeout;
 
         /// <summary>
@@ -88,20 +88,9 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextProperty("ТаймаутЧтения", "ReadTimeout")]
         public int ReadTimeout
         {
-            get
-            {
-                if (_underlyingStream.CanTimeout)
-                    return _underlyingStream.ReadTimeout;
-                else
-                    return 0;
-            }
-            set
-            {
-                if (_underlyingStream.CanTimeout)
-                    _underlyingStream.ReadTimeout = value;
-            }
+            get => _underlyingStream.ReadTimeout;
+            set => _underlyingStream.ReadTimeout = value;
         }
-
         /// <summary>
         /// 
         /// Время в миллисекундах, отведенное потоку на операцию записи.
@@ -110,18 +99,8 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextProperty("ТаймаутЗаписи", "WriteTimeout")]
         public int WriteTimeout
         {
-            get
-            {
-                if (_underlyingStream.CanTimeout)
-                    return _underlyingStream.WriteTimeout;
-                else
-                    return 0;
-            }
-            set
-            {
-                if (_underlyingStream.CanTimeout)
-                    _underlyingStream.WriteTimeout = value;
-            }
+            get => _underlyingStream.WriteTimeout;
+            set => _underlyingStream.WriteTimeout = value;
         }
 
         /// <summary>
