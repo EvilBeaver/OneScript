@@ -325,7 +325,8 @@ namespace ScriptEngine.Compiler
 
         protected override void VisitStatement(BslSyntaxNode statement)
         {
-            if(statement.Kind != NodeKind.TryExcept)
+            if (statement.Kind != NodeKind.TryExcept 
+             && statement.Kind != NodeKind.WhileLoop)
                 AddLineNumber(statement.Location.LineNumber);
 
             base.VisitStatement(statement);
@@ -333,7 +334,7 @@ namespace ScriptEngine.Compiler
 
         protected override void VisitWhileNode(WhileLoopNode node)
         {
-            var conditionIndex = _module.Code.Count;
+            var conditionIndex = AddLineNumber(node.Location.LineNumber);
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = conditionIndex;
             _nestedLoops.Push(loopRecord);
