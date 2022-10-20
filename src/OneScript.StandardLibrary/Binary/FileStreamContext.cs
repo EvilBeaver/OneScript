@@ -91,7 +91,7 @@ namespace OneScript.StandardLibrary.Binary
         /// Признак доступности установки таймаута чтения/записи в потоке.
         /// </summary>
         /// <value>Булево (Boolean)</value>
-        [ContextProperty("ДоступнаУстановкаТаймаута", "CanTimeout")]
+        [ContextProperty("ДоступенТаймаут", "CanTimeout")]
         public bool CanTimeout => _underlyingStream.CanTimeout;
 
         /// <summary>

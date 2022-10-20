@@ -14,6 +14,11 @@ namespace OneScript.StandardLibrary.Binary
         private readonly Stream _underlyingStream;
         private int _readTimeout;
 
+        public StreamWithTimeout(Stream underlyingStream)
+        {
+            _underlyingStream = underlyingStream;
+        }
+
         public override bool CanRead => _underlyingStream.CanRead;
 
         public override bool CanSeek => _underlyingStream.CanSeek;
@@ -119,9 +124,5 @@ namespace OneScript.StandardLibrary.Binary
 
         }
 
-        public StreamWithTimeout(Stream underlyingStream)
-        {
-            _underlyingStream = underlyingStream;
-        }
     }
 }
