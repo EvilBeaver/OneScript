@@ -247,17 +247,25 @@ namespace OneScript.Native.Compiler
                 case ExpressionType.GreaterThan:
                 case ExpressionType.GreaterThanOrEqual:
                     return MakeDynamicComparison(left, right); 
+                case ExpressionType.Equal:
+                case ExpressionType.NotEqual:
+                    return MakeDynamicEquality(left, right);
                 case ExpressionType.Multiply:
                 case ExpressionType.Divide:
                 case ExpressionType.Modulo:
-                case ExpressionType.Equal:
-                case ExpressionType.NotEqual:
                     return MakeNumericOperation(
                         ExpressionHelpers.ToNumber(left),
                         ExpressionHelpers.ToNumber(right));
                 default:
                     throw new NativeCompilerException($"Operation {_opCode} is not defined for IValues");
             }
+        }
+
+        private Expression MakeDynamicEquality(Expression left, Expression right)
+        {
+            Debug.Assert(left.Type.IsValue());
+
+            return ExpressionHelpers.CallEquals(left, right);
         }
 
         private Expression MakeDynamicComparison(Expression left, Expression right)

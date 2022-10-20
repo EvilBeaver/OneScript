@@ -211,7 +211,13 @@ namespace OneScript.Native.Compiler
             if (value.Type.IsValue())
             {
                 if (targetType.IsNumeric())
-                    return ToNumber(value);
+                {
+                    var decimalNum = ToNumber(value);
+                    if (targetType.IsAssignableFrom(typeof(decimal)))
+                        return decimalNum;
+
+                    return DowncastDecimal(decimalNum, targetType);
+                }
                 if (targetType == typeof(bool))
                     return ToBoolean(value);
                 if (targetType == typeof(string))
@@ -299,13 +305,26 @@ namespace OneScript.Native.Compiler
         {
             var compareToMethod = OperationsCache.GetOrAdd(
                 typeof(IComparable<BslValue>),
-                nameof(IComparable.CompareTo),
+                nameof(IComparable<BslValue>.CompareTo),
                 BindingFlags.Instance | BindingFlags.Public
             );
 
             var bslArgument = ConvertToBslValue(argument);
 
-            return Expression.Call(target, compareToMethod, argument);
+            return Expression.Call(target, compareToMethod, bslArgument);
+        }
+        
+        public static Expression CallEquals(Expression target, Expression argument)
+        {
+            var equalsMethod = OperationsCache.GetOrAdd(
+                typeof(IEquatable<BslValue>),
+                nameof(IEquatable<BslValue>.Equals),
+                BindingFlags.Instance | BindingFlags.Public
+            );
+
+            var bslArgument = ConvertToBslValue(argument);
+
+            return Expression.Call(target, equalsMethod, bslArgument);
         }
         
         public static Expression ConvertToBslValue(Expression value)

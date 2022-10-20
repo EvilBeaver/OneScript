@@ -105,6 +105,26 @@ namespace OneScript.Dynamic.Tests
             errors.Should().HaveCount(1);
             errors[0].ErrorId.Should().Be(nameof(LocalizedErrors.DuplicateMethodDefinition));
         }
+        
+        [Fact]
+        public void Test_Variant_Conversions()
+        {
+            var code =
+            @"Перем Стр;
+            Перем Индекс;
+
+            Стр = ""1"";
+            Если Стр = ""2"" Тогда
+            КонецЕсли;
+
+            Индекс = 1;
+            Символ = Сред(""АБВ"", Индекс, 1);";
+
+            var errors = new List<CodeError>();
+            CreateModule(code, errors);
+
+            errors.Should().BeEmpty();
+        }
 
         private DynamicModule CreateModule(string code)
         {

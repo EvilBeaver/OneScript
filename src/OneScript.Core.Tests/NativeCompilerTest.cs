@@ -348,7 +348,7 @@ namespace OneScript.Core.Tests
 
             age.Should().BeGreaterThan(0);
         }
-        
+
         [Fact]
         public void Can_Assign_To_Indexer()
         {

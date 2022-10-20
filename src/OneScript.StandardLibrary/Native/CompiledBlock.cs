@@ -89,7 +89,7 @@ namespace OneScript.StandardLibrary.Native
             if (_errors.HasErrors)
             {
                 var prefix = Locale.NStr("ru = 'Ошибка комиляции модуля'; en = 'Module compilation error'");
-                var text = string.Join('\n', (new[] {prefix}).Concat(_errors.Errors.Select(x => x.Description)));
+                var text = string.Join('\n', (new[] {prefix}).Concat(_errors.Errors.Select(x => x.ToString(CodeError.ErrorDetails.Position))));
                 throw new RuntimeException(text);
             }
         }

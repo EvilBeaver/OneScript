@@ -67,7 +67,7 @@ namespace OneScript.Language
             /// <summary>
             /// Только текст сообщения
             /// </summary>
-            Minimal = 0,
+            MessageOnly = 0,
             
             /// <summary>
             /// Показывать идентификатор ошибки
@@ -90,12 +90,12 @@ namespace OneScript.Language
             CodeFragment = 8,
             
             /// <summary>
-            /// Позиция и имя модуля
+            /// Показывать позицию и имя модуля
             /// </summary>
             Short = Position | ModuleName,
             
             /// <summary>
-            /// Позиция, имя модуля, фрагмент кода
+            /// Показывать позицию, имя модуля, фрагмент кода
             /// </summary>
             Simple = Position | ModuleName | CodeFragment,
                 
