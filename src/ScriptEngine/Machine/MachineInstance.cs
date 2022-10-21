@@ -1155,8 +1155,11 @@ namespace ScriptEngine.Machine
                         throw RuntimeException.MissedArgument();
                 }
 
-                if (methodParams.Skip(argCount).Any(param => !param.HasDefaultValue))
-                    throw RuntimeException.TooFewArgumentsPassed();
+                for (var i = argCount; i < methodParams.Length; i++)
+                {
+                    if (!methodParams[i].HasDefaultValue)
+                        throw RuntimeException.TooFewArgumentsPassed();
+                }
             }
         }
 
