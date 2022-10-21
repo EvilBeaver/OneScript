@@ -24,7 +24,8 @@ namespace ScriptEngine.Machine
         private ExecutionFrame _currentFrame;
         private Action<int>[] _commands;
         private Stack<ExceptionJumpInfo> _exceptionsStack;
-        
+        private LruCache<string, LoadedModule> _executeModuleCache = new LruCache<string, LoadedModule>(64);
+
         private LoadedModule _module;
         private ICodeStatCollector _codeStatCollector;
         private MachineStopManager _stopManager;
@@ -200,7 +201,7 @@ namespace ScriptEngine.Machine
 
         public IValue Evaluate(string expression, bool separate = false)
         {
-            var code = CompileExpressionModule(expression);
+            var code = _executeModuleCache.GetOrAdd(expression, CompileExpressionModule);
 
             MachineInstance runner;
             MachineInstance currentMachine;
@@ -1428,7 +1429,7 @@ namespace ScriptEngine.Machine
         private void Execute(int arg)
         {
             var code = _operationStack.Pop().AsString();
-            var module = CompileExecutionBatchModule(code);
+            var module = _executeModuleCache.GetOrAdd(code, CompileExecutionBatchModule);
             PrepareCodeStatisticsData(module);
             
             var frame = new ExecutionFrame();
