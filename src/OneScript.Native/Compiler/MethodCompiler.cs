@@ -839,13 +839,13 @@ namespace OneScript.Native.Compiler
             var counterVar = block.BuildStack.Pop();
             
             var result = new List<Expression>();
-            result.Add(Expression.Assign(counterVar, initialValue)); // TODO: MakeAssign ?
+            result.Add(Expression.Assign(counterVar, ExpressionHelpers.CreateAssignmentSource(initialValue, counterVar.Type)));
             var finalVar = Expression.Variable(typeof(decimal)); // TODO: BslNumericValue ?
             result.Add(Expression.Assign(finalVar, upperLimit));
             
             var loop = new List<Expression>();
             loop.Add(Expression.IfThen(
-                Expression.GreaterThan(counterVar, finalVar), 
+                Expression.GreaterThan(ExpressionHelpers.ToNumber(counterVar), finalVar), 
                 Expression.Break(block.LoopBreak)));
             
             loop.AddRange(block.GetStatements());

@@ -281,6 +281,38 @@ namespace OneScript.Values
 
             return left._value != right;
         }
+        
+        public static bool operator >(BslNumericValue left, decimal right)
+        {
+            if (ReferenceEquals(left, null))
+                return right > 0;
+
+            return left._value > right;
+        }
+        
+        public static bool operator <(BslNumericValue left, decimal right)
+        {
+            if (ReferenceEquals(left, null))
+                return right < 0;
+
+            return left._value < right;
+        }
+        
+        public static bool operator >=(BslNumericValue left, decimal right)
+        {
+            if (ReferenceEquals(left, null))
+                return right >= 0;
+
+            return left._value >= right;
+        }
+        
+        public static bool operator <=(BslNumericValue left, decimal right)
+        {
+            if (ReferenceEquals(left, null))
+                return right <= 0;
+
+            return left._value <= right;
+        }
 
         public static BslNumericValue Parse(string presentation)
         {

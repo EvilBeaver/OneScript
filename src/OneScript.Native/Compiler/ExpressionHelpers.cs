@@ -494,6 +494,7 @@ namespace OneScript.Native.Compiler
                 typeof(IValueReference),
                 nameof(IValueReference.Value),
                 BindingFlags.Instance | BindingFlags.Public);
+            
             return Expression.Property(iVariable, valueProperty);
         }
 

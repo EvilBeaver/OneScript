@@ -223,6 +223,41 @@ namespace OneScript.Dynamic.Tests
             services.Resolve<ITypeManager>().RegisterClass(typeof(MapImpl));
             CreateModule(code, services, new SymbolTable());
         }
+        
+        [Fact]
+        public void Runtime_Variant_Conversions()
+        {
+            var code =
+                @"Процедура Проц()
+                    Перем Лок;
+                    Лок = 0;
+                    Если Лок > 1 Тогда 
+                    КонецЕсли;
+                КонецПроцедуры
+
+                Проц();";
+            
+            var module = CreateModule(code);
+            var sdo = new UserScriptContextInstance(module,
+                new TypeDescriptor(new Guid(), "TestClass", default, typeof(UserScriptContextInstance)));
+            sdo.InitOwnData();
+            sdo.Initialize();
+        }
+        
+        [Fact]
+        public void Integer_To_Variant_assignment_In_Loop()
+        {
+            var code =
+                @"Перем Индекс; // если убрать - работает
+                Для Индекс = 0 По 1 Цикл
+                КонецЦикла;";
+            
+            var module = CreateModule(code);
+            var sdo = new UserScriptContextInstance(module,
+                new TypeDescriptor(new Guid(), "TestClass", default, typeof(UserScriptContextInstance)));
+            sdo.InitOwnData();
+            sdo.Initialize();
+        }
 
         private DynamicModule CreateModule(string code) => CreateModule(code, testServices.CreateContainer(), new SymbolTable());
         
