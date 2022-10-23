@@ -851,8 +851,8 @@ namespace OneScript.Native.Compiler
             loop.AddRange(block.GetStatements());
             
             loop.Add(Expression.Label(block.LoopContinue));
-            loop.Add(Expression.PreIncrementAssign(counterVar));
-            
+            loop.Add(ExpressionHelpers.Increment(counterVar));
+
             result.Add(Expression.Loop(Expression.Block(loop), block.LoopBreak));
             
             _blocks.Add(Expression.Block(new[] {finalVar}, result));

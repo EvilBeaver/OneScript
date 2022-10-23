@@ -492,7 +492,7 @@ namespace OneScript.Native.Compiler
             var iVariable = Expression.ArrayIndex(propertyAccess, Expression.Constant(variableIndex));
             var valueProperty = PropertiesCache.GetOrAdd(
                 typeof(IValueReference),
-                nameof(IValueReference.Value),
+                nameof(IValueReference.BslValue),
                 BindingFlags.Instance | BindingFlags.Public);
             
             return Expression.Property(iVariable, valueProperty);
@@ -567,6 +567,28 @@ namespace OneScript.Native.Compiler
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Expression InvocationTargetExpression(object target) =>
             target as Expression ?? Expression.Constant(target, typeof(object));
-        
+
+        public static Expression Increment(Expression counterVar)
+        {
+            if (!(counterVar is ParameterExpression || isModuleVariable(counterVar)))
+                throw new ArgumentException("Must be an assignable expression");
+
+            if (counterVar.Type.IsNumeric())
+            {
+                return Expression.PreIncrementAssign(counterVar);
+            }
+
+            var plusOne = Add(counterVar, Expression.Constant(1));
+            return Expression.Assign(counterVar, plusOne);
+        }
+
+        private static bool isModuleVariable(Expression counterVar)
+        {
+            if (!(counterVar is MemberExpression memberExpr))
+                return false;
+
+            return memberExpr.Expression.Type == typeof(IVariable)
+                   && memberExpr.Member.Name == nameof(IVariable.BslValue);
+        }
     }
 }

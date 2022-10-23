@@ -245,12 +245,31 @@ namespace OneScript.Dynamic.Tests
         }
         
         [Fact]
+        public void Integer_To_ClassField_assignment_In_Loop()
+        {
+            var code =
+                @"Перем Индекс;
+                Индекс = Неопределено;
+                Для Индекс = 0 По 1 Цикл
+                КонецЦикла;";
+            
+            var module = CreateModule(code);
+            var sdo = new UserScriptContextInstance(module,
+                new TypeDescriptor(new Guid(), "TestClass", default, typeof(UserScriptContextInstance)));
+            sdo.InitOwnData();
+            sdo.Initialize();
+        }
+        
+        [Fact]
         public void Integer_To_Variant_assignment_In_Loop()
         {
             var code =
-                @"Перем Индекс; // если убрать - работает
-                Для Индекс = 0 По 1 Цикл
-                КонецЦикла;";
+                @"Процедура Тест()
+                    Перем Индекс;
+                    Индекс = Неопределено;
+                    Для Индекс = 0 По 1 Цикл
+                    КонецЦикла;
+                КонецПроцедуры";
             
             var module = CreateModule(code);
             var sdo = new UserScriptContextInstance(module,

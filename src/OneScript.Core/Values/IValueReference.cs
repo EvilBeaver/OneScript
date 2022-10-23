@@ -12,5 +12,11 @@ namespace OneScript.Values
     public interface IValueReference : IEquatable<IValueReference>
     {
         IValue Value { get; set; }
+
+        BslValue BslValue
+        {
+            get => (BslValue)Value;
+            set => Value = value;
+        }
     }
 }
