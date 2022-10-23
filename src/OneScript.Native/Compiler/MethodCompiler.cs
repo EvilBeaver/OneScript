@@ -143,16 +143,28 @@ namespace OneScript.Native.Compiler
             }
         }
 
+        private Expression DefineLocalVariable(string identifier, Type type)
+        {
+            var varSymbol = new LocalVariableSymbol(identifier, type);
+            var scope = Symbols.GetScope(Symbols.ScopeCount - 1);
+            scope.DefineVariable(varSymbol);
+            var variable = Expression.Variable(type, identifier);
+            _localVariables.Add(variable);
+            return variable;
+        }
+
         protected override void VisitMethodVariable(MethodNode method, VariableDefinitionNode variableDefinition)
         {
-            if (Symbols.FindVariable(variableDefinition.Name, out _))
+            var identifier = variableDefinition.Name;
+            if (Symbols.FindVariable(identifier, out _))
             {
-                AddError(LocalizedErrors.DuplicateVarDefinition(variableDefinition.Name));
+                AddError(LocalizedErrors.DuplicateVarDefinition(identifier));
                 return;
             }
-            var expr = Expression.Variable(typeof(BslValue), variableDefinition.Name);
-            _localVariables.Add(expr);
-        }
+            
+            var variable = DefineLocalVariable(identifier, typeof(BslValue));
+            _blocks.Add(Expression.Assign(variable, Expression.Constant(BslUndefinedValue.Instance)));
+         }
 
         protected override void VisitStatement(BslSyntaxNode statement)
         {
@@ -393,12 +405,7 @@ namespace OneScript.Native.Compiler
                 if (typeOnStack.IsNumeric())
                     typeOnStack = typeof(decimal);
 
-                var varSymbol = new LocalVariableSymbol(identifier, typeOnStack);
-                var scope = Symbols.GetScope(Symbols.ScopeCount - 1);
-                scope.DefineVariable(varSymbol);
-                var variable = Expression.Variable(typeOnStack, identifier);
-                _localVariables.Add(variable);
-                _statementBuildParts.Push(variable);
+                _statementBuildParts.Push( DefineLocalVariable(identifier, typeOnStack) );
             }
         }
 
