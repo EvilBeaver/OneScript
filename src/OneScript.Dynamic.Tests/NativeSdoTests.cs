@@ -16,6 +16,8 @@ using OneScript.Native.Extensions;
 using OneScript.Native.Runtime;
 using OneScript.Sources;
 using OneScript.StandardLibrary.Collections;
+using OneScript.StandardLibrary.Collections.ValueTable;
+using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
 using ScriptEngine;
 using ScriptEngine.Compiler;
@@ -225,7 +227,7 @@ namespace OneScript.Dynamic.Tests
         }
         
         [Fact]
-        public void Runtime_Variant_Conversions()
+        public void NRE_At_Runtime_On_Method_Var_Issue1206()
         {
             var code =
                 @"Процедура Проц()
@@ -276,6 +278,25 @@ namespace OneScript.Dynamic.Tests
                 new TypeDescriptor(new Guid(), "TestClass", default, typeof(UserScriptContextInstance)));
             sdo.InitOwnData();
             sdo.Initialize();
+        }
+
+        [Fact]
+        public void Call_Proc_On_Variants_Chain()
+        {
+            var code =
+            @"Процедура Проц()
+                  Перем Таблица;
+                  Таблица = Новый ТаблицаЗначений;
+                  Таблица.Колонки.Добавить(""Имя"", Новый ОписаниеТипов(""Строка""));
+              КонецПроцедуры";
+            
+            var services = testServices.CreateContainer();
+            var typeManager = services.Resolve<ITypeManager>(); 
+            typeManager.RegisterClass(typeof(ValueTable));
+            typeManager.RegisterClass(typeof(ValueTableColumnCollection));
+            typeManager.RegisterClass(typeof(ValueTableColumn));
+            typeManager.RegisterClass(typeof(TypeDescription));
+            CreateModule(code, services, new SymbolTable());
         }
 
         private DynamicModule CreateModule(string code) => CreateModule(code, testServices.CreateContainer(), new SymbolTable());

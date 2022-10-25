@@ -181,8 +181,6 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
 
-        #region DynamicObject Members
-
         #region DynamicObject members 
         
         public override bool TryGetMember(GetMemberBinder binder, out object result)
@@ -289,8 +287,6 @@ namespace ScriptEngine.Machine.Contexts
 
             return true;
         }
-
-        #endregion
 
         #endregion
         

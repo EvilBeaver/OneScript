@@ -511,6 +511,20 @@ namespace OneScript.Native.Compiler
                 Expression.Constant(propertyNumber)
             );
         }
+        
+        public static Expression GetContextPropertyValue(Expression target, string propertyName)
+        {
+            var getter = OperationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.GetPropertyValue));
+
+            return Expression.Call(
+                null,
+                getter,
+                target,
+                Expression.Constant(propertyName)
+            );
+        }
 
         public static Expression GetIndexedValue(Expression target, Expression index)
         {

@@ -164,5 +164,14 @@ namespace OneScript.Native.Runtime
 
             context.SetIndexedValue(index, value);
         }
+
+        public static BslValue GetPropertyValue(BslValue target, string propertyName)
+        {
+            if (!(target is IRuntimeContextInstance context))
+                throw BslExceptions.ValueIsNotObjectException();
+
+            var propIndex = context.GetPropertyNumber(propertyName);
+            return (BslValue)context.GetPropValue(propIndex);
+        }
     }
 }

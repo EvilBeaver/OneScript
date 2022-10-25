@@ -299,25 +299,8 @@ namespace OneScript.Native.Compiler
                 return;
             }
 
-            var expr = ReadDynamicProperty(instance, memberName);
+            var expr = ExpressionHelpers.GetContextPropertyValue(instance, memberName);
             _statementBuildParts.Push(expr);
-        }
-
-        private static DynamicExpression ReadDynamicProperty(Expression instance, string memberName)
-        {
-            var args = new List<Expression>();
-            args.Add(instance);
-            var csharpArgs = new List<CSharpArgumentInfo>();
-            csharpArgs.Add(CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default));
-            csharpArgs.AddRange(args.Select(x =>
-                CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default)));
-
-            var binder = Microsoft.CSharp.RuntimeBinder.Binder.GetMember(
-                CSharpBinderFlags.InvokeSimpleName,
-                memberName,
-                typeof(BslObjectValue), csharpArgs);
-            var expr = Expression.Dynamic(binder, typeof(object), args);
-            return expr;
         }
 
         private void MakeWritePropertyAccess(TerminalNode operand)
@@ -1073,7 +1056,7 @@ namespace OneScript.Native.Compiler
 
                 _blocks.Add(Expression.Call(target, methodInfo, args));
             }
-            else if (targetType.IsValue())
+            else if (targetType.IsValue() || target is DynamicExpression)
             {
                 var args = new List<Expression>();
                 args.Add(target);
@@ -1127,7 +1110,7 @@ namespace OneScript.Native.Compiler
                 var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters());
                 _statementBuildParts.Push(Expression.Call(target, methodInfo, args));
             }
-            else if (targetType.IsValue())
+            else if (targetType.IsValue() || target is DynamicExpression)
             {
                 var args = new List<Expression>();
                 args.Add(target);
