@@ -156,7 +156,7 @@ namespace OneScript.Native.Compiler
         protected override void VisitMethodVariable(MethodNode method, VariableDefinitionNode variableDefinition)
         {
             var identifier = variableDefinition.Name;
-            if (Symbols.FindVariable(identifier, out _))
+            if (Symbols.FindVariable(identifier, out var binding) && binding.ScopeNumber == Symbols.ScopeCount - 1)
             {
                 AddError(LocalizedErrors.DuplicateVarDefinition(identifier));
                 return;
