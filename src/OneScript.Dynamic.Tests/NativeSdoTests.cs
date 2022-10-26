@@ -15,6 +15,7 @@ using OneScript.Native.Compiler;
 using OneScript.Native.Extensions;
 using OneScript.Native.Runtime;
 using OneScript.Sources;
+using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.TypeDescriptions;
@@ -297,6 +298,19 @@ namespace OneScript.Dynamic.Tests
             typeManager.RegisterClass(typeof(ValueTableColumn));
             typeManager.RegisterClass(typeof(TypeDescription));
             CreateModule(code, services, new SymbolTable());
+        }
+        
+        [Fact]
+        public void Pass_Nullable_as_Optional_Args()
+        {
+            var code = "Массив = СтрРазделить(\"А,Б,В\", \",\", Ложь)";
+            
+            var services = testServices.CreateContainer();
+            var stringOperations = new StringOperations();
+            var symbols = new SymbolTable();
+            symbols.PushObject(stringOperations);
+            
+            CreateModule(code, services, symbols);
         }
 
         private DynamicModule CreateModule(string code) => CreateModule(code, testServices.CreateContainer(), new SymbolTable());

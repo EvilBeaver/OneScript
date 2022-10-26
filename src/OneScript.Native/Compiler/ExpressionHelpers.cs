@@ -285,8 +285,10 @@ namespace OneScript.Native.Compiler
         /// <returns>null если статический каст не удался, выражение конверсии, если удался</returns>
         public static Expression TryConvertParameter(Expression parameter, Type targetType)
         {
-            if (targetType.IsAssignableFrom(parameter.Type))
+            if (targetType.IsAssignableFrom(parameter.Type) && !IsNullable(targetType))
+            {
                 return parameter;
+            }
 
             if (targetType.IsNumeric() && parameter.Type.IsNumeric())
             {
@@ -299,6 +301,12 @@ namespace OneScript.Native.Compiler
             }
             
             return ConvertToType(parameter, targetType);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsNullable(Type targetType)
+        {
+            return targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
         public static Expression CallCompareTo(Expression target, Expression argument)
@@ -416,7 +424,7 @@ namespace OneScript.Native.Compiler
             }
             
             // возможно прямое clr-присваивание
-            if (targetType.IsAssignableFrom(source.Type))
+            if (targetType.IsAssignableFrom(source.Type) && !IsNullable(targetType))
                 return source;
 
             var canBeCasted = TryStaticConversion(source, targetType, out var conversion);
