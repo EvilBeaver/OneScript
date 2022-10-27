@@ -210,7 +210,8 @@ namespace ScriptEngine.HostedScript.Library
         public GenericStream OpenStandardInput()
         {
             var stream = Console.OpenStandardInput();
-            return new GenericStream(stream, true);
+            var streamWithTimeout = new StreamWithTimeout(stream);
+            return new GenericStream(streamWithTimeout, true);
         }
         
         /// <summary>
