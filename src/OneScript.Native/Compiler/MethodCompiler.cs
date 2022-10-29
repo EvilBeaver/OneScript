@@ -505,6 +505,17 @@ namespace OneScript.Native.Compiler
             _statementBuildParts.Push(operation);
         }
 
+        protected override void VisitTernaryOperation(BslSyntaxNode node)
+        {
+            Debug.Assert(node.Children.Count == 3);
+
+            var test = ConvertToExpressionTree(node.Children[0]);
+            var ifTrue = ConvertToExpressionTree(node.Children[1]);
+            var ifFalse = ConvertToExpressionTree(node.Children[2]);
+
+            _statementBuildParts.Push(Expression.Condition(test, ifTrue, ifFalse));
+        }
+
         #region Dereferencing
 
         protected override void VisitIndexAccess(BslSyntaxNode node)
