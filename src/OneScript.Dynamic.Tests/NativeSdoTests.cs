@@ -329,6 +329,26 @@ namespace OneScript.Dynamic.Tests
             CreateModule(code, services, symbols);
         }
 
+        [Fact]
+        public void Conditional_Expression_With_Different_Types()
+        {
+            var code =
+            @"Функция Ноль(Число)
+	              Возврат ?(Число=0, ""ноль"", 1);
+              КонецФункции
+              Функция Один(Число)
+	              Возврат ?(Число=1, ""один"", Число);
+              КонецФункции
+";
+
+            var services = testServices.CreateContainer();
+            var stringOperations = new StringOperations();
+            var symbols = new SymbolTable();
+            symbols.PushObject(stringOperations);
+
+            CreateModule(code, services, symbols);
+        }
+
         private DynamicModule CreateModule(string code) => CreateModule(code, testServices.CreateContainer(), new SymbolTable());
         
         private DynamicModule CreateModule(string code, IServiceContainer services, SymbolTable symbols)

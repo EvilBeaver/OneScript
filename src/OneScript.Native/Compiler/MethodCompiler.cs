@@ -500,7 +500,7 @@ namespace OneScript.Native.Compiler
                     resultType = typeof(bool);
                     break;
             }
-            
+
             var operation = Expression.MakeUnary(opCode, _statementBuildParts.Pop(), resultType);
             _statementBuildParts.Push(operation);
         }
@@ -512,6 +512,11 @@ namespace OneScript.Native.Compiler
             var test = ConvertToExpressionTree(node.Children[0]);
             var ifTrue = ConvertToExpressionTree(node.Children[1]);
             var ifFalse = ConvertToExpressionTree(node.Children[2]);
+
+            if (ifTrue.Type != ifFalse.Type)
+            {
+                (ifTrue, ifFalse) = ExpressionHelpers.ConvertToCompatibleBslValues(ifTrue, ifFalse);
+            }
 
             _statementBuildParts.Push(Expression.Condition(test, ifTrue, ifFalse));
         }
