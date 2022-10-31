@@ -265,7 +265,11 @@ namespace OneScript.Native.Compiler
         {
             Debug.Assert(left.Type.IsValue());
 
-            return ExpressionHelpers.CallEquals(left, right);
+            var result = ExpressionHelpers.CallEquals(left, right);
+            if (_opCode == ExpressionType.NotEqual)
+                result = Expression.Not(result);
+
+            return result;
         }
 
         private Expression MakeDynamicComparison(Expression left, Expression right)
