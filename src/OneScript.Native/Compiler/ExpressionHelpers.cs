@@ -367,6 +367,22 @@ namespace OneScript.Native.Compiler
             var factory = OperationsCache.GetOrAdd(factoryClass, "Create");
             return Expression.Call(factory, value);
         }
+        public static (Expression, Expression) ConvertToCompatibleBslValues(Expression value1, Expression value2)
+        {
+            value1 = ConvertToBslValue(value1);
+            value2 = ConvertToBslValue(value2);
+
+            if (value1.Type != value2.Type)
+            {
+                if (value1.Type != typeof(BslValue))
+                    value1 = Expression.Convert(value1, typeof(BslValue));
+
+                if (value2.Type != typeof(BslValue))
+                    value2 = Expression.Convert(value2, typeof(BslValue));
+            }
+
+            return (value1, value2);
+        }
 
         private static Type GetValueFactoryType(Type clrType)
         {
