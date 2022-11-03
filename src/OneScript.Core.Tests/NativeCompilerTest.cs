@@ -324,6 +324,50 @@ namespace OneScript.Core.Tests
             statements[0].NodeType.Should().Be(ExpressionType.Assign);
             statements[1].NodeType.Should().Be(ExpressionType.Assign);
         }
+        
+        [Theory]
+        [MemberData(nameof(TypesForTestEqualityOperators))]
+        public void EqualityOperators_With_BslValue_On_Left(TypeDescriptor type)
+        {
+            var block = new CompiledBlock(default);
+            block.CodeBlock = 
+                @"Равенство = (Значение1 = Значение2);
+                  Неравенство = (Значение1 <> Значение2)";
+
+            var bslValueType = new TypeDescriptor(Guid.NewGuid(), "BslValue", null, typeof(BslValue));
+            
+            block.Parameters.Insert("Значение1", new BslTypeValue(bslValueType));
+            block.Parameters.Insert("Значение2", new BslTypeValue(type));
+            var statements = block.MakeExpression()
+                .Body
+                .As<BlockExpression>()
+                .Expressions;
+
+            statements[0].NodeType.Should().Be(ExpressionType.Assign);
+            statements[1].NodeType.Should().Be(ExpressionType.Assign);
+        }
+        
+        [Theory]
+        [MemberData(nameof(TypesForTestEqualityOperators))]
+        public void EqualityOperators_With_BslValue_On_Right(TypeDescriptor type)
+        {
+            var block = new CompiledBlock(default);
+            block.CodeBlock = 
+                @"Равенство = (Значение1 = Значение2);
+                  Неравенство = (Значение1 <> Значение2)";
+
+            var bslValueType = new TypeDescriptor(Guid.NewGuid(), "BslValue", null, typeof(BslValue));
+            
+            block.Parameters.Insert("Значение1", new BslTypeValue(type));
+            block.Parameters.Insert("Значение2", new BslTypeValue(bslValueType));
+            var statements = block.MakeExpression()
+                .Body
+                .As<BlockExpression>()
+                .Expressions;
+
+            statements[0].NodeType.Should().Be(ExpressionType.Assign);
+            statements[1].NodeType.Should().Be(ExpressionType.Assign);
+        }
 
         public static IEnumerable<object[]> TypesForTestEqualityOperators()
         {

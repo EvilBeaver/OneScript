@@ -77,6 +77,9 @@ namespace OneScript.Native.Compiler
 
         private Expression MakeStaticEqualityOperation(Expression left, Expression right)
         {
+            if (right.Type.IsValue())
+                return MakeDynamicEquality(ExpressionHelpers.ConvertToBslValue(left), right);
+            
             return Expression.MakeBinary(_opCode, left, right);
         }
 
