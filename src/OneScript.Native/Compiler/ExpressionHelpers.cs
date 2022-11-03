@@ -608,7 +608,7 @@ namespace OneScript.Native.Compiler
 
         public static Expression Increment(Expression counterVar)
         {
-            if (!(counterVar is ParameterExpression || isModuleVariable(counterVar)))
+            if (!(counterVar is ParameterExpression || IsModuleVariable(counterVar)))
                 throw new ArgumentException("Must be an assignable expression");
 
             if (counterVar.Type.IsNumeric())
@@ -620,7 +620,7 @@ namespace OneScript.Native.Compiler
             return Expression.Assign(counterVar, plusOne);
         }
 
-        private static bool isModuleVariable(Expression counterVar)
+        private static bool IsModuleVariable(Expression counterVar)
         {
             if (!(counterVar is MemberExpression memberExpr))
                 return false;
