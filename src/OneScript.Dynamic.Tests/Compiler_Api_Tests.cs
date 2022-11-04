@@ -126,6 +126,16 @@ namespace OneScript.Dynamic.Tests
             errors.Should().BeEmpty();
         }
 
+        [Fact]
+        public void Test_Min_Max_Functions()
+        {
+            var code = "Рез = Мин(0, 1); Рез = Макс(0, 1, 2, 3);";
+            var errors = new List<CodeError>();
+            CreateModule(code, errors);
+            
+            errors.Should().BeEmpty();
+        }
+
         private DynamicModule CreateModule(string code)
         {
             var helper = new CompileHelper();

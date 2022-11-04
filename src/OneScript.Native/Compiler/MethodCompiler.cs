@@ -1354,11 +1354,14 @@ namespace OneScript.Native.Compiler
                 if (declaredParam.GetCustomAttribute<ParamArrayAttribute>() != null)
                 {
                     // это спецпараметр
+                    Debug.Assert(declaredParam.ParameterType.IsArray);
+                    var arrayItemType = declaredParam.ParameterType.GetElementType();
+                    Debug.Assert(arrayItemType != null);
                     var remainParameters = parameters
                         .Skip(i)
-                        .Select(x => PassSingleParameter(x, declaredParam.ParameterType, argList.Location));
+                        .Select(x => PassSingleParameter(x, arrayItemType, argList.Location));
 
-                    var paramArray = Expression.NewArrayInit(declaredParam.ParameterType, remainParameters);
+                    var paramArray = Expression.NewArrayInit(arrayItemType, remainParameters);
                     factArguments.Add(paramArray);
                     
                     parametersToProcess = 0;
