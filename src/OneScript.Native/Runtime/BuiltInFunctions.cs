@@ -519,21 +519,9 @@ namespace OneScript.Native.Runtime
         #region Other
         
         // [ContextMethod("формат", "format")] public static object Format(object arg){}
-        // [ContextMethod("информацияобошибке", "errorinfo")] public static object ExceptionInfo(object arg){}
-        // [ContextMethod("описаниеошибки", "errordescription")] public static object ExceptionDescr(object arg){}
         // [ContextMethod("текущийсценарий", "currentscript")] public static object ModuleInfo(object arg){}
 
         #endregion
-        
-
-        // private void Type(int arg)
-        // {
-        //     var typeName = _operationStack.Pop().AsString();
-        //     var type = TypeManager.GetTypeByName(typeName);
-        //     var value = new BslTypeValue(type);
-        //     _operationStack.Push(value);
-        //     NextInstruction();
-        // }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [ContextMethod("ТипЗнч", "TypeOf")]
@@ -565,35 +553,7 @@ namespace OneScript.Native.Runtime
         //     NextInstruction();
         //
         // }
-
-        // private void ExceptionInfo(int arg)
-        // {
-        //     if (_currentFrame.LastException != null)
-        //     {
-        //         var excInfo = new ExceptionInfoContext(_currentFrame.LastException);
-        //         _operationStack.Push(excInfo);
-        //     }
-        //     else
-        //     {
-        //         _operationStack.Push(ValueFactory.Create());
-        //     }
-        //     NextInstruction();
-        // }
-        //
-        // private void ExceptionDescr(int arg)
-        // {
-        //     if (_currentFrame.LastException != null)
-        //     {
-        //         var excInfo = new ExceptionInfoContext(_currentFrame.LastException);
-        //         _operationStack.Push(ValueFactory.Create(excInfo.MessageWithoutCodeFragment));
-        //     }
-        //     else
-        //     {
-        //         _operationStack.Push(ValueFactory.Create(""));
-        //     }
-        //     NextInstruction();
-        // }
-        //
+        
         // private void ModuleInfo(int arg)
         // {
         //     var currentScript = this.CurrentScript;

@@ -23,7 +23,7 @@ namespace OneScript.Native.Compiler
         {
             _opCode = ExpressionHelpers.TokenToOperationCode(node.Operation);
             
-            if (IsValue(left.Type))
+            if (left.Type.IsValue() || right.Type.IsValue())
             {
                 return CompileDynamicOperation(left, right);
             }
@@ -35,12 +35,12 @@ namespace OneScript.Native.Compiler
 
         private Expression CompileStaticOperation(Expression left, Expression right)
         {
-            if (_opCode == ExpressionType.Equal || _opCode == ExpressionType.NotEqual)
+            if (IsEqualityOperation(_opCode))
             {
                 return MakeStaticEqualityOperation(left, right);
             }
             
-            if (IsNumeric(left.Type))
+            if (left.Type.IsNumeric())
             {
                 return MakeNumericOperation(left, right);
             }
@@ -50,21 +50,17 @@ namespace OneScript.Native.Compiler
                 return DateOperation(left, right);
             }
             
-            if (left.Type == typeof(string) || left.Type == typeof(BslStringValue))
+            if (left.Type == typeof(string))
             {
                 if (_opCode == ExpressionType.Add)
-                {
                     return StringAddition(left, right);
-                }
 
+                // Для строк допустимо сравнение со строками на < >
                 if (IsComparisonOperation(_opCode))
                 {
-                    return MakeDynamicComparison(
-                        ExpressionHelpers.ConvertToBslValue(left),
-                        ExpressionHelpers.ConvertToBslValue(right));
+                    // для простоты сделаем через BslValue.CompareTo
+                    return MakeDynamicComparison(left, right);
                 }
-                
-                throw new NativeCompilerException($"Operator {_opCode} is not defined for strings");
             }
             
             if (left.Type == typeof(bool))
@@ -72,30 +68,24 @@ namespace OneScript.Native.Compiler
                 return MakeLogicalOperation(left, right);
             }
             
-            throw new NativeCompilerException($"Operation {_opCode} is not defined for {left.Type} and {right.Type}");
+            throw NativeCompilerException.OperationNotDefined(_opCode, left.Type, right.Type);
         }
 
         private Expression MakeStaticEqualityOperation(Expression left, Expression right)
         {
-            if (right.Type.IsValue())
-                return MakeDynamicEquality(ExpressionHelpers.ConvertToBslValue(left), right);
-            
             return Expression.MakeBinary(_opCode, left, right);
         }
 
         private Expression MakeNumericOperation(Expression left, Expression right)
         {
-            if (IsNumeric(right.Type))
+            Debug.Assert(left.Type.IsNumeric());
+            
+            if (right.Type.IsNumeric())
             {
                 return AdjustArithmeticOperandTypesAndMakeBinary(left, right);
             }
-            if(IsValue(right.Type))
-            {
-                right = ExpressionHelpers.ToNumber(right);
-                return AdjustArithmeticOperandTypesAndMakeBinary(left, right);
-            }
-
-            throw new NativeCompilerException($"Operation {_opCode} is not defined for Number and {right.Type}");
+            
+            throw NativeCompilerException.OperationNotDefined(_opCode, left.Type, right.Type);
         }
 
         private Expression AdjustArithmeticOperandTypesAndMakeBinary(Expression left, Expression right)
@@ -137,33 +127,17 @@ namespace OneScript.Native.Compiler
         
         private Expression DateOperation(Expression left, Expression right)
         {
-            if (IsNumeric(right.Type))
+            if (right.Type.IsNumeric())
             {
-                return DateOffsetOperation(left, right);
+                return DateOperations.DateOffsetOperation(left, right, _opCode);
             }
 
-            if (_opCode == ExpressionType.Subtract && right.Type == typeof(DateTime))
+            if (right.Type == typeof(DateTime))
             {
-                return DateDiffExpression(left, right);
+                return DateOperations.DatesBinaryOperation(left, right, _opCode);
             }
-            else if (IsComparisonOperation(_opCode))
-            {
-                var bslDateLeft = ExpressionHelpers.ToDate(left);
-                return Expression.MakeBinary(_opCode, bslDateLeft, right);
-            }
-            else if (IsValue(right.Type))
-            {
-                var isDate = Expression.TypeIs(right, typeof(BslDateValue));
-                
-                if(_opCode == ExpressionType.Subtract)
-                    return Expression.Condition(isDate, DateDiffExpression(left, Expression.Convert(right, typeof(DateTime))),
-                        DateOffsetOperation(left, ExpressionHelpers.ToNumber(right)));
-                else
-                    return DateOffsetOperation(left, ExpressionHelpers.ToNumber(right));
 
-            }
-            
-            throw new NativeCompilerException($"Operation {_opCode} is not defined for dates");
+            throw NativeCompilerException.OperationNotDefined(_opCode, left.Type, right.Type);
         }
 
         private static bool IsComparisonOperation(ExpressionType opCode)
@@ -173,78 +147,36 @@ namespace OneScript.Native.Compiler
                    opCode == ExpressionType.GreaterThan ||
                    opCode == ExpressionType.GreaterThanOrEqual;
         }
-
-        private static Expression DateDiffExpression(Expression left, Expression right)
-        {
-            var spanExpr = Expression.Subtract(left, ExpressionHelpers.ToDate(right));
-            var totalSeconds = Expression.Property(spanExpr, nameof(TimeSpan.TotalSeconds));
-            var decimalSeconds = Expression.Convert(totalSeconds, typeof(decimal));
-
-            return decimalSeconds;
-        }
         
-        private Expression DateOffsetOperation(Expression left, Expression right)
+        private static bool IsEqualityOperation(ExpressionType opCode)
         {
-            var adder = typeof(DateTime).GetMethod(nameof(DateTime.AddSeconds));
-            Debug.Assert(adder != null);
-            
-            var toDouble = Expression.Convert(right, typeof(double));
-            Expression arg;
-            if (_opCode == ExpressionType.Add)
-                arg = toDouble;
-            else if (_opCode == ExpressionType.Subtract)
-                arg = Expression.Negate(toDouble);
-            else
-            {
-                throw new NativeCompilerException($"Operation {_opCode} is not defined for dates");
-            }
-
-            return Expression.Call(left, adder, arg);
+            return opCode == ExpressionType.Equal || opCode == ExpressionType.NotEqual;
         }
 
         private Expression MakeLogicalOperation(Expression left, Expression right)
         {
-            if (IsValue(right.Type))
-            {
-                return Expression.MakeBinary(_opCode, left, ExpressionHelpers.ToBoolean(right));
-            }
-            else
-            {
-                return Expression.MakeBinary(_opCode, left, Expression.Convert(right, typeof(bool)));
-            }
+            return Expression.MakeBinary(_opCode, ExpressionHelpers.ToBoolean(left), ExpressionHelpers.ToBoolean(right));
         }
         
         private Expression StringAddition(Expression left, Expression right)
         {
-            if (left.Type == typeof(BslStringValue))
-            {
-                return Expression.Add(left, ExpressionHelpers.ToString(right));
-            }
-            
             var concatMethod = typeof(string).GetMethod(
                 nameof(string.Concat),
                 new[] { typeof(string), typeof(string) });
 
             Debug.Assert(concatMethod != null);
             
-            if (right.Type == typeof(string))
-            {
-                return Expression.Call(null, concatMethod, left, right);
-            }
-
             return Expression.Call(null, concatMethod, left, ExpressionHelpers.ToString(right));
         }
         
         private Expression CompileDynamicOperation(Expression left, Expression right)
         {
-            Debug.Assert(left.Type.IsValue());
-            
             switch (_opCode)
             {
                 case ExpressionType.Add:
-                    return MakeDynamicAddition(left, right);
+                    return ExpressionHelpers.DynamicAdd(left, right);
                 case ExpressionType.Subtract:
-                    return MakeDynamicSubtraction(left, right);
+                    return ExpressionHelpers.DynamicSubtract(left, right);
                 case ExpressionType.LessThan:
                 case ExpressionType.LessThanOrEqual:
                 case ExpressionType.GreaterThan:
@@ -259,6 +191,9 @@ namespace OneScript.Native.Compiler
                     return MakeNumericOperation(
                         ExpressionHelpers.ToNumber(left),
                         ExpressionHelpers.ToNumber(right));
+                case ExpressionType.AndAlso:
+                case ExpressionType.OrElse:
+                    return MakeLogicalOperation(left, right);
                 default:
                     throw new NativeCompilerException($"Operation {_opCode} is not defined for IValues");
             }
@@ -266,9 +201,7 @@ namespace OneScript.Native.Compiler
 
         private Expression MakeDynamicEquality(Expression left, Expression right)
         {
-            Debug.Assert(left.Type.IsValue());
-
-            var result = ExpressionHelpers.CallEquals(left, right);
+            var result = ExpressionHelpers.CallEquals(ExpressionHelpers.ConvertToBslValue(left), ExpressionHelpers.ConvertToBslValue(right));
             if (_opCode == ExpressionType.NotEqual)
                 result = Expression.Not(result);
 
@@ -277,38 +210,8 @@ namespace OneScript.Native.Compiler
 
         private Expression MakeDynamicComparison(Expression left, Expression right)
         {
-            Debug.Assert(left.Type.IsValue());
-
-            var compareCall = ExpressionHelpers.CallCompareTo(left, right);
+            var compareCall = ExpressionHelpers.CallCompareTo(ExpressionHelpers.ConvertToBslValue(left), ExpressionHelpers.ConvertToBslValue(right));
             return Expression.MakeBinary(_opCode, compareCall, Expression.Constant(0));
         }
-
-        private Expression MakeDynamicSubtraction(Expression left, Expression right)
-        {
-            return ExpressionHelpers.Subtract(left, right);
-        }
-
-        private UnaryExpression CreateConversionException(Expression typeOfLeft)
-        {
-            var exceptionConstructor = typeof(NativeCompilerException).GetConstructor(new[] {typeof(string)});
-            Debug.Assert(exceptionConstructor != null);
-
-            var message = Expression.Add(
-                Expression.Constant($"Operation {_opCode} is not defined for type "),
-                typeOfLeft);
-
-            var createException = Expression.New(exceptionConstructor, message);
-            var throwException = Expression.Throw(createException);
-            return throwException;
-        }
-
-        private Expression MakeDynamicAddition(Expression left, Expression right)
-        {
-            return ExpressionHelpers.Add(left, right);
-        }
-
-        private static bool IsNumeric(Type type) => type.IsNumeric();
-        
-        private static bool IsValue(Type type) => type.IsValue();
     }
 }

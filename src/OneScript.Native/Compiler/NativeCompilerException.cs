@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Linq.Expressions;
 using OneScript.Commons;
 using OneScript.Language;
 using OneScript.Localization;
@@ -29,5 +30,12 @@ namespace OneScript.Native.Compiler
         {
             Position = position;
         }
+
+        public static NativeCompilerException OperationNotDefined(ExpressionType opCode, Type left, Type right) =>
+            new NativeCompilerException(
+                new BilingualString(
+                    $"Операция {opCode} не определена для типов {left} и {right}",
+                    $"Operation {opCode} is not defined for {left} and {right}")
+            );
     }
 }

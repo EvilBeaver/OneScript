@@ -39,7 +39,7 @@ namespace OneScript.Native.Runtime
         {
             if (left is BslNumericValue num)
             {
-                var result = num - ToNumber(right);
+                var result = num - (decimal)right;
                 return BslNumericValue.Create(result);
             }
             else if (left is BslDateValue date)
@@ -81,6 +81,11 @@ namespace OneScript.Native.Runtime
         public static DateTime ToDate(BslValue value)
         {
             return (DateTime)value;
+        }
+        
+        public static string ToString(BslValue value)
+        {
+            return (string)value;
         }
 
         public static BslValue WrapClrObjectToValue(object value)

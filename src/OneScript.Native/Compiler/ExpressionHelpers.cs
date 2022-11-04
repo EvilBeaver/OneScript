@@ -101,24 +101,22 @@ namespace OneScript.Native.Compiler
         {
             if (right.Type == typeof(bool))
                 return right;
-            
-            var method = OperationsCache.GetOrAdd(
-                typeof(DynamicOperations),
-                nameof(DynamicOperations.ToBoolean));
 
-            return Expression.Call(method, right);
+            if (right.Type.IsValue())
+                return ConvertBslValueToPrimitiveType(right, typeof(bool));
+            
+            return Expression.Convert(right, typeof(bool));
         }
-        
+
         public static Expression ToNumber(Expression right)
         {
             if (right.Type == typeof(decimal))
                 return right;
             
-            var method = OperationsCache.GetOrAdd(
-                typeof(DynamicOperations),
-                nameof(DynamicOperations.ToNumber));
-
-            return Expression.Call(method, right);
+            if (right.Type.IsValue())
+                return ConvertBslValueToPrimitiveType(right, typeof(decimal));
+            
+            return Expression.Convert(right, typeof(decimal));
         }
         
         public static Expression ToDate(Expression right)
@@ -126,15 +124,20 @@ namespace OneScript.Native.Compiler
             if (right.Type == typeof(DateTime))
                 return right;
             
-            var method = OperationsCache.GetOrAdd(
-                typeof(DynamicOperations),
-                nameof(DynamicOperations.ToDate));
-
-            return Expression.Call(method, right);
+            if (right.Type.IsValue())
+                return ConvertBslValueToPrimitiveType(right, typeof(DateTime));
+            
+            return Expression.Convert(right, typeof(DateTime));
         }
         
         public static Expression ToString(Expression right)
         {
+            if (right.Type == typeof(string))
+                return right;
+            
+            if (right.Type.IsValue())
+                return ConvertBslValueToPrimitiveType(right, typeof(decimal));
+            
             var method = OperationsCache.GetOrAdd(
                 typeof(object),
                 nameof(object.ToString),
@@ -143,22 +146,57 @@ namespace OneScript.Native.Compiler
             return Expression.Call(right, method);
         }
 
-        public static Expression Add(Expression left, Expression right)
+        private static Expression TryConvertBslValueToPrimitiveType(Expression right, Type type)
+        {
+            Debug.Assert(right.Type.IsValue());
+            
+            // DLR не находит операторы конверсии, объявленные в BslValue, надо ей помочь.
+            string operatorName;
+            if (type == typeof(bool))
+                operatorName = nameof(DynamicOperations.ToBoolean);
+            else if (type.IsNumeric())
+                operatorName = nameof(DynamicOperations.ToNumber);
+            else if (type == typeof(DateTime))
+                operatorName = nameof(DynamicOperations.ToDate);
+            else if (type == typeof(string))
+                operatorName = nameof(DynamicOperations.ToString);
+            else
+                return null;
+
+            var method = OperationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                operatorName
+            );
+            
+            return Expression.Convert(right, type, method);
+        }
+
+        private static Expression ConvertBslValueToPrimitiveType(Expression right, Type type)
+        {
+            return TryConvertBslValueToPrimitiveType(right, type) ??
+                   throw new NativeCompilerException(
+                        new BilingualString(
+                            $"Преобразование {right.Type} в тип {type} недоступно",
+                            $"Conversion from {right.Type} to {type} is unavailable")
+                    );
+        }
+        
+        public static Expression DynamicAdd(Expression left, Expression right)
         {
             var operation = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.Add));
 
-            return Expression.Call(operation, left, ConvertToBslValue(right));
+            return Expression.Call(operation, ConvertToBslValue(left), ConvertToBslValue(right));
         }
         
-        public static Expression Subtract(Expression left, Expression right)
+        public static Expression DynamicSubtract(Expression left, Expression right)
         {
             var operation = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.Subtract));
 
-            return Expression.Call(operation, left, ConvertToBslValue(right));
+            return Expression.Call(operation, ConvertToBslValue(left), ConvertToBslValue(right));
         }
 
         public static Expression ConvertToType(Expression value, Type targetType)
@@ -218,12 +256,12 @@ namespace OneScript.Native.Compiler
 
                     return DowncastDecimal(decimalNum, targetType);
                 }
-                if (targetType == typeof(bool))
-                    return ToBoolean(value);
-                if (targetType == typeof(string))
-                    return ToString(value);
-                if (targetType == typeof(DateTime))
-                    return ToDate(value);
+                else
+                {
+                    var conversion = TryConvertBslValueToPrimitiveType(value, targetType);
+                    if (conversion != null)
+                        return conversion;
+                }
             }
             
             // пока в тупую делаем каст, а вдруг повезет
@@ -357,9 +395,7 @@ namespace OneScript.Native.Compiler
                     $"Conversion from type {value.Type} into BslValue is not supported"));
             }
             
-            if (value.Type == typeof(int) ||
-                value.Type == typeof(long) ||
-                value.Type == typeof(double))
+            if (value.Type.IsNumeric())
             {
                 value = CastToDecimal(value);
             }
@@ -616,7 +652,7 @@ namespace OneScript.Native.Compiler
                 return Expression.PreIncrementAssign(counterVar);
             }
 
-            var plusOne = Add(counterVar, Expression.Constant(1));
+            var plusOne = DynamicAdd(counterVar, Expression.Constant(1));
             return Expression.Assign(counterVar, plusOne);
         }
 

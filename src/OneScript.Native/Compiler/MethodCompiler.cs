@@ -490,18 +490,21 @@ namespace OneScript.Native.Compiler
             var opCode = ExpressionHelpers.TokenToOperationCode(unaryOperationNode.Operation);
 
             Type resultType = null;
+            Expression argument = _statementBuildParts.Pop();
             switch (opCode)
             {
-                case ExpressionType.Add:
-                case ExpressionType.Subtract:
+                case ExpressionType.UnaryPlus:
+                case ExpressionType.Negate:
                     resultType = typeof(decimal);
+                    argument = ExpressionHelpers.ToNumber(argument);
                     break;
                 case ExpressionType.Not:
+                    argument = ExpressionHelpers.ToBoolean(argument);
                     resultType = typeof(bool);
                     break;
             }
 
-            var operation = Expression.MakeUnary(opCode, _statementBuildParts.Pop(), resultType);
+            var operation = Expression.MakeUnary(opCode, argument, resultType);
             _statementBuildParts.Push(operation);
         }
 

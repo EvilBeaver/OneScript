@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using FluentAssertions;
+using Microsoft.VisualBasic;
 using OneScript.Compilation.Binding;
 using OneScript.DependencyInjection;
 using OneScript.Native.Runtime;
@@ -120,20 +121,41 @@ namespace OneScript.Core.Tests
             body[0].As<BinaryExpression>().Right.Should().BeAssignableTo<MethodCallExpression>();
         }
         
-        [Fact]
-        public void Can_Compile_Unary_Expressions()
+        [Theory]
+        [MemberData(nameof(ArgsForUnaryNumericOperators))]
+        public void Can_Compile_Numeric_Unary_Expressions(TypeDescriptor argType, Type expectedNodeType)
         {
             var blockOfCode = new CompiledBlock(default);
             
-            blockOfCode.Parameters.Insert("MyVar", new BslTypeValue(BasicTypes.Number));
-            blockOfCode.CodeBlock = "MyVar = -MyVar";
+            blockOfCode.Parameters.Insert("MyVar", new BslTypeValue(argType));
+            blockOfCode.CodeBlock = "MyVar = -MyVar; MyVar = +MyVar";
 
             var expr = blockOfCode.MakeExpression();
 
             var body = expr.Body.As<BlockExpression>().Expressions;
             
             body[0].As<BinaryExpression>().NodeType.Should().Be(ExpressionType.Assign);
-            body[0].As<BinaryExpression>().Right.Should().BeAssignableTo<UnaryExpression>();
+            body[0].As<BinaryExpression>().Right.Should().BeAssignableTo(expectedNodeType);
+            
+            body[1].As<BinaryExpression>().NodeType.Should().Be(ExpressionType.Assign);
+            body[1].As<BinaryExpression>().Right.Should().BeAssignableTo(expectedNodeType);
+        }
+        
+        [Theory]
+        [MemberData(nameof(ArgsForUnaryBooleanOperators))]
+        public void Can_Compile_Boolean_Unary_Expressions(TypeDescriptor argType, Type expectedNodeType)
+        {
+            var blockOfCode = new CompiledBlock(default);
+            
+            blockOfCode.Parameters.Insert("MyVar", new BslTypeValue(argType));
+            blockOfCode.CodeBlock = "MyVar = Not MyVar";
+
+            var expr = blockOfCode.MakeExpression();
+
+            var body = expr.Body.As<BlockExpression>().Expressions;
+            
+            body[0].As<BinaryExpression>().NodeType.Should().Be(ExpressionType.Assign);
+            body[0].As<BinaryExpression>().Right.Should().BeAssignableTo(expectedNodeType);
         }
 
         [Fact]
@@ -305,6 +327,20 @@ namespace OneScript.Core.Tests
             yield return new object[] { BasicTypes.String, "\"20010205\"" };
         }
         
+        public static IEnumerable<object[]> ArgsForUnaryNumericOperators()
+        {
+            yield return new object[] { BasicTypes.Number, typeof(UnaryExpression) };
+            yield return new object[] { VariantType(), typeof(MethodCallExpression) };
+        }
+        
+        public static IEnumerable<object[]> ArgsForUnaryBooleanOperators()
+        {
+            yield return new object[] { BasicTypes.Boolean, typeof(UnaryExpression) };
+            yield return new object[] { VariantType(), typeof(MethodCallExpression) };
+        }
+        
+        private static TypeDescriptor VariantType() => new TypeDescriptor(Guid.NewGuid(), "BslValue", null, typeof(BslValue));
+        
         [Theory]
         [MemberData(nameof(TypesForTestEqualityOperators))]
         public void EqualityOperators_Available(TypeDescriptor type)
@@ -334,7 +370,7 @@ namespace OneScript.Core.Tests
                 @"Равенство = (Значение1 = Значение2);
                   Неравенство = (Значение1 <> Значение2)";
 
-            var bslValueType = new TypeDescriptor(Guid.NewGuid(), "BslValue", null, typeof(BslValue));
+            var bslValueType = VariantType();
             
             block.Parameters.Insert("Значение1", new BslTypeValue(bslValueType));
             block.Parameters.Insert("Значение2", new BslTypeValue(type));
@@ -356,7 +392,7 @@ namespace OneScript.Core.Tests
                 @"Равенство = (Значение1 = Значение2);
                   Неравенство = (Значение1 <> Значение2)";
 
-            var bslValueType = new TypeDescriptor(Guid.NewGuid(), "BslValue", null, typeof(BslValue));
+            var bslValueType = VariantType();
             
             block.Parameters.Insert("Значение1", new BslTypeValue(type));
             block.Parameters.Insert("Значение2", new BslTypeValue(bslValueType));
@@ -772,7 +808,7 @@ namespace OneScript.Core.Tests
             l.Body.As<BlockExpression>().Expressions[2].As<BinaryExpression>()
                 .Right.NodeType
                 .Should()
-                .Be(ExpressionType.Call);
+                .Be(ExpressionType.Convert);
         }
         
         [Fact]

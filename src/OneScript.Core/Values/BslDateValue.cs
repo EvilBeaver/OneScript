@@ -105,6 +105,26 @@ namespace OneScript.Values
         {
             return left._value <= right;
         }
+        
+        public static bool operator >(DateTime left, BslDateValue right)
+        {
+            return left > right._value;
+        }
+        
+        public static bool operator <(DateTime left, BslDateValue right)
+        {
+            return left < right._value;
+        }
+        
+        public static bool operator >=(DateTime left, BslDateValue right)
+        {
+            return left >= right._value;
+        }
+        
+        public static bool operator <=(DateTime left, BslDateValue right)
+        {
+            return left <= right._value;
+        }
 
         #endregion
         

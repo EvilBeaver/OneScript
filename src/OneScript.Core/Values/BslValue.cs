@@ -46,7 +46,6 @@ namespace OneScript.Values
             target is BslStringValue sv ? (DateTime) sv :
             throw BslExceptions.ConvertToDateException();
 
-
         #region Stack Runtime Bridge
 
         public virtual TypeDescriptor SystemType => BasicTypes.UnknownType;
