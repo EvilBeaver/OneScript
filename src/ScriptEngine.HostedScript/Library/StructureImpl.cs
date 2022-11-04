@@ -245,7 +245,10 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor(Name = "По ключам и значениям")]
         public static StructureImpl Constructor(IValue param1, IValue[] args)
         {
-            var rawArgument = param1.GetRawValue();
+            var rawArgument = param1?.GetRawValue();
+            if (rawArgument == null)
+                return new StructureImpl();
+            
             if (rawArgument.DataType == DataType.String)
             {
                 return new StructureImpl(rawArgument.AsString(), args);

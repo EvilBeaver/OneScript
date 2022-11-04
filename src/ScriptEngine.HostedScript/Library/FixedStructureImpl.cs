@@ -153,7 +153,10 @@ namespace ScriptEngine.HostedScript.Library
         [ScriptConstructor(Name = "По ключам и значениям")]
         public static FixedStructureImpl Constructor(IValue param1, IValue[] args)
         {
-            var rawArgument = param1.GetRawValue();
+            var rawArgument = param1?.GetRawValue();
+            if (rawArgument == null)
+                return new FixedStructureImpl("");
+            
             if (rawArgument.DataType == DataType.String)
             {
                 return new FixedStructureImpl(param1.AsString(), args);
