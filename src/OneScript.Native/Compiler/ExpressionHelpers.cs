@@ -136,7 +136,7 @@ namespace OneScript.Native.Compiler
                 return right;
             
             if (right.Type.IsValue())
-                return ConvertBslValueToPrimitiveType(right, typeof(decimal));
+                return ConvertBslValueToPrimitiveType(right, typeof(string));
             
             var method = OperationsCache.GetOrAdd(
                 typeof(object),
