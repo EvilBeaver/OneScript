@@ -518,7 +518,7 @@ namespace OneScript.Native.Compiler
                 (ifTrue, ifFalse) = ExpressionHelpers.ConvertToCompatibleBslValues(ifTrue, ifFalse);
             }
 
-            _statementBuildParts.Push(Expression.Condition(test, ifTrue, ifFalse));
+            _statementBuildParts.Push(Expression.Condition(ExpressionHelpers.ToBoolean(test), ifTrue, ifFalse));
         }
 
         #region Dereferencing
