@@ -1002,27 +1002,40 @@ namespace OneScript.Language.SyntaxAnalysis
             }
             else
             {
-                batch.AddChild(call);
+                if (_lastDereferenceIsWritable)
+                {
+                    AddError(LocalizedErrors.ExpressionSyntax());
+                }
+                else
+                {
+                    batch.AddChild(call);
+                }
             }
         }
 
         private BslSyntaxNode BuildGlobalCall(Lexem identifier)
         {
-            _lastDereferenceIsWritable = true;
             var target = NodeBuilder.CreateNode(NodeKind.Identifier, identifier);
             NextLexem();
-            var callNode = BuildCall(target, NodeKind.GlobalCall);
-            return BuildDereference(callNode);
+
+            if (_lastExtractedLexem.Token != Token.OpenPar) 
+            {
+                _lastDereferenceIsWritable = true; // одиночный идентификатор
+            }
+            else
+            {
+                target = BuildCall(target, NodeKind.GlobalCall);
+            }
+
+            return BuildDereference(target);
         }
 
         private BslSyntaxNode BuildCall(BslSyntaxNode target, NodeKind callKind)
         {
-            if (_lastExtractedLexem.Token != Token.OpenPar) 
-                return target;
-            
             var callNode = new CallNode(callKind, _lastExtractedLexem);
             callNode.AddChild(target);
             BuildCallParameters(callNode);
+            _lastDereferenceIsWritable = false;
             return callNode;
         }
 
@@ -1305,7 +1318,6 @@ namespace OneScript.Language.SyntaxAnalysis
                 NextLexem();
                 if (_lastExtractedLexem.Token == Token.OpenPar)
                 {
-                    _lastDereferenceIsWritable = false;
                     var ident = NodeBuilder.CreateNode(NodeKind.Identifier, identifier);
                     var call = BuildCall(ident, NodeKind.MethodCall);
                     dotNode.AddChild(call);
