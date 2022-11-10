@@ -339,7 +339,7 @@ namespace OneScript.Dynamic.Tests
               Функция Один(Число)
 	              Возврат ?(Число=1, ""один"", Число);
               КонецФункции
-";
+            ";
 
             var services = testServices.CreateContainer();
             var stringOperations = new StringOperations();
@@ -347,6 +347,35 @@ namespace OneScript.Dynamic.Tests
             symbols.PushObject(stringOperations);
 
             CreateModule(code, services, symbols);
+        }
+
+        [Fact]
+        public void Conditional_Expression_With_Arbitrary_Value()
+        {
+            var symbols = new SymbolTable();
+            var module = CreateModule(
+            @"Перем Рез0 Экспорт;
+              Перем Рез1 Экспорт;
+              Функция Тест(Условие)
+	              Возврат ?(Условие, 1, 0);
+              КонецФункции
+              Рез0 = Тест(false);
+              Рез1 = Тест(2);
+            ", testServices.CreateContainer(), symbols);
+
+            var sdo = new UserScriptContextInstance(module,
+                new TypeDescriptor(new Guid(), "TestClass", default, typeof(UserScriptContextInstance)));
+            sdo.InitOwnData();
+            sdo.Initialize();
+
+            var n = sdo.GetPropertyNumber("Рез0");
+            var val0 = sdo.GetPropValue(n);
+            val0.SystemType.Should().Be(BasicTypes.Number);
+            val0.AsNumber().Should().Be(0);
+            n = sdo.GetPropertyNumber("Рез1");
+            var val1 = sdo.GetPropValue(n);
+            val1.SystemType.Should().Be(BasicTypes.Number);
+            val1.AsNumber().Should().Be(1);
         }
 
         private DynamicModule CreateModule(string code) => CreateModule(code, testServices.CreateContainer(), new SymbolTable());
