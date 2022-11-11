@@ -354,7 +354,59 @@ namespace OneScript.Language.Tests
                 .NextChildIs(NodeKind.DereferenceOperation)
                 .NextChildIs(NodeKind.TernaryOperator);
         }
-        
+
+        [Fact]
+        public void Throws_When_Single_Identifier()
+        {
+            var code = @"Variable;";
+
+            var parser = PrepareParser(code);
+            parser.ParseStatefulModule();
+
+            parser.Errors.Should().NotBeEmpty("Expression syntax error");
+            parser.Errors.First().ErrorId.Should().Be("ExpressionSyntax");
+        }
+
+        [Fact]
+        public void Throws_When_Single_Indexed()
+        {
+            var code = @"Target[0];";
+
+            var parser = PrepareParser(code);
+            parser.ParseStatefulModule();
+
+            parser.Errors.Should().NotBeEmpty("Expression syntax error");
+            parser.Errors.First().ErrorId.Should().Be("ExpressionSyntax");
+        }
+
+        [Fact]
+        public void Throws_When_Single_Property()
+        {
+            var code = @"Object.Prop;";
+
+            var parser = PrepareParser(code);
+            parser.ParseStatefulModule();
+
+            parser.Errors.Should().NotBeEmpty("Expression syntax error");
+            parser.Errors.First().ErrorId.Should().Be("ExpressionSyntax");
+        }
+
+        [Fact]
+        public void Throws_When_Assignment_To_Function()
+        {
+            var code = @"Function F()
+                            Var V;
+                            Return V
+                        EndFunction
+                        F() = 0;";
+
+            var parser = PrepareParser(code);
+            parser.ParseStatefulModule();
+
+            parser.Errors.Should().NotBeEmpty("Expression syntax error");
+            parser.Errors.First().ErrorId.Should().Be("ExpressionSyntax");
+        }
+
         [Fact]
         public void Check_Binary_And_Unary_Expressions()
         {
