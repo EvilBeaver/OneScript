@@ -200,7 +200,7 @@ pipeline {
 
         stage ('Publishing latest') {
             when { anyOf {
-                branch 'master';
+                branch 'latest';
                 }
             }
             agent { label 'master' }
