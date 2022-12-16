@@ -103,9 +103,8 @@ namespace OneScript.StandardLibrary.Binary
                     read = _underlyingStream.Read(buffer, offset, count);
                     gotInput.Set();
                 }
-                catch (ThreadAbortException)
+                catch (ThreadInterruptedException)
                 {
-                    Thread.ResetAbort();
                 }
             })
             {
@@ -117,7 +116,7 @@ namespace OneScript.StandardLibrary.Binary
             // Timeout expired?
             if (!gotInput.WaitOne(_readTimeout))
             {
-                inputThread.Abort();
+                inputThread.Interrupt();
             }
 
             return read;

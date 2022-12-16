@@ -193,6 +193,8 @@ namespace OneScript.StandardLibrary.Processes
             }
         }
 
+        [ContextProperty("Имя", "Name")] public string Name => _p.ProcessName;
+
         [ContextMethod("Завершить","Stop")]
         public void Stop()
         {
