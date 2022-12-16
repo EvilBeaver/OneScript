@@ -144,30 +144,28 @@ pipeline {
         }
         
         stage('Packaging') {
-            stage('Zip distribution'){
-                agent { label 'windows' }
+            agent { label 'windows' }
 
-                steps {
-                    ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
-                    {
-                        dir('built'){
-                            deleteDir()
-                        }
-                        
-                        unstash 'buildResults'
-                        script
-                        {
-                            if (env.BRANCH_NAME == "preview") {
-                                echo 'Building preview'
-                                bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions /p:Suffix=-pre%BUILD_NUMBER%"
-                            }
-                            else{
-                                bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions"
-                            }
-                        }
-                        archiveArtifacts artifacts: 'built/**', fingerprint: true
-                        stash includes: 'built/**', name: 'dist'
+            steps {
+                ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
+                {
+                    dir('built'){
+                        deleteDir()
                     }
+                    
+                    unstash 'buildResults'
+                    script
+                    {
+                        if (env.BRANCH_NAME == "preview") {
+                            echo 'Building preview'
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions /p:Suffix=-pre%BUILD_NUMBER%"
+                        }
+                        else{
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions"
+                        }
+                    }
+                    archiveArtifacts artifacts: 'built/**', fingerprint: true
+                    stash includes: 'built/**', name: 'dist'
                 }
             }
         }
