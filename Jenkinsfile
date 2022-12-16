@@ -58,7 +58,7 @@ pipeline {
 
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore && mkdir doctool"
                             bat "chcp $outputEnc > nul\r\n dotnet publish src/OneScriptDocumenter/OneScriptDocumenter.csproj -c Release -o doctool"
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:CleanAll;PrepareDistributionFiles"
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:CleanAll;PrepareDistributionFiles;CreateNuget"
                             
                             stash includes: 'tests, built/**', name: 'buildResults'
                         }
@@ -90,7 +90,7 @@ pipeline {
             parallel{
                 stage('Windows testing') {
                     agent { label 'windows' }
-					environment {
+                    environment {
                         OSCRIPT_CONFIG = 'systemlanguage=ru'
                     }
                     steps {
@@ -144,32 +144,82 @@ pipeline {
         }
         
         stage('Packaging') {
-            parallel {
-                stage('Zip distribution'){
-                    agent { label 'windows' }
+            stage('Zip distribution'){
+                agent { label 'windows' }
 
-                    steps {
-                        ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
-                        {
-                            dir('built'){
-                                deleteDir()
-                            }
-                            
-                            unstash 'buildResults'
-                            script
-                            {
-                                if (env.BRANCH_NAME == "preview") {
-                                    echo 'Building preview'
-                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions /p:Suffix=-pre%BUILD_NUMBER%"
-                                }
-                                else{
-                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions"
-                                }
-                            }
-                            archiveArtifacts artifacts: 'built/**', fingerprint: true
-                            stash includes: 'built/**', name: 'winDist'
+                steps {
+                    ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
+                    {
+                        dir('built'){
+                            deleteDir()
                         }
+                        
+                        unstash 'buildResults'
+                        script
+                        {
+                            if (env.BRANCH_NAME == "preview") {
+                                echo 'Building preview'
+                                bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions /p:Suffix=-pre%BUILD_NUMBER%"
+                            }
+                            else{
+                                bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions"
+                            }
+                        }
+                        archiveArtifacts artifacts: 'built/**', fingerprint: true
+                        stash includes: 'built/**', name: 'dist'
                     }
+                }
+            }
+        }
+
+        stage ('Publishing night-build') {
+            when { anyOf {
+                branch 'develop';
+                }
+            }
+            agent { label 'master' }
+
+            steps {
+                
+                unstash 'dist'
+
+                dir('targetContent') {
+                    sh '''
+                    ZIPS=../built
+                    NUGET=../built/nuget
+                    VSIX=../built/vscode
+                    mv $WIN/*.zip ./
+                    mv $VSIX/*.vsix ./
+                    
+                    TARGET="/var/www/oscript.io/download/versions/night-build/"
+                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
+                    '''.stripIndent()
+                }
+            }
+        }
+
+        stage ('Publishing latest') {
+            when { anyOf {
+                branch 'master';
+                }
+            }
+            agent { label 'master' }
+
+            steps {
+                
+                unstash 'dist'
+
+                dir('targetContent') {
+                    sh '''
+                    ZIPS=../built
+                    NUGET=../built/nuget
+                    VSIX=../built/vscode
+                    mv $WIN/*.zip ./
+                    mv $VSIX/*.vsix ./
+                    
+                    TARGET="/var/www/oscript.io/download/versions/latest/"
+                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
+                    '''.stripIndent()
                 }
             }
         }
