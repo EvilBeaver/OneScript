@@ -1269,7 +1269,7 @@ namespace ScriptEngine.Machine
                 for (int i = 0; i < argCount; i++)
                 {
                     var argValue = factArgs[i];
-                    if (argValue.IsSkippedArgument())
+                    if (!argValue.IsSkippedArgument())
                     {
                         if (methodParams[i].IsByRef())
                             argValues[i] = argValue;
