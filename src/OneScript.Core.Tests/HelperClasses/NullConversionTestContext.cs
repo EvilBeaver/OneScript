@@ -30,9 +30,6 @@ namespace OneScript.Core.Tests
         [ContextMethod("ТестIValue", "IValueTest")]
         public IValue TestIValue(IValue arg)
         {
-            if (arg == default)
-                throw new XunitException("Test IValue Func(IValue) -> Func(IValue): argument is undefined");
-
             return arg;
         }
 
@@ -187,49 +184,22 @@ namespace OneScript.Core.Tests
         [ContextProperty("ПNullString", "PNullString")]
         public string PNullString
         {
-            get
-            {
-                return _pString;
-            }
-            set
-            {
-                if (value != null)
-                    throw new XunitException("Test string Property = Unknown: value value is different from null.");
-
-                _pString = value;
-            }
+            get => _pString;
+            set => _pString = value;
         }
 
         [ContextProperty("ПIValue", "PIValue")]
         public IValue PIValue
         {
-            get
-            {
-                return _pIValue;
-            }
-            set
-            {
-                if (value.GetType() != typeof(IValue))
-                    throw new XunitException("Test IValue Property = IValue: value type is different from IValue.");
-
-                _pIValue = value;
-            }
+            get => _pIValue;
+            set => _pIValue = value;
         }
 
         [ContextProperty("ПNullIValue", "PNullIValue")]
         public IValue PNullIValue
         {
-            get
-            {
-                return _pIValue;
-            }
-            set
-            {
-                 if (value != ValueFactory.Create())
-                     throw new XunitException("Test IValue Property = Unknown: value value is different from Unknown.");
-
-                _pIValue = value;
-            }
+            get => _pIValue;
+            set => _pIValue = value;
         }
 
 
@@ -237,10 +207,7 @@ namespace OneScript.Core.Tests
         [ContextProperty("ПClass", "PClass")]
         public TestNullClass PClass
         {
-            get
-            {
-                return _pClass;
-            }
+            get => _pClass;
             set
             {
                 if (value.GetType() != typeof(TestNullClass))
@@ -253,10 +220,7 @@ namespace OneScript.Core.Tests
         [ContextProperty("ПNullClass", "PNullClass")]
         public TestNullClass PNullClass
         {
-            get
-            {
-                return _pClass;
-            }
+            get => _pClass;
             set
             {
                 if (value != null)
@@ -268,7 +232,7 @@ namespace OneScript.Core.Tests
     }
 
     [ContextClass("ТестNullКласс", "TestNullClass")]
-    class TestNullClass : AutoContext<TestNullClass>
+    public class TestNullClass : AutoContext<TestNullClass>
     {
         public TestNullClass()
         {

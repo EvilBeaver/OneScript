@@ -93,7 +93,6 @@ namespace OneScript.StandardLibrary.Binary
             get => _underlyingStream.ReadTimeout;
             set => _underlyingStream.ReadTimeout = value;
         }
-
         /// <summary>
         /// 
         /// Время в миллисекундах, отведенное потоку на операцию записи.

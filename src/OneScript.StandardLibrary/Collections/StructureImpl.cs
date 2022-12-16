@@ -242,7 +242,10 @@ namespace OneScript.StandardLibrary.Collections
         [ScriptConstructor(Name = "По ключам и значениям")]
         public static StructureImpl Constructor(IValue param1, IValue[] args)
         {
-            var rawArgument = param1.GetRawValue();
+            var rawArgument = param1?.GetRawValue();
+            if (rawArgument == null)
+                return new StructureImpl();
+            
             if (rawArgument is BslStringValue s)
             {
                 return new StructureImpl((string)s, args);

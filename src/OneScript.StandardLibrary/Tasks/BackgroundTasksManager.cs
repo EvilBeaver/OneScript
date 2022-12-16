@@ -37,19 +37,21 @@ namespace OneScript.StandardLibrary.Tasks
         /// <param name="target">Объект, метод которого нужно выполнить</param>
         /// <param name="methodName">Имя экспортного метода в объекте</param>
         /// <param name="parameters">Массив параметров метода</param>
+        /// <param name="longRunning">Задание выполняется длительное время и требует себе отдельный поток (не использует пул потоков)</param>
         /// <returns>ФоновоеЗадание</returns>
         [ContextMethod("Выполнить", "Execute")]
-        public BackgroundTask Execute(IRuntimeContextInstance target, string methodName, ArrayImpl parameters = null)
+        public BackgroundTask Execute(IRuntimeContextInstance target, string methodName, ArrayImpl parameters = null, bool longRunning = false)
         {
             var task = new BackgroundTask(target, methodName, parameters);
             _tasks.Add(task);
 
+            var taskCreationOptions = longRunning ? TaskCreationOptions.LongRunning : TaskCreationOptions.None;
             var worker = new Task(() =>
             {
                 MachineInstance.Current.SetMemory(_runtimeContext);
                 task.ExecuteOnCurrentThread();
                 
-            }, TaskCreationOptions.LongRunning);
+            }, taskCreationOptions);
 
             task.WorkerTask = worker;
             worker.Start();

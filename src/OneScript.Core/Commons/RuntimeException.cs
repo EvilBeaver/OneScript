@@ -48,6 +48,11 @@ namespace OneScript.Commons
         {
             return new RuntimeException("Недостаточно фактических параметров");
         }
+        
+        public static RuntimeException MissedArgument()
+        {
+            return new RuntimeException("Пропущен обязательный параметр");
+        }
 
         public static RuntimeException InvalidArgumentType()
         {

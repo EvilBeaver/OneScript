@@ -16,7 +16,7 @@ namespace NUnitTests
 
 		private string solutionRoot;
 
-		[OneTimeSetUp]
+		[SetUp] // OneTimeSetUp не работает - между тестами где-то ломается состояние движка
 		public void Initialize()
 		{
 			host = new EngineWrapperNUnit();
@@ -56,6 +56,18 @@ namespace NUnitTests
 		public void Test_XmlWrite()
 		{
 			RunSpecificTest(@"xmlwrite.os");
+		}
+		
+		[Test]
+		public void Test_ValueTable()
+		{
+			RunSpecificTest(@"valuetable.os");
+		}
+		
+		[Test]
+		public void Test_ValueTree()
+		{
+			RunSpecificTest(@"valuetree.os");
 		}
 
 		[Test]

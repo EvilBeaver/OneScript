@@ -163,7 +163,10 @@ namespace OneScript.StandardLibrary.Collections
         [ScriptConstructor(Name = "По ключам и значениям")]
         public static FixedStructureImpl Constructor(IValue param1, IValue[] args)
         {
-            var rawArgument = param1.GetRawValue();
+            var rawArgument = param1?.GetRawValue();
+            if (rawArgument == null)
+                return new FixedStructureImpl("");
+            
             if (rawArgument is BslStringValue s)
             {
                 return new FixedStructureImpl((string)s, args);

@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -31,7 +31,8 @@ namespace ScriptEngine.Machine
         private ExecutionFrame _currentFrame;
         private Action<int>[] _commands;
         private Stack<ExceptionJumpInfo> _exceptionsStack;
-        
+        private LruCache<string, StackRuntimeModule> _executeModuleCache = new LruCache<string, StackRuntimeModule>(64);
+
         private StackRuntimeModule _module;
         private ICodeStatCollector _codeStatCollector;
         private MachineStopManager _stopManager;
@@ -311,7 +312,7 @@ namespace ScriptEngine.Machine
 
         public IValue Evaluate(string expression, bool separate = false)
         {
-            var code = CompileExpressionModule(expression);
+            var code = _executeModuleCache.GetOrAdd(expression, CompileExpressionModule);
 
             MachineInstance runner;
             MachineInstance currentMachine;
@@ -1243,82 +1244,50 @@ namespace ScriptEngine.Machine
             context = objIValue.AsObject();
             var methodName = _module.Constants[arg].AsString();
             methodId = context.GetMethodNumber(methodName);
-            var methodInfo = context.GetMethodInfo(methodId);
-            var methodParams = methodInfo.GetParameters();
             
-            if(context.DynamicMethodSignatures)
-                argValues = new IValue[argCount];
-            else
-                argValues = new IValue[methodParams.Length];
-
-            bool[] signatureCheck = new bool[argCount];
-
-            // fact args
-            for (int i = 0; i < factArgs.Length; i++)
+            if (context.DynamicMethodSignatures)
             {
-                var argValue = factArgs[i];
-                if (argValue.IsSkippedArgument())
+                argValues = new IValue[argCount];
+                for (int i = 0; i < argCount; i++)
                 {
-                    signatureCheck[i] = false;
-                }
-                else
-                {
-                    signatureCheck[i] = true;
-                    if (context.DynamicMethodSignatures)
+                    var argValue = factArgs[i];
+                    if (argValue.IsSkippedArgument())
                     {
                         argValues[i] = BreakVariableLink(argValue);
                     }
-                    else if (i < methodParams.Length)
+                }
+            }
+            else
+            {
+                var methodInfo = context.GetMethodInfo(methodId);
+                var methodParams = methodInfo.GetParameters();
+
+                if (argCount > methodParams.Length)
+                    throw RuntimeException.TooManyArgumentsPassed();
+
+                argValues = new IValue[methodParams.Length];
+                for (int i = 0; i < argCount; i++)
+                {
+                    var argValue = factArgs[i];
+                    if (argValue.IsSkippedArgument())
                     {
                         if (methodParams[i].IsByRef())
                             argValues[i] = argValue;
                         else
                             argValues[i] = BreakVariableLink(argValue);
                     }
+                    else if(!methodParams[i].HasDefaultValue)
+                        throw RuntimeException.MissedArgument();
                 }
 
-            }
-            
-            if (!context.DynamicMethodSignatures)
-            {
-                CheckFactArguments(methodParams, signatureCheck);
-
-                //manage default vals
-                for (int i = argCount; i < argValues.Length; i++)
+                for (var i = argCount; i < methodParams.Length; i++)
                 {
-                    if (methodParams[i].HasDefaultValue)
-                    {
-                        argValues[i] = null;
-                    }
+                    if (!methodParams[i].HasDefaultValue)
+                        throw RuntimeException.TooFewArgumentsPassed();
                 }
             }
         }
 
-        private void CheckFactArguments(ParameterInfo[] parameters, bool[] argsPassed)
-        {
-            if (argsPassed.Length > parameters.Length)
-            {
-                throw RuntimeException.TooManyArgumentsPassed();
-            }
-
-            if (parameters.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
-            {
-                throw RuntimeException.TooFewArgumentsPassed();
-            }
-        }
-        
-        private void CheckFactArguments(MethodSignature signature, bool[] argsPassed)
-        {
-            if (argsPassed.Length > signature.Params.Length)
-            {
-                throw RuntimeException.TooManyArgumentsPassed();
-            }
-
-            if (signature.Params.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
-            {
-                throw RuntimeException.TooFewArgumentsPassed();
-            }
-        }
 
         private void Jmp(int arg)
         {
@@ -1595,7 +1564,7 @@ namespace ScriptEngine.Machine
         private void Execute(int arg)
         {
             var code = _operationStack.Pop().AsString();
-            var module = CompileExecutionBatchModule(code);
+            var module = _executeModuleCache.GetOrAdd(code, CompileExecutionBatchModule);
             PrepareCodeStatisticsData(module);
             
             var frame = new ExecutionFrame();
