@@ -180,13 +180,14 @@ pipeline {
             steps {
                 
                 unstash 'dist'
+                unstash 'vsix'
 
                 dir('targetContent') {
                     sh '''
                     ZIPS=../built
                     NUGET=../built/nuget
                     VSIX=../built/vscode
-                    mv $WIN/*.zip ./
+                    mv $ZIPS/*.zip ./
                     mv $VSIX/*.vsix ./
                     
                     TARGET="/var/www/oscript.io/download/versions/night-build/"
@@ -206,13 +207,14 @@ pipeline {
             steps {
                 
                 unstash 'dist'
+                unstash 'vsix'
 
                 dir('targetContent') {
                     sh '''
                     ZIPS=../built
                     NUGET=../built/nuget
                     VSIX=../built/vscode
-                    mv $WIN/*.zip ./
+                    mv $ZIPS/*.zip ./
                     mv $VSIX/*.vsix ./
                     
                     TARGET="/var/www/oscript.io/download/versions/latest/"
