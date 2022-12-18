@@ -105,12 +105,18 @@ namespace OneScript.DebugServices
 
         private MachineInstance GetMachine(int threadId)
         {
-            return _threadManager.GetTokenForThread(threadId).Machine;
+            // Из-за того, что прикладные классы пока завязаны на статические сервисы машины тек. потока
+            // Приходится в поток отладчика копировать сервисы отлаживаемой машины
+            
+            var savedMachine = _threadManager.GetTokenForThread(threadId).Machine;
+            MachineInstance.Current.SetMemory(savedMachine.Memory);
+            return savedMachine;
         }
 
         public virtual Variable[] GetVariables(int threadId, int frameIndex, int[] path)
         {
-            var machine = _threadManager.GetTokenForThread(threadId).Machine;
+            var machine = GetMachine(threadId);
+
             var locals = machine.GetFrameLocals(frameIndex);
 
             foreach (var step in path)

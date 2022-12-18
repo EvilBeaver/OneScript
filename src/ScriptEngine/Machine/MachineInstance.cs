@@ -376,7 +376,7 @@ namespace ScriptEngine.Machine
 
             var result = runner._operationStack.Pop();
 
-            return result;
+            return result.GetRawValue();
 
         }
         

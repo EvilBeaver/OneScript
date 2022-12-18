@@ -39,6 +39,9 @@ namespace ScriptEngine.Machine.Contexts
 
         public override string ToString()
         {
+            if (_type == BasicTypes.UnknownType)
+                TryDetermineOwnType();
+            
             return _type.Name;
         }
         
@@ -48,21 +51,28 @@ namespace ScriptEngine.Machine.Contexts
         {
             get
             {
-                if (_type == BasicTypes.UnknownType)
+                if (_type != BasicTypes.UnknownType) 
+                    return _type;
+                
+                if (!TryDetermineOwnType())
                 {
-                    var mgr = MachineInstance.Current.TypeManager;
-                    if (mgr.IsKnownType(this.GetType()))
-                    {
-                        _type = mgr.GetTypeByFrameworkType(this.GetType());
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"Type {GetType()} is not defined");
-                    }
+                    throw new InvalidOperationException($"Type {GetType()} is not defined");
                 }
 
                 return _type;
             }
+        }
+
+        private bool TryDetermineOwnType()
+        {
+            var mgr = MachineInstance.Current?.TypeManager;
+            if (mgr?.IsKnownType(GetType()) ?? false)
+            {
+                _type = mgr.GetTypeByFrameworkType(GetType());
+                return true;
+            }
+
+            return false;
         }
         
         #endregion
