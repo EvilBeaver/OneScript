@@ -42,18 +42,25 @@ namespace OneScript.DebugProtocol.TcpServer
                             Data = data,
                             Channel = _protocolChannel,
                         };
-                        
+
                         DataReceived?.Invoke(this, eventData);
                     }
                     catch (ChannelException e)
                     {
+                        if (e.StopChannel)
+                        {
+                            // критичные исключения сразу должны завершать сервер
+                            _serverStopped = true;
+                            break;
+                        }
+
                         var eventData = new CommunicationEventArgs
                         {
                             Data = null,
                             Channel = _protocolChannel,
                             Exception = e
                         };
-                        
+
                         try
                         {
                             DataReceived?.Invoke(this, eventData);
@@ -62,16 +69,17 @@ namespace OneScript.DebugProtocol.TcpServer
                         {
                             // один из обработчиков выбросил исключение
                             // мы все равно не знаем что с ним делать.
-                            
+
                             // Считаем, что факап подписчика - его проблемы.
                         }
-                        
-                        // свойство в исключении может быть утановлено в обработчике евента
+
+                        // свойство в исключении может быть уcтановлено в обработчике евента
                         _serverStopped = e.StopChannel;
                     }
                     catch (Exception)
                     {
                         _serverStopped = true;
+                        break;
                     }
                 }
             });
@@ -81,12 +89,14 @@ namespace OneScript.DebugProtocol.TcpServer
 
         public void Stop()
         {
+            if (_serverStopped)
+                return;
+            
             _serverStopped = true;
 
             if (_messageThread?.IsAlive == true)
             {
                 _protocolChannel.Dispose();
-                _messageThread.Interrupt();
             }
         }
 
