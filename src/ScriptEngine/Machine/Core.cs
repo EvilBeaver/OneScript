@@ -214,6 +214,7 @@ namespace ScriptEngine.Machine
         public string Name;
         public bool IsByValue;
         public bool HasDefaultValue;
+        public IValue DefaultValue;
         public int DefaultValueIndex;
         public AnnotationDefinition[] Annotations;
 

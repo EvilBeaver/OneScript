@@ -337,6 +337,7 @@ namespace ScriptEngine.HostedScript.Library
                 var paramNameColumn = paramTable.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
                 var paramByValue = paramTable.Columns.Add("ПоЗначению", TypeDescription.BooleanType(), "По значению");
                 var paramHasDefaultValue = paramTable.Columns.Add("ЕстьЗначениеПоУмолчанию", TypeDescription.BooleanType(), "Есть значение по-умолчанию");
+                var paramDefaultValue = paramTable.Columns.Add("ЗначениеПоУмолчанию", null, "Значение по умолчанию");
                 var paramAnnotationsColumn = paramTable.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
                 
                 new_row.Set(paramsColumn, paramTable);
@@ -351,6 +352,7 @@ namespace ScriptEngine.HostedScript.Library
                         paramRow.Set(paramNameColumn, ValueFactory.Create(name));
                         paramRow.Set(paramByValue, ValueFactory.Create(param.IsByValue));
                         paramRow.Set(paramHasDefaultValue, ValueFactory.Create(param.HasDefaultValue));
+                        paramRow.Set(paramDefaultValue, param.DefaultValue); 
                         paramRow.Set(paramAnnotationsColumn, param.AnnotationsCount != 0 ? CreateAnnotationTable(param.Annotations) : EmptyAnnotationsTable());
                     }
                 }
