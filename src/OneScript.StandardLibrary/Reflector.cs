@@ -320,7 +320,7 @@ namespace OneScript.StandardLibrary
                 var paramNameColumn = paramTable.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
                 var paramByValue = paramTable.Columns.Add("ПоЗначению", TypeDescription.BooleanType(), "По значению");
                 var paramHasDefaultValue = paramTable.Columns.Add("ЕстьЗначениеПоУмолчанию", TypeDescription.BooleanType(), "Есть значение по-умолчанию");
-                var paramDefaultValue = paramTable.Columns.Add("ЗначениеПоУмолчанию", new TypeDescription(), "Значение по умолчанию");
+                var paramDefaultValue = paramTable.Columns.Add("ЗначениеПоУмолчанию", null, "Значение по умолчанию");
                 var paramAnnotationsColumn = paramTable.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
 
                 new_row.Set(paramsColumn, paramTable);
@@ -332,11 +332,10 @@ namespace OneScript.StandardLibrary
                     {
                         var name = param.Name ?? $"param{++index}";
                         var paramRow = paramTable.Add();
-                        var defaultValue = param.DefaultValue;
                         paramRow.Set(paramNameColumn, ValueFactory.Create(name));
                         paramRow.Set(paramByValue, ValueFactory.Create(!param.IsByRef()));
                         paramRow.Set(paramHasDefaultValue, ValueFactory.Create(param.HasDefaultValue));
-                        paramRow.Set(paramDefaultValue, ValueFactory.Create(param.DefaultValue.ToString()));
+                        paramRow.Set(paramDefaultValue, param.DefaultValue as IValue);
                         paramRow.Set(paramAnnotationsColumn, CreateAnnotationTable(param.GetAnnotations()));
                     }
                 }
