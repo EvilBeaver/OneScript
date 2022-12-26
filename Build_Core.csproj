@@ -31,11 +31,11 @@
     <ItemGroup>
         <PublishProjects Include="oscript">
             <ProjectFile>oscript.csproj</ProjectFile>
-            <Framework>net5.0</Framework>
+            <Framework>net6.0</Framework>
         </PublishProjects>
         <PublishProjects Include="TestApp">
             <ProjectFile>TestApp.csproj</ProjectFile>
-            <Framework>net5.0-windows</Framework>
+            <Framework>net6.0-windows</Framework>
         </PublishProjects>
     </ItemGroup>
     
@@ -94,7 +94,7 @@
             <RuntimeID Include="linux-x64"/>
         </ItemGroup>
         
-        <Exec Command="dotnet publish &quot;src/oscript/oscript.csproj&quot; -r %(RuntimeID.Identity) -c $(Configuration) -o &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/bin&quot;"/>
+        <Exec Command="dotnet publish &quot;src/oscript/oscript.csproj&quot; -r %(RuntimeID.Identity) --self-contained -c $(Configuration) -o &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/bin&quot;"/>
 
         <PropertyGroup>
             <CppBinPrefix>$(MSBuildProjectDirectory)/src/ScriptEngine.NativeApi/bin/$(Configuration)</CppBinPrefix>

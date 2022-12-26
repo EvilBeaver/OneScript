@@ -12,7 +12,7 @@
     <PropertyGroup>
         <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
-        <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
+        <PackageProjectUrl>https://oscript.io</PackageProjectUrl>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <Authors>OneScript OpenSource Community</Authors>
     </PropertyGroup>
