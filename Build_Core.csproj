@@ -92,6 +92,8 @@
             <RuntimeID Include="win-x64"/>
             <RuntimeID Include="win-x86"/>
             <RuntimeID Include="linux-x64"/>
+            <RuntimeID Include="osx-x64"/>
+            <RuntimeID Include="osx-arm64"/>
         </ItemGroup>
         
         <Exec Command="dotnet publish &quot;src/oscript/oscript.csproj&quot; -r %(RuntimeID.Identity) --self-contained -c $(Configuration) -o &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/bin&quot;"/>
