@@ -252,6 +252,7 @@ namespace ScriptEngine.HostedScript.Library
                     osParam.IsByValue = parameterInfo.GetCustomAttribute<ByRefAttribute>() != null;
                     osParam.HasDefaultValue = parameterInfo.HasDefaultValue;
                     osParam.DefaultValueIndex = -1;
+                    osParam.DefaultValue = parameterInfo.DefaultValue as IValue;
 
                     // On Mono 5.20 we can't use GetCustomAttributes<T> because it fails with InvalidCast.
                     // Here's a workaround with home-made attribute Type filter.
