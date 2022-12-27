@@ -236,12 +236,13 @@ namespace ScriptEngine.Machine
                 frame.ModuleScope = mlocals;
                 frame.ModuleLoadIndex = runner._scopes.Count - 1;
             }
-            finally
+            catch
             {
                 if (separate)
                 {
                     SetCurrentMachineInstance(currentMachine);
                 }
+                throw;
             }
 
             try
