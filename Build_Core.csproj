@@ -201,6 +201,8 @@
         <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/fdd-x86/lib/%(RecursiveDir)" />
         <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/win-x64/lib/%(RecursiveDir)" />
         <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/win-x86/lib/%(RecursiveDir)" />
+        <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/osx-x64/lib/%(RecursiveDir)" />
+        <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/osx-arm64/lib/%(RecursiveDir)" />
         <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/linux-x64/lib/%(RecursiveDir)" />
         
         <RemoveDir Directories="$(LibDir)" />
@@ -241,6 +243,8 @@
             <RuntimeID Include="fdd-x86"/>
             <RuntimeID Include="win-x64"/>
             <RuntimeID Include="win-x86"/>
+            <RuntimeID Include="osx-x64"/>
+            <RuntimeID Include="osx-arm64"/>
             <RuntimeID Include="linux-x64"/>
         </ItemGroup>
 
