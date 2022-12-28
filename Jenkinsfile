@@ -23,9 +23,9 @@ pipeline {
                             docker push oscript/onescript-builder:deb
                             docker push oscript/onescript-builder:rpm
                             docker push oscript/onescript-builder:gcc
-							
-							# TODO: Немного через жопу собираются .so для NativеApi
-							# при сборке образа, а не при его запуске
+                            
+                            # TODO: Немного через жопу собираются .so для NativеApi
+                            # при сборке образа, а не при его запуске
                             docker create --name gcc-$BUILD_NUMBER oscript/onescript-builder:gcc
                             docker cp gcc-$BUILD_NUMBER:/built .
                             docker rm gcc-$BUILD_NUMBER
@@ -250,18 +250,6 @@ pipeline {
                     TARGET="/var/www/oscript.io/download/versions/lts/"
                     sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
                     '''.stripIndent()
-                }
-            }
-        }
-		
-		stage ('Publishing artifacts to clouds'){
-            when { branch 'release/latest' }
-            agent { label 'windows' }
-
-            steps{
-                unstash 'winDist'
-                withCredentials([string(credentialsId: 'NuGetToken', variable: 'NUGET_TOKEN')]) {
-                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PublishNuget /p:NugetToken=$NUGET_TOKEN"
                 }
             }
         }
