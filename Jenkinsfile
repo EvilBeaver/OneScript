@@ -23,9 +23,9 @@ pipeline {
                             docker push oscript/onescript-builder:deb
                             docker push oscript/onescript-builder:rpm
                             docker push oscript/onescript-builder:gcc
-							
-							# TODO: Немного через жопу собираются .so для NativеApi
-							# при сборке образа, а не при его запуске
+                            
+                            # TODO: Немного через жопу собираются .so для NativеApi
+                            # при сборке образа, а не при его запуске
                             docker create --name gcc-$BUILD_NUMBER oscript/onescript-builder:gcc
                             docker cp gcc-$BUILD_NUMBER:/built .
                             docker rm gcc-$BUILD_NUMBER
@@ -220,11 +220,11 @@ pipeline {
 
         stage ('Publishing revision') {
             when { anyOf {
-				// TODO сделать автовычисление маркера lts или latest и согласовать его с путём к папке на стр. 250 (TARGET=..._)
-				branch 'release/latest'
-				}
-			}
-			
+                // TODO сделать автовычисление маркера lts или latest и согласовать его с путём к папке на стр. 250 (TARGET=..._)
+                branch 'release/latest'
+                }
+            }
+            
             agent { label 'master' }
 
             steps {
@@ -250,11 +250,16 @@ pipeline {
                     TARGET="/var/www/oscript.io/download/versions/latest/"
                     sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
                     '''.stripIndent()
+                    
+                    sh """
+                    TARGET="/var/www/oscript.io/download/versions/${ReleaseNumber.replace('.', '_')}/"
+                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
+                    """.stripIndent()
                 }
             }
         }
-		
-		stage ('Publishing artifacts to clouds'){
+        
+        stage ('Publishing artifacts to clouds'){
             when { branch 'release/latest' }
             agent { label 'windows' }
 
