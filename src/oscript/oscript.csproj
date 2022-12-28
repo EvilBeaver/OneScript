@@ -9,6 +9,7 @@
     <StartupObject>oscript.Program</StartupObject>
     <Platforms>x86;AnyCPU</Platforms>
     <Configurations>Debug;Release;LinuxDebug</Configurations>
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <PropertyGroup>

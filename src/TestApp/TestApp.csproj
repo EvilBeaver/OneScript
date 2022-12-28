@@ -12,6 +12,7 @@
     <Configurations>Debug;Release;LinuxDebug</Configurations>
     <UseWPF>true</UseWPF>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <PropertyGroup>
