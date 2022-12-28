@@ -93,6 +93,11 @@ namespace OneScript.Commons
         {
             return new RuntimeException("Сравнение на больше/меньше для данного типа не поддерживается");
         }
+        
+        public static RuntimeException ComparisonNotSupportedException(string type1, string type2)
+        {
+            return new RuntimeException($"Сравнение на больше/меньше для данного типа не поддерживается {type1} <-> {type2}");
+        }
 
         public static RuntimeException IndexedAccessIsNotSupportedException()
         {

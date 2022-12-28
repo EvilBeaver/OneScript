@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using FluentAssertions;
 using Moq;
 using OneScript.Commons;
 using OneScript.StandardLibrary;
@@ -194,9 +195,9 @@ namespace OneScript.Core.Tests
             var str1 = ValueFactory.Create("АБВ");
             var str2 = ValueFactory.Create("ВГД");
 
-            Assert.True(str1.CompareTo(str2) < 0);
-            Assert.True(str2.CompareTo(str1) > 0);
-            Assert.True(str1.CompareTo(ValueFactory.Create("абв")) == 0);
+            str1.CompareTo(str2).Should().BeLessThan(0);
+            str2.CompareTo(str1).Should().BeGreaterThan(0);
+            str1.CompareTo(ValueFactory.Create("абв")).Should().BeGreaterThan(0);
         }
 
         [Fact]

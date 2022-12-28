@@ -51,10 +51,8 @@ namespace OneScript.Values
                 return -1;
             
             if (other is BslStringValue s)
-                return String.Compare(_value, s._value, StringComparison.OrdinalIgnoreCase);
-            if (other is BslUndefinedValue)
-                return 1;
-
+                return String.Compare(_value, s._value, StringComparison.CurrentCulture);
+            
             return base.CompareTo(other);
         }
     }

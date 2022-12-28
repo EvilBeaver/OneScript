@@ -5,8 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using OneScript.Commons;
-using OneScript.Localization;
 
 namespace OneScript.Values
 {
@@ -14,13 +14,24 @@ namespace OneScript.Values
     {
         public override int CompareTo(BslValue other)
         {
-            var typeOfThis = this.GetType();
-            var typeOfOther = other.GetType();
-            var message = new BilingualString(
-                $"{this}({typeOfThis}),{other}({typeOfOther}): Сравнение на больше/меньше для данного типа не поддерживается",
-                $"{this}({typeOfThis}),{other}({typeOfOther}): Comparison for greater/less than is not supported for this type");
+            if (other == null)
+                return -1;
+
+            string typeOfThis = null;
+            string typeOfOther = null;
             
-            throw new RuntimeException(message);
+            try
+            {
+                typeOfThis = this.SystemType.Name;
+                typeOfOther = other.SystemType.Name;
+            }
+            catch (InvalidOperationException) // если тип не зарегистрирован
+            {
+                typeOfThis ??= GetType().ToString();
+                typeOfOther ??= GetType().ToString();
+            }
+            
+            throw RuntimeException.ComparisonNotSupportedException(typeOfThis, typeOfOther);
         }
 
         public override bool Equals(BslValue other) => false;
