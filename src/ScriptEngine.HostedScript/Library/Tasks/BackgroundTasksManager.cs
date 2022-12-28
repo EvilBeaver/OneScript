@@ -44,8 +44,15 @@ namespace ScriptEngine.HostedScript.Library.Tasks
             var worker = new Task(() =>
             {
                 _engine.Environment.LoadMemory(MachineInstance.Current);
-                
-                task.ExecuteOnCurrentThread();
+                _engine.DebugController?.AttachToThread();
+                try
+                {
+                    task.ExecuteOnCurrentThread();
+                }
+                finally
+                {
+                    _engine.DebugController?.DetachFromThread();
+                }
                 
             }, taskCreationOptions);
 
