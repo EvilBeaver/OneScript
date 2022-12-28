@@ -225,7 +225,7 @@ namespace OneScript.StandardLibrary
         {
             var clrType = GetReflectableClrType(type);
             var clrMethods = clrType.GetMethods(BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public);
-            FillMethodsTable(result, clrMethods.Select(x=>new Contexts.ContextMethodInfo(x)));
+            FillMethodsTable(result, clrMethods.Cast<BslMethodInfo>());
         }
 
         private void FillPropertiesTableForObject(ValueTable result, IValue target)
