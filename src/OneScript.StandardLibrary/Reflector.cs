@@ -146,13 +146,13 @@ namespace OneScript.StandardLibrary
                 {
                     annotationRow.Set(annotationNameColumn, ValueFactory.Create(annotation.Name));
                 }
+                var parametersTable = new ValueTable();
+                var parameterNameColumn = parametersTable.Columns.Add("Имя");
+                var parameterValueColumn = parametersTable.Columns.Add("Значение");
+
+                annotationRow.Set(annotationParamsColumn, parametersTable);
                 if (annotation.Parameters.Any())
                 {
-                    var parametersTable = new ValueTable();
-                    var parameterNameColumn = parametersTable.Columns.Add("Имя");
-                    var parameterValueColumn = parametersTable.Columns.Add("Значение");
-
-                    annotationRow.Set(annotationParamsColumn, parametersTable);
 
                     foreach (var annotationParameter in annotation.Parameters)
                     {
