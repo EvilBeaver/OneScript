@@ -143,14 +143,15 @@ namespace ScriptEngine.HostedScript.Library
                 {
                     annotationRow.Set(annotationNameColumn, ValueFactory.Create(annotation.Name));
                 }
+
+                var parametersTable = new ValueTable.ValueTable();
+                var parameterNameColumn = parametersTable.Columns.Add("Имя");
+                var parameterValueColumn = parametersTable.Columns.Add("Значение");
+
+                annotationRow.Set(annotationParamsColumn, parametersTable);
+
                 if (annotation.ParamCount != 0)
                 {
-                    var parametersTable = new ValueTable.ValueTable();
-                    var parameterNameColumn = parametersTable.Columns.Add("Имя");
-                    var parameterValueColumn = parametersTable.Columns.Add("Значение");
-
-                    annotationRow.Set(annotationParamsColumn, parametersTable);
-
                     foreach (var annotationParameter in annotation.Parameters)
                     {
                         var parameterRow = parametersTable.Add();
@@ -429,7 +430,7 @@ namespace ScriptEngine.HostedScript.Library
 
                 ValueTableRow new_row = result.Add();
                 new_row.Set(nameColumn, ValueFactory.Create(propInfo.Identifier));
-
+                
                 new_row.Set(annotationsColumn, propInfo.AnnotationsCount != 0 ? CreateAnnotationTable(propInfo.Annotations) : EmptyAnnotationsTable());
             }
         }
