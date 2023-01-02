@@ -367,19 +367,19 @@ namespace ScriptEngine.Machine.Contexts
 
         public override int GetPropCount()
         {
-            return VARIABLE_COUNT + _module.ExportedProperies.Length;
+            return VARIABLE_COUNT + _module.Variables.Count;
         }
         
         public override int GetMethodsCount()
         {
-            return METHOD_COUNT + _module.ExportedMethods.Length;
+            return METHOD_COUNT + _module.Methods.Length;
         }
 
         public override string GetPropName(int propNum)
         {
             if(PropDefinedInScript(propNum))
             {
-                return _module.ExportedProperies[propNum - VARIABLE_COUNT].SymbolicName;
+                return _module.Variables[propNum - VARIABLE_COUNT].Identifier;
             }
             else
             {

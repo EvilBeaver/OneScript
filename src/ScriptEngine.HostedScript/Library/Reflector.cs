@@ -299,7 +299,7 @@ namespace ScriptEngine.HostedScript.Library
 
             if (clrType.BaseType == typeof(ScriptDrivenObject))
             {
-                var nativeFields = clrType.GetFields();
+                var nativeFields = clrType.GetFields(BindingFlags.NonPublic | BindingFlags.Public);
                 foreach(var field in nativeFields)
                 {
                     var info = new VariableInfo();
@@ -307,6 +307,7 @@ namespace ScriptEngine.HostedScript.Library
                     info.Index = indices++;
                     info.Identifier = field.Name;
                     info.Annotations = GetAnnotations(field.GetCustomAttributes<UserAnnotationAttribute>());
+                    info.IsExport = field.IsPublic;
                     infos.Add(info);
                 }
             }
@@ -422,6 +423,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
             var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
+            var exportColumn = result.Columns.Add("Экспорт", TypeDescription.BooleanType(), "Экспорт");
             var systemVarNames = new string[] { "этотобъект", "thisobject" };
 
             foreach (var propInfo in properties)
@@ -432,6 +434,7 @@ namespace ScriptEngine.HostedScript.Library
                 new_row.Set(nameColumn, ValueFactory.Create(propInfo.Identifier));
                 
                 new_row.Set(annotationsColumn, propInfo.AnnotationsCount != 0 ? CreateAnnotationTable(propInfo.Annotations) : EmptyAnnotationsTable());
+                new_row.Set(exportColumn, ValueFactory.Create(propInfo.IsExport));
             }
         }
 

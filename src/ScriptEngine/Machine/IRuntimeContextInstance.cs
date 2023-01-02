@@ -60,11 +60,24 @@ namespace ScriptEngine.Machine
                     Identifier = context.GetPropName(i),
                     Type = SymbolType.ContextProperty,
                     Index = i,
-                    Annotations = HackGetAnnotations(context, i)
+                    Annotations = HackGetAnnotations(context, i),
+                    IsExport = HackGetExport(context, i)
                 };
             }
 
             return infos;
+        }
+
+        private static bool HackGetExport(IRuntimeContextInstance context, int i)
+        {
+            if (!(context is UserScriptContextInstance userScript))
+                return false;
+
+            if (i == 0)
+                return false;
+
+            var variable = userScript.Module.Variables[i - 1];
+            return variable.IsExport;
         }
 
         private static AnnotationDefinition[] HackGetAnnotations(IRuntimeContextInstance context, int i)
