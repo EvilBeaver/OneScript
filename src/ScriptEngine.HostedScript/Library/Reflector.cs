@@ -274,7 +274,7 @@ namespace ScriptEngine.HostedScript.Library
             return attributes.Select(x => x.Annotation).ToArray();
         }
 
-        private static void FillPropertiesTableForType(TypeTypeValue type, ValueTable.ValueTable result)
+        private static void FillPropertiesTableForType(TypeTypeValue type, ValueTable.ValueTable result, bool withPrivate = false)
         {
             var clrType = GetReflectableClrType(type);
             var nativeProps = clrType.GetProperties()
@@ -299,8 +299,8 @@ namespace ScriptEngine.HostedScript.Library
 
             if (clrType.BaseType == typeof(ScriptDrivenObject))
             {
-                var nativeFields = clrType.GetFields(BindingFlags.NonPublic | BindingFlags.Public);
-                foreach(var field in nativeFields)
+                var nativeFields = withPrivate ? clrType.GetFields(BindingFlags.NonPublic | BindingFlags.Public) : clrType.GetFields();
+                foreach (var field in nativeFields)
                 {
                     var info = new VariableInfo();
                     info.Type = SymbolType.ContextProperty;
@@ -366,18 +366,19 @@ namespace ScriptEngine.HostedScript.Library
         /// Получает таблицу свойств для переданного объекта..
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу свойств.</param>
+        /// <param name="withPrivate">Включая приватные</param>
         /// <returns>Таблица значений с колонками - Имя, Аннотации</returns>
         [ContextMethod("ПолучитьТаблицуСвойств", "GetPropertiesTable")]
-        public ValueTable.ValueTable GetPropertiesTable(IValue target)
+        public ValueTable.ValueTable GetPropertiesTable(IValue target, bool withPrivate = false)
         {
             ValueTable.ValueTable result = new ValueTable.ValueTable();
 
             if(target.DataType == DataType.Object)
-                FillPropertiesTable(result, target.AsObject().GetProperties());
+                FillPropertiesTable(result, target.AsObject().GetProperties(withPrivate));
             else if (target.DataType == DataType.Type)
             {
                 var type = target.GetRawValue() as TypeTypeValue;
-                FillPropertiesTableForType(type, result);
+                FillPropertiesTableForType(type, result, withPrivate);
             }
             else
                 throw RuntimeException.InvalidArgumentType();

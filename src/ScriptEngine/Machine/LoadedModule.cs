@@ -33,30 +33,6 @@ namespace ScriptEngine.Machine
 
             ResolveAnnotationConstants();
             ResolveDefaultParametersValues();
-            ResolveExportFieldOnParameters();
-        }
-
-        private void ResolveExportFieldOnParameters()
-        {
-            foreach(var expVariables in ExportedProperies)
-            {
-                for (int i = 0; i < Variables.Count; i++)
-                {
-                    if (Variables[i].Index == expVariables.Index)
-                    {
-                        var variable = Variables[i];
-                        Variables[i] = new VariableInfo()
-                            {
-                                Identifier = variable.Identifier,
-                                Annotations = variable.Annotations,
-                                CanGet = variable.CanGet,
-                                CanSet = variable.CanSet,
-                                Index = variable.Index,
-                                IsExport = true
-                            };
-                    }
-                }
-            }
         }
 
         private void ResolveDefaultParametersValues()

@@ -50,7 +50,32 @@ namespace ScriptEngine.Machine
             return methods;
         }
 
-        public static IEnumerable<VariableInfo> GetProperties(this IRuntimeContextInstance context)
+        public static IEnumerable<VariableInfo> GetProperties(this IRuntimeContextInstance context, bool withPrivate = false)
+        {
+            return withPrivate ? GetPropertiesWithPrivate(context) : GetPropertiesWithoutPrivate(context);
+        }
+
+        private static IEnumerable<VariableInfo> GetPropertiesWithPrivate(IRuntimeContextInstance context)
+        {
+            if (!(context is UserScriptContextInstance userScript))
+                return Array.Empty<VariableInfo>();
+
+            List<VariableInfo> infos = new List<VariableInfo>();
+            foreach (var variable in userScript.Module.Variables)
+            {
+                infos.Add(new VariableInfo() { 
+                    Identifier = variable.Identifier,
+                    Type = variable.Type,
+                    Index = variable.Index,
+                    Annotations = HackGetAnnotations(context, variable.Index),
+                    IsExport = variable.IsExport
+                });
+            }
+
+            return infos;
+        }
+
+        private static IEnumerable<VariableInfo> GetPropertiesWithoutPrivate(IRuntimeContextInstance context)
         {
             VariableInfo[] infos = new VariableInfo[context.GetPropCount()];
             for (int i = 0; i < infos.Length; i++)
@@ -61,23 +86,11 @@ namespace ScriptEngine.Machine
                     Type = SymbolType.ContextProperty,
                     Index = i,
                     Annotations = HackGetAnnotations(context, i),
-                    IsExport = HackGetExport(context, i)
+                    IsExport = true
                 };
             }
 
             return infos;
-        }
-
-        private static bool HackGetExport(IRuntimeContextInstance context, int i)
-        {
-            if (!(context is UserScriptContextInstance userScript))
-                return false;
-
-            if (i == 0)
-                return false;
-
-            var variable = userScript.Module.Variables[i - 1];
-            return variable.IsExport;
         }
 
         private static AnnotationDefinition[] HackGetAnnotations(IRuntimeContextInstance context, int i)

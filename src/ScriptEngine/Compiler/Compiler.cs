@@ -340,14 +340,6 @@ namespace ScriptEngine.Compiler
                             }
 
                             _module.VariableRefs.Add(definition);
-                            _module.Variables.Add(new VariableInfo()
-                            {
-                                Identifier = symbolicName,
-                                Annotations = annotations,
-                                CanGet = true,
-                                CanSet = true,
-                                Index = definition.CodeIndex
-                            });
                         }
                         NextToken();
                         if (_lastExtractedLexem.Token == Token.Export)
@@ -357,7 +349,29 @@ namespace ScriptEngine.Compiler
                                 SymbolicName = symbolicName,
                                 Index = definition.CodeIndex
                             });
+                            _module.Variables.Add(new VariableInfo()
+                            {
+                                Identifier = symbolicName,
+                                Annotations = annotations,
+                                CanGet = true,
+                                CanSet = true,
+                                Index = definition.CodeIndex,
+                                IsExport = true
+                            });
+
                             NextToken();
+                        }
+                        else
+                        {
+                            _module.Variables.Add(new VariableInfo()
+                            {
+                                Identifier = symbolicName,
+                                Annotations = annotations,
+                                CanGet = true,
+                                CanSet = true,
+                                Index = definition.CodeIndex,
+                                IsExport = false
+                            });
                         }
                         if (_lastExtractedLexem.Token == Token.Comma)
                         {
