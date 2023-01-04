@@ -312,7 +312,7 @@ namespace ScriptEngine.Machine
 
         public IValue Evaluate(string expression, bool separate = false)
         {
-            var code = _executeModuleCache.GetOrAdd(expression, CompileExpressionModule);
+            var code = CompileCached(expression, CompileExpressionModule);
 
             MachineInstance runner;
             MachineInstance currentMachine;
@@ -379,6 +379,12 @@ namespace ScriptEngine.Machine
 
             return result.GetRawValue();
 
+        }
+
+        private StackRuntimeModule CompileCached(string code, Func<string, StackRuntimeModule> compile)
+        {
+            var cacheKey = HashCode.Combine(code, _module.Source.Location, _currentFrame.ToString()).ToString("X8");
+            return _executeModuleCache.GetOrAdd(cacheKey, _ => compile(code));
         }
         
         #endregion
@@ -640,7 +646,7 @@ namespace ScriptEngine.Machine
         {
             var epi = new ErrorPositionInfo();
             epi.LineNumber = _currentFrame.LineNumber;
-            if (_module.Source != null)
+            if (_module.Source != null && epi.LineNumber > 0)
             {
                 epi.ModuleName = _module.Source.Name;
                 epi.Code = _module.Source.GetCodeLine(epi.LineNumber) ?? "<исходный код недоступен>";
@@ -1565,7 +1571,7 @@ namespace ScriptEngine.Machine
         private void Execute(int arg)
         {
             var code = _operationStack.Pop().AsString();
-            var module = _executeModuleCache.GetOrAdd(code, CompileExecutionBatchModule);
+            var module = CompileCached(code, CompileExecutionBatchModule);
             PrepareCodeStatisticsData(module);
             
             var frame = new ExecutionFrame();
