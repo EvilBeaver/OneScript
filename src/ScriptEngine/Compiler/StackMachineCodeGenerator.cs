@@ -870,16 +870,32 @@ namespace ScriptEngine.Compiler
             VisitConstant(eventName);
 
             var handlerNode = node.Children[1];
-            if(handlerNode.Kind == NodeKind.Identifier)
-                VisitConstant((TerminalNode)handlerNode);
+            int commandArg;
+            if (handlerNode.Kind == NodeKind.Identifier)
+            {
+                var terminal = handlerNode.AsTerminal();
+                var identifier = terminal.GetIdentifier();
+                if (_ctx.FindMethod(identifier, out _))
+                {
+                    var lex = terminal.Lexem;
+                    lex.Type = LexemType.StringLiteral;
+                    VisitConstant(lex);
+                }
+                else
+                {
+                    AddError(LocalizedErrors.SymbolNotFound(identifier));
+                }
+                commandArg = 1;
+            }
             else
             {
                 var (handler, procedureName) = SplitExpressionAndName(node.Children[1]);
                 VisitExpression(handler);
                 VisitConstant(procedureName);
+                commandArg = 0;
             }
 
-            AddCommand(node.Kind == NodeKind.AddHandler ? OperationCode.AddHandler : OperationCode.RemoveHandler);
+            AddCommand(node.Kind == NodeKind.AddHandler ? OperationCode.AddHandler : OperationCode.RemoveHandler, commandArg);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1036,9 +1052,7 @@ namespace ScriptEngine.Compiler
 
         protected override void VisitConstant(TerminalNode node)
         {
-            var cDef = CreateConstDefinition(node.Lexem);
-            var num = GetConstNumber(cDef);
-            AddCommand(OperationCode.PushConst, num);
+            VisitConstant(node.Lexem);
         }
         
         private void VisitConstant(in Lexem constant)
@@ -1103,7 +1117,7 @@ namespace ScriptEngine.Compiler
         
         private static ConstDefinition CreateConstDefinition(in Lexem lex)
         {
-            DataType constType = DataType.Undefined;
+            DataType constType;
             switch (lex.Type)
             {
                 case LexemType.BooleanLiteral:
@@ -1121,6 +1135,11 @@ namespace ScriptEngine.Compiler
                 case LexemType.NullLiteral:
                     constType = DataType.GenericValue;
                     break;
+                case LexemType.UndefinedLiteral:
+                    constType = DataType.Undefined;
+                    break;
+                default:
+                    throw new ArgumentException($"Can't create constant for literal from {lex.ToString()}");
             }
 
             ConstDefinition cDef = new ConstDefinition()

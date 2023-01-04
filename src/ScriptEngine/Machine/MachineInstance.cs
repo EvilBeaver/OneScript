@@ -1613,11 +1613,13 @@ namespace ScriptEngine.Machine
 
         private void AddHandler(int arg)
         {
-            var handlerMethod = _operationStack.Pop().AsString();
-            var handlerTarget = _operationStack.Pop().AsObject();
-            var eventName = _operationStack.Pop().AsString();
-            var eventSource = _operationStack.Pop().AsObject();
-
+            PrepareHandlerOperationArgs(
+                arg == 0,
+                out var handlerMethod,
+                out var handlerTarget,
+                out var eventName,
+                out var eventSource);
+            
             EventProcessor?.AddHandler(eventSource, eventName, handlerTarget, handlerMethod);
             
             NextInstruction();
@@ -1625,14 +1627,42 @@ namespace ScriptEngine.Machine
         
         private void RemoveHandler(int arg)
         {
-            var handlerMethod = _operationStack.Pop().AsString();
-            var handlerTarget = _operationStack.Pop().AsObject();
-            var eventName = _operationStack.Pop().AsString();
-            var eventSource = _operationStack.Pop().AsObject();
+            PrepareHandlerOperationArgs(
+                arg == 0,
+                out var handlerMethod,
+                out var handlerTarget,
+                out var eventName,
+                out var eventSource);
             
             EventProcessor?.RemoveHandler(eventSource, eventName, handlerTarget, handlerMethod);
             
             NextInstruction();
+        }
+
+        private void PrepareHandlerOperationArgs(bool useExportMode,
+            out string handlerMethod,
+            out IRuntimeContextInstance handlerTarget,
+            out string eventName,
+            out IRuntimeContextInstance eventSource)
+        {
+            if (useExportMode)
+            {
+                handlerMethod = _operationStack.Pop().AsString();
+                handlerTarget = _operationStack.Pop().AsObject();
+                eventName = _operationStack.Pop().AsString();
+                eventSource = _operationStack.Pop().AsObject();
+                
+                // Выбросит исключение, если не найден такой метод
+                handlerTarget.GetMethodNumber(handlerMethod);
+            }
+            else
+            {
+                handlerMethod = _operationStack.Pop().AsString();
+                handlerTarget = TopScope.Instance;
+                eventName = _operationStack.Pop().AsString();
+                eventSource = _operationStack.Pop().AsObject();
+            }
+
         }
 
         private void ExitTry(int arg)
