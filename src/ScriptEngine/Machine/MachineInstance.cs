@@ -201,7 +201,7 @@ namespace ScriptEngine.Machine
 
         public IValue Evaluate(string expression, bool separate = false)
         {
-            var code = _executeModuleCache.GetOrAdd(expression, CompileExpressionModule);
+            var code = CompileCached(expression, CompileExpressionModule);
 
             MachineInstance runner;
             MachineInstance currentMachine;
@@ -267,6 +267,23 @@ namespace ScriptEngine.Machine
 
             return result;
 
+        }
+
+        private LoadedModule CompileCached(string code, Func<string, LoadedModule> compile)
+        {
+            // утащено у John Skeet
+            // https://stackoverflow.com/questions/263400/what-is-the-best-algorithm-for-overriding-gethashcode/263416#263416
+            string cacheKey;
+            unchecked 
+            {
+                int hash = 17;
+                hash = hash * 23 + code.GetHashCode();
+                hash = hash * 23 + _module.ModuleInfo.Origin.GetHashCode();
+                hash = hash * 23 + _currentFrame.ToString().GetHashCode();
+                cacheKey = hash.ToString("X8");
+            }
+            
+            return _executeModuleCache.GetOrAdd(cacheKey, _ => compile(code));
         }
         
         #endregion
@@ -1433,7 +1450,7 @@ namespace ScriptEngine.Machine
         private void Execute(int arg)
         {
             var code = _operationStack.Pop().AsString();
-            var module = _executeModuleCache.GetOrAdd(code, CompileExecutionBatchModule);
+            var module = CompileCached(code, CompileExecutionBatchModule);
             PrepareCodeStatisticsData(module);
             
             var frame = new ExecutionFrame();
