@@ -162,8 +162,10 @@ namespace ScriptEngine.Compiler
     {
         public SymbolNotFoundException(string symbol) : base(string.Format("Неизвестный символ: {0}", symbol))
         {
-
+            Symbol = symbol;
         }
+
+        public string Symbol { get; }
     }
 
 }
