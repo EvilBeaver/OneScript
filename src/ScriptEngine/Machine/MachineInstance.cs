@@ -104,11 +104,7 @@ namespace ScriptEngine.Machine
             {
                 var entryRef = module.MethodRefs[module.EntryMethodIndex];
                 PrepareReentrantMethodExecution(sdo, entryRef.CodeIndex);
-                var methDescr = module.Methods[entryRef.CodeIndex];
-                for (int i = 0; i < _currentFrame.Locals.Length; i++)
-                {
-                    _currentFrame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.Variables[i]);
-                }
+                CreateCurrentFrameLocals(module.Methods[entryRef.CodeIndex].Variables);
 
                 ExecuteCode();
                 if (_callStack.Count > 1)
@@ -182,6 +178,15 @@ namespace ScriptEngine.Machine
                 locals[i] = Variable.Create(value, variables[i]);
             }
             for (; i < locals.Length; i++)
+            {
+                locals[i] = Variable.Create(ValueFactory.Create(), variables[i]);
+            }
+        }
+
+        private void CreateCurrentFrameLocals(VariablesFrame variables)
+        {
+            var locals = _currentFrame.Locals;
+            for (int i = 0; i < locals.Length; i++)
             {
                 locals[i] = Variable.Create(ValueFactory.Create(), variables[i]);
             }
@@ -1413,14 +1418,11 @@ namespace ScriptEngine.Machine
                 Locals = new IVariable[method.Variables.Count],
                 InstructionPointer = 0,
             };
-            for (int i = 0; i < frame.Locals.Length; i++)
-            {
-                frame.Locals[i] = Variable.Create(ValueFactory.Create(), method.Variables[i]);
-            }
+            PushFrame(frame);
+            CreateCurrentFrameLocals(method.Variables);
 
             try
             {
-                PushFrame(frame);
                 MainCommandLoop();
             }
             finally
