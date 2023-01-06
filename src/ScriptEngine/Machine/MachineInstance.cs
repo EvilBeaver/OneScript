@@ -907,20 +907,25 @@ namespace ScriptEngine.Machine
             _currentFrame.DiscardReturnValue = needsDiscarding;
         }
 
+        private IValue[] PopArguments()
+        {
+            int argCount = (int)_operationStack.Pop().AsNumber();
+            IValue[] args = new IValue[argCount];
+
+            for (--argCount; argCount >= 0; --argCount)
+            {
+                args[argCount] = _operationStack.Pop();
+            }
+            return args;
+        }
+
         private bool MethodCallImpl(int arg, bool asFunc)
         {
             var methodRef = _module.MethodRefs[arg];
             var scope = _scopes[methodRef.ContextIndex];
             var methInfo = scope.Methods[methodRef.CodeIndex];
 
-            int argCount = (int)_operationStack.Pop().AsNumber();
-            IValue[] argValues = new IValue[argCount];
-            
-            // fact args
-            for (int i = argCount - 1; i >= 0; i--)
-            {
-                argValues[i] = _operationStack.Pop();
-            }
+            var argValues = PopArguments();
 
             bool needsDiscarding;
 
@@ -1071,12 +1076,8 @@ namespace ScriptEngine.Machine
 
         private void PrepareContextCallArguments(int arg, out IRuntimeContextInstance context, out int methodId, out IValue[] argValues)
         {
-            var argCount = (int)_operationStack.Pop().AsNumber();
-            IValue[] factArgs = new IValue[argCount];
-            for (int i = argCount - 1; i >= 0; i--)
-            {
-                factArgs[i] = _operationStack.Pop();
-            }
+            var factArgs = PopArguments();
+            var argCount = factArgs.Length;
 
             var objIValue = _operationStack.Pop();
             if (objIValue.DataType != DataType.Object)
@@ -1109,7 +1110,8 @@ namespace ScriptEngine.Machine
                     throw RuntimeException.TooManyArgumentsPassed();
 
                 argValues = new IValue[methodParams.Length];
-                for (int i = 0; i < argCount; i++)
+                int i = 0;
+                for (; i < argCount; i++)
                 {
                     var argValue = factArgs[i];
                     if (argValue.DataType != DataType.NotAValidValue)
@@ -1123,7 +1125,7 @@ namespace ScriptEngine.Machine
                         throw RuntimeException.MissedArgument();
                 }
 
-                for (var i = argCount; i < methodParams.Length; i++)
+                for (; i < methodParams.Length; i++)
                 {
                     if (!methodParams[i].HasDefaultValue)
                         throw RuntimeException.TooFewArgumentsPassed();
