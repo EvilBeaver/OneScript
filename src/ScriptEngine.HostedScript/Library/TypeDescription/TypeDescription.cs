@@ -229,7 +229,7 @@ namespace ScriptEngine.HostedScript.Library
 				{
 					nParam++;
 
-					if (qual == null)
+					if (qual == null || qual.DataType == DataType.Undefined)
 						continue;
 
 					var rawQual = qual.GetRawValue();
