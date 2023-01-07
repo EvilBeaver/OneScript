@@ -33,6 +33,7 @@ namespace ScriptEngine.Machine
         // для отладчика.
         // актуален в момент останова машины
         private IList<ExecutionFrameInfo> _fullCallstackCache;
+        private ModuleInformation _debugInfo;
 
         internal MachineInstance() 
         {
@@ -207,8 +208,11 @@ namespace ScriptEngine.Machine
             MachineInstance currentMachine;
             if (separate)
             {
-                runner = new MachineInstance();
-                runner._scopes = new List<Scope>(_scopes);
+                runner = new MachineInstance
+                {
+                    _scopes = new List<Scope>(_scopes),
+                    _debugInfo = _module.ModuleInfo
+                };
                 currentMachine = Current;
                 SetCurrentMachineInstance(runner);
             }
@@ -2443,14 +2447,21 @@ namespace ScriptEngine.Machine
 
         private void ModuleInfo(int arg)
         {
-            var currentScript = this.CurrentScript;
-            if (currentScript != null)
+            if (_debugInfo != null)
             {
-                _operationStack.Push(currentScript);
+                _operationStack.Push(new ScriptInformationContext(_debugInfo));
             }
             else
             {
-                _operationStack.Push(ValueFactory.Create());
+                var currentScript = this.CurrentScript;
+                if (currentScript != null)
+                {
+                    _operationStack.Push(currentScript);
+                }
+                else
+                {
+                    _operationStack.Push(ValueFactory.Create());
+                }
             }
             NextInstruction();
         }
