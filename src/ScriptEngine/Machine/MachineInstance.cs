@@ -723,19 +723,19 @@ namespace ScriptEngine.Machine
         {
             var vm = _module.VariableRefs[arg];
             var scope = _scopes[vm.ContextIndex];
-            scope.Variables[vm.CodeIndex].Value = BreakVariableLink(_operationStack.Pop());
+            scope.Variables[vm.CodeIndex].Value = PopRawValue();
             NextInstruction();
         }
-
+        
         private void LoadLoc(int arg)
         {
-            _currentFrame.Locals[arg].Value = BreakVariableLink(_operationStack.Pop());
+            _currentFrame.Locals[arg].Value = PopRawValue();
             NextInstruction();
         }
 
         private void AssignRef(int arg)
         {
-            var value = BreakVariableLink(_operationStack.Pop());
+            var value = PopRawValue();
 
             IVariable reference;
             try
@@ -1076,7 +1076,7 @@ namespace ScriptEngine.Machine
                     var argValue = factArgs[i];
                     if (argValue.DataType != DataType.NotAValidValue)
                     {
-                        argValues[i] = BreakVariableLink(argValue);
+                        argValues[i] = argValue.GetRawValue();
                     }
                 }
             }
@@ -1096,11 +1096,11 @@ namespace ScriptEngine.Machine
                     if (argValue.DataType != DataType.NotAValidValue)
                     {
                         if (methodParams[i].IsByValue)
-                            argValues[i] = BreakVariableLink(argValue);
+                            argValues[i] = argValue.GetRawValue();
                         else
                             argValues[i] = argValue;
                     }
-                    else if(!methodParams[i].HasDefaultValue)
+                    else if (!methodParams[i].HasDefaultValue)
                         throw RuntimeException.MissedArgument();
                 }
                 for (; i < methodParams.Length; i++)
@@ -1132,7 +1132,7 @@ namespace ScriptEngine.Machine
 
         private void PushIndexed(int arg)
         {
-            var index = BreakVariableLink(_operationStack.Pop());
+            var index = PopRawValue();
             var context = _operationStack.Pop().AsObject();
             if (context == null || !context.IsIndexed)
             {
@@ -1202,7 +1202,7 @@ namespace ScriptEngine.Machine
             {
                 var argValue = _operationStack.Pop();
                 if(argValue.DataType != DataType.NotAValidValue)
-                    argValues[i] = BreakVariableLink(argValue);
+                    argValues[i] = argValue.GetRawValue();
             }
 
             var typeName = _operationStack.Pop().AsString();
@@ -1343,7 +1343,7 @@ namespace ScriptEngine.Machine
 
         private void MakeRawValue(int arg)
         {
-            var value = BreakVariableLink(_operationStack.Pop());
+            var value = PopRawValue();
             _operationStack.Push(value);
             NextInstruction();
         }
@@ -2294,7 +2294,7 @@ namespace ScriptEngine.Machine
                     min = current;
             }
 
-            _operationStack.Push(BreakVariableLink(min));
+            _operationStack.Push(min.GetRawValue());
 
             NextInstruction();
         }
@@ -2311,7 +2311,7 @@ namespace ScriptEngine.Machine
                     max = current;
             }
 
-            _operationStack.Push(BreakVariableLink(max));
+            _operationStack.Push(max.GetRawValue());
             NextInstruction();
         }
 
@@ -2477,9 +2477,9 @@ namespace ScriptEngine.Machine
             _currentFrame.InstructionPointer++;
         }
 
-        private IValue BreakVariableLink(IValue value)
+        private IValue PopRawValue()
         {
-            return value.GetRawValue();
+            return _operationStack.Pop().GetRawValue();
         }
 
         public IList<ExecutionFrameInfo> GetExecutionFrames()
