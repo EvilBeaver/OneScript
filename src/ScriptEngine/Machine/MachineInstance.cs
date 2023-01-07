@@ -64,17 +64,7 @@ namespace ScriptEngine.Machine
         
         public void AttachContext(IAttachableContext context)
         {
-            IVariable[] vars;
-            MethodInfo[] methods;
-            context.OnAttach(this, out vars, out methods);
-            var scope = new Scope()
-            {
-                Variables = vars,
-                Methods = methods,
-                Instance = context
-            };
-
-            _scopes.Add(scope);
+            _scopes.Add(CreateModuleScope(context));
         }
 
         private Scope CreateModuleScope(IAttachableContext context)
@@ -300,7 +290,6 @@ namespace ScriptEngine.Machine
             var result = runner._operationStack.Pop();
 
             return result;
-
         }
 
         private LoadedModule CompileCached(string code, Func<string, LoadedModule> compile)
@@ -493,8 +482,6 @@ namespace ScriptEngine.Machine
                     // Сделаем это
                     while (_operationStack.Count > handler.stackSize)
                         _operationStack.Pop();
-                    
-
                 }
             }
         }
@@ -769,7 +756,6 @@ namespace ScriptEngine.Machine
             var op1 = _operationStack.Pop();
             _operationStack.Push(ValueFactory.Add(op1, op2));
             NextInstruction();
-
         }
 
         private void Sub(int arg)
@@ -878,7 +864,6 @@ namespace ScriptEngine.Machine
                 _operationStack.Pop();
                 NextInstruction();
             }
-            
         }
 
         private void Or(int arg)
@@ -984,16 +969,14 @@ namespace ScriptEngine.Machine
             {
                 realArgs = new IValue[methInfo.ArgCount];
                 var skippedArg = ValueFactory.CreateInvalidValueMarker();
-                for (int i = 0; i < realArgs.Length; i++)
+                int i = 0;
+                for (; i < argValues.Length; i++)
                 {
-                    if (i < argValues.Length)
-                    {
-                        realArgs[i] = argValues[i];
-                    }
-                    else
-                    {
-                        realArgs[i] = skippedArg;
-                    }
+                    realArgs[i] = argValues[i];
+                }
+                for (; i < realArgs.Length; i++)
+                {
+                    realArgs[i] = skippedArg;
                 }
             }
             else
@@ -1003,8 +986,7 @@ namespace ScriptEngine.Machine
 
             if (asFunc)
             {
-                IValue retVal;
-                instance.CallAsFunction(index, realArgs, out retVal);
+                instance.CallAsFunction(index, realArgs, out IValue retVal);
                 _operationStack.Push(retVal);
             }
             else
@@ -1041,7 +1023,6 @@ namespace ScriptEngine.Machine
             var propReference = Variable.CreateContextPropertyReference(context, propNum, "stackvar");
             _operationStack.Push(propReference);
             NextInstruction();
-
         }
 
         private void ResolveMethodProc(int arg)
@@ -1053,7 +1034,6 @@ namespace ScriptEngine.Machine
 
             context.CallAsProcedure(methodId, argValues);
             NextInstruction();
-
         }
 
         private void ResolveMethodFunc(int arg)
@@ -1068,8 +1048,7 @@ namespace ScriptEngine.Machine
                 throw RuntimeException.UseProcAsAFunction();
             }
 
-            IValue retVal;
-            context.CallAsFunction(methodId, argValues, out retVal);
+            context.CallAsFunction(methodId, argValues, out IValue retVal);
             _operationStack.Push(retVal);
             NextInstruction();
         }
@@ -1124,7 +1103,6 @@ namespace ScriptEngine.Machine
                     else if(!methodParams[i].HasDefaultValue)
                         throw RuntimeException.MissedArgument();
                 }
-
                 for (; i < methodParams.Length; i++)
                 {
                     if (!methodParams[i].HasDefaultValue)
@@ -1132,7 +1110,6 @@ namespace ScriptEngine.Machine
                 }
             }
         }
-
 
         private void Jmp(int arg)
         {
@@ -1164,7 +1141,6 @@ namespace ScriptEngine.Machine
 
             _operationStack.Push(Variable.CreateIndexedPropertyReference(context, index, "$stackvar"));
             NextInstruction();
-
         }
 
         private void Return(int arg)
@@ -1241,7 +1217,6 @@ namespace ScriptEngine.Machine
             var instance = constructor(typeName, argValues);
             _operationStack.Push(instance);
             NextInstruction();
-
         }
 
         private void PushIterator(int arg)
@@ -1258,7 +1233,6 @@ namespace ScriptEngine.Machine
                 var iterator = context.GetManagedIterator();
                 _currentFrame.LocalFrameStack.Push(iterator);
                 NextInstruction();
-
             }
             else
             {
@@ -1434,7 +1408,6 @@ namespace ScriptEngine.Machine
             }
 
             NextInstruction();
-
         }
 
 
@@ -1613,7 +1586,6 @@ namespace ScriptEngine.Machine
 
             _operationStack.Push(ValueFactory.Create(""));
             NextInstruction();
-
         }
 
         private void TrimR(int arg)
@@ -1634,7 +1606,6 @@ namespace ScriptEngine.Machine
 
             _operationStack.Push(ValueFactory.Create(""));
             NextInstruction();
-
         }
 
         private void TrimLR(int arg)
@@ -1893,7 +1864,6 @@ namespace ScriptEngine.Machine
             }
 
             _operationStack.Push(ValueFactory.Create(entryCount));
-
             NextInstruction();
         }
 
