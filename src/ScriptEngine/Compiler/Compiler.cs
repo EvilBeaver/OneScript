@@ -325,6 +325,7 @@ namespace ScriptEngine.Compiler
                         var symbolicName = _lastExtractedLexem.Content;
                         var annotations = ExtractAnnotations();
                         var definition = _ctx.DefineVariable(symbolicName);
+                        var variableInfo = new VariableInfo();
                         if (_inMethodScope)
                         {
                             if (_isStatementsDefined)
@@ -340,6 +341,15 @@ namespace ScriptEngine.Compiler
                             }
 
                             _module.VariableRefs.Add(definition);
+                            variableInfo = new VariableInfo()
+                            {
+                                Identifier = symbolicName,
+                                Annotations = annotations,
+                                CanGet = true,
+                                CanSet = true,
+                                Index = definition.CodeIndex,
+                                IsExport = false
+                            };
                         }
                         NextToken();
                         if (_lastExtractedLexem.Token == Token.Export)
@@ -349,30 +359,11 @@ namespace ScriptEngine.Compiler
                                 SymbolicName = symbolicName,
                                 Index = definition.CodeIndex
                             });
-                            _module.Variables.Add(new VariableInfo()
-                            {
-                                Identifier = symbolicName,
-                                Annotations = annotations,
-                                CanGet = true,
-                                CanSet = true,
-                                Index = definition.CodeIndex,
-                                IsExport = true
-                            });
-
+                            variableInfo.IsExport = true;
                             NextToken();
                         }
-                        else
-                        {
-                            _module.Variables.Add(new VariableInfo()
-                            {
-                                Identifier = symbolicName,
-                                Annotations = annotations,
-                                CanGet = true,
-                                CanSet = true,
-                                Index = definition.CodeIndex,
-                                IsExport = false
-                            });
-                        }
+                        if(variableInfo.Identifier != null)
+                            _module.Variables.Add(variableInfo);
                         if (_lastExtractedLexem.Token == Token.Comma)
                         {
                             NextToken();

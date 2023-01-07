@@ -299,7 +299,11 @@ namespace ScriptEngine.HostedScript.Library
 
             if (clrType.BaseType == typeof(ScriptDrivenObject))
             {
-                var nativeFields = withPrivate ? clrType.GetFields(BindingFlags.NonPublic | BindingFlags.Public) : clrType.GetFields();
+                var flags = BindingFlags.Public;
+                if (withPrivate)
+                    flags |= BindingFlags.NonPublic;
+
+                var nativeFields = clrType.GetFields(flags);
                 foreach (var field in nativeFields)
                 {
                     var info = new VariableInfo();
