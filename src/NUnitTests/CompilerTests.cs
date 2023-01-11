@@ -532,5 +532,25 @@ namespace NUnitTests
 			}
 			Assert.IsTrue(exceptionThrown, "Отсутствует точка с запятой между операторами!");
 		}
-	}
+
+        [Test]
+        public void TestLocalExportVar()
+        {
+            var moduleSource = host.Engine.Loader.FromString(
+                @"Процедура Проц1()
+					Перем Переменная Экспорт;
+				КонецПроцедуры");
+
+            bool exceptionThrown = false;
+            try
+            {
+                _ = host.Engine.GetCompilerService().Compile(moduleSource);
+            }
+            catch (CompilerException)
+            {
+                exceptionThrown = true;
+            }
+            Assert.IsTrue(exceptionThrown, "В теле процедуры или функции не может быть объявлена экспортная переменная!");
+        }
+    }
 }
