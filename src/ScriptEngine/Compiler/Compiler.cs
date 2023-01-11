@@ -1160,23 +1160,63 @@ namespace ScriptEngine.Compiler
             };
             
             NextToken();
-            BuildExpression(Token.Semicolon);
-
-            lastCommand = _module.Code[_module.Code.Count - 1]; 
-            if (lastCommand.Code != OperationCode.ResolveProp)
+            
+            // Возможно, это вариант с именем метода
+            var isUserSymbol = LanguageDef.IsUserSymbol(ref _lastExtractedLexem);
+            var methodName = isUserSymbol ? _lastExtractedLexem.Content : default;
+            try
             {
-                throw new CompilerException(Locale.NStr("ru = 'Ожидается имя обработчика события'; en = 'Event handler name expected'"));
+                BuildExpression(Token.Semicolon);
+
+                lastCommand = _module.Code[_module.Code.Count - 1];
+
+                switch (lastCommand.Code)
+                {
+                    case OperationCode.PushLoc:
+                    case OperationCode.PushVar:
+                    case OperationCode.PushRef:
+                        _module.Code.RemoveAt(_module.Code.Count - 1);
+                        PushLocalMethodNumber(methodName);
+                        AddCommand(TokenToOperationCode(token), 1);
+                        break;
+                    case OperationCode.ResolveProp:
+                        _module.Code[_module.Code.Count - 1] = new Command
+                        {
+                            Code = OperationCode.PushConst,
+                            Argument = lastCommand.Argument
+                        };
+                
+                        AddCommand(TokenToOperationCode(token));
+                        break;
+                    default:
+                        throw new CompilerException(
+                            Locale.NStr("ru = 'Ожидается имя обработчика события'; en = 'Event handler name expected'"));
+                }
             }
-
-            _module.Code[_module.Code.Count - 1] = new Command
+            catch (SymbolNotFoundException e)
             {
-                Code = OperationCode.PushConst,
-                Argument = lastCommand.Argument
-            };
+                if (!isUserSymbol || e.Symbol != methodName)
+                {
+                    throw;
+                }
 
-            AddCommand(TokenToOperationCode(token));
+                PushLocalMethodNumber(methodName);
+                AddCommand(TokenToOperationCode(token), 1);
+            }
         }
-        
+
+        private void PushLocalMethodNumber(string methodName)
+        {
+            _ctx.GetMethod(methodName);
+
+            var def = new ConstDefinition
+            {
+                Presentation = methodName,
+                Type = DataType.String
+            };
+            AddCommand(OperationCode.PushConst, GetConstNumber(ref def));
+        }
+
         private void CorrectCommandArgument(int index, int newArgument)
         {
             var cmd = _module.Code[index];
