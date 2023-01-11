@@ -45,6 +45,7 @@ namespace ScriptEngine.HostedScript.Library.Tasks
             {
                 _engine.Environment.LoadMemory(MachineInstance.Current);
                 _engine.DebugController?.AttachToThread();
+
                 try
                 {
                     task.ExecuteOnCurrentThread();

@@ -191,6 +191,14 @@ namespace ScriptEngine.Machine
                 _stopManager = new MachineStopManager(this, breakpointManager);
         }
 
+        public void UnsetDebugMode()
+        {
+            if (_stopManager != null)
+                PrepareDebugContinuation();
+
+            _stopManager = null;
+        }
+
         public void StepOver()
         {
             if (_stopManager == null)
