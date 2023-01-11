@@ -20,8 +20,6 @@ using OneScript.Sources;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Compiler;
-using OneScript.Language.SyntaxAnalysis.AstNodes;
-using System.Security.Cryptography;
 
 namespace ScriptEngine.Machine
 {
@@ -138,41 +136,6 @@ namespace ScriptEngine.Machine
             
             SetFrame(_callStack.Peek());
         } 
-
-        // [Obsolete]
-        // internal void ExecuteModuleBody(IRunnable sdo)
-        // {
-        //     var module = sdo.Module;
-        //     if (module.EntryMethodIndex >= 0)
-        //     {
-        //         var entryRef = module.MethodRefs[module.EntryMethodIndex];
-        //         PrepareReentrantMethodExecution(sdo, (MachineMethodInfo)module.Methods[entryRef.CodeIndex]);
-        //         ExecuteCode();
-        //         if (_callStack.Count > 1)
-        //             PopFrame();
-        //     }
-        // }
-        
-        // [Obsolete]
-        // internal async Task ExecuteModuleBodyAsync(IRunnable sdo)
-        // {
-        //     if (sdo.Module.EntryMethodIndex < 0)
-        //     {
-        //         return;
-        //     }
-        //
-        //     var state = SaveState();
-        //     void Startup()
-        //     {
-        //         var m = MachineInstance.Current;
-        //         m.Reset();
-        //         m._scopes = state.Scopes;
-        //         m._mem = state.Memory;
-        //         m.ExecuteModuleBody(sdo);
-        //     };
-        //
-        //     await Task.Run(Startup);
-        // }
 
         internal Task<IValue> ExecuteMethodAsync(IRunnable sdo, int methodIndex, IValue[] arguments)
         {
@@ -1003,6 +966,7 @@ namespace ScriptEngine.Machine
             bool needsDiscarding = MethodCallImpl(arg, false);
             _currentFrame.DiscardReturnValue = needsDiscarding;
         }
+
         private IValue[] PopArguments()
         {
             int argCount = (int)_operationStack.Pop().AsNumber();
@@ -1026,7 +990,7 @@ namespace ScriptEngine.Machine
             var definedParameters = methodSignature.GetParameters();
             bool needsDiscarding;
 
-            if (scope.Instance == this.TopScope.Instance)
+            if (scope.Instance == this.TopScope.Instance) // local call
             {
                 var sdo = scope.Instance as ScriptDrivenObject;
                 System.Diagnostics.Debug.Assert(sdo != null);
@@ -1518,7 +1482,6 @@ namespace ScriptEngine.Machine
 
             NextInstruction();
         }
-
 
         private void Eval(int arg)
         {
@@ -2288,6 +2251,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void Log10(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
@@ -2295,6 +2259,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void Sin(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
@@ -2302,6 +2267,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void Cos(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
@@ -2309,6 +2275,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void Tan(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
@@ -2316,6 +2283,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void ASin(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
@@ -2323,6 +2291,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void ACos(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
@@ -2330,6 +2299,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void ATan(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
