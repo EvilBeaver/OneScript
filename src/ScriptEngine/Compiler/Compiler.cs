@@ -325,11 +325,17 @@ namespace ScriptEngine.Compiler
                         var symbolicName = _lastExtractedLexem.Content;
                         var annotations = ExtractAnnotations();
                         var definition = _ctx.DefineVariable(symbolicName);
+                        NextToken();
                         if (_inMethodScope)
                         {
                             if (_isStatementsDefined)
                             {
                                 throw CompilerException.LateVarDefinition();
+                            }
+
+                            if(_lastExtractedLexem.Token == Token.Export)
+                            {
+                                throw CompilerException.LocalExportVar();
                             }
                         }
                         else
@@ -346,10 +352,10 @@ namespace ScriptEngine.Compiler
                                 Annotations = annotations,
                                 CanGet = true,
                                 CanSet = true,
-                                Index = definition.CodeIndex
+                                Index = definition.CodeIndex,
+                                IsExport = _lastExtractedLexem.Token == Token.Export
                             });
                         }
-                        NextToken();
                         if (_lastExtractedLexem.Token == Token.Export)
                         {
                             _module.ExportedProperties.Add(new ExportedSymbol()

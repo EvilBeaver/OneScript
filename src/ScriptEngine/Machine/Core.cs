@@ -311,6 +311,7 @@ namespace ScriptEngine.Machine
         public string Identifier;
         public string Alias;
         public SymbolType Type;
+        public bool IsExport;
         
         public bool CanGet;
         public bool CanSet;
