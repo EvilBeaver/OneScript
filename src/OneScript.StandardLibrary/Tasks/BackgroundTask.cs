@@ -73,7 +73,7 @@ namespace OneScript.StandardLibrary.Tasks
         /// <summary>
         /// Ждать завершения задания указанное число миллисекунд
         /// </summary>
-        /// <param name="timeout">Таймаут. Если ноль - ждать вечно</param>
+        /// <param name="timeout">Таймаут в миллисекундах. Если ноль - ждать вечно</param>
         /// <returns>Истина - дождались завершения. Ложь - сработал таймаут</returns>
         [ContextMethod("ОжидатьЗавершения", "Wait")]
         public bool Wait(int timeout = 0)
