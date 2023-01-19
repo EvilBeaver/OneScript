@@ -121,40 +121,48 @@ namespace ScriptEngine.Compiler
             {
                 result.Name = _lastExtractedLexem.Content;
                 NextToken();
-                if (_lastExtractedLexem.Token != Token.Equal)
+                if (_lastExtractedLexem.Token == Token.Equal)
+                {
+                    result.ValueIndex = BuildDefaultParameterValue();
+                }
+                else
                 {
                     result.ValueIndex = AnnotationParameter.UNDEFINED_VALUE_INDEX;
+                    NextToken();
                     return result;
                 }
-                NextToken();
             }
-            
-            var cDef = CreateConstDefinition(ref _lastExtractedLexem);
-            result.ValueIndex = GetConstNumber(ref cDef);
-            
-            NextToken();
-            
+            else
+            {
+                result.ValueIndex = BuildLiteralConstant();
+            }
+
             return result;
         }
 
         private IList<AnnotationParameter> BuildAnnotationParameters()
         {
             var parameters = new List<AnnotationParameter>();
-            while (_lastExtractedLexem.Token != Token.EndOfText)
+            if (_lastExtractedLexem.Token == Token.OpenPar)
             {
-                parameters.Add(BuildAnnotationParameter());
-                if (_lastExtractedLexem.Token == Token.Comma)
+                NextToken();
+                
+                while (_lastExtractedLexem.Token != Token.EndOfText)
                 {
-                    NextToken();
-                    continue;
+                    if (_lastExtractedLexem.Token == Token.ClosePar)
+                    {
+                        NextToken();
+                        break;
+                    }
+                
+                    parameters.Add(BuildAnnotationParameter());
+                    if (_lastExtractedLexem.Token == Token.Comma)
+                    {
+                        NextToken();
+                    }
                 }
-                if (_lastExtractedLexem.Token == Token.ClosePar)
-                {
-                    NextToken();
-                    break;
-                }
-                throw CompilerException.UnexpectedOperation();
             }
+            
             return parameters;
         }
 
@@ -165,12 +173,7 @@ namespace ScriptEngine.Compiler
                 var annotation = new AnnotationDefinition() {Name = _lastExtractedLexem.Content};
 
                 NextToken();
-                if (_lastExtractedLexem.Token == Token.OpenPar)
-                {
-                    NextToken();
-                    annotation.Parameters = BuildAnnotationParameters().ToArray();
-                }
-                
+                annotation.Parameters = BuildAnnotationParameters().ToArray();
                 _annotations.Add(annotation);
             }
         }
@@ -638,6 +641,11 @@ namespace ScriptEngine.Compiler
         {
             NextToken();
 
+            return BuildLiteralConstant();
+        }
+
+        private int BuildLiteralConstant()
+        {
             bool hasSign = false;
             bool signIsMinus = _lastExtractedLexem.Token == Token.Minus;
             if (signIsMinus || _lastExtractedLexem.Token == Token.Plus)
@@ -656,7 +664,7 @@ namespace ScriptEngine.Compiler
                         cd.Presentation = '-' + cd.Presentation;
                     }
                     else if (_lastExtractedLexem.Type == LexemType.StringLiteral
-                          || _lastExtractedLexem.Type == LexemType.DateLiteral)
+                             || _lastExtractedLexem.Type == LexemType.DateLiteral)
                     {
                         throw CompilerException.NumberExpected();
                     }
