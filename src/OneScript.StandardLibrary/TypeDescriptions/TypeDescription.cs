@@ -230,33 +230,23 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				{
 					nParam++;
 
-					if (qual == null)
+					if (qual == null || qual.Equals(BslUndefinedValue.Instance))
 						continue;
 
-					var rawQual = qual.GetRawValue();
+                    switch (qual.GetRawValue())
+                    {
+                        case NumberQualifiers nq: numberQualifiers = nq; break;
 
-					if (rawQual is NumberQualifiers)
-					{
-						numberQualifiers = (NumberQualifiers)rawQual;
-					}
-					else if (rawQual is StringQualifiers)
-					{
-						stringQualifiers = (StringQualifiers)rawQual;
-					}
-					else if (rawQual is DateQualifiers)
-					{
-						dateQualifiers = (DateQualifiers)rawQual;
-					}
-					else if (rawQual is BinaryDataQualifiers)
-					{
-						binaryDataQualifiers = (BinaryDataQualifiers)rawQual;
-					}
-					else
-					{
-						throw RuntimeException.InvalidNthArgumentType(nParam);
-					}
-				}
-			}
+                        case StringQualifiers sq: stringQualifiers = sq; break;
+
+                        case DateQualifiers dq: dateQualifiers = dq; break;
+
+                        case BinaryDataQualifiers bdq: binaryDataQualifiers = bdq; break;
+
+                        default: throw RuntimeException.InvalidNthArgumentType(nParam);
+                    }
+                }
+            }
 		}
 
 		[ScriptConstructor]

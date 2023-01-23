@@ -239,6 +239,7 @@ namespace OneScript.Language.SyntaxAnalysis
                         if (_inMethodScope)
                         {
                             AddError(LocalizedErrors.ExportedLocalVar(symbolicName));
+                            break;
                         }
                         CreateChild(variable, NodeKind.ExportFlag, _lastExtractedLexem);
                         NextLexem();
@@ -335,7 +336,7 @@ namespace OneScript.Language.SyntaxAnalysis
             {
                 BuildMethodSignature();
                 _inMethodScope = true;
-                BuildVariableSection();
+                BuildMethodVariablesSection();
                 _isStatementsDefined = true;
                 BuildMethodBody();
             }
@@ -345,6 +346,20 @@ namespace OneScript.Language.SyntaxAnalysis
                 _inMethodScope = false;
                 _isStatementsDefined = false;
                 PopContext();
+            }
+        }
+
+        private void BuildMethodVariablesSection()
+        {
+            try
+            {
+                // для корректной перемотки вперед в случае ошибок в секции переменных
+                PushStructureToken(_isInFunctionScope ? Token.EndFunction : Token.EndProcedure);
+                BuildVariableSection();
+            }
+            finally
+            {
+                PopStructureToken();
             }
         }
 

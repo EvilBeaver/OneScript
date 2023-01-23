@@ -31,7 +31,7 @@ namespace NUnitTests
 					Возврат
 				КонецПроцедуры");
 
-		    _ = host.Engine.GetCompilerService().Compile(moduleSource);
+		    host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
@@ -42,7 +42,7 @@ namespace NUnitTests
 					Возврат 4
 				КонецФункции");
 
-			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
@@ -53,7 +53,7 @@ namespace NUnitTests
 					Прервать
 				КонецЦикла");
 
-			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
@@ -68,7 +68,7 @@ namespace NUnitTests
 					Ф = 3
 				КонецЕсли");
 
-			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
@@ -81,7 +81,7 @@ namespace NUnitTests
 					ВызватьИсключение
 				КонецПопытки");
 
-			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 
@@ -94,7 +94,7 @@ namespace NUnitTests
 				КонецПроцедуры
 				Ф = 0");
 
-			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 		#endregion
 
@@ -108,7 +108,7 @@ namespace NUnitTests
 					Возврат;
 				КонецПроцедуры");
 
-			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
@@ -119,7 +119,7 @@ namespace NUnitTests
 					Возврат 4;
 				КонецФункции");
 
-			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
@@ -130,7 +130,7 @@ namespace NUnitTests
 					Прервать;
 				КонецЦикла");
 
-			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
@@ -145,7 +145,7 @@ namespace NUnitTests
 					Ф = 3;
 				КонецЕсли");
 
-			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 		[Test]
@@ -158,7 +158,7 @@ namespace NUnitTests
 					ВызватьИсключение;
 				КонецПопытки");
 
-			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 
 
@@ -171,7 +171,7 @@ namespace NUnitTests
 				КонецПроцедуры
 				Ф = 0;");
 
-			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 		#endregion
 
@@ -188,7 +188,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -208,7 +208,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -228,7 +228,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -247,7 +247,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -267,7 +267,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -287,7 +287,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -307,7 +307,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -335,7 +335,7 @@ namespace NUnitTests
 				Р = Ф1(,,) + Ф1(,);
 				");
 
-			_ = host.Engine.GetCompilerService().Compile(moduleSource);
+			host.Engine.GetCompilerService().Compile(moduleSource);
 		}
 		
 		[Test(Description = "Не компилируется вызов метода вообще без параметров")]
@@ -351,7 +351,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -370,7 +370,7 @@ namespace NUnitTests
 					Исключение
 					КонецПопытки
 				КонецПроцедуры");
-            _ = host.Engine.GetCompilerService().Compile(moduleSource);
+            host.Engine.GetCompilerService().Compile(moduleSource);
         }
 
 
@@ -385,7 +385,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -407,7 +407,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -430,7 +430,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -453,7 +453,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -475,7 +475,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -497,7 +497,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -520,7 +520,7 @@ namespace NUnitTests
 			bool exceptionThrown = false;
 			try
 			{
-				_ = host.Engine.GetCompilerService().Compile(moduleSource);
+				host.Engine.GetCompilerService().Compile(moduleSource);
 			}
 			catch (CompilerException)
 			{
@@ -528,5 +528,25 @@ namespace NUnitTests
 			}
 			Assert.IsTrue(exceptionThrown, "Отсутствует точка с запятой между операторами!");
 		}
-	}
+
+        [Test]
+        public void TestLocalExportVar()
+        {
+            var moduleSource = host.Engine.Loader.FromString(
+                @"Процедура Проц1()
+	                Перем Переменная Экспорт;
+                КонецПроцедуры");
+
+            bool exceptionThrown = false;
+            try
+            {
+                host.Engine.GetCompilerService().Compile(moduleSource);
+            }
+            catch (CompilerException)
+            {
+                exceptionThrown = true;
+            }
+            Assert.IsTrue(exceptionThrown, "В теле процедуры или функции не может быть объявлена экспортная переменная!");
+        }
+    }
 }

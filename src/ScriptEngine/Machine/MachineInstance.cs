@@ -267,8 +267,16 @@ namespace ScriptEngine.Machine
 
         public void SetDebugMode(IBreakpointManager breakpointManager)
         {
-            if(_stopManager == null)
+            if (_stopManager == null)
                 _stopManager = new MachineStopManager(this, breakpointManager);
+        }
+        
+        public void UnsetDebugMode()
+        {
+            if (_stopManager != null)
+                PrepareDebugContinuation();
+
+            _stopManager = null;
         }
 
         public void StepOver()

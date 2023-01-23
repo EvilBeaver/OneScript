@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
@@ -1099,6 +1100,22 @@ namespace OneScript.Language.Tests
 
             CatchParsingError(code);
         }
+        
+        [Fact]
+        public void TestLocalExportVar()
+        {
+            var code = 
+                @"Процедура Проц1()
+	                Перем Переменная Экспорт;
+                КонецПроцедуры";
+
+            CatchParsingError(code, err =>
+            {
+                var errors = err.ToArray();
+                errors.Should().HaveCount(1);
+                errors[0].Description.Should().Contain("Локальная переменная не может быть экспортирована");
+            });
+        }
 
 
         private static void CatchParsingError(string code)
@@ -1107,6 +1124,15 @@ namespace OneScript.Language.Tests
             _ = parser.ParseStatefulModule();
 
             parser.Errors.Should().NotBeEmpty("error has not been detected");
+        }
+        
+        private static void CatchParsingError(string code, Action<IEnumerable<CodeError>> validator)
+        {
+            var parser = PrepareParser(code);
+            _ = parser.ParseStatefulModule();
+
+            parser.Errors.Should().NotBeEmpty("error has not been detected");
+            validator(parser.Errors);
         }
 
 

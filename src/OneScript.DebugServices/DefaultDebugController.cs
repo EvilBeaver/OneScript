@@ -69,6 +69,7 @@ namespace OneScript.DebugServices
 
         public void AttachToThread()
         {
+            MachineInstance.Current.SetDebugMode(BreakpointManager);
             _threadManager.AttachToCurrentThread(); 
         }
         

@@ -53,6 +53,9 @@ namespace OneScript.DebugServices
             {
                 t.Machine.MachineStopped -= Machine_MachineStopped;
                 _machinesOnThreads.Remove(threadId);
+                // Если машина была остановлена - продолжаем её уже без остановок
+                t.Machine.UnsetDebugMode();
+                t.Set();
             }
         }
         
