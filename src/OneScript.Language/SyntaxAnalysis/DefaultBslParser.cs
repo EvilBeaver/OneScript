@@ -440,7 +440,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 if (_lastExtractedLexem.Token == Token.Equal)
                 {
                     NextLexem();
-                    if(!BuildDefaultParameterValue(param))
+                    if(!BuildDefaultParameterValue(param, NodeKind.ParameterDefaultValue))
                         return;
                 }
 
@@ -461,7 +461,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         }
 
-        private bool BuildDefaultParameterValue(NonTerminalNode param)
+        private bool BuildDefaultParameterValue(NonTerminalNode param, NodeKind nodeKind)
         {
             bool hasSign = false;
             bool signIsMinus = _lastExtractedLexem.Token == Token.Minus;
@@ -489,7 +489,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 }
 
                 _lastExtractedLexem.Content = literalText;
-                CreateChild(param, NodeKind.ParameterDefaultValue, _lastExtractedLexem);
+                CreateChild(param, nodeKind, _lastExtractedLexem);
                 NextLexem();
             }
             else
@@ -530,40 +530,37 @@ namespace OneScript.Language.SyntaxAnalysis
                 var node = new AnnotationNode(NodeKind.Annotation, _lastExtractedLexem);
                 _annotations.Add(node);
                 NextLexem();
-                if (_lastExtractedLexem.Token == Token.OpenPar)
-                {
-                    NextLexem();
-                    BuildAnnotationParameters(node);
-                }
+                BuildAnnotationParameters(node);
             }
         }
         
         private void BuildAnnotationParameters(AnnotationNode annotation)
         {
+            if (_lastExtractedLexem.Token != Token.OpenPar)
+                return;
+
+            NextLexem();
+                
             while (_lastExtractedLexem.Token != Token.EndOfText)
             {
-                if(!BuildAnnotationParameter(annotation))
-                    return;
-                
-                if (_lastExtractedLexem.Token == Token.Comma)
-                {
-                    NextLexem();
-                    continue;
-                }
                 if (_lastExtractedLexem.Token == Token.ClosePar)
                 {
                     NextLexem();
                     break;
                 }
-
-                AddError(LocalizedErrors.UnexpectedOperation());
+            
+                BuildAnnotationParameter(annotation);
+                if (_lastExtractedLexem.Token == Token.Comma)
+                {
+                    NextLexem();
+                }
             }
         }
         
-        private bool BuildAnnotationParameter(AnnotationNode annotation)
+        private void BuildAnnotationParameter(AnnotationNode annotation)
         {
             bool success = true;
-            var node = annotation.AddNode(new AnnotationParameterNode());
+            var node = new AnnotationParameterNode();
             // id | id = value | value
             if (_lastExtractedLexem.Type == LexemType.Identifier)
             {
@@ -580,23 +577,15 @@ namespace OneScript.Language.SyntaxAnalysis
                 success = BuildAnnotationParamValue(node);
             }
 
-            return success;
+            if (success)
+            {
+                annotation.AddChild(node);
+            }
         }
 
         private bool BuildAnnotationParamValue(AnnotationParameterNode annotationParam)
         {
-            if (LanguageDef.IsLiteral(ref _lastExtractedLexem))
-            {
-                CreateChild(annotationParam, NodeKind.AnnotationParameterValue, _lastExtractedLexem);
-                NextLexem();
-            }
-            else
-            {
-                AddError(LocalizedErrors.LiteralExpected());
-                return false;
-            }
-
-            return true;
+            return BuildDefaultParameterValue(annotationParam, NodeKind.AnnotationParameterValue);
         }
         
         #endregion
