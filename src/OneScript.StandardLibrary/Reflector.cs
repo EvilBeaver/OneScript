@@ -228,21 +228,27 @@ namespace OneScript.StandardLibrary
             FillMethodsTable(result, clrMethods.Cast<BslMethodInfo>());
         }
 
-        private void FillPropertiesTableForObject(ValueTable result, IValue target)
+        private void FillPropertiesTableForObject(ValueTable result, IValue target, bool withPrivate)
         {
             if (target is ScriptDrivenObject scriptObject)
             {
-                var fields = scriptObject.Module.Fields
-                    .Cast<BslScriptFieldInfo>()
-                    .Select(field => BslPropertyBuilder.Create()
-                        .Name(field.Name)
-                        .IsExported(field.IsPublic)
-                        .SetAnnotations(field.GetAnnotations())
-                        .SetDispatchingIndex(field.DispatchId)
-                        .Build()
-                    ).OrderBy(p => p.DispatchId)
+                var fieldsQuery = scriptObject.Module.Fields.Cast<BslScriptFieldInfo>();
+                
+                if (!withPrivate)
+                {
+                    fieldsQuery = fieldsQuery.Where(x => x.IsPublic);
+                }    
+                
+                var fields = fieldsQuery.Select(field => BslPropertyBuilder.Create()
+                            .Name(field.Name)
+                            .IsExported(field.IsPublic)
+                            .SetAnnotations(field.GetAnnotations())
+                            .SetDispatchingIndex(field.DispatchId)
+                            .Build()
+                        )
+                    .OrderBy(p => p.DispatchId)
                     .ToArray();
-
+                
                 var fieldNames = fields.Select(x => x.Name)
                     .ToHashSet();
                 
@@ -258,7 +264,7 @@ namespace OneScript.StandardLibrary
             }
         }
         
-        private static void FillPropertiesTableForType(BslTypeValue type, ValueTable result)
+        private static void FillPropertiesTableForType(BslTypeValue type, ValueTable result, bool withPrivate)
         {
             var clrType = GetReflectableClrType(type);
             var nativeProps = clrType.GetProperties()
@@ -277,7 +283,11 @@ namespace OneScript.StandardLibrary
 
             if (typeof(ScriptDrivenObject).IsAssignableFrom(clrType.BaseType))
             {
-                var nativeFields = clrType.GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic);
+                var flags = BindingFlags.Instance|BindingFlags.Public;
+                if (withPrivate)
+                    flags |= BindingFlags.NonPublic;
+
+                var nativeFields = clrType.GetFields(flags);
                 foreach(var field in nativeFields)
                 {
                     var prop = BslPropertyBuilder.Create()
@@ -346,18 +356,19 @@ namespace OneScript.StandardLibrary
         /// Получает таблицу свойств для переданного объекта..
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу свойств.</param>
+        /// <param name="withPrivate">Включить в результат приватные поля</param>
         /// <returns>Таблица значений с колонками - Имя, Аннотации</returns>
         [ContextMethod("ПолучитьТаблицуСвойств", "GetPropertiesTable")]
-        public ValueTable GetPropertiesTable(IValue target)
+        public ValueTable GetPropertiesTable(IValue target, bool withPrivate = false)
         {
             var result = new ValueTable();
 
             if(target.GetRawValue() is BslObjectValue)
-                FillPropertiesTableForObject(result, target);
+                FillPropertiesTableForObject(result, target, withPrivate);
             else if (target.SystemType == BasicTypes.Type)
             {
                 var type = target.GetRawValue() as BslTypeValue;
-                FillPropertiesTableForType(type, result);
+                FillPropertiesTableForType(type, result, withPrivate);
             }
             else
                 throw RuntimeException.InvalidArgumentType();
