@@ -215,11 +215,6 @@ namespace ScriptEngine.HostedScript.Library.Json
             return sb.ToString();
         }
 
-        RuntimeException NotOpenException()
-        {
-            return new RuntimeException(Locale.NStr("ru='Приемник данных JSON не открыт';en='JSON data target is not opened'"));
-        }
-
         void SetNewLineChars(TextWriter textWriter)
         {
             if (_settings != null)
@@ -348,17 +343,12 @@ namespace ScriptEngine.HostedScript.Library.Json
             if (!IsOpen())
                 throw NotOpenException();
 
-            if (value.SystemType.Name == "Null")
-            {
-                _writer.WriteNull();
-                return;
-            }
-
             switch (value.DataType)
             {
                 case DataType.String:
                      WriteStringValue(value.AsString());
                     break;
+
                 case DataType.Number:
                     decimal d = value.AsNumber();
                     if (d == Math.Round(d))
@@ -369,7 +359,6 @@ namespace ScriptEngine.HostedScript.Library.Json
                         else
                             _writer.WriteValue(i);
                     }
-
                     else
                     {
                         if (useFormatWithExponent)
@@ -377,22 +366,24 @@ namespace ScriptEngine.HostedScript.Library.Json
                         else
                             _writer.WriteValue(d);
                     }
-                   
                     break;
+
                 case DataType.Date:
                     _writer.WriteValue(value.AsDate());
                     break;
+
                 case DataType.Boolean:
                     _writer.WriteValue(value.AsBoolean());
                     break;
+
                 case DataType.Undefined:
                     _writer.WriteNull();
                     break;
+
                 default:
-                    throw new RuntimeException("Тип переданного значения не поддерживается.");
+                    throw TypeNotSupprotedException(value.DataType);
             }
         }
-
 
         /// <summary>
         /// 
@@ -529,6 +520,18 @@ namespace ScriptEngine.HostedScript.Library.Json
                 SetOptions(settings);
 
             SetNewLineChars(_stringWriter);
+        }
+
+        RuntimeException NotOpenException()
+        {
+            return new RuntimeException(Locale.NStr
+                ("ru='Приемник данных JSON не открыт';en='JSON data target is not opened'"));
+        }
+
+        RuntimeException TypeNotSupprotedException(DataType type)
+        {
+            return new RuntimeException(Locale.NStr
+                ($"ru='Запись значения типа {type} не поддерживается.'; en='Can not write value of type {type}'"));
         }
 
     }
