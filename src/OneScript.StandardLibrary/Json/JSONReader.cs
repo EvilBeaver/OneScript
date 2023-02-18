@@ -26,11 +26,6 @@ namespace OneScript.StandardLibrary.Json
 
         private JsonTextReader _reader; // Объект из библиотеки Newtonsoft для работы с форматом JSON 
 
-        RuntimeException NotOpenException()
-        {
-            return new RuntimeException(Locale.NStr("ru='Источник данных JSON не открыт'; en='JSON data source is not opened'"));
-        }
-
         /// <summary>
         /// 
         /// Возвращает true если для объекта чтения json был задан текст для парсинга.
@@ -122,37 +117,33 @@ namespace OneScript.StandardLibrary.Json
             {
                 if (IsOpen())
                 {
-                    var type = _reader.TokenType;
+                    switch (_reader.TokenType)
+                    {
+                        case JsonToken.String:
+                        case JsonToken.Comment:
+                        case JsonToken.PropertyName:
+                            return ValueFactory.Create((string)_reader.Value);
 
-                    if (type == JsonToken.String || type == JsonToken.Comment || type == JsonToken.PropertyName)
-                        return ValueFactory.Create((string)_reader.Value);
-                    else if (type == JsonToken.Boolean)
-                        return ValueFactory.Create((bool)_reader.Value);
-                    else if (type == JsonToken.Integer || type == JsonToken.Float)
-                    {
-                        decimal d = Convert.ToDecimal(_reader.Value);
-                        return ValueFactory.Create(d);
+                        case JsonToken.Integer:
+                        case JsonToken.Float:
+                            return ValueFactory.Create(Convert.ToDecimal(_reader.Value));
+
+                        case JsonToken.Boolean:
+                            return ValueFactory.Create((bool)_reader.Value);
+
+                        case JsonToken.Date:
+                            return ValueFactory.Create((DateTime)_reader.Value);
+
+                        case JsonToken.Null:
+                        case JsonToken.Undefined:
+                            return ValueFactory.Create();
+
+                        default:
+                            throw CannotGetValueException();
                     }
-                    else if (type == JsonToken.Date)
-                    {
-                        return ValueFactory.Create((DateTime)_reader.Value);
-                    }
-                    else if (type == JsonToken.Null)
-                    {
-                        return ValueFactory.CreateNullValue();
-                    }
-                    else if (type == JsonToken.Undefined)
-                    {
-                        return ValueFactory.Create();
-                    }
-                    else
-                        throw new RuntimeException(Locale.NStr("ru='Текущее значение JSON не может быть получено';en='Cannot get current JSON value'"));
                 }
                 else
-                {
                     throw NotOpenException();
-                }
-                    
             }
         }
 
@@ -331,6 +322,18 @@ namespace OneScript.StandardLibrary.Json
                 Close();
 
             _reader = new JsonTextReader(new StringReader(JSONString));
+        }
+
+        RuntimeException NotOpenException()
+        {
+            return new RuntimeException(Locale.NStr
+                ("ru='Источник данных JSON не открыт'; en='JSON data source is not opened'"));
+        }
+
+        RuntimeException CannotGetValueException()
+        {
+            return new RuntimeException(Locale.NStr
+                ("ru='Текущее значение JSON не может быть получено';en='Cannot get current JSON value'"));
         }
 
     }

@@ -217,11 +217,6 @@ namespace OneScript.StandardLibrary.Json
             return sb.ToString();
         }
 
-        RuntimeException NotOpenException()
-        {
-            return new RuntimeException(Locale.NStr("ru='Приемник данных JSON не открыт';en='JSON data target is not opened'"));
-        }
-
         void SetNewLineChars(TextWriter textWriter)
         {
             if (_settings != null)
@@ -345,17 +340,7 @@ namespace OneScript.StandardLibrary.Json
             if (!IsOpen())
                 throw NotOpenException();
 
-            if(!(value.GetRawValue() is BslPrimitiveValue))
-                throw new RuntimeException("Тип переданного значения не поддерживается.");
-            
-            var clrValue = value.UnwrapToClrObject();
-            
-            if (clrValue == null)
-            {
-                _writer.WriteNull();
-                return;
-            }
-
+            var clrValue = value.GetRawValue().UnwrapToClrObject();
             switch (clrValue)
             {
                 case string v:
@@ -370,7 +355,6 @@ namespace OneScript.StandardLibrary.Json
                         else
                             _writer.WriteValue(i);
                     }
-
                     else
                     {
                         if (useFormatWithExponent)
@@ -378,7 +362,6 @@ namespace OneScript.StandardLibrary.Json
                         else
                             _writer.WriteValue(v);
                     }
-                   
                     break;
                 case bool v:
                     _writer.WriteValue(v);
@@ -386,11 +369,15 @@ namespace OneScript.StandardLibrary.Json
                 case DateTime v:
                     WriteStringValue(v.ToString());
                     break;
+
+                case null:
+                    _writer.WriteNull();
+                    break;
+
                 default:
-                    throw new RuntimeException("Тип переданного значения не поддерживается.");
+                    throw TypeNotSupportedException(value?.GetType());
             }
         }
-
 
         /// <summary>
         /// 
@@ -527,6 +514,18 @@ namespace OneScript.StandardLibrary.Json
                 SetOptions(settings);
 
             SetNewLineChars(_stringWriter);
+        }
+
+        RuntimeException NotOpenException()
+        {
+            return new RuntimeException(Locale.NStr
+                ("ru='Приемник данных JSON не открыт';en='JSON data target is not opened'"));
+        }
+
+        RuntimeException TypeNotSupportedException(Type type)
+        {
+            return new RuntimeException(Locale.NStr
+                ($"ru='Запись значения типа {type} не поддерживается.'; en='Can not write value of type {type}'"));
         }
 
     }
