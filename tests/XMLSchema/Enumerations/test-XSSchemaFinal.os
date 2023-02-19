@@ -35,7 +35,7 @@
 
 Процедура TestConstructor() Экспорт
 
-	ЮнитТест.ПроверитьРавенство(TypeOf(XSSchemaFinal),             Type("EnumerationXSSchemaFinal"));
+	ЮнитТест.ПроверитьРавенство(TypeOf(XSSchemaFinal),             Type("EnumXSSchemaFinal"));
 	ЮнитТест.ПроверитьРавенство(TypeOf(XSSchemaFinal.All),         Type("XSSchemaFinal"));
 	ЮнитТест.ПроверитьРавенство(TypeOf(XSSchemaFinal.Union),       Type("XSSchemaFinal"));
 	ЮнитТест.ПроверитьРавенство(TypeOf(XSSchemaFinal.Restriction), Type("XSSchemaFinal"));
