@@ -41,5 +41,10 @@ namespace ScriptEngine.Machine.Contexts
 
             return UnderlyingValue.Equals(otherWrapper.UnderlyingValue);
         }
+
+        public bool Equals(ClrEnumValueWrapper<T> otherWrapper)
+        {
+            return UnderlyingValue.Equals(otherWrapper.UnderlyingValue);
+        }
     }
 }

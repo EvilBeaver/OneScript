@@ -192,7 +192,7 @@ namespace OneScript.StandardLibrary.XDTO
             if (valueType is BslTypeValue typeTypeValue)
                 typeValue = typeTypeValue;
 
-            else if (xmlReader.NodeType == _xmlNodeEnum.FromNativeValue(XmlNodeType.Element))
+            else if (xmlReader.NodeType.Equals(_xmlNodeEnum.FromNativeValue(XmlNodeType.Element)))
             {
                 IValue xsiType = xmlReader.GetAttribute(ValueFactory.Create("type"), XmlSchema.InstanceNamespace);
                 IValue xsiNil = xmlReader.GetAttribute(ValueFactory.Create("nil"), XmlSchema.InstanceNamespace);
@@ -214,7 +214,7 @@ namespace OneScript.StandardLibrary.XDTO
                             break;
 
                         case "dateTime":
-                            typeValue = new BslTypeValue(BasicTypes.Number);
+                            typeValue = new BslTypeValue(BasicTypes.Date);
                             break;
 
                         default:
@@ -237,10 +237,10 @@ namespace OneScript.StandardLibrary.XDTO
                 result = ValueFactory.Create();
                 xmlReader.Skip();
             }
-            else if (implType == typeof(DataType)) // TODO: такого не должно быть.
+            else if (typeof(BslPrimitiveValue).IsAssignableFrom(implType))
             {
                 xmlReader.Read();
-                if (xmlReader.NodeType == _xmlNodeEnum.FromNativeValue(XmlNodeType.Text))
+                if (xmlReader.NodeType.Equals(_xmlNodeEnum.FromNativeValue(XmlNodeType.Text)))
                 {
                     result = XMLValue(typeValue, xmlReader.Value);
                     xmlReader.Read();
@@ -249,7 +249,7 @@ namespace OneScript.StandardLibrary.XDTO
                     throw RuntimeException.InvalidArgumentValue();
             }
             else if (typeof(IXDTOSerializableXML).IsAssignableFrom(implType))
-                result = Activator.CreateInstance(implType, new object[] { xmlReader, this }) as IValue;
+                result = Activator.CreateInstance(implType, xmlReader, this) as IValue;
 
             xmlReader.Read();
             return result;

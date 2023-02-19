@@ -367,7 +367,7 @@ namespace OneScript.StandardLibrary.Json
                     _writer.WriteValue(v);
                     break;
                 case DateTime v:
-                    WriteStringValue(v.ToString());
+                    _writer.WriteValue(v);
                     break;
 
                 case null:
