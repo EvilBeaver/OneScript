@@ -125,6 +125,10 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value.AsObject();
             }
+            else if (value is EnumerationValue && typeof(EnumerationValue).IsAssignableFrom(type))
+            {
+                valueObj = value;
+            }
             else
             {
                 valueObj = CastToClrObject(value);
