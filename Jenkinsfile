@@ -4,7 +4,7 @@ pipeline {
     agent none
 
     environment {
-        VersionPrefix = '2.0.4'
+        VersionPrefix = '2.0.0'
         VersionSuffix = 'rc2'+"-${(long)(currentBuild.startTimeInMillis/60000)}"
         outputEnc = '65001'
     }
