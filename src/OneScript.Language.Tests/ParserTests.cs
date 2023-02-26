@@ -422,8 +422,7 @@ namespace OneScript.Language.Tests
             var node = assignment.NextChild();
             node.Is(NodeKind.BinaryOperation)
                 .Equal(Token.Plus.ToString());
-            node.NextChild().Is(NodeKind.UnaryOperation)
-                .NextChildIs(NodeKind.Constant);
+            node.NextChild().Is(NodeKind.Constant);
             node.NextChild().Is(NodeKind.Constant);
         }
         
@@ -824,6 +823,58 @@ namespace OneScript.Language.Tests
             node.NextChildIs(NodeKind.DereferenceOperation)
                 .NextChildIs(NodeKind.Identifier)
                 .NoMoreChildren();
+        }
+
+        [Theory]
+        [InlineData("-1 / 1 * 2")]
+        [InlineData("1 / 1 * 2")]
+        public void Test_Positive_And_Negative_Literals_And_Priority(string code)
+        {
+            var expression = ParseExpressionAndGetValidator(code);
+            expression.Is(NodeKind.BinaryOperation).Equal(nameof(Token.Multiply));
+            
+            var division = expression.NextChild();
+            division.CurrentNode.Value.Should().Be(nameof(Token.Division));
+            division
+                .NextChildIs(NodeKind.Constant) // оптимизация унарного минуса в константу
+                .NextChildIs(NodeKind.Constant)
+                .NoMoreChildren();
+                
+            var constant = expression.NextChild();
+            constant.CurrentNode.RealNode.As<TerminalNode>().Lexem.Type.Should().Be(LexemType.NumberLiteral);
+
+            expression.NoMoreChildren();
+        }
+        
+        [Theory]
+        [InlineData("-Variable / 1 * 2", true)]
+        [InlineData("Variable / 1 * 2", false)]
+        public void Test_Positive_And_Negative_Expressions_And_Priority(string code, bool findUnary)
+        {
+            var expression = ParseExpressionAndGetValidator(code);
+            expression.Is(NodeKind.BinaryOperation);
+
+            expression.CurrentNode.Value.Should().Be(nameof(Token.Multiply));
+            
+            var division = expression.NextChild();
+            division.CurrentNode.Value.Should().Be(nameof(Token.Division));
+            var expectedFirstArg = findUnary ? NodeKind.UnaryOperation : NodeKind.Identifier;
+            division
+                .NextChildIs(expectedFirstArg)
+                .NextChildIs(NodeKind.Constant)
+                .NoMoreChildren();
+
+            expression.NextChildIs(NodeKind.Constant);
+            expression.NoMoreChildren();
+        }
+
+        [Fact]
+        public void Test_Non_Numeric_For_Unary_Minus()
+        {
+            // унарные операции приводят к числу в рантайме, а не при компиляции
+            var expression = ParseExpressionAndGetValidator("-\"hello\"");
+            expression.Is(NodeKind.UnaryOperation);
+            expression.NextChildIs(NodeKind.Constant);
         }
         
         [Fact]
