@@ -24,6 +24,7 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
+using OneScript.Sources;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -46,11 +47,13 @@ namespace OneScript.Native.Compiler
 
         private readonly ContextMethodsCache _methodsCache = new ContextMethodsCache();
         private readonly ContextPropertiesCache _propertiesCache = new ContextPropertiesCache();
+        private readonly SourceCode _source;
 
         public MethodCompiler(BslWalkerContext walkContext, BslNativeMethodInfo method) : base(walkContext)
         {
             _method = method;
             _services = walkContext.Services;
+            _source = walkContext.Source;
         }
 
         private ITypeManager CurrentTypeManager
@@ -1271,6 +1274,10 @@ namespace OneScript.Native.Compiler
                 case Token.ExceptionDescr:
                     CheckArgumentsCount(node.ArgumentList, 0);
                     result = GetRuntimeExceptionDescription();
+                    break;
+                case Token.ModuleInfo:
+                    var factory = _services.Resolve<IScriptInformationFactory>();
+                    result = ExpressionHelpers.CallScriptInfo(factory, _source);
                     break;
                 default:
                     var methodName = node.Identifier.GetIdentifier();

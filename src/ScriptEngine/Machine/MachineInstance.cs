@@ -2400,7 +2400,7 @@ namespace ScriptEngine.Machine
             var formatString = _operationStack.Pop().AsString();
             var valueToFormat = _operationStack.Pop().GetRawValue();
 
-            var formatted = ValueFormatter.Format(valueToFormat, formatString);
+            var formatted = ValueFormatter.Format((BslValue)valueToFormat, formatString);
 
             _operationStack.Push(ValueFactory.Create(formatted));
             NextInstruction();

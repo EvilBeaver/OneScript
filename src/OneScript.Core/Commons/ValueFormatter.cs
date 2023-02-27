@@ -1,67 +1,67 @@
 ﻿/*----------------------------------------------------------
-This Source Code Form is subject to the terms of the 
-Mozilla Public License, v.2.0. If a copy of the MPL 
-was not distributed with this file, You can obtain one 
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Globalization;
-using OneScript.Commons;
 using OneScript.Values;
 
-namespace ScriptEngine.Machine
+namespace OneScript.Commons
 {
     public static class ValueFormatter
     {
-        static readonly string[] BOOLEAN_FALSE = { "БЛ", "BF" };
-        static readonly string[] BOOLEAN_TRUE = { "БИ", "BT" };
-        static readonly string[] LOCALE = { "Л", "L" };
-        static readonly string[] NUM_MAX_SIZE = { "ЧЦ", "ND" };
-        static readonly string[] NUM_DECIMAL_SIZE = { "ЧДЦ", "NFD" };
-        static readonly string[] NUM_FRACTION_DELIMITER = { "ЧРД", "NDS" };
-        static readonly string[] NUM_GROUPS_DELIMITER = { "ЧРГ", "NGS" };
-        static readonly string[] NUM_ZERO_APPEARANCE = { "ЧН", "NZ" };
-        static readonly string[] NUM_GROUPING = { "ЧГ", "NG" };
-        static readonly string[] NUM_LEADING_ZERO = { "ЧВН", "NLZ" };
-        static readonly string[] NUM_NEGATIVE_APPEARANCE = { "ЧО", "NN" };
-        static readonly string[] DATE_EMPTY = { "ДП", "DE" };
-        static readonly string[] DATE_FORMAT = { "ДФ", "DF" };
-        static readonly string[] DATE_LOCAL_FORMAT = { "ДЛФ", "DLF" };
-
-        const int MAX_DECIMAL_ROUND = 28; 
-
-        public static string Format(IValue value, string format)
+        private static readonly string[] BOOLEAN_FALSE = { "БЛ", "BF" };
+        private static readonly string[] BOOLEAN_TRUE = { "БИ", "BT" };
+        private static readonly string[] LOCALE = { "Л", "L" };
+        private static readonly string[] NUM_MAX_SIZE = { "ЧЦ", "ND" };
+        private static readonly string[] NUM_DECIMAL_SIZE = { "ЧДЦ", "NFD" };
+        private static readonly string[] NUM_FRACTION_DELIMITER = { "ЧРД", "NDS" };
+        private static readonly string[] NUM_GROUPS_DELIMITER = { "ЧРГ", "NGS" };
+        private static readonly string[] NUM_ZERO_APPEARANCE = { "ЧН", "NZ" };
+        private static readonly string[] NUM_GROUPING = { "ЧГ", "NG" };
+        private static readonly string[] NUM_LEADING_ZERO = { "ЧВН", "NLZ" };
+        private static readonly string[] NUM_NEGATIVE_APPEARANCE = { "ЧО", "NN" };
+        private static readonly string[] DATE_EMPTY = { "ДП", "DE" };
+        private static readonly string[] DATE_FORMAT = { "ДФ", "DF" };
+        private static readonly string[] DATE_LOCAL_FORMAT = { "ДЛФ", "DLF" };
+        
+        private const int MAX_DECIMAL_ROUND = 28;
+        
+        public static string Format(BslValue value, string format)
         {
-            var formatParameters = ParseParameters(format);
+            var formatParameters = new FormatParametersList(format);
 
             string formattedValue;
 
             switch(value.GetRawValue())
             {
-                case BslBooleanValue _:
-                    formattedValue = FormatBoolean(value.AsBoolean(), formatParameters);
+                case BslBooleanValue bslBool:
+                    formattedValue = FormatBoolean((bool)bslBool, formatParameters);
                     break;
-                case BslNumericValue _:
-                    formattedValue = FormatNumber(value.AsNumber(), formatParameters);
+                case BslNumericValue bslNum:
+                    formattedValue = FormatNumber((decimal)bslNum, formatParameters);
                     break;
-                case BslDateValue _:
-                    formattedValue = FormatDate(value.AsDate(), formatParameters);
+                case BslDateValue bslDate:
+                    formattedValue = FormatDate((DateTime)bslDate, formatParameters);
                     break;
                 default:
-                    formattedValue = DefaultFormat(value, formatParameters);
+                    formattedValue = DefaultFormat(value);
                     break;
             }
 
             return formattedValue;
 
         }
-
-        private static string FormatBoolean(bool p, FormatParametersList formatParameters)
+        
+        public static string FormatBoolean(bool value, FormatParametersList formatParameters)
         {
-            if(p)
+            if(value)
             {
                 var truePresentation = formatParameters.GetParamValue(BOOLEAN_TRUE);
                 if (truePresentation != null)
@@ -74,18 +74,17 @@ namespace ScriptEngine.Machine
                     return falsePresentation;
             }
 
-            return ValueFactory.Create(p).AsString();
+            return BslBooleanValue.Create(value).ToString();
         }
 
+        public static string DefaultFormat(BslValue value)
+        {
+            return value.ToString();
+        }
+        
         #region Number formatting
 
-        private static int ParseUnsignedParam(string param)
-        {
-            int paramToInt;
-            return (Int32.TryParse(param, out paramToInt) && paramToInt > 0) ? paramToInt : 0;
-        }
-
-        private static string FormatNumber(decimal num, FormatParametersList formatParameters)
+        public static string FormatNumber(decimal num, FormatParametersList formatParameters)
         {
             int[] numberGroupSizes = null;
 
@@ -249,6 +248,12 @@ namespace ScriptEngine.Machine
             return num.ToString(formatBuilder.ToString(), nf);
         }
 
+        private static int ParseUnsignedParam(string param)
+        {
+            int paramToInt;
+            return (Int32.TryParse(param, out paramToInt) && paramToInt > 0) ? paramToInt : 0;
+        }
+
         private static int[] ParseGroupSizes(string param)
         {
             List<int> sizes = new List<int>();
@@ -388,9 +393,9 @@ namespace ScriptEngine.Machine
             return (int)power;
         }
 
-#endregion
+        #endregion
 
-#region Date formatting
+        #region Date formatting
 
         private static string FormatDate(DateTime dateTime, FormatParametersList formatParameters)
         {
@@ -404,11 +409,8 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                var currentDF= DateTimeFormatInfo.CurrentInfo;
-                if(currentDF == null)
-                    df = new DateTimeFormatInfo();
-                else
-                    df = (DateTimeFormatInfo)currentDF.Clone();
+                var currentDf= DateTimeFormatInfo.CurrentInfo;
+                df = (DateTimeFormatInfo)currentDf.Clone();
             }
 
             string param;
@@ -520,26 +522,13 @@ namespace ScriptEngine.Machine
             }
         } 
 
-#endregion
-
-        private static string DefaultFormat(IValue value, FormatParametersList formatParameters)
-        {
-            return value.AsString();
-        }
-
-        private static FormatParametersList ParseParameters(string format)
-        {
-            return new FormatParametersList(format);
-        }
-
+        #endregion
+        
         private static CultureInfo CreateCulture(string locale)
         {
             locale = locale.Replace('_', '-');
-            var culture = System.Globalization.CultureInfo.CreateSpecificCulture(locale);
+            var culture = CultureInfo.CreateSpecificCulture(locale);
             return culture;
         }
-
-
-        
     }
 }

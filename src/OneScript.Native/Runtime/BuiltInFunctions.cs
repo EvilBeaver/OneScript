@@ -15,12 +15,12 @@ namespace OneScript.Native.Runtime
 {
     public static class BuiltInFunctions
     {
-        //[ContextMethod("Вычислить", "Eval")]
+        [ContextMethod("Вычислить", "Eval")]
         public static BslValue Eval(string arg)
         {
             throw new NotSupportedException();
         }
-
+        
         #region String Functions
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -142,13 +142,13 @@ namespace OneScript.Native.Runtime
         }
 
         [ContextMethod("Символ", "Char")]
-        public static object Chr(int code)
+        public static string Chr(int code)
         {
             return new string(new char[1] { (char)code });
         }
 
         [ContextMethod("КодСимвола", "CharCode")]
-        public static object ChrCode(string strChar, int? position = null)
+        public static int ChrCode(string strChar, int? position = null)
         {
             if(position != null)
             {
@@ -527,6 +527,13 @@ namespace OneScript.Native.Runtime
         [ContextMethod("ТипЗнч", "TypeOf")]
         public static BslValue ValType(BslValue value) => new BslTypeValue(value.SystemType);
         
+        
+        [ContextMethod("Формат", "Format")]
+        public static string Format(BslValue value, string format)
+        {
+            return ValueFormatter.Format(value, format);
+        }
+        
         private static decimal PowInt(decimal bas, uint exp)
         {
             decimal pow = 1;
@@ -541,31 +548,5 @@ namespace OneScript.Native.Runtime
 
             return pow;
         }
-
-        // private void Format(int arg)
-        // {
-        //     var formatString = _operationStack.Pop().AsString();
-        //     var valueToFormat = _operationStack.Pop().GetRawValue();
-        //
-        //     var formatted = ValueFormatter.Format(valueToFormat, formatString);
-        //
-        //     _operationStack.Push(ValueFactory.Create(formatted));
-        //     NextInstruction();
-        //
-        // }
-        
-        // private void ModuleInfo(int arg)
-        // {
-        //     var currentScript = this.CurrentScript;
-        //     if (currentScript != null)
-        //     {
-        //         _operationStack.Push(currentScript);
-        //     }
-        //     else
-        //     {
-        //         _operationStack.Push(ValueFactory.Create());
-        //     }
-        //     NextInstruction();
-        // }
     }
 }

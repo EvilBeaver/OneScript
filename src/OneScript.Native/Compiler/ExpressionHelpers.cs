@@ -17,6 +17,7 @@ using OneScript.Contexts;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
+using OneScript.Sources;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -654,6 +655,16 @@ namespace OneScript.Native.Compiler
 
             var plusOne = DynamicAdd(counterVar, Expression.Constant(1));
             return Expression.Assign(counterVar, plusOne);
+        }
+
+        public static Expression CallScriptInfo(IScriptInformationFactory factory, SourceCode source)
+        {
+            var methodInfo = OperationsCache.GetOrAdd(
+                typeof(IScriptInformationFactory), 
+                nameof(IScriptInformationFactory.GetInfo),
+                BindingFlags.Public | BindingFlags.Instance);
+
+            return Expression.Call(Expression.Constant(factory), methodInfo, Expression.Constant(source));
         }
 
         private static bool IsModuleVariable(Expression counterVar)
