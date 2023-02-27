@@ -102,7 +102,7 @@ pipeline {
                             unstash 'buildResults'
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:Test"
 
-                            junit 'tests/tests.xml'
+                            junit 'tests/*.xml'
                         }
                     }
                 }

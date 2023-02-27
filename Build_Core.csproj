@@ -221,6 +221,29 @@
 	<Target Name="PrepareDistributionFiles" DependsOnTargets="CleanAll;BuildAll;GatherLibrary;ComposeDistributionFolders"/>
     
     <Target Name="Test">
+        <CallTarget Targets="UnitTests;ScriptedTests" />
+    </Target>
+    
+    <Target Name="UnitTests">
+        <PropertyGroup>
+            <TestsRoot>$(MSBuildProjectDirectory)/src/Tests</TestsRoot>
+        </PropertyGroup>
+        <ItemGroup>
+            <TestAssemblies Include="OneScript.Core.Tests" />
+            <TestAssemblies Include="OneScript.DebugProtocol.Test" />
+            <TestAssemblies Include="OneScript.Dynamic.Tests" />
+            <TestAssemblies Include="OneScript.Language.Tests" />
+        </ItemGroup>
+
+        <Exec 
+                WorkingDirectory="$(TestsRoot)/%(TestAssemblies.Identity)"
+                Command="dotnet test --logger:&quot;junit;LogFilePath=$(MSBuildProjectDirectory)/tests/%(TestAssemblies.Identity).xml&quot;"
+                IgnoreExitCode="true"
+        />
+        
+    </Target>
+    
+    <Target Name="ScriptedTests">
         <ItemGroup>
             <Executable Include="$(ArtifactsRoot)/*x64/bin/oscript.dll" />
             <RemoveXMLTestResult Include="$(MSBuildProjectDirectory)\tests\*.os.xml" />
