@@ -25,9 +25,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\OneScript.DebugServices\OneScript.DebugServices.csproj" />
-      <ProjectReference Include="..\OneScript.StandardLibrary\OneScript.StandardLibrary.csproj" />
-      <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
+      <ProjectReference Include="..\..\OneScript.DebugServices\OneScript.DebugServices.csproj" />
+      <ProjectReference Include="..\..\OneScript.StandardLibrary\OneScript.StandardLibrary.csproj" />
+      <ProjectReference Include="..\..\ScriptEngine\ScriptEngine.csproj" />
     </ItemGroup>
 
 </Project>

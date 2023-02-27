@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
+    <ProjectReference Include="..\..\OneScript.Language\OneScript.Language.csproj" />
   </ItemGroup>
 
 </Project>
