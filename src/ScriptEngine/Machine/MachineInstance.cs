@@ -2146,18 +2146,16 @@ namespace ScriptEngine.Machine
         {
             decimal num;
             int digits;
-            int mode;
+            int mode = 1; // по умолчанию Окр15как20
             if (arg == 1)
             {
                 num = _operationStack.Pop().AsNumber();
                 digits = 0;
-                mode = 0;
             }
             else if (arg == 2)
             {
                 digits = (int)_operationStack.Pop().AsNumber();
                 num = _operationStack.Pop().AsNumber();
-                mode = 0;
             }
             else
             {
@@ -2167,25 +2165,36 @@ namespace ScriptEngine.Machine
                 num = _operationStack.Pop().AsNumber();
             }
 
-            decimal scale = (decimal)Math.Pow(10.0, digits);
-            decimal scaled = Math.Abs(num) * scale;
-
-            var director = (int)((scaled - (long)scaled) * 10 % 10);
-
-            decimal round;
-            if (director == 5)
-                round = Math.Floor(scaled + mode * 0.5m * Math.Sign(digits));
-            else if (director > 5)
-                round = Math.Ceiling(scaled);
-            else
-                round = Math.Floor(scaled);
-            
             decimal result;
-            
-            if(digits >= 0)
-                result = (Math.Sign(num) * round / scale);
+            if (digits >= 0)
+            {
+                result = Math.Round(num, digits, MidpointRounding.AwayFromZero);
+                if (mode == 0)
+                {
+                    int scale = (int)Math.Pow(10, digits);
+                    // для.Net Core 3+, 5+ можно использовать MidpointRounding.ToZero
+                    var diff = (result - num) * scale;
+                    if (diff == 0.5m)
+                        result -= 1m / scale;
+                    else if (diff == -0.5m)
+                        result += 1m / scale;
+                }
+            }
             else
-                result = (Math.Sign(num) * round * scale);
+            {
+                int scale = (int)Math.Pow(10, -digits);
+                num /= scale;
+                result = Math.Round(num, MidpointRounding.AwayFromZero);
+                if (mode == 0)
+                {
+                    var diff = result - num;
+                    if (diff == 0.5m)
+                        result -= 1m;
+                    else if (diff == -0.5m)
+                        result += 1m;
+                }
+                result *= scale;
+            }
 
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
