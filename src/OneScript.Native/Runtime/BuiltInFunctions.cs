@@ -410,29 +410,40 @@ namespace OneScript.Native.Runtime
         public static decimal Round(decimal num, int? digits = null, int? mode = null)
         {
             var digitsMath = digits??0;
-            var modeMath = mode??0;
+            var modeMath = mode??1;// по умолчанию Окр15как20
             if (modeMath != 0)
                 modeMath = 1;
             
-            decimal scale = (decimal)Math.Pow(10.0, digitsMath);
-            decimal scaled = Math.Abs(num) * scale;
-
-            var director = (int)((scaled - (long)scaled) * 10 % 10);
-
-            decimal round;
-            if (director == 5)
-                round = Math.Floor(scaled + modeMath * 0.5m * Math.Sign(digitsMath));
-            else if (director > 5)
-                round = Math.Ceiling(scaled);
-            else
-                round = Math.Floor(scaled);
-            
             decimal result;
-            
-            if(digits >= 0)
-                result = (Math.Sign(num) * round / scale);
+            if (digits >= 0)
+            {
+                result = Math.Round(num, digitsMath, MidpointRounding.AwayFromZero);
+                if (modeMath == 0)
+                {
+                    int scale = (int)Math.Pow(10, digitsMath);
+                    // для.Net Core 3+, 5+ можно использовать MidpointRounding.ToZero
+                    var diff = (result - num) * scale;
+                    if (diff == 0.5m)
+                        result -= 1m / scale;
+                    else if (diff == -0.5m)
+                        result += 1m / scale;
+                }
+            }
             else
-                result = (Math.Sign(num) * round * scale);
+            {
+                int scale = (int)Math.Pow(10, -digitsMath);
+                num /= scale;
+                result = Math.Round(num, MidpointRounding.AwayFromZero);
+                if (mode == 0)
+                {
+                    var diff = result - num;
+                    if (diff == 0.5m)
+                        result -= 1m;
+                    else if (diff == -0.5m)
+                        result += 1m;
+                }
+                result *= scale;
+            }
 
             return result;
         }
