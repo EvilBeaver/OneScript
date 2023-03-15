@@ -23,6 +23,7 @@ namespace OneScript.Contexts
         private Type _returnType = typeof(void);
         private string _name;
         private bool _isPrivate = true;
+        private BslParameterInfo[] _parameters = Array.Empty<BslParameterInfo>();
 
         protected BslScriptMethodInfo()
         {
@@ -69,12 +70,9 @@ namespace OneScript.Contexts
 
         void IBuildableMethod.SetParameters(IEnumerable<BslParameterInfo> parameters)
         {
-            Parameters.Clear();
-            Parameters.AddRange(parameters);
+            _parameters = parameters.ToArray();
         }
-        
-        internal List<BslParameterInfo> Parameters { get; } = new List<BslParameterInfo>();
-        
+
         public override Type ReturnType => _returnType;
 
         public override Type DeclaringType => _declaringType;
@@ -89,9 +87,20 @@ namespace OneScript.Contexts
 
         public override MethodImplAttributes GetMethodImplementationFlags() => MethodImplAttributes.Managed;
 
-        public override ParameterInfo[] GetParameters() => Parameters.ToArray();
+        // ReSharper disable once CoVariantArrayConversion
+        public override ParameterInfo[] GetParameters() => CopyParams();
         
-        public BslParameterInfo[] GetBslParameters() => Parameters.ToArray();
+        public BslParameterInfo[] GetBslParameters() => CopyParams();
+
+        private BslParameterInfo[] CopyParams()
+        {
+            if (_parameters.Length == 0)
+                return _parameters;
+
+            var dest = new BslParameterInfo[_parameters.Length];
+            _parameters.CopyTo(dest, 0);
+            return dest;
+        }
 
         public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
