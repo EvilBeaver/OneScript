@@ -294,6 +294,7 @@ namespace OneScript.StandardLibrary
                         .Name(field.Name)
                         .IsExported(field.IsPublic)
                         .SetDispatchingIndex(indices++)
+                        .SetAnnotations(field.GetAnnotations())
                         .Build();
                     
                     infos.Add(prop);
