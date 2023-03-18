@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Reflection;
 using System.Text;
 
 namespace oscript
@@ -40,6 +41,15 @@ namespace oscript
 			}
 
 			return returnCode;
+		}
+		
+		public static string GetVersion()
+		{
+			var assembly = Assembly.GetExecutingAssembly();
+			var informationVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+				.InformationalVersion ?? assembly.GetName().Version?.ToString() ?? "<unset>";
+
+			return informationVersion;
 		}
 	}
 }

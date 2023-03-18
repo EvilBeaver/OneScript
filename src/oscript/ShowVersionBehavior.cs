@@ -13,7 +13,7 @@ namespace oscript
 	{
 		public override int Execute()
 		{
-			Output.WriteLine($"{Assembly.GetExecutingAssembly().GetName().Version}");
+			Output.WriteLine(Program.GetVersion());
 			return 0;
 		}
 	}
