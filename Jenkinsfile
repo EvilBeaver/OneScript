@@ -221,7 +221,7 @@ pipeline {
         stage ('Publishing revision') {
             when { anyOf {
                 // TODO сделать автовычисление маркера lts или latest и согласовать его с путём к папке на стр. 250 (TARGET=..._)
-                branch 'release/latest'
+                branch 'latest'
                 }
             }
             
@@ -247,14 +247,9 @@ pipeline {
                     mv $WIN/OneScript*-x86*.zip ./
                     mv $RPM/*.rpm x64/
                     mv $DEB/*.deb x64/
-                    TARGET="/var/www/oscript.io/download/versions/latest/"
+                    TARGET="/var/www/oscript.io/download/versions/latest-dev/"
                     sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
                     '''.stripIndent()
-                    
-                    sh """
-                    TARGET="/var/www/oscript.io/download/versions/${ReleaseNumber.replace('.', '_')}/"
-                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
-                    """.stripIndent()
                 }
             }
         }
