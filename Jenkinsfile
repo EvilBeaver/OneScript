@@ -197,6 +197,33 @@ pipeline {
             }
         }
 
+		stage ('Publishing preview') {
+            when { anyOf {
+                branch 'release/preview';
+                }
+            }
+            agent { label 'master' }
+
+            steps {
+                
+                unstash 'dist'
+                unstash 'vsix'
+
+                dir('targetContent') {
+                    sh '''
+                    ZIPS=../built
+                    NUGET=../built/nuget
+                    VSIX=../built/vscode
+                    mv $ZIPS/*.zip ./
+                    mv $VSIX/*.vsix ./
+                    
+                    TARGET="/var/www/oscript.io/download/versions/preview/"
+                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
+                    '''.stripIndent()
+                }
+            }
+        }
+
         stage ('Publishing latest') {
             when { anyOf {
                 branch 'latest';
