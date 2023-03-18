@@ -4,7 +4,7 @@ pipeline {
     agent none
 
     environment {
-        ReleaseNumber = '1.8.3'
+        ReleaseNumber = '1.8.4'
         outputEnc = '65001'
     }
 
