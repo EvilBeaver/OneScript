@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Text;
 using OneScript.Commons;
 using OneScript.Contexts;
@@ -28,6 +27,9 @@ namespace OneScript.StandardLibrary.Collections.CollectionIndex
         private readonly IIndexSourceCollection _source;
         private readonly List<IValue> _fields;
 
+        private readonly IDictionary<CollectionIndexKey, IList<IValue>> _data =
+            new Dictionary<CollectionIndexKey, IList<IValue>>();
+
         public CollectionIndex(IIndexSourceCollection source, IEnumerable<IValue> fields) : base(_objectType)
         {
             _source = source;
@@ -45,17 +47,88 @@ namespace OneScript.StandardLibrary.Collections.CollectionIndex
 
         public void AddElement(PropertyNameIndexAccessor element)
         {
-            
+            var key = CollectionIndexKey.extract(_fields, element);
+            if (_data.ContainsKey(key))
+            {
+                _data[key].Add(element);
+            }
+            else
+            {
+                var list = new List<IValue> { element };
+                _data.Add(key, list);
+            }
+        }
+
+        public void RemoveElement(PropertyNameIndexAccessor element)
+        {
+            var key = CollectionIndexKey.extract(_fields, element);
+            if (_data.ContainsKey(key))
+            {
+                _data[key].Remove(element);
+            }
         }
 
         private void Rebuild()
         {
-            
+            var add = new List<IValue>();
+            var delete = new Dictionary<IValue, CollectionIndexKey>();
+            foreach (var el in _data)
+            {
+                foreach (var row in el.Value)
+                {
+                    var key = CollectionIndexKey.extract(_fields, row as PropertyNameIndexAccessor);
+                    if (!key.Equals(el.Key))
+                    {
+                        delete.Add(row, el.Key);
+                        add.Add(row);
+                    }
+                }
+            }
+
+            foreach (var el in delete)
+            {
+                _data[el.Value].Remove(el.Key);
+            }
+
+            foreach (var el in add)
+            {
+                AddElement(el as PropertyNameIndexAccessor);
+            }
         }
 
         internal void Clear()
         {
-            
+            foreach (var el in _data)
+            {
+                el.Value.Clear();
+            }
+            _data.Clear();
+        }
+
+        /// <summary>
+        /// Возвращает покрытие индекса по полям
+        /// </summary>
+        /// <param name="fields">Поля, по которым будет поиск</param>
+        /// <returns> -1 - Индекс не подходит для поиска,
+        /// >= 0 - поля индекса входят в поля поиска. Возвращает количество полей поиска, не вошедших в индекс 
+        /// </returns>
+        public int coverage(IList<IValue> fields)
+        {
+            var thisKeys = new HashSet<IValue>(_fields);
+            var requestedKeys = new HashSet<IValue>(fields);
+
+            if (!requestedKeys.IsSupersetOf(thisKeys))
+            {
+                return -1;
+            }
+            requestedKeys.ExceptWith(thisKeys);
+            return requestedKeys.Count;
+        }
+
+        public IList<IValue> getValues(CollectionIndexKey key)
+        {
+            var subKey = key.SubKey(_fields);
+            return !_data.ContainsKey(subKey) ? new List<IValue>() : _data[subKey];
         }
 
         public override string ToString()

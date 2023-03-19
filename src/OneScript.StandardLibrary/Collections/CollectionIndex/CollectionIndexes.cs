@@ -38,6 +38,7 @@ namespace OneScript.StandardLibrary.Collections.CollectionIndex
             var fields = _source.GetFields(columns);
             var newIndex = new CollectionIndex(_source, fields);
             _indexes.Add(newIndex);
+            _source.IndexAdded(newIndex);
             return newIndex;
         }
 
@@ -63,6 +64,26 @@ namespace OneScript.StandardLibrary.Collections.CollectionIndex
                 collectionIndex.Clear();
             }
             _indexes.Clear();
+        }
+
+        internal CollectionIndex pickIndex(IList<IValue> fields)
+        {
+            var bestCoverage = -1;
+            CollectionIndex bestIndex = null;
+            foreach (var index in _indexes)
+            {
+                var coverage = index.coverage(fields);
+                if (coverage >= 0)
+                {
+                    if (bestCoverage == -1 || bestCoverage < coverage)
+                    {
+                        bestCoverage = coverage;
+                        bestIndex = index;
+                    }
+                }
+            }
+
+            return bestIndex;
         }
 
         private CollectionIndex GetIndexInternal(IValue index)

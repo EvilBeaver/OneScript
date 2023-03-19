@@ -72,8 +72,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Добавить", "Add")]
         public ValueTableRow Add()
         {
-            ValueTableRow row = new ValueTableRow(this);
+            var row = new ValueTableRow(this);
             _rows.Add(row);
+            Row_AddToIndexes(row);
             return row;
         }
 
@@ -85,8 +86,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Вставить", "Insert")]
         public ValueTableRow Insert(int index)
         {
-            ValueTableRow row = new ValueTableRow(this);
+            var row = new ValueTableRow(this);
             _rows.Insert(index, row);
+            Row_AddToIndexes(row);
             return row;
         }
 
@@ -100,8 +102,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Удалить", "Delete")]
         public void Delete(IValue row)
         {
-            int index = IndexByValue(row);
-
+            var index = IndexByValue(row);
+            var castedRow = _rows[index];
+            Row_DeleteFromIndexes(castedRow);
             _rows.RemoveAt(index);
         }
 
@@ -298,15 +301,29 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             if (filter == null)
                 throw RuntimeException.InvalidArgumentType();
 
-            ArrayImpl Result = new ArrayImpl();
+            var result = new ArrayImpl();
+            var filterKey = CollectionIndexKey.fromKeyAndValueCollection(filter.GetEnumerator(), this);
+            var index = _indexes.pickIndex(filterKey.Fields);
 
-            foreach (ValueTableRow row in _rows)
+            var list = index == null ? GetEnumerator() : EnumerateIndex(index, filterKey);
+
+            while (list.MoveNext())
             {
+                var row = list.Current;
                 if (CheckFilterCriteria(row, filter))
-                    Result.Add(row);
+                    result.Add(row);
             }
 
-            return Result;
+            return result;
+        }
+
+        private static IEnumerator<ValueTableRow> EnumerateIndex(CollectionIndex.CollectionIndex index, CollectionIndexKey key)
+        {
+            var values = index.getValues(key);
+            foreach (var value in values)
+            {
+                yield return value as ValueTableRow;
+            }
         }
 
         /// <summary>
@@ -711,6 +728,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             return new RuntimeException(string.Format("Колонка '{0}' не может одновременно быть колонкой группировки и колонкой суммирования", columnName));
         }
 
+        #region Indexes
+
         internal void ColumnRemoved(ValueTableColumn column)
         {
             foreach (var index in _indexes)
@@ -719,7 +738,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             }
         }
 
-        internal void BuildIndex(CollectionIndex.CollectionIndex index)
+        private void BuildIndex(CollectionIndex.CollectionIndex index)
         {
             index.Clear();
             foreach (var row in _rows)
@@ -727,6 +746,24 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                 index.AddElement(row);
             }
         }
+
+        internal void Row_DeleteFromIndexes(ValueTableRow Row)
+        {
+            foreach (var index in _indexes)
+            {
+                index.RemoveElement(Row);
+            }
+        }
+
+        internal void Row_AddToIndexes(ValueTableRow Row)
+        {
+            foreach (var index in _indexes)
+            {
+                index.AddElement(Row);
+            }
+        }
+
+        #endregion
 
         public IValue GetField(string name)
         {

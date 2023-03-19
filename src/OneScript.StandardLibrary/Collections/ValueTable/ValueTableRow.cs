@@ -90,12 +90,16 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         public void Set(IValue index, IValue value)
         {
             var C = Owner().Columns.GetColumnByIIndex(index);
+            _owner.Row_DeleteFromIndexes(this);
             _data[C] = C.ValueType.AdjustValue(value);
+            _owner.Row_AddToIndexes(this);
         }
 
         public void Set(ValueTableColumn column, IValue value)
         {
+            _owner.Row_DeleteFromIndexes(this);
             _data[column] = column.ValueType.AdjustValue(value);
+            _owner.Row_AddToIndexes(this);
         }
 
         public void OnOwnerColumnRemoval(IValue column)
