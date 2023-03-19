@@ -12,9 +12,9 @@ namespace OneScript.Language.LexicalAnalysis
 {
     public class ExpressionBasedLexer : ILexer
     {
-        private readonly Func<char, LexerState> _selector;
+        private readonly Func<char, SourceCodeIterator, LexerState> _selector;
 
-        internal ExpressionBasedLexer(Func<char, LexerState> selector)
+        internal ExpressionBasedLexer(Func<char, SourceCodeIterator, LexerState> selector)
         {
             _selector = selector;
         }
@@ -23,7 +23,7 @@ namespace OneScript.Language.LexicalAnalysis
         {
             if (Iterator.MoveToContent())
             {
-                var state = _selector(Iterator.CurrentSymbol);
+                var state = _selector(Iterator.CurrentSymbol, Iterator);
                 if (state == default)
                 {
                     throw new SyntaxErrorException(Iterator.GetErrorPosition(),

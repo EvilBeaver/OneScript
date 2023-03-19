@@ -41,7 +41,7 @@ namespace OneScript.Language.LexicalAnalysis
             }
 
 
-            var lambda = Expression.Lambda<Func<char, LexerState>>(expr, charParam);  
+            var lambda = Expression.Lambda<Func<char, SourceCodeIterator, LexerState>>(expr, charParam, iteratorParam);  
             var func = lambda.Compile();
             
             return new ExpressionBasedLexer(func);

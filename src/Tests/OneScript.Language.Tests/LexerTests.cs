@@ -566,26 +566,6 @@ namespace OneScript.Language.Tests
             Assert.Equal("ffff", lex.Content);
         }
 
-        [Fact]
-        public void Syntax_Error_Handling()
-        {
-            string code = @"
-            А$Б";
-
-            var lexer = new DefaultLexer();
-            lexer.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
-            lexer.UnexpectedCharacterFound += (s, e) =>
-                {
-                    e.Iterator.MoveNext();
-                    e.IsHandled = true;
-                };
-
-            Lexem lex = lexer.NextLexem();
-            Assert.Equal("А", lex.Content);
-            lex = lexer.NextLexem();
-            Assert.Equal("Б", lex.Content);
-        }
-
         [Fact(Skip = "Рефакторинг")]
         public void New_Exception_Shows_Negative_Line_And_Column()
         {

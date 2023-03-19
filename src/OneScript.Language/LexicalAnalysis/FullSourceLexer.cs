@@ -46,37 +46,10 @@ namespace OneScript.Language.LexicalAnalysis
                 if (_iterator.MoveToContent())
                 {
                     SelectState();
-
-                    Lexem lex;
-                    try
-                    {
-                        lex = _state.ReadNextLexem(_iterator);
-
-                        if (lex.Type == LexemType.NotALexem) // обработанные синтакс-ошибки
-                        {
-                            _state = _emptyState;
-                            continue;
-                        }
-                    }
-                    catch (SyntaxErrorException exc)
-                    {
-                        if (HandleError(exc))
-                        {
-                            lex = Lexem.Empty();
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
-
-                    return lex;
-
+                    return _state.ReadNextLexem(_iterator);
                 }
-                else
-                {
-                    return Lexem.EndOfText();
-                }
+                
+                return Lexem.EndOfText();
             }
         }
 
@@ -122,11 +95,7 @@ namespace OneScript.Language.LexicalAnalysis
             else
             {
                 var cp = _iterator.GetErrorPosition();
-                var exc = new SyntaxErrorException(cp, string.Format("Неизвестный символ {0}", cs));
-                if (!HandleError(exc))
-                {
-                    throw exc;
-                }
+                throw new SyntaxErrorException(cp, string.Format("Неизвестный символ {0}", cs));
             }
         }
 
@@ -153,28 +122,5 @@ namespace OneScript.Language.LexicalAnalysis
             _state = _fixedState;
 
         }
-
-        private bool HandleError(SyntaxErrorException exc)
-        {
-            if (UnexpectedCharacterFound != null)
-            {
-                var eventArgs = new LexerErrorEventArgs();
-                eventArgs.IsHandled = false;
-                eventArgs.Iterator = _iterator;
-                eventArgs.CurrentState = _state;
-                eventArgs.Exception = exc;
-
-                UnexpectedCharacterFound(this, eventArgs);
-
-                return eventArgs.IsHandled;
-
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public event EventHandler<LexerErrorEventArgs> UnexpectedCharacterFound;
     }
 }

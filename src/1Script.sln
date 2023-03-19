@@ -57,6 +57,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.Dynamic.Tests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.Native", "OneScript.Native\OneScript.Native.csproj", "{90E896C1-FEAE-4C71-8E47-3E3F2D9C926C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Benchmarks", "Benchmarks", "{8B5A6D30-225B-49EF-8216-8C0356E79311}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexerBenchmarks", "Benchmarks\LexerBenchmarks\LexerBenchmarks.csproj", "{3EC27778-1BAF-4543-A69C-ED103403D31A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -252,6 +256,16 @@ Global
 		{90E896C1-FEAE-4C71-8E47-3E3F2D9C926C}.Release|x86.Build.0 = Release|Any CPU
 		{90E896C1-FEAE-4C71-8E47-3E3F2D9C926C}.LinuxDebug|Any CPU.ActiveCfg = LinuxDebug|Any CPU
 		{90E896C1-FEAE-4C71-8E47-3E3F2D9C926C}.LinuxDebug|Any CPU.Build.0 = LinuxDebug|Any CPU
+		{3EC27778-1BAF-4543-A69C-ED103403D31A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EC27778-1BAF-4543-A69C-ED103403D31A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EC27778-1BAF-4543-A69C-ED103403D31A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3EC27778-1BAF-4543-A69C-ED103403D31A}.Debug|x86.Build.0 = Debug|Any CPU
+		{3EC27778-1BAF-4543-A69C-ED103403D31A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EC27778-1BAF-4543-A69C-ED103403D31A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EC27778-1BAF-4543-A69C-ED103403D31A}.Release|x86.ActiveCfg = Release|Any CPU
+		{3EC27778-1BAF-4543-A69C-ED103403D31A}.Release|x86.Build.0 = Release|Any CPU
+		{3EC27778-1BAF-4543-A69C-ED103403D31A}.LinuxDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EC27778-1BAF-4543-A69C-ED103403D31A}.LinuxDebug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -262,6 +276,7 @@ Global
 		{6D02017A-189F-45D7-B286-D67536AB4907} = {91059C5B-526C-4B81-B106-99DEFF542D1F}
 		{55890DF2-D13E-4C89-A01D-79CAD6726246} = {91059C5B-526C-4B81-B106-99DEFF542D1F}
 		{0F5E6099-39BA-41CF-B55F-357F7DF4DE00} = {91059C5B-526C-4B81-B106-99DEFF542D1F}
+		{3EC27778-1BAF-4543-A69C-ED103403D31A} = {8B5A6D30-225B-49EF-8216-8C0356E79311}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A4A871EF-C5A7-478F-907E-31C69A869973}

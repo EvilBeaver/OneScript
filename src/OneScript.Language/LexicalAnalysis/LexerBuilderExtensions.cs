@@ -28,6 +28,39 @@ namespace OneScript.Language.LexicalAnalysis
             builder.Detect((cs, i) => SpecialChars.IsOperatorChar(cs) &&
                                       !(cs == '/' && i.PeekNext() == '/'))
                 .HandleWith(new OperatorLexerState());
+            
+            return builder;
+        }
+
+        public static LexerBuilder DetectSemicolons(this LexerBuilder builder)
+        {
+            builder.Detect((cs, i) => cs == SpecialChars.EndOperator)
+                .HandleWith(new SpecialLexerState(LexemType.EndOperator, Token.Semicolon));
+
+            return builder;
+        }
+        
+        public static LexerBuilder DetectTernaryOperators(this LexerBuilder builder)
+        {
+            builder.Detect((cs, i) => cs == SpecialChars.QuestionMark)
+                .HandleWith(new SpecialLexerState(LexemType.Operator, Token.Question));
+
+            return builder;
+        }
+        
+        public static LexerBuilder DetectAnnotations(this LexerBuilder builder)
+        {
+            builder.Detect((cs, i) => cs == SpecialChars.Annotation)
+                .HandleWith(new AnnotationLexerState());
+
+            return builder;
+        }
+        
+        public static LexerBuilder DetectDates(this LexerBuilder builder)
+        {
+            builder.Detect((cs, i) => cs == SpecialChars.DateQuote)
+                .HandleWith(new DateLexerState());
+
             return builder;
         }
         
@@ -50,6 +83,29 @@ namespace OneScript.Language.LexicalAnalysis
             builder.Detect((cs, i) => cs == SpecialChars.Preprocessor)
                 .HandleWith(new PreprocessorDirectiveLexerState());
             return builder;
+        }
+    }
+
+    public class SpecialLexerState : LexerState
+    {
+        private readonly LexemType _type;
+        private readonly Token _token;
+
+        public SpecialLexerState(LexemType type, Token token)
+        {
+            _type = type;
+            _token = token;
+        }
+
+        public override Lexem ReadNextLexem(SourceCodeIterator iterator)
+        {
+            iterator.MoveNext();
+            return new Lexem
+            {
+                Type = _type,
+                Token = _token,
+                Location = new CodeRange(iterator.CurrentLine, iterator.CurrentColumn)
+            };
         }
     }
 }

@@ -27,7 +27,8 @@ namespace OneScript.Language.Tests
                 _code = code;
             }
 
-            public string Location => _code;
+            public string Location => $"string{_code.GetHashCode()}";
+            
             public string GetSourceCode() => _code;
         }
     }
