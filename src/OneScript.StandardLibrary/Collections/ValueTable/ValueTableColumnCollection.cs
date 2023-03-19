@@ -128,6 +128,19 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             _columns.Remove(vtColumn);
         }
 
+        /// <summary>
+        /// Удаляет все колонки
+        /// </summary>
+        [ContextMethod("Очистить", "Clear")]
+        public void Clear()
+        {
+            foreach (var column in _columns)
+            {
+                _owner.ColumnRemoved(column);
+            }
+            _columns.Clear();
+        }
+
         public ValueTableColumn FindColumnByName(string name)
         {
             return _columns.Find(column => _namesComparer.Equals(name, column.Name));

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.StandardLibrary.Collections.CollectionIndex;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -21,7 +22,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
     /// Представляет из себя коллекцию строк с заранее заданной структурой.
     /// </summary>
     [ContextClass("ТаблицаЗначений", "ValueTable")]
-    public class ValueTable : AutoCollectionContext<ValueTable, ValueTableRow>
+    public class ValueTable : AutoCollectionContext<ValueTable, ValueTableRow>, IIndexSourceCollection
     {
         private readonly ValueTableColumnCollection _columns;
         private readonly List<ValueTableRow> _rows;
@@ -31,7 +32,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         {
             _columns = new ValueTableColumnCollection(this);
             _rows = new List<ValueTableRow>();
-            _indexes = new CollectionIndexes();
+            _indexes = new CollectionIndexes(this);
     }
 
         /// <summary>
@@ -148,9 +149,12 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             return result;
         }
 
-        private List<ValueTableColumn> GetProcessingColumnList(string ColumnNames, bool EmptyListInCaseOfNull = false)
+        private List<ValueTableColumn> GetProcessingColumnList(string ColumnNames,
+            bool EmptyListInCaseOfNull = false,
+            bool AllowDuplicateColumns = false
+            )
         {
-            List<ValueTableColumn> processing_list = new List<ValueTableColumn>();
+            var processing_list = new List<ValueTableColumn>();
             if (ColumnNames != null)
             {
                 if (ColumnNames.Trim().Length == 0)
@@ -167,7 +171,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                     if (Column == null)
                         throw WrongColumnNameException(name);
 
-                    if (processing_list.Find( x=> x.Name==name ) == null)
+                    if (AllowDuplicateColumns || processing_list.Find( x=> x.Name==name ) == null)
                         processing_list.Add(Column);
                 }
             }
@@ -705,6 +709,43 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         private static RuntimeException ColumnsMixedException(string columnName)
         {
             return new RuntimeException(string.Format("Колонка '{0}' не может одновременно быть колонкой группировки и колонкой суммирования", columnName));
+        }
+
+        internal void ColumnRemoved(ValueTableColumn column)
+        {
+            foreach (var index in _indexes)
+            {
+                index.ColumnRemoved(column);
+            }
+        }
+
+        internal void BuildIndex(CollectionIndex.CollectionIndex index)
+        {
+            index.Clear();
+            foreach (var row in _rows)
+            {
+                index.AddElement(row);
+            }
+        }
+
+        public IValue GetField(string name)
+        {
+            return Columns.FindColumnByName(name);
+        }
+
+        public IEnumerable<IValue> GetFields(string fieldsList)
+        {
+            return GetProcessingColumnList(fieldsList, true, true);
+        }
+
+        public string GetName(IValue field)
+        {
+            return (field as ValueTableColumn)?.Name;
+        }
+
+        public void IndexAdded(CollectionIndex.CollectionIndex index)
+        {
+            BuildIndex(index);
         }
     }
 }
