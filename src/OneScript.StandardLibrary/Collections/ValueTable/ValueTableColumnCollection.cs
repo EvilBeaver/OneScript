@@ -143,7 +143,12 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public ValueTableColumn FindColumnByName(string name)
         {
-            return _columns.Find(column => _namesComparer.Equals(name, column.Name));
+            foreach (var column in _columns)
+            {
+                if (_namesComparer.Equals(name, column.Name))
+                    return column;
+            }
+            return null;
         }
 
         public ValueTableColumn FindColumnByIndex(int index)
@@ -166,10 +171,12 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public override int GetPropertyNumber(string name)
         {
-            int idx = _columns.FindIndex(column => _namesComparer.Equals(name, column.Name));
-            if (idx == -1)
-                throw PropertyAccessException.PropNotFoundException(name);
-            return idx;
+            for (var idx = 0; idx < _columns.Count; idx++)
+            {
+                if (_namesComparer.Equals(name, _columns[idx].Name))
+                    return idx;
+            }
+            throw PropertyAccessException.PropNotFoundException(name);
         }
 
         public override int GetPropCount()
