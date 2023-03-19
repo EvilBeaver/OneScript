@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using OneScript.Commons;
 using OneScript.Contexts;
@@ -56,6 +57,28 @@ namespace OneScript.StandardLibrary.Collections.CollectionIndex
             {
                 var list = new List<IValue> { element };
                 _data.Add(key, list);
+            }
+        }
+
+        public void AddAll<T>(IList<T> range)
+        {
+            var keys = new Dictionary<T, CollectionIndexKey>(range.Count);
+            var distinctKeys = new HashSet<CollectionIndexKey>(range.Count);
+            foreach (var el in range)
+            {
+                var key = CollectionIndexKey.extract(_fields, el as PropertyNameIndexAccessor);
+                keys.Add(el, key);
+                distinctKeys.Add(key);
+            }
+
+            foreach (var key in distinctKeys)
+            {
+                _data.Add(key, new List<IValue>(range.Count / distinctKeys.Count));
+            }
+
+            foreach (var el in keys)
+            {
+                _data[el.Value].Add(el.Key as PropertyNameIndexAccessor);
             }
         }
 

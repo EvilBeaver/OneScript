@@ -14,13 +14,15 @@ using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Collections.CollectionIndex
 {
-    public class CollectionIndexKey
+    public sealed class CollectionIndexKey
     {
         private readonly IDictionary<IValue, IValue> _values;
+        private readonly IValue[] _fields;
 
-        internal CollectionIndexKey(IDictionary<IValue, IValue> values)
+        private CollectionIndexKey(IDictionary<IValue, IValue> values)
         {
             _values = new Dictionary<IValue, IValue>(values);
+            _fields = _values.Keys.ToArray();
         }
 
         /// <summary>
@@ -31,7 +33,7 @@ namespace OneScript.StandardLibrary.Collections.CollectionIndex
         /// <returns></returns>
         public static CollectionIndexKey extract(IList<IValue> fields, PropertyNameIndexAccessor element)
         {
-            var values = new Dictionary<IValue, IValue>();
+            var values = new Dictionary<IValue, IValue>(fields.Count);
             foreach (var field in fields)
             {
                 if (!values.ContainsKey(field))
@@ -80,6 +82,7 @@ namespace OneScript.StandardLibrary.Collections.CollectionIndex
             int i = 0;
             foreach (var v in _values)
             {
+                // TODO: тут возможно переполнение.
                 result[i++] = v.GetHashCode();
             }
 
@@ -92,40 +95,25 @@ namespace OneScript.StandardLibrary.Collections.CollectionIndex
             {
                 return false;
             }
-            var allKeys = CombineKeys(_values, otherKey._values);
-            foreach (var key in allKeys)
+
+            if (_values.Count != otherKey._values.Count) return false;
+
+            foreach (var field in _fields)
             {
-                if (!ValuesEqual(key, _values, otherKey._values))
+                if (_values.ContainsKey(field))
                 {
-                    return false;
+                    if (!otherKey._values.ContainsKey(field)) return false;
+                    var v1 = _values[field];
+                    var v2 = otherKey._values[field];
+                    if (!v1.Equals(v2)) return false;
+                }
+                else
+                {
+                    if (otherKey._values.ContainsKey(field)) return false;
                 }
             }
 
             return true;
-        }
-        
-        private static bool ValuesEqual<T, TX>(T key, IDictionary<T, TX> d1, IDictionary<T, TX> d2)
-        {
-            if (d1.ContainsKey(key) && d2.ContainsKey(key))
-            {
-                var v1 = d1[key];
-                var v2 = d2[key];
-                if (v1.Equals(v2))
-                    return true;
-            }
-
-            return false;
-        }
-
-        private static ISet<T> CombineKeys<T, TX, TY>(IDictionary<T, TX> d1, IDictionary<T, TY> d2)
-        {
-            var result = new HashSet<T>(d1.Keys);
-            foreach (var key in d2.Keys)
-            {
-                if (!result.Contains(key))
-                    result.Add(key);
-            }
-            return result;
         }
     }
 }

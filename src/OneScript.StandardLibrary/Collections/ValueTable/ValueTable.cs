@@ -741,10 +741,12 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         private void BuildIndex(CollectionIndex.CollectionIndex index)
         {
             index.Clear();
+            index.AddAll(_rows);
+            /*
             foreach (var row in _rows)
             {
                 index.AddElement(row);
-            }
+            }*/
         }
 
         internal void Row_DeleteFromIndexes(ValueTableRow Row)
