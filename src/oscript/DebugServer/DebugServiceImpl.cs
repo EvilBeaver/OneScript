@@ -74,7 +74,6 @@ namespace oscript.DebugServer
                         Source = item.Key
                     });
                 }
-
             }
 
             return confirmedBreakpoints.ToArray();
@@ -88,13 +87,14 @@ namespace oscript.DebugServer
             int index = 0;
             foreach (var frameInfo in frames)
             {
-                var frame = new StackFrame();
-                frame.LineNumber = frameInfo.LineNumber;
-                frame.Index = index++;
-                frame.MethodName = frameInfo.MethodName;
-                frame.Source = frameInfo.Source;
+                var frame = new StackFrame
+                {
+                    LineNumber = frameInfo.LineNumber,
+                    Index = index++,
+                    MethodName = frameInfo.MethodName,
+                    Source = frameInfo.Source
+                };
                 result[frame.Index] = frame;
-
             }
             return result;
         }
@@ -125,7 +125,7 @@ namespace oscript.DebugServer
 
             try
             {
-                value = GetMachine(threadId).Evaluate(expression, true);
+                value = GetMachine(threadId).EvaluateInFrame(expression, frameIndex);
             }
             catch (Exception e)
             {
@@ -147,7 +147,7 @@ namespace oscript.DebugServer
         {
             try
             {
-                var value = GetMachine(threadId).Evaluate(expression, true);
+                var value = GetMachine(threadId).EvaluateInFrame(expression, contextFrame);
                 
                 var variable = CreateDebuggerVariable("$evalResult",
                     value.AsString(), value.SystemType.Name);

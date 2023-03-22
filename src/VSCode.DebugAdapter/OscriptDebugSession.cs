@@ -397,7 +397,7 @@ namespace VSCode.DebugAdapter
 
                 if (evalResult.IsStructured)
                 {
-                    var loc = new EvaluatedVariableLocator(expression, frame.ThreadId, frameId);
+                    var loc = new EvaluatedVariableLocator(expression, frame.ThreadId, frame.Index);
                     id = _variableHandles.Create(loc);
                 }
             }
