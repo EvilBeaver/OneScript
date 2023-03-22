@@ -72,7 +72,6 @@ namespace OneScript.DebugServices
                         Source = item.Key
                     });
                 }
-
             }
 
             // Уведомить все потоки о новых точках остановки
@@ -92,13 +91,14 @@ namespace OneScript.DebugServices
             int index = 0;
             foreach (var frameInfo in frames)
             {
-                var frame = new StackFrame();
-                frame.LineNumber = frameInfo.LineNumber;
-                frame.Index = index++;
-                frame.MethodName = frameInfo.MethodName;
-                frame.Source = frameInfo.Source;
+                var frame = new StackFrame
+                {
+                    LineNumber = frameInfo.LineNumber,
+                    Index = index++,
+                    MethodName = frameInfo.MethodName,
+                    Source = frameInfo.Source
+                };
                 result[frame.Index] = frame;
-
             }
             return result;
         }
@@ -134,7 +134,7 @@ namespace OneScript.DebugServices
 
             try
             {
-                value = GetMachine(threadId).Evaluate(expression, true);
+                value = GetMachine(threadId).EvaluateInFrame(expression, frameIndex);
             }
             catch (Exception e)
             {
@@ -157,7 +157,7 @@ namespace OneScript.DebugServices
             try
             {
                 var value = GetMachine(threadId)
-                    .Evaluate(expression, true)
+                    .EvaluateInFrame(expression, contextFrame)
                     .GetRawValue();
                 
                 var variable = _visualizer.GetVariable(MachineVariable.Create(value, "$evalResult"));
