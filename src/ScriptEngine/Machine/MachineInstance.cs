@@ -271,14 +271,14 @@ namespace ScriptEngine.Machine
         {
             System.Diagnostics.Debug.Assert(_fullCallstackCache != null);
             if (frameId < 0 || frameId >= _fullCallstackCache.Count)
-                return ValueFactory.Create();
+                throw new ScriptException("Wrong stackframe");
 
             ExecutionFrame selectedFrame = _fullCallstackCache[frameId].FrameObject;
 
             MachineInstance currentMachine;
             MachineInstance runner = new MachineInstance
             {
-                _scopes = new List<Scope>(_scopes.GetRange(0, selectedFrame.ModuleLoadIndex + 1)),
+                _scopes = new List<Scope>(this._scopes.GetRange(0, selectedFrame.ModuleLoadIndex + 1)),
                 _debugInfo = _module.ModuleInfo
             };
 
@@ -293,21 +293,21 @@ namespace ScriptEngine.Machine
                 var code = runner.CompileExpressionModule(expression);
 
                 code.ModuleInfo.Origin = selectedFrame.Module.ModuleInfo.Origin;
-                code.ModuleInfo.ModuleName = "<dbg expression>";
+                code.ModuleInfo.ModuleName = "<debug expression>";
 
-                var mlocals = new Scope
+                var localScope = new Scope
                 {
                     Instance = new UserScriptContextInstance(code),
                     Methods = selectedFrame.ModuleScope.Methods,
                     Variables = selectedFrame.Locals
                 };
-                runner._scopes.Add(mlocals);
+                runner._scopes.Add(localScope);
 
                 frame = new ExecutionFrame
                 {
                     MethodName = code.ModuleInfo.ModuleName,
                     Module = code,
-                    ModuleScope = mlocals,
+                    ModuleScope = localScope,
                     ModuleLoadIndex = runner._scopes.Count - 1,
                     Locals = new IVariable[0],
                     InstructionPointer = 0,
