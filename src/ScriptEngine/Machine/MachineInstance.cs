@@ -1388,6 +1388,12 @@ namespace ScriptEngine.Machine
         {
             var code = _operationStack.Pop().AsString();
             var module = CompileCached(code, CompileExecutionBatchModule);
+            if (module.Methods.Count() == 0)
+            {
+                NextInstruction();
+                return;
+            }
+
             PrepareCodeStatisticsData(module);
 
             var mlocals = new Scope();
