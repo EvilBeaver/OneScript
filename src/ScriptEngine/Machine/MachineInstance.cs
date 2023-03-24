@@ -319,7 +319,7 @@ namespace ScriptEngine.Machine
             var localScope = new Scope
             {
                 Instance = new UserScriptContextInstance(code),
-                Methods = TopScope.Methods,
+                Methods = new BslMethodInfo[0],
                 Variables = _currentFrame.Locals
             };
             _scopes.Add(localScope);
@@ -1481,13 +1481,19 @@ namespace ScriptEngine.Machine
         {
             var code = _operationStack.Pop().AsString();
             var module = CompileCached(code, CompileExecutionBatchModule);
-            PrepareCodeStatisticsData(module);
+            if (module.Methods.Count() == 0)
+            {
+                NextInstruction();
+                return;
+            }
 
-            var mlocals = new Scope();
-            mlocals.Instance = new UserScriptContextInstance(module);
-            mlocals.Methods = TopScope.Methods;
-            mlocals.Variables = _currentFrame.Locals;
-            _scopes.Add(mlocals);
+            var localScope = new Scope
+            {
+                Instance = new UserScriptContextInstance(module),
+                Methods = new BslMethodInfo[0],
+                Variables = _currentFrame.Locals
+            };
+            _scopes.Add(localScope);
 
             var mi = (MachineMethodInfo)module.Methods[0];
             var method = mi.GetRuntimeMethod();
@@ -1495,7 +1501,7 @@ namespace ScriptEngine.Machine
             {
                 Module = module,
                 MethodName = mi.Name,
-                ModuleScope = mlocals,
+                ModuleScope = localScope,
                 ModuleLoadIndex = _scopes.Count - 1,
                 Locals = new IVariable[method.LocalVariables.Length],
                 InstructionPointer = 0
@@ -1506,14 +1512,14 @@ namespace ScriptEngine.Machine
                 locals[i] = Variable.Create(ValueFactory.Create(), method.LocalVariables[i]);
             }
 
+            PushFrame(frame);
             try
             {
-                PushFrame(frame);
-                MainCommandLoop();
+                ExecuteCode();
+                PopFrame();
             }
             finally
             {
-                PopFrame();
                 _scopes.RemoveAt(_scopes.Count - 1);
             }
 
@@ -2537,6 +2543,7 @@ namespace ScriptEngine.Machine
         private StackRuntimeModule CompileExpressionModule(string expression)
         {
             var ctx = ExtractCompilerContext();
+            var entryId = CurrentCodeEntry().ToString();
 
             var stringSource = SourceCodeBuilder.Create()
                 .FromString(expression)
