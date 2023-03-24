@@ -238,8 +238,8 @@ namespace ScriptEngine.Machine
             var mlocals = new Scope
             {
                 Instance = new UserScriptContextInstance(code),
-                Methods = TopScope.Methods,
-                Variables = _currentFrame.Locals
+                Methods = new MethodInfo[0],
+                Variables = new IVariable[0]
             };
             _scopes.Add(mlocals);
 
@@ -249,7 +249,7 @@ namespace ScriptEngine.Machine
                 Module = code,
                 ModuleScope = mlocals,
                 ModuleLoadIndex = _scopes.Count - 1,
-                Locals = new IVariable[0],
+                Locals = _currentFrame.Locals,
                 InstructionPointer = 0,
             };
 
@@ -298,8 +298,8 @@ namespace ScriptEngine.Machine
                 var localScope = new Scope
                 {
                     Instance = new UserScriptContextInstance(code),
-                    Methods = selectedFrame.ModuleScope.Methods,
-                    Variables = selectedFrame.Locals
+                    Methods = new MethodInfo[0],
+                    Variables = new IVariable[0]
                 };
                 runner._scopes.Add(localScope);
 
@@ -309,7 +309,7 @@ namespace ScriptEngine.Machine
                     Module = code,
                     ModuleScope = localScope,
                     ModuleLoadIndex = runner._scopes.Count - 1,
-                    Locals = new IVariable[0],
+                    Locals = selectedFrame.Locals,
                     InstructionPointer = 0,
                 };
             }
@@ -2473,16 +2473,17 @@ namespace ScriptEngine.Machine
         private LoadedModule CompileExpressionModule(string expression)
         {
             var ctx = ExtractCompilerContext();
+            var entryId = CurrentCodeEntry().ToString();
 
             ICodeSource stringSource = new StringBasedSource(expression);
             var parser = new Lexer();
             parser.Code = stringSource.Code;
             var compiler = new Compiler.Compiler();
-            ctx.PushScope(new SymbolScope()); // скоуп выражения
             var modImg = compiler.CompileExpression(parser, ctx);
+
             modImg.ModuleInfo = new ModuleInformation();
-            modImg.ModuleInfo.Origin = "<expression>";
-            modImg.ModuleInfo.ModuleName = "<expression>";
+            modImg.ModuleInfo.Origin = $"{entryId}:<eval>";
+            modImg.ModuleInfo.ModuleName = $"{entryId}:<eval>";
             var code = new LoadedModule(modImg);
             return code;
         }
@@ -2497,7 +2498,9 @@ namespace ScriptEngine.Machine
             parser.Code = stringSource.Code;
             var compiler = new Compiler.Compiler();
             ctx.PushScope(new SymbolScope()); // скоуп выражения
+
             var modImg = compiler.CompileExecBatch(parser, ctx);
+
             modImg.ModuleInfo = new ModuleInformation();
             modImg.ModuleInfo.Origin = $"{entryId}:<exec>";
             modImg.ModuleInfo.ModuleName = $"{entryId}:<exec>";
