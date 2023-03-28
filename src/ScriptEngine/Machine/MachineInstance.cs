@@ -1422,20 +1422,20 @@ namespace ScriptEngine.Machine
                 return;
             }
 
-            PrepareCodeStatisticsData(module);
-
-            var mlocals = new Scope();
-            mlocals.Instance = new UserScriptContextInstance(module);
-            mlocals.Methods = TopScope.Methods;
-            mlocals.Variables = _currentFrame.Locals;
-            _scopes.Add(mlocals);
+            var localScope = new Scope
+            {
+                Instance = new UserScriptContextInstance(module),
+                Methods = new MethodInfo[0],
+                Variables = _currentFrame.Locals
+            };
+            _scopes.Add(localScope);
 
             var method = module.Methods[0];
             var frame = new ExecutionFrame
             {
                 MethodName = method.Signature.Name,
                 Module = module,
-                ModuleScope = mlocals,
+                ModuleScope = localScope,
                 ModuleLoadIndex = _scopes.Count - 1,
                 Locals = new IVariable[method.Variables.Count],
                 InstructionPointer = 0,
@@ -1445,11 +1445,11 @@ namespace ScriptEngine.Machine
 
             try
             {
-                MainCommandLoop();
+                ExecuteCode();
+                PopFrame();
             }
             finally
             {
-                PopFrame();
                 _scopes.RemoveAt(_scopes.Count - 1);
             }
 
