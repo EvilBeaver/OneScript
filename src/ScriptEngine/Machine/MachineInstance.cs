@@ -235,19 +235,19 @@ namespace ScriptEngine.Machine
         {
             var code = CompileCached(expression, CompileExpressionModule);
 
-            var mlocals = new Scope
+            var localScope = new Scope
             {
                 Instance = new UserScriptContextInstance(code),
                 Methods = new MethodInfo[0],
                 Variables = new IVariable[0]
             };
-            _scopes.Add(mlocals);
+            _scopes.Add(localScope);
 
             var frame = new ExecutionFrame
             {
                 MethodName = code.ModuleInfo.ModuleName,
                 Module = code,
-                ModuleScope = mlocals,
+                ModuleScope = localScope,
                 ModuleLoadIndex = _scopes.Count - 1,
                 Locals = _currentFrame.Locals,
                 InstructionPointer = 0,
