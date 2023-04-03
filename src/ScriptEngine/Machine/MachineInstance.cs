@@ -2543,9 +2543,14 @@ namespace ScriptEngine.Machine
                 }
                 foreach (var variable in scope.Variables)
                 {
-                    // TODO тут возможна двуязычность у свойств (приаттаченых, как IVariable)
-                    //  пока костыль в виде одного имени
-                    symbolScope.DefineVariable(new LocalVariableSymbol(variable.Name));
+                    if (variable.SystemType.Alias != null)
+                    {
+                        symbolScope.DefineVariable(new AliasedVariableSymbol(variable.Name, variable.SystemType.Alias));
+                    }
+                    else
+                    {
+                        symbolScope.DefineVariable(new LocalVariableSymbol(variable.Name));
+                    }
                 }
 
                 ctx.PushScope(symbolScope, scope.Instance);
