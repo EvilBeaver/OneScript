@@ -2480,12 +2480,12 @@ namespace ScriptEngine.Machine
             parser.Code = stringSource.Code;
             var compiler = new Compiler.Compiler();
             var modImg = compiler.CompileExpression(parser, ctx);
-
-            modImg.ModuleInfo = new ModuleInformation();
-            modImg.ModuleInfo.Origin = $"{entryId}:<eval>";
-            modImg.ModuleInfo.ModuleName = $"{entryId}:<eval>";
-            var code = new LoadedModule(modImg);
-            return code;
+            modImg.ModuleInfo = new ModuleInformation
+            {
+                Origin = $"{entryId}:<eval>",
+                ModuleName = $"{entryId}:<eval>"
+            };
+            return new LoadedModule(modImg);
         }
 
         private LoadedModule CompileExecutionBatchModule(string execBatch)
@@ -2500,40 +2500,26 @@ namespace ScriptEngine.Machine
             ctx.PushScope(new SymbolScope()); // скоуп выражения
 
             var modImg = compiler.CompileExecBatch(parser, ctx);
-
-            modImg.ModuleInfo = new ModuleInformation();
-            modImg.ModuleInfo.Origin = $"{entryId}:<exec>";
-            modImg.ModuleInfo.ModuleName = $"{entryId}:<exec>";
-            modImg.ModuleInfo.CodeIndexer = parser.Iterator;
-            var code = new LoadedModule(modImg);
-            return code;
+            modImg.ModuleInfo = new ModuleInformation
+            {
+                Origin = $"{entryId}:<exec>",
+                ModuleName = $"{entryId}:<exec>",
+                CodeIndexer = parser.Iterator
+            };
+            return new LoadedModule(modImg); 
         }
 
         private CompilerContext ExtractCompilerContext()
         {
             var ctx = new CompilerContext();
+
             foreach (var scope in _scopes)
             {
-                var symbolScope = new SymbolScope();
-                foreach (var methodInfo in scope.Methods)
-                {
-                    symbolScope.DefineMethod(methodInfo);
-                }
-                foreach (var variable in scope.Variables)
-                {
-                    symbolScope.DefineVariable(variable.Name);
-                }
-
-                ctx.PushScope(symbolScope);
+                ctx.PushScope(new SymbolScope(scope));
             }
 
-            var locals = new SymbolScope();
-            foreach (var variable in _currentFrame.Locals)
-            {
-                locals.DefineVariable(variable.Name);
-            }
+            ctx.PushScope(new SymbolScope(_currentFrame.Locals));
 
-            ctx.PushScope(locals);
             return ctx;
         }
 
