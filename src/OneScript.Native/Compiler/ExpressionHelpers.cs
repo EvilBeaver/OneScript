@@ -526,7 +526,7 @@ namespace OneScript.Native.Compiler
         public static Expression TypeByNameCall(ITypeManager manager, Expression argument)
         {
             var method = OperationsCache.GetOrAdd(typeof(DynamicOperations), nameof(DynamicOperations.GetTypeByName),
-                BindingFlags.Instance | BindingFlags.Public);
+                BindingFlags.Static | BindingFlags.Public);
             
             Debug.Assert(method != null);
 

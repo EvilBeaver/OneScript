@@ -1264,7 +1264,7 @@ namespace OneScript.Native.Compiler
                 case Token.Type:
                     CheckArgumentsCount(node.ArgumentList, 1);
                     result = ExpressionHelpers.TypeByNameCall(CurrentTypeManager,
-                        ConvertToExpressionTree(node.ArgumentList.Children[0]));
+                        ConvertToExpressionTree(node.ArgumentList.Children[0].Children[0]));
                     break;
                 case Token.ExceptionInfo:
                     CheckArgumentsCount(node.ArgumentList, 0);
