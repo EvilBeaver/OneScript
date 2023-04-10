@@ -566,11 +566,11 @@ namespace OneScript.Native.Compiler
                 nameof(IRuntimeContextInstance.GetPropValue),
                 BindingFlags.Instance | BindingFlags.Public);
 
-            return Expression.Call(
+            return Expression.Convert(Expression.Call(
                 Expression.Constant(target),
                 getter,
                 Expression.Constant(propertyNumber)
-            );
+            ), typeof(BslValue));
         }
         
         public static Expression GetContextPropertyValue(Expression target, string propertyName)
