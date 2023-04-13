@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler
@@ -14,12 +15,56 @@ namespace ScriptEngine.Compiler
     class SymbolScope
     {
         readonly Dictionary<string, int> _variableNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-        readonly List<VariableInfo> _variables = new List<VariableInfo>();
+        readonly List<VariableInfo> _variables;
 
         readonly Dictionary<string, int> _methodsNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        readonly List<MethodInfo> _methods;
 
-        readonly List<MethodInfo> _methods = new List<MethodInfo>();
+        public SymbolScope()
+        {
+            _methods = new List<MethodInfo>();
+            _variables = new List<VariableInfo>();
+        }
+
+        public SymbolScope(Scope scope)
+        {
+            _methods = new List<MethodInfo>(scope.Methods.Length);
+            for (int idx = 0; idx < scope.Methods.Length; idx++)
+            {
+                var method = scope.Methods[idx];
+                _methods.Add(method);
+                _methodsNumbers[method.Name] = idx;
+
+                if (method.Alias != null)
+                    _methodsNumbers[method.Alias] = idx;
+            }
+
+            _variables = new List<VariableInfo>(scope.Variables.Length);
+            FillVariables(scope.Variables);
+        }
+
+        public SymbolScope(IVariable[] variables)
+        {
+            _methods = new List<MethodInfo>();
+            _variables = new List<VariableInfo>(variables.Length);
+            FillVariables(variables);
+        }
+
+        private void FillVariables(IVariable[] variables)
+        {
+            for (int idx = 0; idx < variables.Length; idx++)
+            {
+                var variable = variables[idx];
+                _variableNumbers[variable.Name] = idx;
+
+                _variables.Add(new VariableInfo()
+                {
+                    Index = idx,
+                    Identifier = variable.Name,
+                    Type = SymbolType.Variable
+                });
+            }
+        }
 
         public MethodInfo GetMethod(string name)
         {
