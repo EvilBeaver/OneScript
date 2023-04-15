@@ -2372,7 +2372,7 @@ namespace ScriptEngine.Machine
 
         private void Format(int arg)
         {
-            var formatString = _operationStack.Pop().AsString();
+            var formatString = arg > 1 ? _operationStack.Pop().AsString() : string.Empty;
             var valueToFormat = _operationStack.Pop();
 
             var formatted = ValueFormatter.Format(valueToFormat, formatString);
