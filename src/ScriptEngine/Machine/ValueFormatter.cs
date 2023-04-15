@@ -393,48 +393,31 @@ namespace ScriptEngine.Machine
         private static string FormatDate(DateTime dateTime, FormatParametersList formatParameters)
         {
             var locale = formatParameters.GetParamValue(LOCALE);
-            DateTimeFormatInfo df;
-            if (locale != null)
-            {
-                // culture codes in 1C-style
-                var culture = CreateCulture(locale);
-                df = (DateTimeFormatInfo)culture.DateTimeFormat.Clone();
-            }
-            else
-            {
-                var currentDF= DateTimeFormatInfo.CurrentInfo;
-                if(currentDF == null)
-                    df = new DateTimeFormatInfo();
-                else
-                    df = (DateTimeFormatInfo)currentDF.Clone();
-            }
+            var dateFormatInfo = GetDateTimeFormatInfo(locale);
 
-            string param;
+            var formatString = "G";
 
             if (dateTime == DateTime.MinValue)
             {
-                if (formatParameters.HasParam(DATE_EMPTY, out param))
-                {
-                    return param;
-                }
-
-                return String.Empty;
+                if (!formatParameters.HasParam(DATE_EMPTY, value: out var emptyDateString))
+                    return string.Empty;
+                
+                if (!string.IsNullOrEmpty(emptyDateString))
+                    return emptyDateString;
+                formatString = string.Empty;
             }
 
-            string formatString = "G";
-
-            if (formatParameters.HasParam(DATE_FORMAT, out param))
+            if (formatParameters.HasParam(DATE_FORMAT, out var dateFormatString))
             {
-                formatString = ProcessDateFormat(param);
+                formatString = ProcessDateFormat(dateFormatString);
             }
 
-            if (formatParameters.HasParam(DATE_LOCAL_FORMAT, out param))
+            if (formatParameters.HasParam(DATE_LOCAL_FORMAT, out var dateLocalFormatString))
             {
-                formatString = ProcessLocalDateFormat(param);
+                formatString = ProcessLocalDateFormat(dateLocalFormatString);
             }
 
-            return dateTime.ToString(formatString, df);
-
+            return string.IsNullOrEmpty(formatString) ? string.Empty : dateTime.ToString(formatString, dateFormatInfo);
         }
 
         private static string ProcessDateFormat(string param)
@@ -516,9 +499,30 @@ namespace ScriptEngine.Machine
                 default:
                     return "G";
             }
-        } 
+        }
 
-#endregion
+        private static DateTimeFormatInfo GetDateTimeFormatInfo(string locale)
+        {
+            DateTimeFormatInfo dateFormat;
+            if (locale != null)
+            {
+                // culture codes in 1C-style
+                var culture = CreateCulture(locale);
+                dateFormat = (DateTimeFormatInfo)culture.DateTimeFormat.Clone();
+            }
+            else
+            {
+                var currentDF = DateTimeFormatInfo.CurrentInfo;
+                if (currentDF == null)
+                    dateFormat = new DateTimeFormatInfo();
+                else
+                    dateFormat = (DateTimeFormatInfo)currentDF.Clone();
+            }
+
+            return dateFormat;
+        }
+
+        #endregion
 
         private static string DefaultFormat(IValue value, FormatParametersList formatParameters)
         {
