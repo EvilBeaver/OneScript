@@ -51,6 +51,13 @@ namespace NUnitTests
 		{
 			RunSpecificTest(@"reflector.os");
         }
+
+		[Test]
+		public void Test_Formatting()
+		{
+			RunSpecificTest(@"formatting.os");
+		}
+		
         [Test]
         public void Test_Zip()
         {
