@@ -660,13 +660,25 @@ namespace OneScript.Native.Compiler
         
         protected override void VisitReturnNode(BslSyntaxNode node)
         {
-            Debug.Assert(node.Children.Count > 0);
+            if (_method.IsFunction() && node.Children.Count == 0)
+            {
+                AddError(LocalizedErrors.FuncEmptyReturnValue(), node.Location);
+                return;
+            }
             
+            var label = _blocks.GetCurrentBlock().MethodReturn;
+
+            if (!_method.IsFunction() && node.Children.Count == 0)
+            {
+                var undefinedExpr = Expression.Constant(BslUndefinedValue.Instance);
+                _blocks.Add(Expression.Return(label, undefinedExpr));
+                return;
+            }
+
             VisitExpression(node.Children[0]);
 
             var resultExpr = _statementBuildParts.Pop();
-
-            var label = _blocks.GetCurrentBlock().MethodReturn;
+            
             if (!resultExpr.Type.IsValue())
                 resultExpr = ExpressionHelpers.ConvertToType(resultExpr, typeof(BslValue));
             
@@ -1055,11 +1067,18 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitGlobalFunctionCall(CallNode node)
         {
+            if (!_method.IsFunction())
+            {
+                AddError(LocalizedErrors.UseProcAsFunction(), node.Location);
+                return;
+            }
+            
             if (LanguageDef.IsBuiltInFunction(node.Identifier.Lexem.Token))
             {
                 _statementBuildParts.Push(CreateBuiltInFunctionCall(node));
                 return;
             }
+            
             var expression = CreateMethodCall(node);
             _statementBuildParts.Push(expression);
         }
@@ -1114,6 +1133,12 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitObjectFunctionCall(BslSyntaxNode node)
         {
+            if (!_method.IsFunction())
+            {
+                AddError(LocalizedErrors.UseProcAsFunction(), node.Location);
+                return;
+            }
+            
             var target = _statementBuildParts.Pop();
             var call = (CallNode) node;
 
