@@ -136,6 +136,37 @@ namespace OneScript.Dynamic.Tests
             errors.Should().BeEmpty();
         }
 
+        [Fact]
+        public void CanCompile_Proc_With_Return()
+        {
+            var code = @"
+            Процедура Тест()
+                Возврат;
+            КонецПроцедуры";
+            
+            var errors = new List<CodeError>();
+            CreateModule(code, errors);
+            
+            errors.Should().BeEmpty();
+        }
+        
+        [Fact]
+        public void Detects_Proc_As_Func_Invoke()
+        {
+            var code = @"
+            Процедура Тест()
+                
+            КонецПроцедуры
+
+            a = Тест();";
+            
+            var errors = new List<CodeError>();
+            CreateModule(code, errors);
+            
+            errors.Should().HaveCount(1);
+            errors[0].ErrorId.Should().Be(nameof(LocalizedErrors.UseProcAsFunction));
+        }
+
         private DynamicModule CreateModule(string code)
         {
             var helper = new CompileHelper();

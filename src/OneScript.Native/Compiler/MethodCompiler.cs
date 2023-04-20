@@ -1067,18 +1067,17 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitGlobalFunctionCall(CallNode node)
         {
-            if (!_method.IsFunction())
-            {
-                AddError(LocalizedErrors.UseProcAsFunction(), node.Location);
-                return;
-            }
-            
             if (LanguageDef.IsBuiltInFunction(node.Identifier.Lexem.Token))
             {
                 _statementBuildParts.Push(CreateBuiltInFunctionCall(node));
                 return;
             }
-            
+
+            if (!_method.IsFunction())
+            {
+                AddError(LocalizedErrors.UseProcAsFunction(), node.Location);
+            }
+
             var expression = CreateMethodCall(node);
             _statementBuildParts.Push(expression);
         }
