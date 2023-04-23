@@ -99,14 +99,12 @@ namespace ScriptEngine.Compiler
                 // if(_ctx is ModuleCompilerContext moduleContext)
                 //     moduleContext.Update();
             }
-            catch (CompilerException e)
+            catch (DependencyResolveException e)
             {
                 var error = new CodeError
                 {
                     Description = e.Message,
-                    Position = e.GetPosition()?.LineNumber == default
-                        ? MakeCodePosition(node.Location)
-                        : e.GetPosition(),
+                    Position = MakeCodePosition(node.Location),
                     ErrorId = nameof(CompilerException)
                 };
                 AddError(error);
