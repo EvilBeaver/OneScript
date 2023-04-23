@@ -270,6 +270,7 @@ namespace OneScript.StandardLibrary.Processes
             var sInfo = new ProcessStartInfo();
 
             int argsPosition;
+            sInfo.UseShellExecute = true;
             sInfo.FileName = ExtractExecutableName(cmdLine, out argsPosition);
             sInfo.Arguments = argsPosition >= cmdLine.Length ? "" : cmdLine.Substring(argsPosition);
             if (currentDir != null)
