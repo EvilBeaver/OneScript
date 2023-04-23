@@ -84,6 +84,7 @@ namespace OneScript.DebugProtocol.TcpServer
                 }
             });
 
+            _messageThread.IsBackground = true;
             _messageThread.Start();
         }
 
