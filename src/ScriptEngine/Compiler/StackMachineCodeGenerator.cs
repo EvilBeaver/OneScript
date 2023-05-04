@@ -117,7 +117,7 @@ namespace ScriptEngine.Compiler
             {
                 foreach (var item in _forwardedMethods)
                 {
-                    if (!_ctx.FindMethod(item.identifier, out var methN))
+                    if (!_ctx.TryFindMethodBinding(item.identifier, out var methN))
                     {
                         AddError(LocalizedErrors.SymbolNotFound(item.identifier), item.location);
                         continue;
@@ -720,7 +720,7 @@ namespace ScriptEngine.Compiler
             
             var identifier = identifierNode.Lexem.Content;
             
-            var hasMethod = _ctx.FindMethod(identifier, out var methBinding);
+            var hasMethod = _ctx.TryFindMethodBinding(identifier, out var methBinding);
             if (hasMethod)
             {
                 var scope = _ctx.GetScope(methBinding.ScopeNumber);
@@ -873,7 +873,7 @@ namespace ScriptEngine.Compiler
             {
                 var terminal = handlerNode.AsTerminal();
                 var identifier = terminal.GetIdentifier();
-                if (_ctx.FindMethod(identifier, out _))
+                if (_ctx.TryFindMethodBinding(identifier, out _))
                 {
                     var lex = terminal.Lexem;
                     lex.Type = LexemType.StringLiteral;
