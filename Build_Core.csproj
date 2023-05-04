@@ -9,7 +9,6 @@
         <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
 
         <ArtifactsRoot>$(MSBuildProjectDirectory)/built</ArtifactsRoot>
-        <ArtifactsRoot>$(MSBuildProjectDirectory)/built</ArtifactsRoot>
         <LibDir>$(ArtifactsRoot)/lib</LibDir>
         <DebugAdapterDir>$(ArtifactsRoot)\vscode\</DebugAdapterDir>
         <Configuration>Release</Configuration>
