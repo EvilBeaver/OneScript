@@ -135,6 +135,22 @@ namespace OneScript.Dynamic.Tests
             
             errors.Should().BeEmpty();
         }
+        
+        [Fact]
+        public void CanCompile_Func()
+        {
+            var code = @"
+            Функция Тест()
+                Возврат 123;
+            КонецФункции
+
+            а = Тест();";
+            
+            var errors = new List<CodeError>();
+            CreateModule(code, errors);
+            
+            errors.Should().BeEmpty();
+        }
 
         [Fact]
         public void CanCompile_Proc_With_Return()
@@ -142,7 +158,9 @@ namespace OneScript.Dynamic.Tests
             var code = @"
             Процедура Тест()
                 Возврат;
-            КонецПроцедуры";
+            КонецПроцедуры
+
+            Тест();";
             
             var errors = new List<CodeError>();
             CreateModule(code, errors);

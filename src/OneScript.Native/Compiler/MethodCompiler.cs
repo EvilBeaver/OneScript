@@ -1073,7 +1073,10 @@ namespace OneScript.Native.Compiler
                 return;
             }
 
-            if (!_method.IsFunction())
+            var methodExists = Symbols.TryFindMethod(
+                node.Identifier.GetIdentifier(), out var methodSymbol);
+            
+            if (methodExists && !methodSymbol.Method.IsFunction())
             {
                 AddError(LocalizedErrors.UseProcAsFunction(), node.Location);
             }
@@ -1233,7 +1236,7 @@ namespace OneScript.Native.Compiler
 
         private Expression CreateMethodCall(CallNode node)
         {
-            if (!Symbols.FindMethod(node.Identifier.GetIdentifier(), out var binding))
+            if (!Symbols.TryFindMethodBinding(node.Identifier.GetIdentifier(), out var binding))
             {
                 AddError($"Unknown method {node.Identifier.GetIdentifier()}", node.Location);
                 return null;
