@@ -699,7 +699,7 @@ namespace OneScript.Core.Tests
             tm.RegisterClass(typeof(ArrayImpl));
             var blockCompiler = new CompiledBlock(default);
 
-            var N = 5000;
+            var N = 50000;
             var arr = new ArrayImpl();
             for (int i = 0; i < N; i++)
             {

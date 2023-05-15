@@ -17,6 +17,7 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Compiler;
 using OneScript.Sources;
+using ScriptEngine.Hosting;
 
 namespace OneScript.Dynamic.Tests
 {
@@ -34,7 +35,7 @@ namespace OneScript.Dynamic.Tests
         
         public CompileHelper()
         {
-            _services = default;
+            _services = new TinyIocImplementation();
         }
 
         public IEnumerable<CodeError> Errors => _errors.Errors;
