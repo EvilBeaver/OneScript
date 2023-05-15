@@ -306,9 +306,16 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// <returns name="Number"/>
         /// 
         [ContextMethod("ПрочитатьБайт", "ReadByte")]
-        public byte ReadByte()
+        public IValue ReadByte()
         {
-            return _reader.ReadByte();
+            try
+            {
+                return ValueFactory.Create(_reader.ReadByte());
+            }
+            catch (EndOfStreamException)
+            {
+                return ValueFactory.Create();
+            }
         }
 
         /// <summary>
@@ -434,7 +441,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             return textRdr.ReadLine(lineSplitter ?? ConvertibleSplitterOfLines);
         }
 
-        private T FromBytes<T>(byte[] bytes, Func<byte[], int, T> leConverter, Func<byte[], int, T> beConverter, IValue byteOrder = null)
+        private EndianBitConverter GetConverter(IValue byteOrder)
         {
             ByteOrderEnum workByteOrder;
             if (byteOrder == null)
@@ -455,8 +462,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
                 }
             }
 
-            var converter = workByteOrder == ByteOrderEnum.BigEndian ? beConverter : leConverter;
-            return converter(bytes, 0);
+            return workByteOrder == ByteOrderEnum.BigEndian ? BitConversionFacility.BigEndian : BitConversionFacility.LittleEndian;
         }
 
         /// <summary>
@@ -472,12 +478,15 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// <returns name="Number"/>
         ///
         [ContextMethod("ПрочитатьЦелое16", "ReadInt16")]
-        public uint ReadInt16(IValue byteOrder = null)
+        public IValue ReadInt16(IValue byteOrder = null)
         {
-            var bytes = _reader.ReadBytes(sizeof(ushort));
-            return FromBytes(bytes, BitConversionFacility.LittleEndian.ToUInt16, BitConversionFacility.BigEndian.ToUInt16, byteOrder);
-        }
+            const int size = 2;
+            var bytes = _reader.ReadBytes(size);
+            if (bytes.Length < size)
+                return ValueFactory.Create();
 
+            return ValueFactory.Create(GetConverter(byteOrder).ToUInt16(bytes, 0));
+        }
 
         /// <summary>
         /// 
@@ -493,12 +502,15 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Числовым типом может быть представлено любое десятичное число. Над данными числового типа определены основные арифметические операции: сложение, вычитание, умножение и деление. Максимально допустимая разрядность числа 38 знаков.</returns>
         ///
         [ContextMethod("ПрочитатьЦелое32", "ReadInt32")]
-        public uint ReadInt32(IValue byteOrder = null)
+        public IValue ReadInt32(IValue byteOrder = null)
         {
-            var bytes = _reader.ReadBytes(sizeof(uint));
-            return FromBytes(bytes, BitConversionFacility.LittleEndian.ToUInt32, BitConversionFacility.BigEndian.ToUInt32, byteOrder);
-        }
+            const int size = 4;
+            var bytes = _reader.ReadBytes(size);
+            if (bytes.Length < size)
+                return ValueFactory.Create();
 
+            return ValueFactory.Create(GetConverter(byteOrder).ToUInt32(bytes, 0));
+        }
 
         /// <summary>
         /// 
@@ -513,10 +525,14 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Числовым типом может быть представлено любое десятичное число. Над данными числового типа определены основные арифметические операции: сложение, вычитание, умножение и деление. Максимально допустимая разрядность числа 38 знаков.</returns>
         ///
         [ContextMethod("ПрочитатьЦелое64", "ReadInt64")]
-        public ulong ReadInt64(IValue byteOrder = null)
+        public IValue ReadInt64(IValue byteOrder = null)
         {
-            var bytes = _reader.ReadBytes(sizeof(ulong));
-            return FromBytes(bytes, BitConversionFacility.LittleEndian.ToUInt64, BitConversionFacility.BigEndian.ToUInt64, byteOrder);
+            const int size = 8;
+            var bytes = _reader.ReadBytes(size);
+            if (bytes.Length < size)
+                return ValueFactory.Create();
+
+            return ValueFactory.Create(GetConverter(byteOrder).ToUInt64(bytes, 0));
         }
 
 
