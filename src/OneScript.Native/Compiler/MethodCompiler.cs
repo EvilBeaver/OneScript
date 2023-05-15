@@ -1479,9 +1479,18 @@ namespace OneScript.Native.Compiler
             else
             {
                 var typeNameString = node.TypeNameNode.GetIdentifier();
-                var typeDef = CurrentTypeManager.GetTypeByName(typeNameString);
-                var call = ExpressionHelpers.ConstructorCall(CurrentTypeManager, services, typeDef, parameters);
-                _statementBuildParts.Push(call);
+                var isKnownType = CurrentTypeManager.TryGetType(typeNameString, out var typeDef);
+                if (isKnownType)
+                {
+                    var call = ExpressionHelpers.ConstructorCall(CurrentTypeManager, services, typeDef, parameters);
+                    _statementBuildParts.Push(call);
+                }
+                else // это может быть тип, подключенный через ПодключитьСценарий
+                {
+                    var typeName = Expression.Constant(typeNameString);
+                    var call = ExpressionHelpers.ConstructorCall(CurrentTypeManager, services, typeName, parameters);
+                    _statementBuildParts.Push(call);
+                }
             }
             
         }
