@@ -80,7 +80,8 @@ namespace OneScript.Dynamic.Tests
                 .CreateIterator();
             _codeIndexer = lexer.Iterator.Source;
 
-            var parser = new DefaultBslParser(lexer, _errors, new PreprocessorHandlers());
+            var providers = _services.ResolveEnumerable<IDirectiveHandler>();
+            var parser = new DefaultBslParser(lexer, _errors, new PreprocessorHandlers(providers));
             return parser;
         }
 

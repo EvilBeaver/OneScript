@@ -11,6 +11,8 @@ using OneScript.Compilation.Binding;
 using OneScript.DependencyInjection;
 using OneScript.Execution;
 using OneScript.Language;
+using OneScript.Language.LexicalAnalysis;
+using OneScript.Language.SyntaxAnalysis;
 using OneScript.Native.Compiler;
 using OneScript.Native.Extensions;
 using OneScript.Native.Runtime;
@@ -18,6 +20,7 @@ using OneScript.Sources;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueTable;
+using OneScript.StandardLibrary.Regex;
 using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
 using ScriptEngine;
@@ -49,9 +52,28 @@ namespace OneScript.Dynamic.Tests
             testServices.RegisterSingleton<ITypeManager, DefaultTypeManager>();
             testServices.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
             testServices.RegisterSingleton<CompileTimeSymbolsProvider>();
+            testServices.RegisterEnumerable<IDirectiveHandler, EmptyDirectiveHandler>();
+            testServices.Register<IErrorSink, ThrowingErrorSink>();
             testServices.UseImports();
         }
-        
+
+        // ReSharper disable once ClassNeverInstantiated.Local
+        private class EmptyDirectiveHandler : IDirectiveHandler
+        {
+            public void OnModuleEnter()
+            {
+            }
+
+            public void OnModuleLeave()
+            {
+            }
+
+            public bool HandleDirective(ref Lexem lastExtractedLexem, ILexer lexer)
+            {
+                return false;
+            }
+        }
+
         [Fact]
         public void Test_Can_Instantiate_Sdo_With_NativeModule()
         {
@@ -162,7 +184,6 @@ namespace OneScript.Dynamic.Tests
         [Fact]
         public void CanSelectNativeCompiler()
         {
-            testServices.Register<IErrorSink, ThrowingErrorSink>();
             testServices.UseNativeRuntime();
 
             var code = 
@@ -376,6 +397,40 @@ namespace OneScript.Dynamic.Tests
             var val1 = sdo.GetPropValue(n);
             val1.SystemType.Should().Be(BasicTypes.Number);
             val1.AsNumber().Should().Be(1);
+        }
+
+        [Fact]
+        public void Can_Instantiate_Native_Class_With_Args()
+        {
+            var code = @"#native
+
+            Перем РегулярноеВыражение;
+
+            Процедура ПриСозданииОбъекта(ТекстРегулярки)
+                РегулярноеВыражение = Новый РегулярноеВыражение(ТекстРегулярки);	
+            КонецПроцедуры
+
+            Функция НайтиСовпадения(Текст) Экспорт
+
+                КоллекцияСовпадений = РегулярноеВыражение.НайтиСовпадения(Текст);
+
+                Возврат КоллекцияСовпадений;
+	
+            КонецФункции";
+            
+            var symbols = new SymbolTable();
+
+            testServices.UseNativeRuntime();
+            var serviceContainer = testServices.CreateContainer();
+            var discoverer = serviceContainer.Resolve<ContextDiscoverer>();
+            discoverer.DiscoverClasses(typeof(RegExpImpl).Assembly);
+            var module = CreateModule(code, serviceContainer, symbols);
+
+            var sdo = new UserScriptContextInstance(module,
+                new TypeDescriptor(new Guid(), "TestClass", default, typeof(UserScriptContextInstance)),
+                new IValue[] { new RegExpImpl(".") });
+            sdo.InitOwnData();
+            sdo.Initialize();
         }
 
         private DynamicModule CreateModule(string code) => CreateModule(code, testServices.CreateContainer(), new SymbolTable());

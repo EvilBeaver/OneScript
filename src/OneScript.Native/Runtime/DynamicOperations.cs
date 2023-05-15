@@ -100,6 +100,7 @@ namespace OneScript.Native.Runtime
                 double dbl => BslNumericValue.Create((decimal) dbl),
                 bool boolean => BslBooleanValue.Create(boolean),
                 DateTime date => BslDateValue.Create(date),
+                BslValue bslValue => bslValue,
                 _ => throw new TypeConversionException(new BilingualString(
                     $"Невозможно преобразовать {value.GetType()} в тип {nameof(BslValue)}",
                     $"Can't Convert {value.GetType()} to {nameof(BslValue)}"))

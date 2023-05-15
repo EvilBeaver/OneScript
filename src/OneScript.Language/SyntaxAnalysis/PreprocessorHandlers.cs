@@ -51,7 +51,7 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             var slice = _handlers.Where(predicate).ToArray();
             if (slice.Length == 0)
-                return default;
+                return new PreprocessorHandlers();
             
             return new PreprocessorHandlers(slice);
         }
