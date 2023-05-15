@@ -5,15 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Commons;
-using OneScript.Localization;
+using OneScript.Sources;
 
-namespace ScriptEngine
+namespace OneScript.Compilation
 {
-    public class DependencyResolveException : RuntimeException
+    public interface ICompileTimeDependencyResolver
     {
-        public DependencyResolveException(BilingualString message) : base(message)
-        {
-        }
+        void Resolve(SourceCode module, string libraryName);
     }
 }

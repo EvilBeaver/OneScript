@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using OneScript.Commons;
 using OneScript.Compilation;
 using OneScript.Localization;
 using OneScript.Sources;
@@ -56,7 +57,7 @@ namespace ScriptEngine.HostedScript
             Engine = engine;
         }
         
-        public ExternalLibraryDef Resolve(SourceCode module, string libraryName)
+        public void Resolve(SourceCode module, string libraryName)
         {
             bool quoted = PrepareQuoted(ref libraryName);
             bool loaded;
@@ -67,8 +68,6 @@ namespace ScriptEngine.HostedScript
 
             if(!loaded)
                 throw new CompilerException(String.Format("Библиотека не найдена: '{0}'", libraryName));
-
-            return default;
         }
 
         private bool LoadByName(string libraryName)

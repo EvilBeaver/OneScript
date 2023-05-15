@@ -37,9 +37,7 @@ namespace OneScript.Native.Compiler
         {
             var node = new AnnotationNode(NodeKind.Annotation, lastExtractedLexem);
             _allLineContentLexer.Iterator = lexer.Iterator;
-
-            var child = new TerminalNode(NodeKind.Unknown, lastExtractedLexem);
-            node.AddChild(child);
+            
             parserContext.AddChild(node);
             
             // после ничего не должно находиться

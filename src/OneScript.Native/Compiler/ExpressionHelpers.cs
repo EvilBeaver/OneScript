@@ -508,12 +508,23 @@ namespace OneScript.Native.Compiler
         public static Expression ConstructorCall(ITypeManager typeManager, Expression services, TypeDescriptor knownType,
             Expression[] argsArray)
         {
-            var genericMethod = OperationsCache.GetOrAdd(
-                typeof(DynamicOperations),
-                nameof(DynamicOperations.StrictConstructorCall));
+            MethodInfo method;
 
-            var method = genericMethod.MakeGenericMethod(knownType.ImplementingClass);
-            
+            if (knownType.ImplementingClass.IsValue())
+            {
+                var genericMethod = OperationsCache.GetOrAdd(
+                    typeof(DynamicOperations),
+                    nameof(DynamicOperations.StrictConstructorCall));
+
+                method = genericMethod.MakeGenericMethod(knownType.ImplementingClass);
+            }
+            else // подключенный сценарий
+            {
+                method = OperationsCache.GetOrAdd(
+                    typeof(DynamicOperations),
+                    nameof(DynamicOperations.ConstructorCall));
+            }
+
             var arrayOfArgs = Expression.NewArrayInit(typeof(BslValue), argsArray.Select(ConvertToBslValue));
             
             return Expression.Call(method, 

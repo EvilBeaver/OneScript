@@ -12,9 +12,8 @@ namespace ScriptEngine
     // ReSharper disable once ClassNeverInstantiated.Global
     internal class NullDependencyResolver : IDependencyResolver
     {
-        public ExternalLibraryDef Resolve(SourceCode module, string libraryName)
+        public void Resolve(SourceCode module, string libraryName)
         {
-            return new ExternalLibraryDef(libraryName);
         }
 
         public void Initialize(ScriptingEngine engine)

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.DependencyInjection;
 using OneScript.Language;
@@ -87,8 +88,15 @@ namespace OneScript.Dynamic.Tests
         {
             if (scopes.ScopeCount == 0)
                 scopes.PushScope(new SymbolScope(), null);
-            var compiler = new ModuleCompiler(_errors, _services);
+            var compiler = new ModuleCompiler(_errors, _services, new DependencyResolverMock());
             return compiler.Compile(_codeIndexer, _module, scopes);
+        }
+        
+        private class DependencyResolverMock : ICompileTimeDependencyResolver
+        {
+            public void Resolve(SourceCode module, string libraryName)
+            {
+            }
         }
     }
 }

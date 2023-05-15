@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using OneScript.Commons;
 using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
@@ -1060,9 +1061,9 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.PushConst, num);
         }
 
-        private IEnumerable<object> GetAnnotationAttributes(AnnotatableNode node)
+        private IEnumerable<BslAnnotationAttribute> GetAnnotationAttributes(AnnotatableNode node)
         {
-            var mappedAnnotations = new List<object>();
+            var mappedAnnotations = new List<BslAnnotationAttribute>();
             foreach (var annotation in node.Annotations)
             {
                 var anno = new BslAnnotationAttribute(annotation.Name);
