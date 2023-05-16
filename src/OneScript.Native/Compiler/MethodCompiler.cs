@@ -1135,12 +1135,6 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitObjectFunctionCall(BslSyntaxNode node)
         {
-            if (!_method.IsFunction())
-            {
-                AddError(LocalizedErrors.UseProcAsFunction(), node.Location);
-                return;
-            }
-            
             var target = _statementBuildParts.Pop();
             var call = (CallNode) node;
 
