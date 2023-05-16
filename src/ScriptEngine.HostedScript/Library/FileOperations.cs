@@ -105,25 +105,38 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
-        /// Получает имя файла во временом каталоге.
+        /// Получает имя файла во временном каталоге.
         /// </summary>
-        /// <param name="ext">Расширение будущего файла. Если не указано, то по умолчанию расширение равно ".tmp"</param>
+        /// <remarks>Полное имя с указанным расширением не проверяется на соответствие требованиям ОС.
+        /// Уникальность имени не гарантируется на 100%</remarks>
+        /// <param name="ext">Строка. Расширение будущего файла. Указание точки в начале расширения не обязательно.
+        /// Если параметр не задан, то по умолчанию расширение равно ".tmp"</param>
         /// <returns>Строка. Полный путь ко временному файлу.</returns>
         [ContextMethod("ПолучитьИмяВременногоФайла", "GetTempFileName")]
-        public string GetTempFilename(string ext = null)
+        public string GetTempFilename(IValue ext = null)
         {
-            // примитивная реализация "в лоб"
-            var fn = Path.GetRandomFileName();
-            if (ext != null && !String.IsNullOrWhiteSpace(ext))
+            string fileExt;
+ 
+            if (ext == null)
             {
-                if(ext[0] == '.')
-                    fn += ext;
-                else
-                    fn += "." + ext;
+                fileExt = ".tmp";
             }
+            else if (ext.DataType == DataType.String)
+            {
+                fileExt = ext.AsString();
+            }
+            else
+                throw RuntimeException.InvalidArgumentType();
 
-            return Path.Combine(TempFilesDir(), fn);
+            var fileName = Path.GetRandomFileName(); // имя в формате 8.3
+            int dot = 8; // позиция точки в имени
 
+            if (fileExt.Length > 0 && fileExt[0] != '.') // добавить точку, если нет в непустом расширении
+                dot += 1;
+
+            fileName = fileName.Substring(9, 3) + fileName.Substring(0, dot); // 11 символов + точка, если нужна
+
+            return Path.Combine(Path.GetTempPath(), fileName + fileExt);
         }
 
         /// <summary>
