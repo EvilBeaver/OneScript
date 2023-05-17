@@ -262,7 +262,6 @@ namespace OneScript.Language
                    || token == Token.Modulo
                    || token == Token.And
                    || token == Token.Or
-                   || token == Token.Not
                    || token == Token.LessThan
                    || token == Token.LessOrEqual
                    || token == Token.MoreThan
