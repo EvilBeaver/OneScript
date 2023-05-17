@@ -42,21 +42,21 @@ namespace ScriptEngine.HostedScript.Library.Binary
         }
 
         /// <summary>
-        /// 
         /// Создает объект для чтения из заданного объекта ДвоичныеДанные.
-        /// После завершения работы с объектом ЧтениеДанных до того, как будет закрыт поток, переданный в конструктор, объект следует закрыть с помощью метода Закрыть или НачатьЗакрытие.
+        /// После завершения работы с объектом ЧтениеДанных до того, как будет закрыт поток, переданный в конструктор, 
+        /// объект следует закрыть с помощью метода Закрыть или НачатьЗакрытие.
         /// </summary>
-        ///
         /// <param name="dataSource">
         /// Путь к файлу или экземпляр объекта ДвоичныеДанные, из которого будет выполнено чтение. </param>
         /// <param name="textEncoding">
         /// Определяет кодировку текста, используемую для чтения данных. По-умолчанию используется кодировка UTF-8.
-        /// Кодировка может быть задана как в виде значения перечисления КодировкаТекста, так и в виде строки с указанием названия кодировки.
-        /// 
+        /// Кодировка может быть задана как в виде значения перечисления КодировкаТекста,
+        /// так и в виде строки с указанием названия кодировки.
+        /// <br/>
         /// Значение по умолчанию: UTF8. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
         /// <param name="byteOrder">
         /// Порядок байтов, используемый для декодирования целых чисел при чтении из потока.
-        /// Значение по умолчанию: LittleEndian. </param>
+        /// Тип: перечисление ПорядокБайтов. Значение по умолчанию: LittleEndian. </param>
         /// <param name="lineSplitter">
         /// Определяет строку, разделяющую строки в двоичных данных.
         /// Значение по умолчанию: Неопределено. </param>
@@ -64,26 +64,28 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Определяет разделение строк в файле для конвертации в стандартный перевод строк ПС.
         /// Значение по умолчанию: ВК + ПС. </param>
         [ScriptConstructor(Name = "На основании двоичных данных или имени файла")]
-        public static DataReader Constructor(IValue dataSource, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = "\n", string convertibleSplitterOfLines = null)
+        public static DataReader Constructor(IValue dataSource, IValue textEncoding = null,
+            ByteOrderEnum? byteOrder = null, string lineSplitter = "\n", string convertibleSplitterOfLines = null)
         {
             if (dataSource.DataType == DataType.String)
             {
                 var stream = new FileStream(dataSource.AsString(), FileMode.Open, FileAccess.Read, FileShare.Read);
                 return new DataReader(stream, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines);
             }
-            else
+            else if (dataSource.DataType == DataType.Object)
             {
-                var obj = dataSource.AsObject();
                 Stream stream;
-                if (obj is BinaryDataContext)
-                    stream = ((BinaryDataContext)obj).GetStream();
-                else if (obj is IStreamWrapper)
-                    stream = ((IStreamWrapper) obj).GetUnderlyingStream();
-                else
-                    throw RuntimeException.InvalidArgumentType("dataSource");
-
+ 
+                switch (dataSource.AsObject())
+                {
+                    case BinaryDataContext context: stream = context.GetStream(); break;
+                    case IStreamWrapper wrapper: stream = wrapper.GetUnderlyingStream(); break;
+                    default: throw RuntimeException.InvalidNthArgumentType(1);
+                }
                 return new DataReader(stream, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines);
             }
+            else 
+                throw RuntimeException.InvalidNthArgumentType(1);
         }
         
         /// <summary>
