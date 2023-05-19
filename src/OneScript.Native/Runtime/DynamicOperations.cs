@@ -95,8 +95,16 @@ namespace OneScript.Native.Runtime
                 null => BslUndefinedValue.Instance,
                 string s => BslStringValue.Create(s),
                 decimal d => BslNumericValue.Create(d),
+
                 int n => BslNumericValue.Create(n),
+                uint n => BslNumericValue.Create(n),
+                short n => BslNumericValue.Create(n),
+                ushort n => BslNumericValue.Create(n),
+                byte n => BslNumericValue.Create(n),
+                sbyte n => BslNumericValue.Create(n),
                 long l => BslNumericValue.Create(l),
+                ulong l => BslNumericValue.Create(l),
+                
                 double dbl => BslNumericValue.Create((decimal) dbl),
                 bool boolean => BslBooleanValue.Create(boolean),
                 DateTime date => BslDateValue.Create(date),
