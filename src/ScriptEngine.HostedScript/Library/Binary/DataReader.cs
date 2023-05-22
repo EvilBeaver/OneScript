@@ -42,21 +42,21 @@ namespace ScriptEngine.HostedScript.Library.Binary
         }
 
         /// <summary>
-        /// 
         /// Создает объект для чтения из заданного объекта ДвоичныеДанные.
-        /// После завершения работы с объектом ЧтениеДанных до того, как будет закрыт поток, переданный в конструктор, объект следует закрыть с помощью метода Закрыть или НачатьЗакрытие.
+        /// После завершения работы с объектом ЧтениеДанных до того, как будет закрыт поток, переданный в конструктор, 
+        /// объект следует закрыть с помощью метода Закрыть или НачатьЗакрытие.
         /// </summary>
-        ///
         /// <param name="dataSource">
         /// Путь к файлу или экземпляр объекта ДвоичныеДанные, из которого будет выполнено чтение. </param>
         /// <param name="textEncoding">
         /// Определяет кодировку текста, используемую для чтения данных. По-умолчанию используется кодировка UTF-8.
-        /// Кодировка может быть задана как в виде значения перечисления КодировкаТекста, так и в виде строки с указанием названия кодировки.
-        /// 
+        /// Кодировка может быть задана как в виде значения перечисления КодировкаТекста,
+        /// так и в виде строки с указанием названия кодировки.
+        /// <br/>
         /// Значение по умолчанию: UTF8. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
         /// <param name="byteOrder">
         /// Порядок байтов, используемый для декодирования целых чисел при чтении из потока.
-        /// Значение по умолчанию: LittleEndian. </param>
+        /// Тип: перечисление ПорядокБайтов. Значение по умолчанию: LittleEndian. </param>
         /// <param name="lineSplitter">
         /// Определяет строку, разделяющую строки в двоичных данных.
         /// Значение по умолчанию: Неопределено. </param>
@@ -64,26 +64,28 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// Определяет разделение строк в файле для конвертации в стандартный перевод строк ПС.
         /// Значение по умолчанию: ВК + ПС. </param>
         [ScriptConstructor(Name = "На основании двоичных данных или имени файла")]
-        public static DataReader Constructor(IValue dataSource, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = "\n", string convertibleSplitterOfLines = null)
+        public static DataReader Constructor(IValue dataSource, IValue textEncoding = null,
+            ByteOrderEnum? byteOrder = null, string lineSplitter = "\n", string convertibleSplitterOfLines = null)
         {
             if (dataSource.DataType == DataType.String)
             {
                 var stream = new FileStream(dataSource.AsString(), FileMode.Open, FileAccess.Read, FileShare.Read);
                 return new DataReader(stream, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines);
             }
-            else
+            else if (dataSource.DataType == DataType.Object)
             {
-                var obj = dataSource.AsObject();
                 Stream stream;
-                if (obj is BinaryDataContext)
-                    stream = ((BinaryDataContext)obj).GetStream();
-                else if (obj is IStreamWrapper)
-                    stream = ((IStreamWrapper) obj).GetUnderlyingStream();
-                else
-                    throw RuntimeException.InvalidArgumentType("dataSource");
-
+ 
+                switch (dataSource.AsObject())
+                {
+                    case BinaryDataContext context: stream = context.GetStream(); break;
+                    case IStreamWrapper wrapper: stream = wrapper.GetUnderlyingStream(); break;
+                    default: throw RuntimeException.InvalidNthArgumentType(1);
+                }
                 return new DataReader(stream, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines);
             }
+            else 
+                throw RuntimeException.InvalidNthArgumentType(1);
         }
         
         /// <summary>
@@ -299,16 +301,20 @@ namespace ScriptEngine.HostedScript.Library.Binary
         }
 
         /// <summary>
-        /// 
         /// Выполняет чтение одного байта из потока.
         /// </summary>
-        ///
-        /// <returns name="Number"/>
-        /// 
+        /// <returns>Число или Неопределено, если не удалось прочитать байт, поскольку был достигнут конец потока.</returns>
         [ContextMethod("ПрочитатьБайт", "ReadByte")]
-        public byte ReadByte()
+        public IValue ReadByte()
         {
-            return _reader.ReadByte();
+            try
+            {
+                return ValueFactory.Create(_reader.ReadByte());
+            }
+            catch (EndOfStreamException)
+            {
+                return ValueFactory.Create();
+            }
         }
 
         /// <summary>
@@ -434,7 +440,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             return textRdr.ReadLine(lineSplitter ?? ConvertibleSplitterOfLines);
         }
 
-        private T FromBytes<T>(byte[] bytes, Func<byte[], int, T> leConverter, Func<byte[], int, T> beConverter, IValue byteOrder = null)
+        private EndianBitConverter GetConverter(IValue byteOrder)
         {
             ByteOrderEnum workByteOrder;
             if (byteOrder == null)
@@ -455,68 +461,64 @@ namespace ScriptEngine.HostedScript.Library.Binary
                 }
             }
 
-            var converter = workByteOrder == ByteOrderEnum.BigEndian ? beConverter : leConverter;
-            return converter(bytes, 0);
+            return workByteOrder == ByteOrderEnum.BigEndian ? BitConversionFacility.BigEndian : BitConversionFacility.LittleEndian;
         }
 
         /// <summary>
-        /// 
         /// Считывает 16-битное целое число из потока.
         /// </summary>
-        ///
         /// <param name="byteOrder">
         /// Порядок байтов, используемый при чтении числа.
         /// Если не задан, используется порядок, определенный для текущего экземпляра ЧтениеДанных.
-        /// Значение по умолчанию: Неопределено. </param>
-        ///
-        /// <returns name="Number"/>
-        ///
+        /// Значение по умолчанию: Неопределено.</param>
+        /// <returns>Число или Неопределено, если не удалось прочитать число, поскольку был достигнут конец потока.</returns>
         [ContextMethod("ПрочитатьЦелое16", "ReadInt16")]
-        public uint ReadInt16(IValue byteOrder = null)
+        public IValue ReadInt16(IValue byteOrder = null)
         {
-            var bytes = _reader.ReadBytes(sizeof(ushort));
-            return FromBytes(bytes, BitConversionFacility.LittleEndian.ToUInt16, BitConversionFacility.BigEndian.ToUInt16, byteOrder);
+            const int size = 2;
+            var bytes = _reader.ReadBytes(size);
+            if (bytes.Length < size)
+                return ValueFactory.Create();
+
+            return ValueFactory.Create(GetConverter(byteOrder).ToUInt16(bytes, 0));
         }
 
-
         /// <summary>
-        /// 
-        /// Прочитать 32-битное целое число из потока.
+        /// Считывает 32-битное целое число из потока.
         /// </summary>
-        ///
         /// <param name="byteOrder">
         /// Порядок байтов, используемый при чтении числа.
         /// Если не задан, используется порядок, определенный для текущего экземпляра ЧтениеДанных.
-        /// Значение по умолчанию: Неопределено. </param>
-        ///
-        /// <returns name="Number">
-        /// Числовым типом может быть представлено любое десятичное число. Над данными числового типа определены основные арифметические операции: сложение, вычитание, умножение и деление. Максимально допустимая разрядность числа 38 знаков.</returns>
-        ///
+        /// Значение по умолчанию: Неопределено.</param>
+        /// <returns>Число или Неопределено, если не удалось прочитать число, поскольку был достигнут конец потока.</returns>
         [ContextMethod("ПрочитатьЦелое32", "ReadInt32")]
-        public uint ReadInt32(IValue byteOrder = null)
+        public IValue ReadInt32(IValue byteOrder = null)
         {
-            var bytes = _reader.ReadBytes(sizeof(uint));
-            return FromBytes(bytes, BitConversionFacility.LittleEndian.ToUInt32, BitConversionFacility.BigEndian.ToUInt32, byteOrder);
+            const int size = 4;
+            var bytes = _reader.ReadBytes(size);
+            if (bytes.Length < size)
+                return ValueFactory.Create();
+
+            return ValueFactory.Create(GetConverter(byteOrder).ToUInt32(bytes, 0));
         }
 
-
         /// <summary>
-        /// 
         /// Считывает 64-битное целое число из потока.
         /// </summary>
-        ///
         /// <param name="byteOrder">
-        /// Устанавливает порядок байтов, используя который число будет прочитано. Если порядок байтов не задан, то используется порядок байтов, определенный для текущего экземпляра ЧтениеДанных.
-        /// Значение по умолчанию: Неопределено. </param>
-        ///
-        /// <returns name="Number">
-        /// Числовым типом может быть представлено любое десятичное число. Над данными числового типа определены основные арифметические операции: сложение, вычитание, умножение и деление. Максимально допустимая разрядность числа 38 знаков.</returns>
-        ///
+        /// Порядок байтов, используемый при чтении числа.
+        /// Если не задан, используется порядок, определенный для текущего экземпляра ЧтениеДанных.
+        /// Значение по умолчанию: Неопределено.</param>
+        /// <returns>Число или Неопределено, если не удалось прочитать число, поскольку был достигнут конец потока.</returns>
         [ContextMethod("ПрочитатьЦелое64", "ReadInt64")]
-        public ulong ReadInt64(IValue byteOrder = null)
+        public IValue ReadInt64(IValue byteOrder = null)
         {
-            var bytes = _reader.ReadBytes(sizeof(ulong));
-            return FromBytes(bytes, BitConversionFacility.LittleEndian.ToUInt64, BitConversionFacility.BigEndian.ToUInt64, byteOrder);
+            const int size = 8;
+            var bytes = _reader.ReadBytes(size);
+            if (bytes.Length < size)
+                return ValueFactory.Create();
+
+            return ValueFactory.Create(GetConverter(byteOrder).ToUInt64(bytes, 0));
         }
 
 
