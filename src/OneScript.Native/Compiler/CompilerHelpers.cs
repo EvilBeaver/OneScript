@@ -28,6 +28,7 @@ namespace OneScript.Native.Compiler
                 LexemType.StringLiteral => BslStringValue.Create(lex.Content),
                 LexemType.DateLiteral => BslDateValue.Parse(lex.Content),
                 LexemType.UndefinedLiteral => BslUndefinedValue.Instance,
+                LexemType.NullLiteral => BslNullValue.Instance,
                 _ => throw new NotImplementedException()
             };
         }
@@ -41,6 +42,7 @@ namespace OneScript.Native.Compiler
                 LexemType.StringLiteral => (string)BslStringValue.Create(lex.Content),
                 LexemType.DateLiteral => (DateTime)BslDateValue.Parse(lex.Content),
                 LexemType.UndefinedLiteral => BslUndefinedValue.Instance,
+                LexemType.NullLiteral => BslNullValue.Instance,
                 _ => throw new NotImplementedException()
             };
         }

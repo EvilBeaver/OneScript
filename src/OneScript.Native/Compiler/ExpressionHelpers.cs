@@ -382,7 +382,7 @@ namespace OneScript.Native.Compiler
             var factoryClass = GetValueFactoryType(value.Type);
             if (factoryClass == null)
             {
-                if (value.Type == typeof(object))
+                if (value.Type==typeof(IValue) || value.Type.IsSubclassOf(typeof(IValue)))
                 {
                     // это результат динамической операции
                     // просто верим, что он BslValue
@@ -432,15 +432,9 @@ namespace OneScript.Native.Compiler
             {
                 factoryClass = typeof(BslBooleanValue);
             }
-            else if (clrType == typeof(decimal))
+            else if (clrType.IsNumeric())
             {
-                factoryClass = typeof(BslNumericValue);
-            }
-            else if (clrType == typeof(int) ||
-                     clrType == typeof(long) ||
-                     clrType == typeof(double))
-            {
-                factoryClass = typeof(BslNumericValue);
+                 factoryClass = typeof(BslNumericValue);
             }
             else if (clrType == typeof(DateTime))
             {
