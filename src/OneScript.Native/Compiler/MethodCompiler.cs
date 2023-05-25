@@ -1397,8 +1397,22 @@ namespace OneScript.Native.Compiler
                 }
                 else
                 {
-                    var convertedOrDirect = PassSingleParameter(passedArg, declaredParam.ParameterType, argList.Location);
-                    factArguments.Add(convertedOrDirect);
+                    if (passedArg != null)
+                    {
+                        var convertedOrDirect = PassSingleParameter(passedArg, declaredParam.ParameterType, argList.Location);
+                        factArguments.Add(convertedOrDirect);
+                    }
+                    else if (declaredParam.HasDefaultValue)
+                    {
+                        factArguments.Add(Expression.Constant(declaredParam.DefaultValue, declaredParam.ParameterType));
+                    }
+                    else
+                    {
+                        var errText = new BilingualString(
+                            $"Пропущен обязательный параметр {declaredParam.Position+1} '{declaredParam.Name}'",
+                            $"Missing mandatory parameter {declaredParam.Position+1} '{declaredParam.Name}'");
+                        AddError(errText, argList.Location);
+                    }
                 }
 
                 --parametersToProcess;
@@ -1436,7 +1450,8 @@ namespace OneScript.Native.Compiler
             {
                 AddError(
                     new BilingualString(
-                        $"Не удается выполнить преобразование из типа {passedArg.Type} в тип {targetType}"),
+                        $"Не удается выполнить преобразование параметра из типа {passedArg.Type} в тип {targetType}",
+                        $"Cannot convert parameter from type {passedArg.Type} to type {targetType}"),
                     location);
             }
 
