@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
@@ -15,6 +16,8 @@ using OneScript.Localization;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
+
+[assembly: InternalsVisibleTo("OneScript.Dynamic.Tests")]
 
 namespace OneScript.Native.Runtime
 {
@@ -86,6 +89,30 @@ namespace OneScript.Native.Runtime
         public static string ToString(BslValue value)
         {
             return (string)value;
+        }
+
+        // FIXME: тут не должно быть Null, но из-за несовершенства мира они тут бывают. Когда задолбает - надо починить и убрать отсюда проверки на null
+        public static bool Equality(BslValue left, BslValue right)
+        {
+            if (ReferenceEquals(left, right))
+                return true;
+
+            if (left == null || right == null)
+                return false;
+
+            return left.Equals(right);
+        }
+        
+        // FIXME: тут не должно быть Null, но из-за несовершенства мира они тут бывают. Когда задолбает - надо починить и убрать отсюда проверки на null
+        public static int Comparison(BslValue left, BslValue right)
+        {
+            if (left == null && right == null)
+                return 0;
+
+            if (left != null)
+                return left.CompareTo(right);
+
+            return BslUndefinedValue.Instance.CompareTo(right);
         }
 
         public static BslValue WrapClrObjectToValue(object value)

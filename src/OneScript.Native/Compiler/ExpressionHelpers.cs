@@ -351,27 +351,25 @@ namespace OneScript.Native.Compiler
         public static Expression CallCompareTo(Expression target, Expression argument)
         {
             var compareToMethod = OperationsCache.GetOrAdd(
-                typeof(IComparable<BslValue>),
-                nameof(IComparable<BslValue>.CompareTo),
-                BindingFlags.Instance | BindingFlags.Public
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.Comparison)
             );
 
-            var bslArgument = ConvertToBslValue(argument);
+            Debug.Assert(argument.Type.IsValue());
 
-            return Expression.Call(target, compareToMethod, bslArgument);
+            return Expression.Call(compareToMethod, target, argument);
         }
         
         public static Expression CallEquals(Expression target, Expression argument)
         {
             var equalsMethod = OperationsCache.GetOrAdd(
-                typeof(IEquatable<BslValue>),
-                nameof(IEquatable<BslValue>.Equals),
-                BindingFlags.Instance | BindingFlags.Public
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.Equality)
             );
 
-            var bslArgument = ConvertToBslValue(argument);
+            Debug.Assert(argument.Type.IsValue());
 
-            return Expression.Call(target, equalsMethod, bslArgument);
+            return Expression.Call(equalsMethod, target, argument);
         }
         
         public static Expression ConvertToBslValue(Expression value)
