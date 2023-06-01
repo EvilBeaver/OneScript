@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
+using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Values;
 
@@ -50,8 +51,10 @@ namespace OneScript.Native.Runtime
                 var param = parameters[i];
                 if (param == null || param == BslSkippedParameterValue.Instance)
                 {
-                    Debug.Assert(_parameters[i].HasDefaultValue);
-                    bslArguments[i] = (BslValue)_parameters[i].DefaultValue;
+                    if (_parameters[i].HasDefaultValue)
+                        bslArguments[i] = (BslValue)_parameters[i].DefaultValue;
+                    else
+                        throw RuntimeException.MissedArgument();
                 }
                 else
                 {
