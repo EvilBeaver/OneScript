@@ -1846,11 +1846,7 @@ namespace ScriptEngine.Compiler
 
         private void CheckFactArguments(MethodInfo methInfo, bool[] argsPassed)
         {
-            CheckFactArguments(methInfo.Params, argsPassed);
-        }
-
-        private void CheckFactArguments(ParameterDefinition[] parameters, bool[] argsPassed)
-        {
+            var parameters = methInfo.Params;
             if (argsPassed.Length > parameters.Length)
             {
                 throw CompilerException.TooManyArgumentsPassed();
@@ -1859,6 +1855,26 @@ namespace ScriptEngine.Compiler
             if (parameters.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
             {
                 throw CompilerException.TooFewArgumentsPassed();
+            }
+        }
+
+        private void FullCheckFactArguments(ParameterDefinition[] parameters, bool[] argsPassed)
+        {
+            if (argsPassed.Length > parameters.Length)
+            {
+                throw CompilerException.TooManyArgumentsPassed();
+            }
+
+            int i = 0;
+            for (; i < argsPassed.Length; i++)
+            {
+                if (!parameters[i].HasDefaultValue && !argsPassed[i])
+                    throw CompilerException.MissedArgument();
+            }
+            for (; i < parameters.Length; i++)
+            {
+                if (!parameters[i].HasDefaultValue)
+                    throw CompilerException.TooFewArgumentsPassed();
             }
         }
 
@@ -1961,7 +1977,7 @@ namespace ScriptEngine.Compiler
             else
             {
                 var parameters = BuiltinFunctions.ParametersInfo(funcId);
-                CheckFactArguments(parameters, passedArgs);
+                FullCheckFactArguments(parameters, passedArgs);
             }
 
             AddCommand(funcId, passedArgs.Length);

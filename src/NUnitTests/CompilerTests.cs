@@ -552,5 +552,41 @@ namespace NUnitTests
             }
             Assert.IsTrue(exceptionThrown, "В теле процедуры или функции не может быть объявлена экспортная переменная!");
         }
+
+        [Test]
+        public void TestBuiltInFunctionsMandatoryParameters1()
+        {
+            var moduleSource = host.Engine.Loader.FromString(
+                @"Рез = Рез = Лев(, 0);");
+
+            bool exceptionThrown = false;
+            try
+            {
+                host.Engine.GetCompilerService().Compile(moduleSource);
+            }
+            catch (CompilerException)
+            {
+                exceptionThrown = true;
+            }
+            Assert.IsTrue(exceptionThrown, "Пропущен обязательный параметр!");
+        }
+
+        [Test]
+        public void TestBuiltInFunctionsMandatoryParameters2()
+        {
+			var moduleSource = host.Engine.Loader.FromString(
+				@"Рез = ДобавитьМесяц(, 2);");
+
+            bool exceptionThrown = false;
+            try
+            {
+                host.Engine.GetCompilerService().Compile(moduleSource);
+            }
+            catch (CompilerException)
+            {
+                exceptionThrown = true;
+            }
+            Assert.IsTrue(exceptionThrown, "Пропущен обязательный параметр!");
+        }
     }
 }
