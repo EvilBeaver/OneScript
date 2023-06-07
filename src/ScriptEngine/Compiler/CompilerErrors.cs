@@ -21,7 +21,10 @@ namespace ScriptEngine.Compiler
 
         public static CodeError TooManyArgumentsPassed() =>
             Create("Слишком много фактических параметров", "Too many actual parameters");
-        
+
+        public static CodeError MissedArgument() =>
+            Create("Пропущен обязательный параметр", "Missed mandatory parameter");
+
         private static CodeError Create(string ru, string en, [CallerMemberName] string errorId = default)
         {
             return new CodeError
