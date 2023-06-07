@@ -440,6 +440,10 @@ namespace OneScript.Native.Compiler
             {
                 factoryClass = typeof(BslDateValue);
             }
+            else if (clrType == typeof(TypeDescriptor))
+            {
+                factoryClass = typeof(BslTypeValue);
+            }
 
             return factoryClass;
         }
