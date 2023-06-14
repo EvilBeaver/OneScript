@@ -74,10 +74,20 @@ pipeline {
 					}
 					
 					steps {
-						sh 'mkdir output'
-						sh 'cp -Rv /built/* ./output/'
-						stash includes: 'output/bin/*.so', name: 'nativeApiSo'
-						stash includes: 'output/tests/*.so', name: 'nativeApiTestsSo'
+					    sh 'mkdir -p built/tmp/na-proxy && mkdir -p built/tmp/na-tests'
+					    dir('src/ScriptEngine.NativeApi') {
+					        sh './build.sh'
+					        sh 'cp *.so ../../built/tmp/na-proxy'
+					    }
+					    dir('tests/native-api') {
+                            sh './build.sh'
+                            sh 'cp *.so ../../built/tmp/na-tests'
+                        }
+						dir('output') {
+						    sh 'cp -Rv /built/tmp/* ./output/'
+						}
+						stash includes: 'output/na-proxy/*.so', name: 'nativeApiSo'
+						stash includes: 'output/na-tests/*.so', name: 'nativeApiTestsSo'
 					}
 				}
             }
@@ -144,8 +154,8 @@ pipeline {
 						unstash 'nativeApiSo'
 						unstash 'nativeApiTestsSo'
 						
-						sh 'cp output/bin/*.so ./built/linux-x64/bin/'
-						sh 'cp output/tests/*.so ./tests/native-api/build64/AddInNativeLin64.so'
+						sh 'cp output/na-proxy/*.so ./built/linux-x64/bin/'
+						sh 'cp output/na-tests/*.so ./tests/native-api/build64/AddInNativeLin64.so'
 
                         sh '''\
                         if [ ! -d lintests ]; then
@@ -177,7 +187,7 @@ pipeline {
                     unstash 'buildResults'
 					unstash 'nativeApiSo'
 					
-					bat 'copy output/bin/*64.so built/linux-64/'
+					bat 'copy output/na-proxy/*64.so built/linux-64/'
 					
                     script
                     {
