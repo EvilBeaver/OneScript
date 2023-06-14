@@ -23,6 +23,7 @@ pipeline {
                             docker login -p $dockerpassword -u $dockeruser
                             docker push oscript/onescript-builder:deb
                             docker push oscript/onescript-builder:rpm
+                            docker push oscript/onescript-builder:gcc
                             """.stripIndent()
                         }
                     }
@@ -64,6 +65,22 @@ pipeline {
                         }
                     }
                 }
+				
+				stage('Linux Build') {
+					agent {
+						docker {
+							image 'oscript/onescript-builder:gcc'
+							label 'linux'
+						}
+					}
+					
+					steps {
+						sh 'mkdir output'
+						sh 'cp -Rv /built/* ./output/'
+						stash includes: 'output/bin/*.so', name: 'nativeApiSo'
+						stash includes: 'output/tests/*.so', name: 'nativeApiTestsSo'
+					}
+				}
             }
         }
         stage('VSCode debugger Build') {
@@ -125,6 +142,11 @@ pipeline {
                         }
                         
                         unstash 'buildResults'
+						unstash 'nativeApiSo'
+						unstash 'nativeApiTestsSo'
+						
+						sh 'cp output/bin/*.so ../built/linux-x64/bin/'
+						sh 'cp output/tests/*.so ../tests/native-api/build64/AddInNativeLin64.so'
 
                         sh '''\
                         if [ ! -d lintests ]; then
@@ -154,6 +176,10 @@ pipeline {
                     }
                     
                     unstash 'buildResults'
+					unstash 'nativeApiSo'
+					
+					bat 'copy output/bin/*64.so built/linux-64/'
+					
                     script
                     {
                         if (env.BRANCH_NAME == "preview") {

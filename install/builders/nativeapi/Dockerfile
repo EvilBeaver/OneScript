@@ -14,9 +14,12 @@ RUN chmod +x build.sh && ./build.sh
 
 RUN cd / \
     && mkdir built \
-    && mkdir built/tmp \
-    && mkdir built/tmp/bin \
-    && mkdir built/tmp/tests \
-    && cp /src/proxy/*.so built/tmp/bin \
-    && cp /src/tests/*.so built/tmp/tests \
-    && chmod -x built/tmp/bin/*.so
+    && mkdir built/bin \
+    && mkdir built/tests \
+    && cp /src/proxy/*.so built/bin \
+    && cp /src/tests/*.so built/tests \
+    && chmod -x built/bin/*.so \
+    && chmod -x built/tests/*.so
+	
+# /output should be mounted on build, then
+# cp -Rv /built/* /output/
