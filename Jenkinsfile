@@ -65,7 +65,10 @@ pipeline {
                         }
                     }
                 }
-				
+            }
+        }
+		stage('Additional files') {
+			parallel {
 				stage('Linux Build') {
 					agent {
 						docker {
@@ -81,28 +84,27 @@ pipeline {
 						stash includes: 'output/tests/*.so', name: 'nativeApiTestsSo'
 					}
 				}
-            }
-        }
-        stage('VSCode debugger Build') {
-            agent {
-                docker {
-                    image 'node'
-                    label 'linux'
-                }
-            }
+				stage('VSCode debugger Build') {
+					agent {
+						docker {
+							image 'node'
+							label 'linux'
+						}
+					}
 
-            steps {
-                unstash 'buildResults'
-                sh 'npm install vsce'
-                script {
-                    def vsceBin = pwd() + "/node_modules/.bin/vsce"
-                    sh "cd built/vscode && ${vsceBin} package"
-                    archiveArtifacts artifacts: 'built/vscode/*.vsix', fingerprint: true
-                    stash includes: 'built/vscode/*.vsix', name: 'vsix' 
-                }
-            }
-        }
-
+					steps {
+						unstash 'buildResults'
+						sh 'npm install vsce'
+						script {
+							def vsceBin = pwd() + "/node_modules/.bin/vsce"
+							sh "cd built/vscode && ${vsceBin} package"
+							archiveArtifacts artifacts: 'built/vscode/*.vsix', fingerprint: true
+							stash includes: 'built/vscode/*.vsix', name: 'vsix' 
+						}
+					}
+				}
+			}
+		}
         stage('Testing'){
             parallel{
                 stage('Windows testing') {
