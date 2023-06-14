@@ -84,7 +84,7 @@ pipeline {
                             sh 'cp *.so ../../built/tmp/na-tests'
                         }
 						dir('output') {
-						    sh 'cp -Rv /built/tmp/* ./output/'
+						    sh 'cp -Rv ../built/tmp/* .'
 						}
 						stash includes: 'output/na-proxy/*.so', name: 'nativeApiSo'
 						stash includes: 'output/na-tests/*.so', name: 'nativeApiTestsSo'
@@ -155,7 +155,7 @@ pipeline {
 						unstash 'nativeApiTestsSo'
 						
 						sh 'cp output/na-proxy/*.so ./built/linux-x64/bin/'
-						sh 'cp output/na-tests/*.so ./tests/native-api/build64/AddInNativeLin64.so'
+						sh 'cp output/na-tests/*.so ./tests/native-api/build64/'
 
                         sh '''\
                         if [ ! -d lintests ]; then
