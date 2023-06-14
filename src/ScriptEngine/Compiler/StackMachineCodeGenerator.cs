@@ -604,7 +604,7 @@ namespace ScriptEngine.Compiler
             else
             {
                 var parameters = BuiltinFunctions.ParametersInfo(funcId);
-                CheckFactArguments(parameters, node.ArgumentList);
+                FullCheckFactArguments(parameters, node.ArgumentList);
             }
 
             AddCommand(funcId, argsPassed);
@@ -629,7 +629,34 @@ namespace ScriptEngine.Compiler
         {
             CheckFactArguments(method.GetParameters(), argList);
         }
-        
+
+        private void FullCheckFactArguments(ParameterInfo[] parameters, BslSyntaxNode argList)
+        {
+            var argsPassed = argList.Children.Count;
+            if (argsPassed > parameters.Length)
+            {
+                AddError(CompilerErrors.TooManyArgumentsPassed(), argList.Location);
+                return;
+            }
+
+            int i = 0;
+            for (; i < argsPassed; i++)
+            {
+                if (!parameters[i].HasDefaultValue && argList.Children[i].Children.Count == 0)
+                {
+                    AddError(CompilerErrors.MissedArgument(), argList.Location);
+                }
+            }
+            for (; i < parameters.Length; i++)
+            {
+                if (!parameters[i].HasDefaultValue)
+                {
+                    AddError(CompilerErrors.TooFewArgumentsPassed(), argList.Location);
+                    return;
+                }
+            }
+        }
+
         protected override void VisitGlobalProcedureCall(CallNode node)
         {
             if (LanguageDef.IsBuiltInFunction(node.Identifier.Lexem.Token))
