@@ -83,6 +83,16 @@
         <Copy SourceFiles="@(CppX86)" DestinationFolder="$(ArtifactsRoot)/fdd-x86/bin" />
         <Copy SourceFiles="@(CppX64)" DestinationFolder="$(ArtifactsRoot)/fdd-x64/bin" />
 
+        <ItemGroup>
+            <BatFiles Include="$(MSBuildProjectDirectory)\install\opm.bat"/>
+            <BatFiles Include="$(MSBuildProjectDirectory)\install\oscript.bat"/>
+            <ShFiles Include="$(MSBuildProjectDirectory)\install\opm.sh"/>
+            <ShFiles Include="$(MSBuildProjectDirectory)\install\oscript.sh"/>
+        </ItemGroup>
+        
+        <Copy SourceFiles="@(BatFiles);@(ShFiles)" DestinationFolder="$(ArtifactsRoot)/fdd-x86/bin"/>
+        <Copy SourceFiles="@(BatFiles);@(ShFiles)" DestinationFolder="$(ArtifactsRoot)/fdd-x64/bin"/>
+
     </Target>
     
     <Target Name="MakeSCD">
@@ -108,6 +118,17 @@
 
         <Copy SourceFiles="@(CppX86)" DestinationFolder="$(ArtifactsRoot)/win-x86/bin" />
         <Copy SourceFiles="@(CppX64)" DestinationFolder="$(ArtifactsRoot)/win-x64/bin" />
+
+        <ItemGroup>
+            <BatFiles Include="$(MSBuildProjectDirectory)\install\opm.bat"/>
+            <BatFiles Include="$(MSBuildProjectDirectory)\install\oscript.bat"/>
+            <ShFiles Include="$(MSBuildProjectDirectory)\install\opm.sh"/>
+            <ShFiles Include="$(MSBuildProjectDirectory)\install\oscript.sh"/>
+        </ItemGroup>
+
+        <Copy SourceFiles="@(BatFiles)" DestinationFolder="$(ArtifactsRoot)/win-x86/bin"/>
+        <Copy SourceFiles="@(BatFiles)" DestinationFolder="$(ArtifactsRoot)/win-x64/bin"/>
+        <Copy SourceFiles="@(ShFiles)" DestinationFolder="$(ArtifactsRoot)/linux-x64/bin"/>
 
     </Target>
     
@@ -166,7 +187,6 @@
         <Exec Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)/install/unicode-zipper.os&quot; unpack &quot;$(LibDir)/tmp/content.zip&quot; &quot;$(LibDir)/opm&quot;"/>
 
         <Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibDir)"/>
-        <Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="%(Executable.RelativeDir)"/>
         <RemoveDir Directories="$(LibDir)/tmp"/>
         
         <PropertyGroup>
