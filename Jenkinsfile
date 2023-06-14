@@ -144,8 +144,8 @@ pipeline {
 						unstash 'nativeApiSo'
 						unstash 'nativeApiTestsSo'
 						
-						sh 'cp output/bin/*.so ../built/linux-x64/bin/'
-						sh 'cp output/tests/*.so ../tests/native-api/build64/AddInNativeLin64.so'
+						sh 'cp output/bin/*.so ./built/linux-x64/bin/'
+						sh 'cp output/tests/*.so ./tests/native-api/build64/AddInNativeLin64.so'
 
                         sh '''\
                         if [ ! -d lintests ]; then
