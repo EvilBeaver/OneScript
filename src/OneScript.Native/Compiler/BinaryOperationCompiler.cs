@@ -35,11 +35,6 @@ namespace OneScript.Native.Compiler
 
         private Expression CompileStaticOperation(Expression left, Expression right)
         {
-            if (IsEqualityOperation(_opCode))
-            {
-                return MakeStaticEqualityOperation(left, right);
-            }
-            
             if (left.Type.IsNumeric())
             {
                 return MakeNumericOperation(left, right);
@@ -69,11 +64,6 @@ namespace OneScript.Native.Compiler
             }
             
             throw NativeCompilerException.OperationNotDefined(_opCode, left.Type, right.Type);
-        }
-
-        private Expression MakeStaticEqualityOperation(Expression left, Expression right)
-        {
-            return Expression.MakeBinary(_opCode, left, right);
         }
 
         private Expression MakeNumericOperation(Expression left, Expression right)
