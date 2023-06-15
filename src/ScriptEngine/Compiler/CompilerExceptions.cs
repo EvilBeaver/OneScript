@@ -88,6 +88,11 @@ namespace ScriptEngine.Compiler
             return new CompilerException(Locale.NStr("ru='Слишком много фактических параметров'; en='Too many actual parameters'"));
         }
 
+        internal static CompilerException MissedArgument()
+        {
+            return new CompilerException(Locale.NStr("ru='Пропущен обязательный параметр';en='Missing mandatory parameter'"));
+        }
+
         internal static CompilerException InternalCompilerError(string reason)
         {
             return new CompilerException(Locale.NStr("ru='Внутренняя ошибка компилятора:';en='Internal compiler error:'") + reason);
