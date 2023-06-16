@@ -47,25 +47,36 @@ namespace OneScript.Native.Compiler
             
             if (left.Type == typeof(string))
             {
-                if (_opCode == ExpressionType.Add)
-                    return StringAddition(left, right);
-
-                // Для строк допустимо сравнение со строками на < >
-                if (IsComparisonOperation(_opCode))
-                {
-                    // для простоты сделаем через BslValue.CompareTo
-                    return MakeDynamicComparison(left, right);
-                }
-                else if (IsEqualityOperation(_opCode))
-                {
-                    // для простоты сделаем через BslValue.Equals
-                    return MakeDynamicEquality(left, right);
-                }
+                return MakeStringOperation(left, right);
             }
             
             if (left.Type == typeof(bool))
             {
                 return MakeLogicalOperation(left, right);
+            }
+            
+            throw NativeCompilerException.OperationNotDefined(_opCode, left.Type, right.Type);
+        }
+
+        private Expression MakeStringOperation(Expression left, Expression right)
+        {
+            if (_opCode == ExpressionType.Add)
+            {
+                return StringAddition(left, right);
+            }
+
+            // Для строк допустимо сравнение со строками на < >
+            if (IsComparisonOperation(_opCode))
+            {
+                // для простоты сделаем через BslValue.CompareTo
+                return MakeDynamicComparison(left, right);
+            }
+            
+            if (IsEqualityOperation(_opCode))
+            {
+                return right.Type == typeof(string) ?
+                    Expression.MakeBinary(_opCode, left, right) 
+                    : MakeDynamicEquality(left, right);
             }
             
             throw NativeCompilerException.OperationNotDefined(_opCode, left.Type, right.Type);
