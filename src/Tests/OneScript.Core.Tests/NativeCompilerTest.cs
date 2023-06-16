@@ -404,6 +404,23 @@ namespace OneScript.Core.Tests
             statements[0].NodeType.Should().Be(ExpressionType.Assign);
             statements[1].NodeType.Should().Be(ExpressionType.Assign);
         }
+        
+        [Fact]
+        public void ClrIntegers_Can_Be_Used_As_Bsl_Numbers()
+        {
+            var block = new CompiledBlock(default);
+            block.CodeBlock = 
+                @"Равенство = (Найти(""123"",""2"") = 0);
+                  Неравенство = (КодСимвола(""А"") <> 0)";
+            
+            var statements = block.MakeExpression()
+                .Body
+                .As<BlockExpression>()
+                .Expressions;
+
+            statements[0].NodeType.Should().Be(ExpressionType.Assign);
+            statements[1].NodeType.Should().Be(ExpressionType.Assign);
+        }
 
         public static IEnumerable<object[]> TypesForTestEqualityOperators()
         {
