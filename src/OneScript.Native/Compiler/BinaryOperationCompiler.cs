@@ -56,6 +56,11 @@ namespace OneScript.Native.Compiler
                     // для простоты сделаем через BslValue.CompareTo
                     return MakeDynamicComparison(left, right);
                 }
+                else if (IsEqualityOperation(_opCode))
+                {
+                    // для простоты сделаем через BslValue.Equals
+                    return MakeDynamicEquality(left, right);
+                }
             }
             
             if (left.Type == typeof(bool))
