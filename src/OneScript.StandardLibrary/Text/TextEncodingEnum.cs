@@ -75,7 +75,7 @@ namespace OneScript.StandardLibrary.Text
 
         public static TextEncodingEnum CreateInstance(ITypeManager typeManager)
         {
-            var instance = EnumContextHelper.CreateClrEnumInstance<TextEncodingEnum, System.IO.DriveType>(
+            var instance = EnumContextHelper.CreateClrEnumInstance<TextEncodingEnum, TextEncodingValues>(
                 typeManager,
                 (t, v) => new TextEncodingEnum(t, v));
 

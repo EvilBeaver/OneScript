@@ -281,6 +281,9 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             var parameters = GetMethodInfo(methIdx).GetParameters();
+            if (args.Length > parameters.Length)
+                throw RuntimeException.TooManyArgumentsPassed();
+
             var valueArgs = new IValue[parameters.Length];
             var passedArgs = args.Select(x => ContextValuesMarshaller.ConvertDynamicValue(x)).ToArray();
             
