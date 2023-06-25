@@ -187,7 +187,7 @@ pipeline {
                     unstash 'buildResults'
                     unstash 'nativeApiSo'
                     
-                    bat 'copy output/na-proxy/*64.so built/linux-64/'
+                    bat 'copy output\\na-proxy\\*64.so built\\linux-64\\'
                     
                     script
                     {
