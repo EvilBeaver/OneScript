@@ -27,7 +27,7 @@ namespace ScriptEngine
         public ScriptingEngine(ITypeManager types,
             IGlobalsManager globals,
             RuntimeEnvironment env, 
-            ConfigurationProviders configurationProviders,
+            OneScriptCoreOptions options,
             IServiceContainer services)
         {
             TypeManager = types;
@@ -40,17 +40,10 @@ namespace ScriptEngine
             Services = services;
             ContextDiscoverer = new ContextDiscoverer(types, globals, services);
             DebugController = services.TryResolve<IDebugController>();
-            ApplyConfiguration(configurationProviders.CreateConfig());
+            Loader.ReaderEncoding = options.FileReaderEncoding;
         }
 
         public IServiceContainer Services { get; }
-
-        private void ApplyConfiguration(KeyValueConfig config)
-        {
-            var options = new OneScriptCoreOptions(config);
-
-            Loader.ReaderEncoding = options.FileReaderEncoding;
-        }
 
         private ContextDiscoverer ContextDiscoverer { get; }
         

@@ -26,7 +26,7 @@ namespace ScriptEngine.HostedScript
         private readonly RuntimeEnvironment _env;
         private bool _isInitialized;
 
-        private readonly Lazy<OneScriptLibraryOptions> _workingConfig;
+        private readonly OneScriptLibraryOptions _workingConfig;
         
         private CodeStatProcessor _codeStat;
 
@@ -35,7 +35,7 @@ namespace ScriptEngine.HostedScript
             _engine = engine;
             _env = _engine.Environment;
             _engine.AttachAssembly(typeof(HostedScriptEngine).Assembly);
-            _workingConfig = new Lazy<OneScriptLibraryOptions>(InitWorkingConfig);
+            _workingConfig = _engine.Services.Resolve<OneScriptLibraryOptions>();
             SetGlobalContexts(engine.GlobalsManager);
         }
 
@@ -55,19 +55,6 @@ namespace ScriptEngine.HostedScript
             _env.InjectGlobalProperty(bgTasksManager, "ФоновыеЗадания", "BackgroundJobs", true);
         }
 
-        private OneScriptLibraryOptions GetWorkingConfig()
-        {
-            return _workingConfig.Value;
-        }
-        
-        private OneScriptLibraryOptions InitWorkingConfig()
-        {
-            var cfgAccessor = _engine.GlobalsManager.GetInstance<SystemConfigAccessor>();
-            cfgAccessor.Refresh();
-                
-            return new OneScriptLibraryOptions(cfgAccessor.GetConfig());
-        }
-
         public void Initialize()
         {
             if (!_isInitialized)
@@ -77,7 +64,7 @@ namespace ScriptEngine.HostedScript
             }
 
             // System language
-            var systemLanguageCfg = GetWorkingConfig().SystemLanguage;
+            var systemLanguageCfg = _workingConfig.SystemLanguage;
 
             Locale.SystemLanguageISOName = systemLanguageCfg ?? System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
         }
@@ -130,7 +117,7 @@ namespace ScriptEngine.HostedScript
 
         private void DefineConstants(ICompilerFrontend compilerSvc)
         {
-            var definitions = GetWorkingConfig().PreprocessorDefinitions;
+            var definitions = _workingConfig.PreprocessorDefinitions;
             foreach (var val in definitions)
             {
                 compilerSvc.PreprocessorDefinitions.Add(val);

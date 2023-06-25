@@ -76,9 +76,7 @@ namespace ScriptEngine.HostedScript.Extensions
         {
             b.Services.RegisterSingleton<IDependencyResolver>(sp =>
             {
-                var config = sp.Resolve<KeyValueConfig>();
-
-                var libOptions = new OneScriptLibraryOptions(config);
+                var libOptions = sp.Resolve<OneScriptLibraryOptions>();
                 var searchDirs = new List<string>();
 
                 var sysDir = libOptions.SystemLibraryDir; 
