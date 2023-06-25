@@ -274,7 +274,13 @@
             <Output TaskParameter="FirstItem" PropertyName="Runner"/>
         </GetFirstItem>
 
-        <Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)\tests\testrunner.os&quot; -runall . xddReportPath ." IgnoreExitCode="true"/>
+        <Exec
+              WorkingDirectory="$(MSBuildProjectDirectory)\tests" 
+              Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)\tests\testrunner.os&quot; -runall . xddReportPath ." 
+              IgnoreExitCode="true"
+              ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="TestsExitCode"/>
+        </Exec>
         
     </Target>
     
