@@ -1594,7 +1594,7 @@ namespace ScriptEngine.Compiler
         {
             NextToken();
             BuildPrimaryNode();
-            BuildOperation(GetBinaryPriority(Token.Not));
+            BuildOperation(LanguageDef.GetPriority(Token.Not));
             AddCommand(OperationCode.Not);
         }
 
