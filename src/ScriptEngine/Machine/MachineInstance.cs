@@ -1192,7 +1192,9 @@ namespace ScriptEngine.Machine
                     if (!argValue.IsSkippedArgument())
                     {
                         if (methodParams[i].IsByRef())
-                            argValues[i] = argValue;
+                        {
+                            argValues[i] = argValue is IVariable? argValue : Variable.Create(argValue, "");
+                        }
                         else
                             argValues[i] = argValue.GetRawValue();
                     }
