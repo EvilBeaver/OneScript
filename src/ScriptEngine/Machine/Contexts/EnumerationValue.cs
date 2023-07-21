@@ -49,23 +49,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override int CompareTo(BslValue other)
         {
-            if (other != null)
-            {
-                if (other is EnumerationValue)
-                {
-                    int thisIdx = _owner.IndexOf(this);
-                    int otherIdx = _owner.IndexOf((EnumerationValue)other);
-                    return thisIdx - otherIdx;
-                }
-                else
-                {
-                    throw RuntimeException.ComparisonNotSupportedException();
-                }
-            }
-            else
-            {
-                return 1;
-            }
+            throw RuntimeException.ComparisonNotSupportedException();
         }
 
         public override bool Equals(BslValue other)
