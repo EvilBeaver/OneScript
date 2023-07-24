@@ -1055,7 +1055,7 @@ namespace OneScript.Core.Tests
         {
             var tm = new DefaultTypeManager();
             var objectType = tm.RegisterClass(typeof(StructureImpl));
-            var block = GetCompiler(new DefaultTypeManager());
+            var block = GetCompiler(tm);
             block.Parameters.Insert("Ф", new BslTypeValue(objectType));
             block.CodeBlock = "Возврат Ложь И Ф;"; // Ф не должен быть вычислен
             
@@ -1065,6 +1065,38 @@ namespace OneScript.Core.Tests
             var testData = new StructureImpl();
 
             ((bool)(BslBooleanValue)func.DynamicInvoke(new object[] { testData })).Should().Be(false);
+        }
+        
+        [Fact]
+        public void TypeFuncValue_Is_BslTypeValue()
+        {
+            var tm = new DefaultTypeManager();
+            var objectType = tm.RegisterClass(typeof(StructureImpl));
+            var block = GetCompiler(tm);
+            block.CodeBlock = "Возврат Тип(\"Структура\");";
+            
+            var lambda = block.MakeExpression();
+            var func = lambda.Compile();
+
+            var testType = new BslTypeValue(objectType);
+            var result = func.DynamicInvoke();
+
+            result.Should().BeOfType<BslTypeValue>().And.Be(testType);
+        }
+        
+        [Fact]
+        public void TypeOfFuncValue_Is_BslTypeValue()
+        {
+            var block = GetCompiler(new DefaultTypeManager());
+            block.CodeBlock = "Возврат ТипЗнч(42);";
+            
+            var lambda = block.MakeExpression();
+            var func = lambda.Compile();
+
+            var testType = new BslTypeValue(BasicTypes.Number);
+            var result = func.DynamicInvoke();
+
+            result.Should().BeOfType<BslTypeValue>().And.Be(testType);
         }
     }
 }
