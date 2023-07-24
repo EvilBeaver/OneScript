@@ -71,24 +71,8 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         public virtual int CompareTo(IValue other)
-        {
-            if (other != null)
-            {
-                if (other is EnumerationValue)
-                {
-                    int thisIdx = _owner.IndexOf(this);
-                    int otherIdx = _owner.IndexOf((EnumerationValue)other);
-                    return thisIdx - otherIdx;
-                }
-                else
-                {
-                    return SystemType.ID - other.SystemType.ID;
-                }
-            }
-            else
-            {
-                return 1;
-            }
+        { 
+            throw RuntimeException.ComparisonNotSupportedException();
         }
 
         public virtual bool Equals(IValue other)
