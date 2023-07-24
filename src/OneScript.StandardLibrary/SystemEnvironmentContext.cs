@@ -10,6 +10,7 @@ using System.Collections;
 using System.Reflection;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
 using ScriptEngine.HostedScript.Library;

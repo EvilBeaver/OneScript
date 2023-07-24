@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Linq.Expressions;
-using OneScript.Commons;
+using OneScript.Exceptions;
 using OneScript.Language;
 using OneScript.Localization;
 

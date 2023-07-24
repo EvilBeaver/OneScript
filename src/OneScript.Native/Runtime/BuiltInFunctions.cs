@@ -9,6 +9,7 @@ using System;
 using System.Runtime.CompilerServices;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Values;
 
 namespace OneScript.Native.Runtime

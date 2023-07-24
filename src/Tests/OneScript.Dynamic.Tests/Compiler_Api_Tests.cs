@@ -7,10 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using FluentAssertions;
-using OneScript.Compilation.Binding;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
-using OneScript.Native.Compiler;
 using Xunit;
 
 namespace OneScript.Dynamic.Tests

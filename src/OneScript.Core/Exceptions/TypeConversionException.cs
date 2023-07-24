@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using OneScript.Localization;
 
-namespace OneScript.Commons
+namespace OneScript.Exceptions
 {
     public class TypeConversionException : RuntimeException
     {

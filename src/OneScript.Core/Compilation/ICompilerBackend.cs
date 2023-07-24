@@ -10,7 +10,6 @@ using System;
 using OneScript.Compilation.Binding;
 using OneScript.Execution;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
-using OneScript.Sources;
 
 namespace OneScript.Compilation
 {

@@ -10,8 +10,6 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
-using OneScript.Native.Runtime;
-using OneScript.Values;
 
 namespace OneScript.Native.Compiler
 {

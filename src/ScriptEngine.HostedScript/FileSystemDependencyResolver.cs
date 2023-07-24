@@ -10,8 +10,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using OneScript.Commons;
 using OneScript.Compilation;
+using OneScript.Exceptions;
 using OneScript.Localization;
 using OneScript.Sources;
 

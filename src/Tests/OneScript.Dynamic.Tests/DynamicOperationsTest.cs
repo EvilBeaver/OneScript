@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using FluentAssertions;
-using OneScript.Commons;
+using OneScript.Exceptions;
 using OneScript.Native.Runtime;
 using OneScript.Values;
 using Xunit;

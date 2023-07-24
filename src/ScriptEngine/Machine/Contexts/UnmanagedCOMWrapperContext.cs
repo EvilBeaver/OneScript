@@ -9,8 +9,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Rcw;
 using OneScript.Values;
 using ScriptEngine.Machine.Rcw;
@@ -158,11 +158,11 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw OneScript.Commons.PropertyAccessException.PropNotFoundException(prop.Name);
+                throw PropertyAccessException.PropNotFoundException(prop.Name);
             }
             catch (System.MemberAccessException)
             {
-                throw OneScript.Commons.PropertyAccessException.PropIsNotWritableException(prop.Name);
+                throw PropertyAccessException.PropIsNotWritableException(prop.Name);
             }
         }
 

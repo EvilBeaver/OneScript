@@ -11,7 +11,6 @@ using OneScript.Contexts;
 using OneScript.Values;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 using Xunit;
 
 namespace OneScript.Core.Tests

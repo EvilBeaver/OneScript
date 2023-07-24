@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using FluentAssertions;
 using Moq;
 using OneScript.Commons;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary;
 using OneScript.Types;
 using OneScript.Values;

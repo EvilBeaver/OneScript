@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 
 namespace ScriptEngine.Machine.Contexts
 {
