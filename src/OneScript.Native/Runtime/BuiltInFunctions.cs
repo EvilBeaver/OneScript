@@ -90,7 +90,7 @@ namespace OneScript.Native.Runtime
         }
 
         [ContextMethod("Найти", "Find")]
-        public static int StrPos(string needle, string haystack)
+        public static int StrPos(string haystack, string needle)
         {
             var result = haystack.IndexOf(needle, StringComparison.Ordinal) + 1;
             return result;
