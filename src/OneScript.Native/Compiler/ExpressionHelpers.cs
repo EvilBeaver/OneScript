@@ -33,6 +33,9 @@ namespace OneScript.Native.Compiler
         
         public static Expression CastToDecimal(Expression value)
         {
+            if (value.Type == typeof(decimal))
+                return value;
+            
             return Expression.Convert(value, typeof(decimal));
         }
 
@@ -105,6 +108,11 @@ namespace OneScript.Native.Compiler
 
             if (right.Type.IsValue())
                 return ConvertBslValueToPrimitiveType(right, typeof(bool));
+
+            if (right.Type.IsNumeric())
+            {
+                return Expression.NotEqual(right, Expression.Default(right.Type));
+            }
             
             return Expression.Convert(right, typeof(bool));
         }
@@ -631,7 +639,7 @@ namespace OneScript.Native.Compiler
                 PackArgsToArgsArray(args));
         }
 
-        private static Expression PackArgsToArgsArray(List<Expression> args)
+        private static Expression PackArgsToArgsArray(IEnumerable<Expression> args)
         {
             return Expression.NewArrayInit(typeof(BslValue), args.Select(ConvertToBslValue));
         }
@@ -683,6 +691,23 @@ namespace OneScript.Native.Compiler
 
             return memberExpr.Expression.Type == typeof(IVariable)
                    && memberExpr.Member.Name == nameof(IVariable.BslValue);
+        }
+
+        public static Expression CallContextMethod(Expression target, string name, IEnumerable<Expression> arguments)
+        {
+            var methodInfo = OperationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.CallContextMethod)
+            );
+
+            var argExpressions = new List<Expression>
+            {
+                target,
+                Expression.Constant(name),
+                PackArgsToArgsArray(arguments)
+            };
+
+            return Expression.Call(methodInfo, argExpressions);
         }
     }
 }

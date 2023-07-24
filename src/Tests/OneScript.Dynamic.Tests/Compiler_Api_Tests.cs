@@ -15,7 +15,7 @@ using Xunit;
 
 namespace OneScript.Dynamic.Tests
 {
-    public class Compiler_Api_Tests
+    public class Compiler_Api_Tests : CompilerTestBase
     {
         [Fact]
         public void CanCompile_Empty_Module()
@@ -184,28 +184,15 @@ namespace OneScript.Dynamic.Tests
             errors.Should().HaveCount(1);
             errors[0].ErrorId.Should().Be(nameof(LocalizedErrors.UseProcAsFunction));
         }
+        
+        [Fact]
+        public void Test_Conversion_To_Boolean_For_Decimals_In_BooleanExpressions()
+        {
+            var code = @"
+            Номер = 0;
+            Операнд = 2=2 И Номер+1;";
 
-        private DynamicModule CreateModule(string code)
-        {
-            var helper = new CompileHelper();
-            helper.ParseModule(code);
-            return helper.Compile(new SymbolTable());
-        }
-        
-        private DynamicModule CreateModule(string code, List<CodeError> errors)
-        {
-            var helper = new CompileHelper();
-            helper.ParseModule(code);
-            var result = helper.Compile(new SymbolTable());
-            errors.AddRange(helper.Errors);
-            return result;
-        }
-        
-        private DynamicModule CreateModule(string code, SymbolTable scopes)
-        {
-            var helper = new CompileHelper();
-            helper.ParseBatch(code);
-            return helper.Compile(scopes);
+            CreateModule(code);
         }
     }
 }

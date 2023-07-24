@@ -173,17 +173,17 @@ namespace OneScript.Native.Runtime
             return new ExceptionInfoClass(wrapper);
         }
 
-        public static TypeDescriptor GetTypeByName(ITypeManager manager, string name)
+        public static BslTypeValue GetTypeByName(ITypeManager manager, string name)
         {
-            var firstTry = manager.GetTypeByName(name);
+            var foundType = manager.GetTypeByName(name);
             
             // костыль подмены типа для Тип("ИнформацияОбОшибке")
-            if (firstTry.Name == ExceptionInfoClass.LanguageType.Name)
+            if (foundType.Name == ExceptionInfoClass.LanguageType.Name)
             {
-                return ExceptionInfoClass.LanguageType;
+                foundType = ExceptionInfoClass.LanguageType;
             }
 
-            return firstTry;
+            return new BslTypeValue(foundType);
         }
 
         public static BslValue GetIndexedValue(object target, BslValue index)
@@ -206,13 +206,20 @@ namespace OneScript.Native.Runtime
             context.SetIndexedValue(index, value);
         }
 
-        public static BslValue GetPropertyValue(BslValue target, string propertyName)
+        public static BslValue GetPropertyValue(object target, string propertyName)
         {
             if (!(target is IRuntimeContextInstance context))
                 throw BslExceptions.ValueIsNotObjectException();
 
             var propIndex = context.GetPropertyNumber(propertyName);
             return (BslValue)context.GetPropValue(propIndex);
+        }
+
+        public static BslValue CallContextMethod(IRuntimeContextInstance instance, string methodName, BslValue[] arguments)
+        {
+            var idx = instance.GetMethodNumber(methodName);
+            instance.CallAsFunction(idx, arguments, out var result);
+            return (BslValue)result;
         }
     }
 }

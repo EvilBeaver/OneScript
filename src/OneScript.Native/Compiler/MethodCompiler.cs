@@ -196,6 +196,7 @@ namespace OneScript.Native.Compiler
             }
             catch (Exception e)
             {
+                
                 RestoreNestingLevel(nestingLevel);
                 if (e is NativeCompilerException ce)
                 {
@@ -1121,7 +1122,7 @@ namespace OneScript.Native.Compiler
             }
             else
             {
-                AddError(new BilingualString($"Тип {targetType} не является объектным типом.",$"Type {targetType} is not an object type."), node.Location);
+                AddError(NativeCompilerErrors.TypeIsNotAnObjectType(targetType), node.Location);
             }
         }
 
@@ -1153,6 +1154,10 @@ namespace OneScript.Native.Compiler
                 var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters());
                 _statementBuildParts.Push(Expression.Call(target, methodInfo, args));
             }
+            else if (targetType.IsContext())
+            {
+                _statementBuildParts.Push(ExpressionHelpers.CallContextMethod(target, name, PrepareDynamicCallArguments(call.ArgumentList)));
+            }
             else if (targetType.IsValue() || target is DynamicExpression)
             {
                 var args = new List<Expression>();
@@ -1175,7 +1180,7 @@ namespace OneScript.Native.Compiler
             }
             else
             {
-                AddError(new BilingualString($"Тип {targetType} не является объектным типом.",$"Type {targetType} is not an object type."), node.Location);
+                AddError(NativeCompilerErrors.TypeIsNotAnObjectType(targetType), node.Location);
             }
         }
 
