@@ -46,6 +46,9 @@ namespace VSCode.DebugAdapter
             
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;
+            psi.StandardErrorEncoding = DebuggerSettings.DebugModeEncoding;
+            psi.StandardOutputEncoding = DebuggerSettings.DebugModeEncoding;
+
             _process.EnableRaisingEvents = true;
             _process.OutputDataReceived += Process_OutputDataReceived;
             _process.ErrorDataReceived += Process_ErrorDataReceived;
