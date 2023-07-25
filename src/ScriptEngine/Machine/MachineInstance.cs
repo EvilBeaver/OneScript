@@ -1138,7 +1138,9 @@ namespace ScriptEngine.Machine
                         if (methodParams[i].IsByValue)
                             argValues[i] = argValue.GetRawValue();
                         else
-                            argValues[i] = argValue;
+                        {
+                            argValues[i] = argValue is IVariable ? argValue : Variable.Create(argValue, "");
+                        }
                     }
                     else if (!methodParams[i].HasDefaultValue)
                         throw RuntimeException.MissedArgument();
