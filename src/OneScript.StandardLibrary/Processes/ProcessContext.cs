@@ -272,12 +272,21 @@ namespace OneScript.StandardLibrary.Processes
             int argsPosition;
             sInfo.UseShellExecute = true;
             sInfo.FileName = ExtractExecutableName(cmdLine, out argsPosition);
-            sInfo.Arguments = argsPosition >= cmdLine.Length ? "" : cmdLine.Substring(argsPosition);
             if (currentDir != null)
                 sInfo.WorkingDirectory = currentDir;
+            
+            var arguments = argsPosition >= cmdLine.Length 
+                ? Array.Empty<string>() 
+                : new ArgumentsParser(cmdLine[argsPosition..]).GetArguments();
+
+            foreach (var argument in arguments)
+            {
+                sInfo.ArgumentList.Add(argument);
+            }
+            
             return sInfo;
         }
-
+        
         private static string ExtractExecutableName(string cmdLine, out int argsPosition)
         {
             bool inQuotes = false;
