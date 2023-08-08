@@ -193,8 +193,8 @@ namespace ScriptEngine.Machine.Contexts
                 try
                 {
                     var argsData = MarshalArguments(arguments);
-                    DispatchUtility.Invoke(Instance, dispId, argsData.values, new [] { argsData.flags });
-                    RemapOutputParams(arguments, argsData.values, argsData.flags);
+                    DispatchUtility.Invoke(Instance, dispId, argsData.values, argsData.flags);
+                    RemapOutputParams(arguments, argsData.values, argsData.flags[0]);
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
@@ -221,8 +221,8 @@ namespace ScriptEngine.Machine.Contexts
                 try
                 {
                     var argsData = MarshalArguments(arguments);
-                    var result = DispatchUtility.Invoke(Instance, dispId, argsData.values, new [] { argsData.flags });
-                    RemapOutputParams(arguments, argsData.values, argsData.flags);
+                    var result = DispatchUtility.Invoke(Instance, dispId, argsData.values, argsData.flags);
+                    RemapOutputParams(arguments, argsData.values, argsData.flags[0]);
                     retValue = CreateIValue(result);
                 }
                 catch (System.Reflection.TargetInvocationException e)

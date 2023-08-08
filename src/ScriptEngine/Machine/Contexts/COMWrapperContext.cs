@@ -106,17 +106,23 @@ namespace ScriptEngine.Machine.Contexts
             return type.FullName == "System.__ComObject" || type.BaseType.FullName == "System.__ComObject"; // string, cause it's hidden type
         }
 
-        public static (object[] values, ParameterModifier flags) MarshalArguments(IValue[] arguments)
+        protected static (object[] values, ParameterModifier[] flags) MarshalArguments(IValue[] arguments)
         {
             var values = new object[arguments.Length];
-            var flags = new ParameterModifier(arguments.Length);
-            for (int i = 0; i < arguments.Length; i++)
+            ParameterModifier[] flagsArray = null;
+            if (arguments.Length > 0)
             {
-                values[i] = MarshalIValue(arguments[i]);
-                flags[i] = arguments[i] is IVariable;
+                var flags = new ParameterModifier(arguments.Length);
+                for (int i = 0; i < arguments.Length; i++)
+                {
+                    values[i] = MarshalIValue(arguments[i]);
+                    flags[i] = arguments[i] is IVariable;
+                }
+
+                flagsArray = new[] { flags };
             }
 
-            return (values, flags);
+            return (values, flagsArray);
         }
 
         public static object MarshalIValue(IValue val)

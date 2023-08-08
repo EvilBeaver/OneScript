@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
@@ -71,24 +70,13 @@ namespace ScriptEngine.Machine
 
                     try
                     {
-                        var arrayOfArgs = callParams.Select(x => ContextValuesMarshaller.CastToCLRObject(x.GetRawValue())).ToArray();
-                        var retValue = instance.GetType().InvokeMember(name,
+                        return instance.GetType().InvokeMember(name,
                                         BindingFlags.InvokeMethod | BindingFlags.IgnoreCase
                                             | BindingFlags.Public | BindingFlags.OptionalParamBinding
                                             | BindingFlags.Instance,
                                         new ValueBinder(),
                                         instance,
-                                        arrayOfArgs);
-
-                        for (int i = 0; i < callParams.Length; i++)
-                        {
-                            if (callParams[i] is IVariable variable)
-                            {
-                                variable.Value = ContextValuesMarshaller.ConvertReturnValue(arrayOfArgs[i]);
-                            }
-                        }
-
-                        return retValue;
+                                        callParams.Cast<object>().ToArray());
                     }
                     catch (TargetInvocationException e)
                     {
