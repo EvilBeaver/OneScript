@@ -67,6 +67,7 @@ namespace OneScript.StandardLibrary
         {
             return BslMethodBuilder.Create()
                 .SetNames(MethodName_Ru, MethodName_En)
+                .ReturnType(typeof(BslValue))
                 .Build();
         }
 
