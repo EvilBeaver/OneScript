@@ -1116,7 +1116,7 @@ namespace ScriptEngine.Machine
                     var argValue = factArgs[i];
                     if (argValue.DataType != DataType.NotAValidValue)
                     {
-                        argValues[i] = argValue.GetRawValue();
+                        argValues[i] = argValue;
                     }
                 }
             }

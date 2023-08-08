@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -66,7 +67,7 @@ namespace ScriptEngine.Machine.Contexts
                 type = type.MakeGenericType(genericTypes.ToArray());
             }
 
-            object instance = Activator.CreateInstance(type, MarshalArguments(arguments));
+            object instance = Activator.CreateInstance(type, MarshalArguments(arguments).values);
 
             return InitByInstance(type, instance);
         }
@@ -105,10 +106,17 @@ namespace ScriptEngine.Machine.Contexts
             return type.FullName == "System.__ComObject" || type.BaseType.FullName == "System.__ComObject"; // string, cause it's hidden type
         }
 
-        public static object[] MarshalArguments(IValue[] arguments)
+        public static (object[] values, ParameterModifier flags) MarshalArguments(IValue[] arguments)
         {
-            var args = arguments.Select(x => MarshalIValue(x)).ToArray();
-            return args;
+            var values = new object[arguments.Length];
+            var flags = new ParameterModifier(arguments.Length);
+            for (int i = 0; i < arguments.Length; i++)
+            {
+                values[i] = MarshalIValue(arguments[i]);
+                flags[i] = arguments[i] is IVariable;
+            }
+
+            return (values, flags);
         }
 
         public static object MarshalIValue(IValue val)
