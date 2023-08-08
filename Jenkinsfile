@@ -22,11 +22,11 @@ pipeline {
                             docker login -p $dockerpassword -u $dockeruser
                             docker push oscript/onescript-builder:deb
                             docker push oscript/onescript-builder:rpm
-                            docker push oscript/onescript-builder:gcc
+                            docker push oscript/onescript-builder:gcc-1x
                             
                             # TODO: Немного через жопу собираются .so для NativеApi
                             # при сборке образа, а не при его запуске
-                            docker create --name gcc-$BUILD_NUMBER oscript/onescript-builder:gcc
+                            docker create --name gcc-$BUILD_NUMBER oscript/onescript-builder:gcc-1x
                             docker cp gcc-$BUILD_NUMBER:/built .
                             docker rm gcc-$BUILD_NUMBER
                             """.stripIndent()
