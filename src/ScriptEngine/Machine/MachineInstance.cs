@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -1173,7 +1173,7 @@ namespace ScriptEngine.Machine
                     var argValue = factArgs[i];
                     if (!argValue.IsSkippedArgument())
                     {
-                        argValues[i] = argValue.GetRawValue();
+                        argValues[i] = argValue;
                     }
                 }
             }

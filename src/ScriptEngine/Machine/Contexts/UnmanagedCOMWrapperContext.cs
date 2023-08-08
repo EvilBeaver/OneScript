@@ -13,6 +13,7 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Rcw;
 using OneScript.Values;
+using System.Reflection;
 using ScriptEngine.Machine.Rcw;
 
 namespace ScriptEngine.Machine.Contexts
@@ -196,7 +197,9 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    DispatchUtility.Invoke(Instance, dispId, MarshalArguments(arguments));
+                    var argsData = MarshalArguments(arguments);
+                    DispatchUtility.Invoke(Instance, dispId, argsData.values, argsData.flags);
+                    RemapOutputParams(arguments, argsData.values, argsData.flags[0]);
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
@@ -222,7 +225,9 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    var result = DispatchUtility.Invoke(Instance, dispId, MarshalArguments(arguments));
+                    var argsData = MarshalArguments(arguments);
+                    var result = DispatchUtility.Invoke(Instance, dispId, argsData.values, argsData.flags);
+                    RemapOutputParams(arguments, argsData.values, argsData.flags[0]);
                     retValue = CreateIValue(result);
                 }
                 catch (System.Reflection.TargetInvocationException e)
@@ -233,6 +238,18 @@ namespace ScriptEngine.Machine.Contexts
             catch (System.MissingMemberException)
             {
                 throw RuntimeException.MethodNotFoundException(method.Name);
+            }
+        }
+        
+        private void RemapOutputParams(IValue[] arguments, object[] values, ParameterModifier flags)
+        {
+            for (int i = 0; i < arguments.Length; i++)
+            {
+                if (flags[i])
+                {
+                    var variable = (IVariable)arguments[i];
+                    variable.Value = CreateIValue(values[i]);
+                }
             }
         }
 
