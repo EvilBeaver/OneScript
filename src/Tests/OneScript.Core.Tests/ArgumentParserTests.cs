@@ -7,12 +7,12 @@ namespace OneScript.Core.Tests;
 public class ArgumentParserTests
 {
     [Theory]
-    [InlineData("-c 'oscript -version'", "-c", "'oscript -version'")]
+    [InlineData("-c 'oscript -version'", "-c", "oscript -version")]
     [InlineData("-c oscript -version", "-c", "oscript", "-version")]
-    [InlineData("-c '\"oscript\" -version'", "-c", "'\"oscript\" -version'")]
-    [InlineData("-c \"'oscript' -version\"", "-c", "\"'oscript' -version\"")]
+    [InlineData("-c '\"oscript\" -version'", "-c", "\"oscript\" -version")]
+    [InlineData("-c \"'oscript' -version\"", "-c", "'oscript' -version")]
+    [InlineData("'aaa\"", "aaa\"")]
     [InlineData(" ")]
-    [InlineData("'aaa\"", "'aaa\"")]
     public void Should_Parse_Arguments(string input, params string[] expected)
     {
         var parser = new ArgumentsParser(input);

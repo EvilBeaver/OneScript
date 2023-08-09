@@ -69,8 +69,10 @@ namespace OneScript.StandardLibrary.Processes
                 _isInQuotes = false;
                 _currentQuote = default;
             }
-            
-            PushChar(quoteChar);
+            else
+            {
+                PushChar(quoteChar);
+            }
         }
 
         private void PushChar(char ch)
