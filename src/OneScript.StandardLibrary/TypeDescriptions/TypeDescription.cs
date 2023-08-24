@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Contexts;
@@ -24,25 +25,34 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 
 		private const string TYPE_BINARYDATA_NAME = "ДвоичныеДанные";
 
-		public TypeDescription(IEnumerable<BslTypeValue> types = null,
-		                           NumberQualifiers numberQualifiers = null,
-		                           StringQualifiers stringQualifiers = null,
-		                           DateQualifiers   dateQualifiers = null,
-		                           BinaryDataQualifiers binaryDataQualifiers = null)
+		public TypeDescription(IEnumerable<BslTypeValue> types = null)
+		{
+			if (types != null)
+			{
+				_types.AddRange(types);
+			}
+			
+			NumberQualifiers = new NumberQualifiers();
+			StringQualifiers = new StringQualifiers();
+			DateQualifiers = new DateQualifiers();
+			BinaryDataQualifiers = new BinaryDataQualifiers();
+		}
+
+		internal TypeDescription(IEnumerable<BslTypeValue> types,
+		                           NumberQualifiers numberQualifiers,
+		                           StringQualifiers stringQualifiers,
+		                           DateQualifiers   dateQualifiers,
+		                           BinaryDataQualifiers binaryDataQualifiers)
 		{
 			if (types != null)
 			{
 				_types.AddRange(types);
 			}
 
-			NumberQualifiers = numberQualifiers != null && _types.Contains(TypeNumber()) ?
-				numberQualifiers : new NumberQualifiers();
-			StringQualifiers = stringQualifiers != null && _types.Contains(TypeString()) ?
-				stringQualifiers : new StringQualifiers();
-			DateQualifiers = dateQualifiers != null && _types.Contains(TypeDate()) ?
-				dateQualifiers : new DateQualifiers();
-			BinaryDataQualifiers = binaryDataQualifiers != null && _types.Any(x => x.TypeValue.Name == TYPE_BINARYDATA_NAME) ? 
-				binaryDataQualifiers : new BinaryDataQualifiers();
+			NumberQualifiers = numberQualifiers;
+			StringQualifiers = stringQualifiers;
+			DateQualifiers = dateQualifiers;
+			BinaryDataQualifiers = binaryDataQualifiers;
 		}
 
 		[ContextProperty("КвалификаторыЧисла", "NumberQualifiers")]
@@ -69,6 +79,11 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 
 			return result;
 		}
+
+        internal IEnumerable<BslTypeValue> TypesInternal()
+        {
+	        return _types;
+        }
 
 		[ContextMethod("СодержитТип", "ContainsType")]
 		public bool ContainsType(IValue type)
@@ -136,62 +151,22 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			return adjuster?.Adjust(value) ?? ValueFactory.Create();
 		}
 
-		private static IList<BslTypeValue> ConstructTypeList(ITypeManager typeManager, IValue types)
-		{
-			var typesList = new List<BslTypeValue>();
-			if (types == null)
-				return typesList;
-
-			types = types.GetRawValue();
-			if (types.SystemType == BasicTypes.String)
-			{
-				var typeNames = types.AsString().Split(',');
-				foreach (var typeName in typeNames)
-				{
-					if (string.IsNullOrWhiteSpace(typeName))
-						continue;
-
-					var typeValue = new BslTypeValue(typeManager.GetTypeByName(typeName.Trim()));
-					if (!typesList.Contains(typeValue))
-						typesList.Add(typeValue);
-				}
-			} else if (types is ArrayImpl arrayOfTypes)
-			{
-				foreach (var type in arrayOfTypes)
-				{
-					var rawType = type.GetRawValue() as BslTypeValue;
-					if (rawType == null)
-						continue;
-
-					if (!typesList.Contains(rawType))
-						typesList.Add(rawType);
-				}
-			} 
-			else if (types.SystemType != BasicTypes.Undefined)
-			{
-				return null; // далее будет исключение
-			}
-			// для Неопределено возвращается пустой список
-
-			return typesList;
-		}
-
-		static BslTypeValue TypeNumber()
+		internal static BslTypeValue TypeNumber()
 		{
 			return new BslTypeValue(BasicTypes.Number);
 		}
 
-		static BslTypeValue TypeBoolean()
+		internal static BslTypeValue TypeBoolean()
 		{
 			return new BslTypeValue(BasicTypes.Boolean);
 		}
 
-		static BslTypeValue TypeString()
+		internal static BslTypeValue TypeString()
 		{
 			return new BslTypeValue(BasicTypes.String);
 		}
 		
-		static BslTypeValue TypeDate()
+		internal static BslTypeValue TypeDate()
 		{
 			return new BslTypeValue(BasicTypes.Date);
 		}
@@ -199,54 +174,18 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 		public static TypeDescription StringType(int length = 0,
 		                                         AllowedLengthEnum allowedLength = AllowedLengthEnum.Variable)
 		{
-			var stringQualifier = new StringQualifiers(length, allowedLength);
-			return new TypeDescription(new BslTypeValue[] { TypeString() }, null, stringQualifier);
+			return TypeDescriptionBuilder.Build(TypeString(), new StringQualifiers(length, allowedLength));
 		}
 
 		public static TypeDescription IntegerType(int length = 10,
 		                                          AllowedSignEnum allowedSign = AllowedSignEnum.Any)
 		{
-			var numberQualifier = new NumberQualifiers(length, 0, allowedSign);
-			return new TypeDescription(new BslTypeValue[] { TypeNumber() }, numberQualifier);
+			return TypeDescriptionBuilder.Build(TypeNumber(), new NumberQualifiers(length, 0, allowedSign));
 		}
 
 		public static TypeDescription BooleanType()
 		{
-			return new TypeDescription(new BslTypeValue[] { TypeBoolean() });
-		}
-
-
-		private class TypeQualifiersSet
-		{
-			public readonly NumberQualifiers numberQualifiers = null;
-			public readonly StringQualifiers stringQualifiers = null;
-			public readonly DateQualifiers dateQualifiers = null;
-			public readonly BinaryDataQualifiers binaryDataQualifiers = null;
-
-			public TypeQualifiersSet(IValue p2, IValue p3, IValue p4, IValue p5, IValue p6, IValue p7)
-			{
-				int nParam = 1;
-				foreach (var qual in new[] { p2, p3, p4, p5, p6, p7 })
-				{
-					nParam++;
-
-					if (qual == null || qual.Equals(BslUndefinedValue.Instance))
-						continue;
-
-                    switch (qual.GetRawValue())
-                    {
-                        case NumberQualifiers nq: numberQualifiers = nq; break;
-
-                        case StringQualifiers sq: stringQualifiers = sq; break;
-
-                        case DateQualifiers dq: dateQualifiers = dq; break;
-
-                        case BinaryDataQualifiers bdq: binaryDataQualifiers = bdq; break;
-
-                        default: throw RuntimeException.InvalidNthArgumentType(nParam);
-                    }
-                }
-            }
+			return TypeDescriptionBuilder.Build(TypeBoolean());
 		}
 
 		[ScriptConstructor]
@@ -267,10 +206,8 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				// пустой первый параметр - нет объекта-основания
 				// добавляемые/вычитаемые типы не допускаются, квалификаторы игнорируются
 
-				// только для контроля типов
-				var _ = new TypeQualifiersSet(p2, p3, p4, p5, p6, p7);
-
-				return new TypeDescription();
+				// квалификакторы передаются только для контроля типов
+				return ConstructByQualifiers(context.TypeManager, new TypeDescription(), p2, p3, p4, p5, p6, p7);
 			}
 
 			if (rawSource is TypeDescription)
@@ -286,7 +223,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			throw RuntimeException.InvalidArgumentValue();
 		}
 
-		public static TypeDescription ConstructByQualifiers(ITypeManager typeManager, IValue types,
+		private static TypeDescription ConstructByQualifiers(ITypeManager typeManager, IValue types,
 			IValue p2 = null,
 			IValue p3 = null,
 			IValue p4 = null,
@@ -294,20 +231,16 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			IValue p6 = null,
 			IValue p7 = null)
 		{
-			var typesList = ConstructTypeList(typeManager, types);
-			if (typesList == null)
-				throw RuntimeException.InvalidNthArgumentType(1);
+			var builder = new TypeDescriptionBuilder();
+			var typesList = TypeList.Construct(typeManager, types, 1);
+			builder.AddTypes(typesList.List());
 
-			var qualSet = new TypeQualifiersSet(p2,p3,p4,p5,p6,p7);
+			builder.AddQualifiers(new[] { p2, p3, p4, p5, p6, p7 }, 1);
 
-			return new TypeDescription(typesList,
-				qualSet.numberQualifiers,
-				qualSet.stringQualifiers,
-				qualSet.dateQualifiers,
-				qualSet.binaryDataQualifiers);
+			return builder.Build();
 		}
 
-		public static TypeDescription ConstructByOtherDescription(ITypeManager typeManager,
+		private static TypeDescription ConstructByOtherDescription(ITypeManager typeManager,
 			IValue typeDescription = null,
 			IValue addTypes = null,
 			IValue removeTypes = null,
@@ -316,34 +249,21 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			IValue p6 = null,
 			IValue p7 = null)
 		{
-			var removeTypesList = ConstructTypeList(typeManager, removeTypes);
-			if (removeTypesList == null)
-				throw RuntimeException.InvalidNthArgumentType(3);
+			var builder = new TypeDescriptionBuilder();
 
-			var typesList = new List<BslTypeValue>();
 			if (typeDescription is TypeDescription typeDesc)
 			{
-				foreach (var type in typeDesc._types)
-				{
-					if (!removeTypesList.Contains(type))
-					{
-						typesList.Add(type);
-					}
-				}
+				builder.SourceDescription(typeDesc);
 			}
+			
+			var removeTypesList = TypeList.Construct(typeManager, removeTypes, 3);
+			builder.RemoveTypes(removeTypesList.List());
 
-			var addTypesList = ConstructTypeList(typeManager, addTypes);
-			if (addTypesList == null)
-				throw RuntimeException.InvalidNthArgumentType(2);
-			typesList.AddRange(addTypesList);
+			var addTypesList = TypeList.Construct(typeManager, addTypes, 2);
+			builder.AddTypes(addTypesList.List());
+			builder.AddQualifiers(new[] { p4, p5, p6, p7 }, 3);
 
-			var qualSet = new TypeQualifiersSet(null, null, p4, p5, p6, p7);
-
-			return new TypeDescription(typesList,
-				qualSet.numberQualifiers,
-				qualSet.stringQualifiers,
-				qualSet.dateQualifiers,
-				qualSet.binaryDataQualifiers);
+			return builder.Build();
 		}
 	}
 }
