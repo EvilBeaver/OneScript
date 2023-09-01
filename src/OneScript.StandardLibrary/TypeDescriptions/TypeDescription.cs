@@ -207,7 +207,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				// добавляемые/вычитаемые типы не допускаются, квалификаторы игнорируются
 
 				// квалификакторы передаются только для контроля типов
-				return ConstructByQualifiers(context.TypeManager, new TypeDescription(), p2, p3, p4, p5, p6, p7);
+				return ConstructByQualifiers(context.TypeManager, BslUndefinedValue.Instance, p2, p3, p4, p5, p6, p7);
 			}
 
 			if (rawSource is TypeDescription)

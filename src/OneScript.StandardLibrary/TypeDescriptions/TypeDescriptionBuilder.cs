@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using OneScript.Exceptions;
+using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 
@@ -88,6 +90,8 @@ namespace OneScript.StandardLibrary.TypeDescriptions
         public TypeDescription Build()
         {
             _types = new List<BslTypeValue>(_types.Distinct());
+            _types.RemoveAll(type => type.TypeValue.ImplementingClass == typeof(BslUndefinedValue));
+            _types.Sort(new TypeComparer());
             var hasNumber = _types.Contains(TypeDescription.TypeNumber());
             var hasString =_types.Contains(TypeDescription.TypeString());
             var hasDate = _types.Contains(TypeDescription.TypeDate());
@@ -111,6 +115,56 @@ namespace OneScript.StandardLibrary.TypeDescriptions
         {
             var builder = new TypeDescriptionBuilder();
             return builder.AddTypes(new[] { type }).AddQualifier(qualifier).Build();
+        }
+        
+        private class TypeComparer : IComparer<BslTypeValue>
+        {
+            private static readonly IDictionary<TypeDescriptor, int> primitives = new Dictionary<TypeDescriptor, int>();
+            public int Compare(BslTypeValue x, BslTypeValue y)
+            {
+                if (x.TypeValue.Equals(y)) return 0;
+
+                var primitiveX = PrimitiveIndex(x);
+                var primitiveY = PrimitiveIndex(y);
+                
+                if (primitiveX != -1)
+                {
+                    if (primitiveY != -1)
+                        return primitiveX - primitiveY;
+
+                    return -1;
+                }
+
+                if (primitiveY != -1)
+                    return 1;
+
+                return x.TypeValue.Id.CompareTo(y.TypeValue.Id);
+            }
+
+            private int PrimitiveIndex(BslTypeValue type)
+            {
+                if (StringComparer.CurrentCultureIgnoreCase.Equals(type.TypeValue.Name, TYPE_BINARYDATA_NAME))
+                {
+                    // Пора двоичным данным стать примитивом
+                    return 1;
+                }
+
+                if (primitives.ContainsKey(type.TypeValue))
+                    return primitives[type.TypeValue];
+
+                return -1;
+            }
+
+            static TypeComparer() 
+            {
+                primitives.Add(BasicTypes.Boolean, 0);
+                primitives.Add(BasicTypes.String, 2);
+                primitives.Add(BasicTypes.Date, 3);
+                primitives.Add(BasicTypes.Null, 4);
+                primitives.Add(BasicTypes.Number, 5);
+                primitives.Add(BasicTypes.Type, 6);
+            }
+
         }
     }
 }
