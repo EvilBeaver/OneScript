@@ -187,11 +187,11 @@ namespace OneScript.Native.Compiler
             catch (NativeCompilerException e)
             {
                 RestoreNestingLevel(nestingLevel);
-                e.Position ??= ToCodePosition(statement.Location);
+                e.SetPositionIfEmpty(ToCodePosition(statement.Location));
                 AddError(new CodeError
                 {
                     Description = e.Message,
-                    Position = e.Position,
+                    Position = e.GetPosition(),
                     ErrorId = nameof(NativeCompilerException)
                 });
             }
@@ -201,7 +201,7 @@ namespace OneScript.Native.Compiler
                 RestoreNestingLevel(nestingLevel);
                 if (e is NativeCompilerException ce)
                 {
-                    ce.Position ??= ToCodePosition(statement.Location);
+                    ce.SetPositionIfEmpty(ToCodePosition(statement.Location));
                     throw;
                 }
                 
@@ -1147,7 +1147,7 @@ namespace OneScript.Native.Compiler
                 var methodInfo = FindMethodOfType(node, targetType, name);
                 if (methodInfo.ReturnType == typeof(void))
                 {
-                    throw new NativeCompilerException(new BilingualString(
+                    throw new NativeCompilerException(BilingualString.Localize(
                         $"Метод {targetType}.{name} не является функцией",
                         $"Method {targetType}.{name} is not a function"), ToCodePosition(node.Location));
                 }
@@ -1194,7 +1194,7 @@ namespace OneScript.Native.Compiler
             }
             catch (InvalidOperationException)
             {
-                throw new NativeCompilerException(new BilingualString(
+                throw new NativeCompilerException(BilingualString.Localize(
                     $"Метод {name} не определен для типа {targetType}",
                     $"Method {name} is not defined for type {targetType}"), ToCodePosition(node.Location));
             }
@@ -1226,7 +1226,7 @@ namespace OneScript.Native.Compiler
             }
             catch (InvalidOperationException)
             {
-                throw new NativeCompilerException(new BilingualString(
+                throw new NativeCompilerException(BilingualString.Localize(
                     $"Свойство {name} не определено для типа {targetType}",
                     $"Property {name} is not defined for type {targetType}"));
             }

@@ -113,11 +113,6 @@ namespace OneScript.StandardLibrary.Tasks
                 State = TaskStateEnum.CompletedWithErrors;
                 ExceptionInfo = new ExceptionInfoContext(exception);
             }
-            catch (BslCoreException exception)
-            {
-                State = TaskStateEnum.CompletedWithErrors;
-                ExceptionInfo = new ExceptionInfoContext(new ScriptException(exception));
-            }
         }
     }
 }

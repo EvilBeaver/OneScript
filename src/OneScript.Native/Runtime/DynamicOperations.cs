@@ -167,7 +167,7 @@ namespace OneScript.Native.Runtime
         {
             if (e is ScriptException s)
                 return new ExceptionInfoClass(s);
-
+            
             var wrapper = new ExternalSystemException(e);
 
             return new ExceptionInfoClass(wrapper);

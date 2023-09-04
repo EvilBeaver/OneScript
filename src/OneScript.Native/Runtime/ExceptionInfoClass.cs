@@ -32,7 +32,7 @@ namespace OneScript.Native.Runtime
         {
         }
         
-        public ExceptionInfoClass(Exception externalException, ErrorPositionInfo position)
+        private ExceptionInfoClass(Exception externalException, ErrorPositionInfo position)
         {
             _errorPosition = position;
             _exc = externalException;
