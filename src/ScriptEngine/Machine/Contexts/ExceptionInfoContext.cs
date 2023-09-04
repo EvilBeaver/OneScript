@@ -41,11 +41,11 @@ namespace ScriptEngine.Machine.Contexts
 
         public bool IsErrorTemplate => _exc == null;
 
-        public void SetActualException(ScriptException exception)
+        private void SetActualException(ScriptException exception)
         {
             _exc = exception ?? throw new ArgumentNullException();
             Description = _exc.ErrorDescription;
-            if (exception.InnerException is ParametrizedRuntimeException pre)
+            if (exception is ParametrizedRuntimeException pre)
             {
                 Parameters = pre.Parameter;
             }

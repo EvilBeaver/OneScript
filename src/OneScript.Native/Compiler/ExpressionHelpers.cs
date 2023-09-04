@@ -12,8 +12,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using Microsoft.CSharp.RuntimeBinder;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
@@ -550,13 +552,23 @@ namespace OneScript.Native.Compiler
             return Expression.Call(method, Expression.Constant(manager), argument);
         }
 
-        public static Expression GetExceptionInfo(ParameterExpression excVariable)
+        public static Expression GetExceptionInfo(Expression factory, ParameterExpression excVariable)
         {
             var method = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.GetExceptionInfo));
 
-            return Expression.Call(method, excVariable);
+            return Expression.Call(method, factory, excVariable);
+        }
+
+        public static Expression CallOfInstanceMethod(Expression instance, string name, params Expression[] arguments)
+        {
+            var method = OperationsCache.GetOrAdd(
+                instance.Type,
+                name,
+                BindingFlags.Public | BindingFlags.Instance);
+
+            return Expression.Call(instance, method, arguments);
         }
 
         public static Expression AccessModuleVariable(ParameterExpression thisArg, int variableIndex)

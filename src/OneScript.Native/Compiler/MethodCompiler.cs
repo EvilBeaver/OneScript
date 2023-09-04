@@ -43,6 +43,7 @@ namespace OneScript.Native.Compiler
         
         private readonly BinaryOperationCompiler _binaryOperationCompiler = new BinaryOperationCompiler();
         private ITypeManager _typeManager;
+        private IExceptionInfoFactory _exceptionInfoFactory;
         private readonly IServiceContainer _services;
         private readonly BuiltInFunctionsCache _builtInFunctions = new BuiltInFunctionsCache();
 
@@ -57,19 +58,20 @@ namespace OneScript.Native.Compiler
             _source = walkContext.Source;
         }
 
-        private ITypeManager CurrentTypeManager
-        {
-            get
-            {
-                if (_typeManager != default) 
-                    return _typeManager;
-                
-                _typeManager = _services.TryResolve<ITypeManager>();
-                if (_typeManager == default)
-                    throw new NotSupportedException("Type manager is not registered in services.");
+        private ITypeManager CurrentTypeManager => GetService(_services, ref _typeManager);
 
-                return _typeManager;
-            }
+        private IExceptionInfoFactory ExceptionInfoFactory => GetService(_services, ref _exceptionInfoFactory);
+
+        private static T GetService<T>(IServiceContainer services, ref T value) where T : class
+        {
+            if (value != default) 
+                return value;
+                
+            value = services.TryResolve<T>();
+            if (value == default)
+                throw new NotSupportedException($"{typeof(T)} is not registered in services.");
+
+            return value;
         }
         
         public void CompileMethod(MethodNode methodNode)
@@ -1037,15 +1039,13 @@ namespace OneScript.Native.Compiler
             else
             {
                 VisitExpression(node.Children[0]);
-                var expression = Expression.Call(
-                    _statementBuildParts.Pop(),
-                    typeof(object).GetMethod("ToString"));
+                var raiseArgExpression = _statementBuildParts.Pop();
+
+                var exceptionExpression = ExpressionHelpers.CallOfInstanceMethod(
+                    Expression.Constant(ExceptionInfoFactory),
+                    nameof(IExceptionInfoFactory.Raise),
+                    raiseArgExpression);
                 
-                var exceptionType = typeof(RuntimeException);
-                var ctor = exceptionType.GetConstructor(new Type[] {typeof(BilingualString)});
-                var exceptionExpression = Expression.New(
-                    ctor, 
-                    Expression.Convert(expression, typeof(BilingualString)));
                 _blocks.Add(Expression.Throw(exceptionExpression));
             }
             base.VisitRaiseNode(node);
@@ -1322,11 +1322,15 @@ namespace OneScript.Native.Compiler
 
         private Expression GetRuntimeExceptionDescription()
         {
-            var excInfo = GetRuntimeExceptionObject();
-            if (excInfo.Type == typeof(BslUndefinedValue))
-                return excInfo;
+            var excVariable = _blocks.GetCurrentBlock().CurrentException;
+            if (excVariable == null)
+                return Expression.Constant(BslUndefinedValue.Instance);
             
-            return Expression.Property(excInfo, nameof(ExceptionInfoClass.Description));
+            var factory = Expression.Constant(ExceptionInfoFactory);
+            return ExpressionHelpers.CallOfInstanceMethod(
+                factory,
+                nameof(IExceptionInfoFactory.GetExceptionDescription),
+                excVariable);
         }
 
         private Expression GetRuntimeExceptionObject()
@@ -1335,7 +1339,11 @@ namespace OneScript.Native.Compiler
             if (excVariable == null)
                 return Expression.Constant(BslUndefinedValue.Instance);
             
-            return ExpressionHelpers.GetExceptionInfo(excVariable);
+            var factory = Expression.Constant(ExceptionInfoFactory);
+            return ExpressionHelpers.CallOfInstanceMethod(
+                factory,
+                nameof(IExceptionInfoFactory.GetExceptionInfo),
+                excVariable);
         }
 
         private void CheckArgumentsCount(BslSyntaxNode argList, int needed)

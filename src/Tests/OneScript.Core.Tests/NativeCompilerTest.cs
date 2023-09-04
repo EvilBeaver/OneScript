@@ -24,6 +24,7 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Types;
 using Xunit;
 
@@ -1029,7 +1030,7 @@ namespace OneScript.Core.Tests
 
             tryBlock.Handlers.First().Body.As<BlockExpression>().Expressions[0].Type
                 .Should()
-                .Be(typeof(ExceptionInfoClass));
+                .Be(typeof(ExceptionInfoContext));
         }
         
         [Fact]

@@ -163,26 +163,14 @@ namespace OneScript.Native.Runtime
             return (T) ConstructorCall(typeManager, services, typeName, args);
         }
 
-        public static ExceptionInfoClass GetExceptionInfo(Exception e)
+        public static IRuntimeContextInstance GetExceptionInfo(IExceptionInfoFactory factory, Exception e)
         {
-            if (e is ScriptException s)
-                return new ExceptionInfoClass(s);
-            
-            var wrapper = new ExternalSystemException(e);
-
-            return new ExceptionInfoClass(wrapper);
+            return factory.GetExceptionInfo(e);
         }
 
         public static BslTypeValue GetTypeByName(ITypeManager manager, string name)
         {
             var foundType = manager.GetTypeByName(name);
-            
-            // костыль подмены типа для Тип("ИнформацияОбОшибке")
-            if (foundType.Name == ExceptionInfoClass.LanguageType.Name)
-            {
-                foundType = ExceptionInfoClass.LanguageType;
-            }
-
             return new BslTypeValue(foundType);
         }
 
