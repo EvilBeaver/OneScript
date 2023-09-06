@@ -200,5 +200,23 @@ namespace ScriptEngine.Machine.Contexts
             return new ExceptionInfoContext(msg.AsString(), parameter);
         }
 
+        public static ExceptionInfoContext EmptyExceptionInfo()
+        {
+            return new ExceptionInfoContext(EmptyScriptException.Instance);
+        }
+        
+        private class EmptyScriptException : ScriptException
+        {
+            public static EmptyScriptException Instance = new EmptyScriptException();
+            private EmptyScriptException() : base("")
+            {
+                LineNumber = 0;
+                ColumnNumber = 0;
+            }
+
+            public override string Message => "";
+
+            public override string ToString() => "";
+        }
     }
 }

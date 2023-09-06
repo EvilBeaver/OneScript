@@ -21,14 +21,24 @@ namespace ScriptEngine.Machine
     {
         public IRuntimeContextInstance GetExceptionInfo(Exception exception)
         {
+            if (exception == null)
+            {
+                return ExceptionInfoContext.EmptyExceptionInfo();
+            }
+            
             if (exception is ScriptException script)
                 return new ExceptionInfoContext(script);
-
+            
             return new ExceptionInfoContext(new ExternalSystemException(exception));
         }
 
         public string GetExceptionDescription(IRuntimeContextInstance exceptionInfo)
         {
+            if (exceptionInfo == null)
+            {
+                return "";
+            }
+            
             var info = (ExceptionInfoContext)exceptionInfo;
             return info.MessageWithoutCodeFragment;
         }

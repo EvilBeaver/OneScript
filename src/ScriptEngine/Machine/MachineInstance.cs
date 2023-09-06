@@ -52,20 +52,7 @@ namespace ScriptEngine.Machine
         }
 
         public event EventHandler<MachineStoppedEventArgs> MachineStopped;
-        
-        private class EmptyExceptionInfo : ScriptException
-        {
-            public EmptyExceptionInfo() : base("")
-            {
-                LineNumber = 0;
-                ColumnNumber = 0;
-            }
 
-            public override string Message => "";
-
-            public override string ToString() => "";
-        }
-        
         public void AttachContext(IAttachableContext context)
         {
             _scopes.Add(CreateModuleScope(context));
@@ -2457,8 +2444,7 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                var noDataException = new EmptyExceptionInfo();
-                _operationStack.Push(new ExceptionInfoContext(noDataException));
+                _operationStack.Push(ExceptionInfoContext.EmptyExceptionInfo());
             }
             NextInstruction();
         }

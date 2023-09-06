@@ -1323,27 +1323,36 @@ namespace OneScript.Native.Compiler
         private Expression GetRuntimeExceptionDescription()
         {
             var excVariable = _blocks.GetCurrentBlock().CurrentException;
-            if (excVariable == null)
-                return Expression.Constant(BslUndefinedValue.Instance);
-            
+            Expression factoryArgument;
+            // нас вызвали вне попытки-исключения
+            factoryArgument = excVariable == null ? Expression.Constant(null, typeof(IRuntimeContextInstance)) : GetRuntimeExceptionObject();
+
             var factory = Expression.Constant(ExceptionInfoFactory);
             return ExpressionHelpers.CallOfInstanceMethod(
                 factory,
                 nameof(IExceptionInfoFactory.GetExceptionDescription),
-                excVariable);
+                factoryArgument);
         }
 
         private Expression GetRuntimeExceptionObject()
         {
             var excVariable = _blocks.GetCurrentBlock().CurrentException;
+            Expression factoryArgument;
             if (excVariable == null)
-                return Expression.Constant(BslUndefinedValue.Instance);
-            
+            {
+                // нас вызвали вне попытки-исключения
+                factoryArgument = Expression.Constant(null, typeof(Exception));
+            }
+            else
+            {
+                factoryArgument = excVariable;
+            }
+
             var factory = Expression.Constant(ExceptionInfoFactory);
             return ExpressionHelpers.CallOfInstanceMethod(
                 factory,
                 nameof(IExceptionInfoFactory.GetExceptionInfo),
-                excVariable);
+                factoryArgument);
         }
 
         private void CheckArgumentsCount(BslSyntaxNode argList, int needed)
