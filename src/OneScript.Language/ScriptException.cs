@@ -15,12 +15,12 @@ namespace OneScript.Language
     {
         private readonly ErrorPositionInfo _codePosition;
         
-        public ScriptException(string message)
-            : this(new ErrorPositionInfo(), message, null)
+        public ScriptException(string message, Exception innerException = null)
+            : this(new ErrorPositionInfo(), message, innerException)
         {
         }
 
-        public ScriptException(ErrorPositionInfo errorInfo, string message, Exception innerException = null)
+        protected ScriptException(ErrorPositionInfo errorInfo, string message, Exception innerException = null)
             : base(message, innerException)
         {
             _codePosition = errorInfo ?? throw new ArgumentNullException(nameof(errorInfo));
@@ -104,5 +104,16 @@ namespace OneScript.Language
         }
         
         public object RuntimeSpecificInfo { get; set; }
+        
+        public void SetPositionIfEmpty(ErrorPositionInfo newPosition)
+        {
+            if (!_codePosition.IsEmpty) 
+                return;
+            
+            _codePosition.LineNumber = newPosition.LineNumber;
+            _codePosition.ColumnNumber = newPosition.ColumnNumber;
+            _codePosition.Code = newPosition.Code;
+            _codePosition.ModuleName = newPosition.ModuleName;
+        }
     }
 }

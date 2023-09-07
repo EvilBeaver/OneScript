@@ -93,7 +93,7 @@ namespace OneScript.StandardLibrary
         [ContextMethod("ПодробноеПредставлениеОшибки", "DetailErrorDescription")]
         public string DetailErrorDescription(ExceptionInfoContext errInfo)
         {
-            return errInfo.DetailedDescription;
+            return errInfo.GetDetailedDescription();
         }
 
         [ContextMethod("ТекущаяУниверсальнаяДата", "CurrentUniversalDate")]

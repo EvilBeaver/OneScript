@@ -12,8 +12,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using Microsoft.CSharp.RuntimeBinder;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
@@ -184,7 +186,7 @@ namespace OneScript.Native.Compiler
         {
             return TryConvertBslValueToPrimitiveType(right, type) ??
                    throw new NativeCompilerException(
-                        new BilingualString(
+                        BilingualString.Localize(
                             $"Преобразование {right.Type} в тип {type} недоступно",
                             $"Conversion from {right.Type} to {type} is unavailable")
                     );
@@ -398,7 +400,7 @@ namespace OneScript.Native.Compiler
                         nameof(DynamicOperations.WrapClrObjectToValue));
                     return Expression.Call(meth, value);
                 }
-                throw new NativeCompilerException(new BilingualString(
+                throw new NativeCompilerException(BilingualString.Localize(
                     $"Преобразование из типа {value.Type} в тип BslValue не поддерживается",
                     $"Conversion from type {value.Type} into BslValue is not supported"));
             }
@@ -490,7 +492,7 @@ namespace OneScript.Native.Compiler
             if (canBeCasted)
                 return conversion;
             
-            throw new NativeCompilerException(new BilingualString(
+            throw new NativeCompilerException(BilingualString.Localize(
                 $"Преобразование из типа {source.Type} в тип {targetType} не поддерживается",
                 $"Conversion from type {source.Type} into {targetType} is not supported"));
         }
@@ -550,13 +552,23 @@ namespace OneScript.Native.Compiler
             return Expression.Call(method, Expression.Constant(manager), argument);
         }
 
-        public static Expression GetExceptionInfo(ParameterExpression excVariable)
+        public static Expression GetExceptionInfo(Expression factory, ParameterExpression excVariable)
         {
             var method = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.GetExceptionInfo));
 
-            return Expression.Call(method, excVariable);
+            return Expression.Call(method, factory, excVariable);
+        }
+
+        public static Expression CallOfInstanceMethod(Expression instance, string name, params Expression[] arguments)
+        {
+            var method = OperationsCache.GetOrAdd(
+                instance.Type,
+                name,
+                BindingFlags.Public | BindingFlags.Instance);
+
+            return Expression.Call(instance, method, arguments);
         }
 
         public static Expression AccessModuleVariable(ParameterExpression thisArg, int variableIndex)

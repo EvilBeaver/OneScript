@@ -199,7 +199,7 @@ namespace OneScript.Native.Compiler
                 case ExpressionType.OrElse:
                     return MakeLogicalOperation(left, right);
                 default:
-                    throw new NativeCompilerException($"Operation {_opCode} is not defined for IValues");
+                    throw NativeCompilerException.OperationNotDefined(_opCode, left.Type, right.Type);
             }
         }
 

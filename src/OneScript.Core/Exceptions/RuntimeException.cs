@@ -20,8 +20,6 @@ namespace OneScript.Exceptions
         {
         }
 
-        
-        
         #region Static Factory Methods
 
         public static RuntimeException DeprecatedMethodCall(string name)

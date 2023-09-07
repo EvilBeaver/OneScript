@@ -34,7 +34,7 @@ namespace OneScript.Native.Compiler
             {
                 ExpressionType.Add => toDouble,
                 ExpressionType.Subtract => Expression.Negate(toDouble),
-                _ => throw new NativeCompilerException($"Operation {opCode} is not defined for dates")
+                _ => throw NativeCompilerException.OperationNotDefined(opCode, left.Type, right.Type)
             };
 
             return Expression.Call(left, adder, arg);

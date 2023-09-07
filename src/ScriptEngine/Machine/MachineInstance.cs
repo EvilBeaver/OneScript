@@ -52,20 +52,7 @@ namespace ScriptEngine.Machine
         }
 
         public event EventHandler<MachineStoppedEventArgs> MachineStopped;
-        
-        private class EmptyExceptionInfo : ScriptException
-        {
-            public EmptyExceptionInfo() : base("")
-            {
-                LineNumber = 0;
-                ColumnNumber = 0;
-            }
 
-            public override string Message => "";
-
-            public override string ToString() => "";
-        }
-        
         public void AttachContext(IAttachableContext context)
         {
             _scopes.Add(CreateModuleScope(context));
@@ -533,8 +520,7 @@ namespace ScriptEngine.Machine
                 }
                 catch (ScriptException exc)
                 {
-                    if(exc.LineNumber == ErrorPositionInfo.OUT_OF_TEXT) 
-                        SetScriptExceptionSource(exc);
+                    SetScriptExceptionSource(exc);
 
                     if (ShouldRethrowException(exc))
                         throw;
@@ -628,13 +614,11 @@ namespace ScriptEngine.Machine
             {
                 throw;
             }
-            catch (ScriptException)
+            catch (ScriptException exc)
             {
+                exc.SetPositionIfEmpty(GetPositionInfo());
+
                 throw;
-            }
-            catch (BslCoreException exc)
-            {
-                throw new ScriptException(GetPositionInfo(), exc);
             }
             catch (Exception exc)
             {
@@ -663,10 +647,7 @@ namespace ScriptEngine.Machine
 
         private void SetScriptExceptionSource(ScriptException exc)
         {
-            var epi = GetPositionInfo();
-            exc.Code = epi.Code;
-            exc.LineNumber = epi.LineNumber;
-            exc.ModuleName = epi.ModuleName;
+            exc.SetPositionIfEmpty(GetPositionInfo());
         }
 
         #region Commands
@@ -1410,9 +1391,9 @@ namespace ScriptEngine.Machine
             else
             {
                 var exceptionValue = _operationStack.Pop().GetRawValue();
-                if (exceptionValue is ExceptionTemplate excInfo)
+                if (exceptionValue is ExceptionInfoContext { IsErrorTemplate: true } excInfo)
                 {
-                    throw new ParametrizedRuntimeException(excInfo.Message, excInfo.Parameter);
+                    throw new ParametrizedRuntimeException(excInfo.Description, excInfo.Parameters);
                 }
                 else
                 {
@@ -2463,8 +2444,7 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                var noDataException = new EmptyExceptionInfo();
-                _operationStack.Push(new ExceptionInfoContext(noDataException));
+                _operationStack.Push(ExceptionInfoContext.EmptyExceptionInfo());
             }
             NextInstruction();
         }
