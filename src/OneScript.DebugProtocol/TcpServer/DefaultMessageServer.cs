@@ -21,6 +21,11 @@ namespace OneScript.DebugProtocol.TcpServer
         {
             _protocolChannel = protocolChannel;
         }
+        
+        /// <summary>
+        /// Имя, назначаемое потоку сервера. Полезно для отладки и диагностики.
+        /// </summary>
+        public string ServerThreadName { get; set; }
 
         public void Start()
         {
@@ -85,6 +90,11 @@ namespace OneScript.DebugProtocol.TcpServer
             });
 
             _messageThread.IsBackground = true;
+            if (ServerThreadName != default)
+            {
+                _messageThread.Name = ServerThreadName;
+            }
+
             _messageThread.Start();
         }
 

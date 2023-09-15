@@ -87,6 +87,7 @@ namespace OneScript.DebugServices
             foreach (var machineWaitToken in tokens)
             {
                 machineWaitToken.Machine.MachineStopped -= Machine_MachineStopped;
+                machineWaitToken.Dispose();
             }
 
             _machinesOnThreads.Clear();
