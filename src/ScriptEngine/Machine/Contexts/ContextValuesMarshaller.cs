@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Linq;
+using System.Reflection;
 using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.Machine.Contexts
@@ -207,6 +208,15 @@ namespace ScriptEngine.Machine.Contexts
 
             throw RuntimeException.InvalidArgumentValue();
         }
+
+        public static IValue ConvertParameterDefaultValue(ParameterInfo paramInfo)
+        {
+            if (paramInfo.DefaultValue == null)
+                return null;
+
+            return ConvertReturnValue(paramInfo.DefaultValue, paramInfo.ParameterType);
+        }
+
 
         public static IValue ConvertDynamicValue(object param)
         {

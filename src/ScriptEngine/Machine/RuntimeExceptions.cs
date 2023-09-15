@@ -46,19 +46,19 @@ namespace ScriptEngine.Machine
 
         public static RuntimeException ConvertToNumberException()
         {
-            return new RuntimeException("Преобразование к типу 'Число' не поддерживается");
+            return new TypeConvertionException("Число");
         }
 
         public static RuntimeException ConvertToBooleanException()
         {
-            return new RuntimeException("Преобразование к типу 'Булево' не поддерживается");
+            return new TypeConvertionException("Булево");
         }
 
         public static RuntimeException ConvertToDateException()
         {
-            return new RuntimeException("Преобразование к типу 'Дата' не поддерживается");
+            return new TypeConvertionException("Дата");
         }
-
+  
         public static RuntimeException PropIsNotReadableException(string prop)
         {
             return PropertyAccessException.GetPropIsNotReadableException(prop);
@@ -102,6 +102,11 @@ namespace ScriptEngine.Machine
         public static RuntimeException MissedArgument()
         {
             return new RuntimeException("Пропущен обязательный параметр");
+        }
+
+        public static RuntimeException MissedNthArgument(int argNum)
+        {
+            return new RuntimeException($"Пропущен обязательный параметр номер {argNum}" );
         }
 
         public static RuntimeException InvalidArgumentType()
@@ -212,6 +217,14 @@ namespace ScriptEngine.Machine
         }
 
         public int ExitCode { get; private set; }
+    }
+
+    public class TypeConvertionException : RuntimeException
+    {
+        public TypeConvertionException(string typename) 
+            : base($"Преобразование к типу '{typename}' не поддерживается")
+        {
+        }
     }
 
     public class ValueMarshallingException : RuntimeException

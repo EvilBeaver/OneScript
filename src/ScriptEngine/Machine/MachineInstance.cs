@@ -8,11 +8,14 @@ using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine.Values;
+using System.Reflection;
+//using System.Runtime.Remoting.Contexts;
 
 namespace ScriptEngine.Machine
 {
@@ -1005,35 +1008,85 @@ namespace ScriptEngine.Machine
         private void CallContext(IRuntimeContextInstance instance, int index, ref MethodInfo methInfo, IValue[] argValues, bool asFunc)
         {
             IValue[] realArgs;
-            if (!instance.DynamicMethodSignatures)
+            if (instance.DynamicMethodSignatures)
             {
-                realArgs = new IValue[methInfo.ArgCount];
-                var skippedArg = ValueFactory.CreateInvalidValueMarker();
-                int i = 0;
-                for (; i < argValues.Length; i++)
-                {
-                    realArgs[i] = argValues[i];
-                }
-                for (; i < realArgs.Length; i++)
-                {
-                    realArgs[i] = skippedArg;
-                }
+                realArgs = PrepareDynamicArgs(argValues);
             }
             else
             {
-                realArgs = argValues;
+                realArgs = new IValue[methInfo.ArgCount];
+                
+                int i = 0;
+                for (; i < argValues.Length; i++)
+                {
+                    realArgs[i] = PrepareArg(argValues[i], methInfo.Params[i], i);
+                }
+
+                // "Недостаточно параметров" - отсечено при компиляции
+                // все оставшиеся должны иметь дефолтное значение
+                for (; i < realArgs.Length; i++)
+                {
+                    realArgs[i] = methInfo.Params[i].DefaultValue;
+                }
             }
 
             if (asFunc)
             {
                 instance.CallAsFunction(index, realArgs, out IValue retVal);
                 _operationStack.Push(retVal);
+
             }
             else
             {
                 instance.CallAsProcedure(index, realArgs);
             }
             NextInstruction();
+        }
+
+        private static IValue[] PrepareDynamicArgs(IValue[] factArgs)
+        {
+            var realArgs = new IValue[factArgs.Length];
+            for (int i = 0; i < factArgs.Length; i++)
+            {
+                var argValue = factArgs[i];
+                if (argValue.DataType != DataType.NotAValidValue)
+                {
+                    realArgs[i] = argValue;
+                }
+                // else null
+            }
+
+            return realArgs;
+        }
+
+        private static IValue PrepareArg(IValue argValue, ParameterDefinition paramDef, int index)
+        {
+            if (argValue.DataType == DataType.NotAValidValue)
+            {
+                if (paramDef.HasDefaultValue)
+                {
+                    return paramDef.DefaultValue;
+                }
+                else if (paramDef.RealType == typeof(string))
+                {
+                    return ValueFactory.Create(""); // Undefined.AsString()
+                }
+                else if (!typeof(IValue).IsAssignableFrom(paramDef.RealType))
+                {
+                    throw RuntimeException.MissedNthArgument(index+1);
+                }
+            }
+            else
+            {
+                if (paramDef.IsByValue)
+                    return argValue.GetRawValue();
+                else
+                {
+                    return argValue is IVariable ? argValue : Variable.Create(argValue, "");
+                }
+            }
+
+            return null;
         }
 
         private void ArgNum(int arg)
@@ -1060,8 +1113,9 @@ namespace ScriptEngine.Machine
             var propName = _module.Constants[arg].AsString();
             var propNum = context.FindProperty(propName);
 
-            var propReference = Variable.CreateContextPropertyReference(context, propNum, "stackvar");
+            var propReference = Variable.CreateContextPropertyReference(context, propNum, propName);
             _operationStack.Push(propReference);
+
             NextInstruction();
         }
 
@@ -1110,15 +1164,7 @@ namespace ScriptEngine.Machine
     
             if (context.DynamicMethodSignatures)
             {
-                argValues = new IValue[argCount];
-                for (int i = 0; i < argCount; i++)
-                {
-                    var argValue = factArgs[i];
-                    if (argValue.DataType != DataType.NotAValidValue)
-                    {
-                        argValues[i] = argValue;
-                    }
-                }
+                argValues = PrepareDynamicArgs(factArgs);
             }
             else
             {
@@ -1132,23 +1178,15 @@ namespace ScriptEngine.Machine
                 int i = 0;
                 for (; i < argCount; i++)
                 {
-                    var argValue = factArgs[i];
-                    if (argValue.DataType != DataType.NotAValidValue)
-                    {
-                        if (methodParams[i].IsByValue)
-                            argValues[i] = argValue.GetRawValue();
-                        else
-                        {
-                            argValues[i] = argValue is IVariable ? argValue : Variable.Create(argValue, "");
-                        }
-                    }
-                    else if (!methodParams[i].HasDefaultValue)
-                        throw RuntimeException.MissedArgument();
+                    argValues[i] = PrepareArg(factArgs[i], methodParams[i], i);
                 }
+
                 for (; i < methodParams.Length; i++)
                 {
                     if (!methodParams[i].HasDefaultValue)
                         throw RuntimeException.TooFewArgumentsPassed();
+
+                    argValues[i] = methodParams[i].DefaultValue;
                 }
             }
         }
@@ -1534,7 +1572,7 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
         
-        #endregion
+#endregion
 
         #region Built-in functions
 
@@ -2470,7 +2508,7 @@ namespace ScriptEngine.Machine
 
         #endregion
 
-        #endregion
+#endregion
 
         private LoadedModule CompileExpressionModule(string expression)
         {
