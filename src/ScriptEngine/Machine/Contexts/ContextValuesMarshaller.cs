@@ -86,7 +86,6 @@ namespace ScriptEngine.Machine.Contexts
             else if (type == typeof(ushort))
             {
                 valueObj = (ushort)value.AsNumber();
-                //valueObj = Convert.ChangeType(value.AsNumber(), type);
             }
             else if (type == typeof(uint))
             {
