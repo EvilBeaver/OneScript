@@ -149,6 +149,8 @@ namespace VSCode.DebugAdapter
 
         public void HandleDisconnect()
         {
+            _debugger.Disconnect();
+            
             if (!_attachMode && _process != null && !_process.HasExited)
             {
                 _process.Kill();

@@ -82,6 +82,11 @@ namespace oscript.DebugServer
             _debugServiceImpl.StepOut(threadId);
         }
 
+        public void Disconnect()
+        {
+            _debugServiceImpl.Disconnect();
+        }
+
         public int[] GetThreads()
         {
             return _debugServiceImpl.GetThreads();

@@ -13,6 +13,11 @@ using ScriptEngine.Machine;
 
 namespace OneScript.DebugServices
 {
+    /// <summary>
+    /// Простой односессионный контроллер отладки. Поддерживает только один сеанс отладки на процесс.
+    /// Также поддерживает только один BSL-процесс на приложение. При получении NotifyProcessExited отключает отладчик
+    /// и к нему нельзя подключиться еще раз.
+    /// </summary>
     public class DefaultDebugController : IDebugController
     {
         private readonly ICommunicationServer _server;

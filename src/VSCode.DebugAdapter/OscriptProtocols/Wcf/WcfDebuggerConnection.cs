@@ -79,6 +79,11 @@ namespace VSCode.DebugAdapter
             _serviceProxy.Instance.StepOut(threadId);
         }
 
+        public void Disconnect()
+        {
+            _serviceProxy.Instance.Disconnect();
+        }
+
         public int[] GetThreads()
         {
             return _serviceProxy.Instance.GetThreads();

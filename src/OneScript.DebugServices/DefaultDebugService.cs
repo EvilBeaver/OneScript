@@ -184,6 +184,12 @@ namespace OneScript.DebugServices
             t.Set();
         }
 
+        public void Disconnect()
+        {
+            _breakpointManager.Clear();
+            _threadManager.ReleaseAllThreads();
+        }
+
         public virtual int[] GetThreads()
         {
             return _threadManager.GetAllThreadIds();

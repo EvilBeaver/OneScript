@@ -180,6 +180,11 @@ namespace VSCode.DebugAdapter
             WriteCommand(threadId);
         }
 
+        public void Disconnect()
+        {
+            WriteCommand(null);
+        }
+
         public int[] GetThreads()
         {
             WriteCommand(null);

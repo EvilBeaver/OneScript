@@ -32,5 +32,10 @@ namespace OneScript.DebugServices
             var found = _breakpoints.Find(x => x.Module.Equals(module) && x.LineNumber == line);
             return found != null;
         }
+
+        public void Clear()
+        {
+            _breakpoints.Clear();
+        }
     }
 }
