@@ -114,15 +114,13 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 		}
 
 		[ContextMethod("ПривестиЗначение", "AdjustValue")]
-		public IValue AdjustValue(IValue value = null)
+		public IValue AdjustValue(IValue pValue = null)
 		{
-
+			var value = pValue?.GetRawValue();
 			if (_types.Count == 0)
 			{
 				return value ?? ValueFactory.Create();
 			}
-
-			BslTypeValue typeToCast = null;
 
 			if (value != null && value.SystemType != BasicTypes.Undefined)
 			{
@@ -130,25 +128,22 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				if (_types.Contains(valueType))
 				{
 					// Если такой тип у нас есть
-					typeToCast = valueType;
+					var adjuster = GetAdjusterForType(valueType);
+					var adjustedValue = adjuster.Adjust(value);
+					if (adjustedValue != null)
+						return adjustedValue;
 				}
 			}
 
-			if (typeToCast == null)
+			foreach (var type in _types)
 			{
-				// Если типа нет, то нужно брать значение по-умолчанию
-				if (_types.Count != 1)
-				{
-					// много типов - Неопределено
-					return ValueFactory.Create();
-				}
-
-				typeToCast = _types[0];
+				var adjuster = GetAdjusterForType(type);
+				var adjustedValue = adjuster?.Adjust(value);
+				if (adjustedValue != null)
+					return adjustedValue;
 			}
 
-			var adjuster = GetAdjusterForType(typeToCast);
-
-			return adjuster?.Adjust(value) ?? ValueFactory.Create();
+			return ValueFactory.Create();
 		}
 
 		internal static BslTypeValue TypeNumber()
