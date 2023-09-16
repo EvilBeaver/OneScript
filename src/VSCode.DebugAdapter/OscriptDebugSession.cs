@@ -105,7 +105,7 @@ namespace VSCode.DebugAdapter
             }
             catch (Exception e)
             {
-                _process.Kill();
+                _process.HandleDisconnect();
                 _process = null;
                 SessionLog.WriteLine(e.ToString());
                 SendErrorResponse(response, 4550, "Can't connect: " + e.ToString());
@@ -149,7 +149,7 @@ namespace VSCode.DebugAdapter
 
         public override void Disconnect(Response response, dynamic arguments)
         {
-            _process.Kill();
+            _process.HandleDisconnect();
             SendResponse(response);
         }
 

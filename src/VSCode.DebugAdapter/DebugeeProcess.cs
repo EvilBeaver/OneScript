@@ -22,6 +22,7 @@ namespace VSCode.DebugAdapter
         private bool _terminated;
         private bool _stdoutEOF;
         private bool _stderrEOF;
+        private bool _attachMode;
 
         private IDebuggerService _debugger;
 
@@ -51,11 +52,20 @@ namespace VSCode.DebugAdapter
             _process.OutputDataReceived += Process_OutputDataReceived;
             _process.ErrorDataReceived += Process_ErrorDataReceived;
             _process.Exited += Process_Exited;
-            
+            _attachMode = false;
             _process.Start();
             System.Threading.Thread.Sleep(1500);
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
+        }
+        
+        public void InitAttached()
+        {
+            var pid = _debugger.GetProcessId();
+            _process = Process.GetProcessById(pid);
+            _attachMode = true;
+            _process.EnableRaisingEvents = true;
+            _process.Exited += Process_Exited;
         }
 
         public void Init(JObject args)
@@ -137,9 +147,9 @@ namespace VSCode.DebugAdapter
             }
         }
 
-        public void Kill()
+        public void HandleDisconnect()
         {
-            if (_process != null && !_process.HasExited)
+            if (!_attachMode && _process != null && !_process.HasExited)
             {
                 _process.Kill();
             }
@@ -213,14 +223,6 @@ namespace VSCode.DebugAdapter
         public int[] GetThreads()
         {
             return _debugger.GetThreads();
-        }
-
-        public void InitAttached()
-        {
-            var pid = _debugger.GetProcessId();
-            _process = Process.GetProcessById(pid);
-            _process.EnableRaisingEvents = true;
-            _process.Exited += Process_Exited;
         }
     }
 }
