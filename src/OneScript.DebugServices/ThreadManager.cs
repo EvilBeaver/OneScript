@@ -80,8 +80,8 @@ namespace OneScript.DebugServices
         {
             return _machinesOnThreads.Keys.ToArray();
         }
-        
-        public void Dispose()
+
+        public void ReleaseAllThreads()
         {
             var tokens = GetAllTokens();
             foreach (var machineWaitToken in tokens)
@@ -91,6 +91,11 @@ namespace OneScript.DebugServices
             }
 
             _machinesOnThreads.Clear();
+        }
+        
+        public void Dispose()
+        {
+            ReleaseAllThreads();
         }
     }
 }

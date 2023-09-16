@@ -12,6 +12,9 @@ using OneScript.DebugProtocol.Abstractions;
 
 namespace OneScript.DebugProtocol
 {
+    /// <summary>
+    /// TCP-канал, использующий стандартную Binary-сериализацию .NET
+    /// </summary>
     public class BinaryChannel : ICommunicationChannel
     {
         private readonly TcpClient _client;

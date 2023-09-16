@@ -56,8 +56,13 @@ namespace OneScript.DebugProtocol.TcpServer
             try
             {
                 var methodResult = _requestProcessor.Dispatch(_requestService, message.Id, message.Parameters);
-                if(methodResult != null)
+                if (methodResult != null)
                     callResult = RpcCallResult.Respond(message, methodResult);
+            }
+            catch (StopServiceException)
+            {
+                Stop();
+                return;
             }
             catch (Exception e)
             {

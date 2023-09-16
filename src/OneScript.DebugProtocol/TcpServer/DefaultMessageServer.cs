@@ -84,7 +84,6 @@ namespace OneScript.DebugProtocol.TcpServer
                     catch (Exception)
                     {
                         _serverStopped = true;
-                        break;
                     }
                 }
             });
@@ -108,6 +107,7 @@ namespace OneScript.DebugProtocol.TcpServer
             if (_messageThread?.IsAlive == true)
             {
                 _protocolChannel.Dispose();
+                _messageThread.Interrupt();
             }
         }
 

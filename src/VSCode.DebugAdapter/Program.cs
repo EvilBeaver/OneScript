@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using Serilog;
 
 namespace VSCode.DebugAdapter
 {
@@ -15,81 +16,30 @@ namespace VSCode.DebugAdapter
     {
         static void Main(string[] args)
         {
-            bool showTrace = false;
-
-            foreach (var argument in args)
-            {
-                switch (argument)
-                {
-                    case "-trace":
-                        showTrace = true;
-                        break;
-                }
-            }
-
-            AppDomain currentDomain = AppDomain.CurrentDomain;
-            currentDomain.UnhandledException += (s, e) =>
-            {
-                SessionLog.WriteLine(e.ExceptionObject.ToString());
-            };
-
-            StartSession(showTrace, Console.OpenStandardInput(), Console.OpenStandardOutput());
+            StartSession(Console.OpenStandardInput(), Console.OpenStandardOutput());
         }
         
-        private static void StartSession(bool showTrace, Stream input, Stream output)
+        private static void StartSession(Stream input, Stream output)
         {
             var session = new OscriptDebugSession();
-            session.TRACE = showTrace;
-            session.TRACE_RESPONSE = showTrace;
-            SessionLog.Open(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) +  "/debug.log");
+
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.AppSettings()
+                .Enrich.FromLogContext()
+                .CreateLogger();
+            
             try
             {
                 session.Start(input, output);
             }
             catch (Exception e)
             {
-                SessionLog.WriteLine(e.ToString());
+                Log.Fatal(e, "Exception on session start");
             }
             finally
             {
-                SessionLog.Close();
+                Log.CloseAndFlush();
             }
         }
-
-
-#if DEBUG
-        private static void RunServer(int port)
-        {
-            TcpListener serverSocket = new TcpListener(IPAddress.Parse("127.0.0.1"), port);
-            serverSocket.Start();
-
-            new System.Threading.Thread(() => {
-                while (true)
-                {
-                    var clientSocket = serverSocket.AcceptSocket();
-                    if (clientSocket != null)
-                    {
-                        Console.Error.WriteLine(">> accepted connection from client");
-
-                        new System.Threading.Thread(() => {
-                            using (var networkStream = new NetworkStream(clientSocket))
-                            {
-                                try
-                                {
-                                    StartSession(true, networkStream, networkStream);
-                                }
-                                catch (Exception e)
-                                {
-                                    Console.Error.WriteLine("Exception: " + e);
-                                }
-                            }
-                            clientSocket.Close();
-                            Console.Error.WriteLine(">> client connection closed");
-                        }).Start();
-                    }
-                }
-            }).Start();
-        }
-#endif
     }
 }
