@@ -166,6 +166,12 @@ namespace VSCode.DebugAdapter
             }
         }
 
+        public void Kill()
+        {
+            _process.Kill();
+            _process.WaitForExit(1500);
+        }
+
         public Breakpoint[] SetBreakpoints(IEnumerable<Breakpoint> breakpoints)
         {
             var confirmedBreaks = _debugger.SetMachineBreakpoints(breakpoints.ToArray());

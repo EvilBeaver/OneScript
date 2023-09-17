@@ -111,8 +111,8 @@ namespace VSCode.DebugAdapter
             }
             catch (Exception e)
             {
-                _process.HandleDisconnect(true);
-                _process = null;
+                _process.Kill();
+                SendEvent(new TerminatedEvent());
                 Log.Error(e, "Can't connect to debug server");
                 SendErrorResponse(response, 4550, "Can't connect: " + e.ToString());
                 return;

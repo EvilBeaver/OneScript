@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.DebugProtocol;
+using OneScript.DebugProtocol.TcpServer;
 using OneScript.Language;
 using ScriptEngine.Machine;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
@@ -188,6 +189,8 @@ namespace OneScript.DebugServices
         {
             _breakpointManager.Clear();
             _threadManager.ReleaseAllThreads();
+
+            throw new StopServiceException();
         }
 
         public int[] GetThreads()
