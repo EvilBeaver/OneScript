@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
 using Newtonsoft.Json.Linq;
+using Serilog;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 
 namespace VSCode.DebugAdapter
@@ -149,6 +150,11 @@ namespace VSCode.DebugAdapter
 
         public void HandleDisconnect(bool terminate)
         {
+            if (_debugger == null)
+            {
+                Log.Debug("Debugger is not connected. Nothing to disconnect");
+                return;
+            }
             _debugger.Disconnect(terminate);
 
             var mustKill = terminate || !_attachMode;
