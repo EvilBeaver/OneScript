@@ -38,13 +38,14 @@ jobs:
       - name: Install coverage tool
         shell: powershell
         run: |
-          dotnet tool install --global JetBrains.dotCover.GlobalTool
+          dotnet tool install --global dotnet-coverage
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"OneScript" /d:sonar.cs.dotcover.reportsPaths=dotCover.Output.html /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonar.openbsl.ru"
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"OneScript" /
+          /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonar.openbsl.ru"
           dotnet publish src/oscript/oscript.csproj
-          dotnet dotcover -- test "src/oscript/oscript.csproj" --dcReportType=HTML --no-build
+          dotnet-coverage collect "test src/oscript/oscript.csproj" -f xml -o "coverage.xml"
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
