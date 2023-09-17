@@ -17,27 +17,34 @@ namespace ScriptEngine.HostedScript.Library
 	{
 		private readonly List<TypeTypeValue> _types = new List<TypeTypeValue>();
 
-		private const string TYPE_BINARYDATA_NAME = "ДвоичныеДанные";
+		public TypeDescription(IEnumerable<TypeTypeValue> types = null)
+		{
+			if (types != null)
+			{
+				_types.AddRange(types);
+			}
+			
+			NumberQualifiers = new NumberQualifiers();
+			StringQualifiers = new StringQualifiers();
+			DateQualifiers = new DateQualifiers();
+			BinaryDataQualifiers = new BinaryDataQualifiers();
+		}
 
-		public TypeDescription(IEnumerable<TypeTypeValue> types = null,
-		                           NumberQualifiers numberQualifiers = null,
-		                           StringQualifiers stringQualifiers = null,
-		                           DateQualifiers   dateQualifiers = null,
-		                           BinaryDataQualifiers binaryDataQualifiers = null)
+		internal TypeDescription(IEnumerable<TypeTypeValue> types,
+		                           NumberQualifiers numberQualifiers,
+		                           StringQualifiers stringQualifiers,
+		                           DateQualifiers   dateQualifiers,
+		                           BinaryDataQualifiers binaryDataQualifiers)
 		{
 			if (types != null)
 			{
 				_types.AddRange(types);
 			}
 
-			NumberQualifiers = numberQualifiers != null && _types.Contains(TypeNumber()) ?
-				numberQualifiers : new NumberQualifiers();
-			StringQualifiers = stringQualifiers != null && _types.Contains(TypeString()) ?
-				stringQualifiers : new StringQualifiers();
-			DateQualifiers = dateQualifiers != null && _types.Contains(TypeDate()) ?
-				dateQualifiers : new DateQualifiers();
-			BinaryDataQualifiers = binaryDataQualifiers != null && _types.Contains(TypeBinaryData()) ? 
-				binaryDataQualifiers : new BinaryDataQualifiers();
+			NumberQualifiers = numberQualifiers;
+			StringQualifiers = stringQualifiers;
+			DateQualifiers = dateQualifiers;
+			BinaryDataQualifiers = binaryDataQualifiers;
 		}
 
 		[ContextProperty("КвалификаторыЧисла", "NumberQualifiers")]
@@ -64,6 +71,11 @@ namespace ScriptEngine.HostedScript.Library
 
 			return result;
 		}
+
+        internal IEnumerable<TypeTypeValue> TypesInternal()
+        {
+	        return _types;
+        }
 
 		[ContextMethod("СодержитТип", "ContainsType")]
 		public bool ContainsType(IValue type)
@@ -92,15 +104,13 @@ namespace ScriptEngine.HostedScript.Library
 		}
 
 		[ContextMethod("ПривестиЗначение", "AdjustValue")]
-		public IValue AdjustValue(IValue value = null)
+		public IValue AdjustValue(IValue pValue = null)
 		{
-
+			var value = pValue?.GetRawValue();
 			if (_types.Count == 0)
 			{
 				return value ?? ValueFactory.Create();
 			}
-
-			TypeTypeValue typeToCast = null;
 
 			if (value != null && value.DataType != DataType.Undefined)
 			{
@@ -108,144 +118,59 @@ namespace ScriptEngine.HostedScript.Library
 				if (_types.Contains(valueType))
 				{
 					// Если такой тип у нас есть
-					typeToCast = valueType;
+					var adjuster = GetAdjusterForType(valueType);
+					var adjustedValue = adjuster.Adjust(value);
+					if (adjustedValue != null)
+						return adjustedValue;
 				}
 			}
 
-			if (typeToCast == null)
+			foreach (var type in _types)
 			{
-				// Если типа нет, то нужно брать значение по-умолчанию
-				if (_types.Count != 1)
-				{
-					// много типов - Неопределено
-					return ValueFactory.Create();
-				}
-
-				typeToCast = _types[0];
+				var adjuster = GetAdjusterForType(type);
+				var adjustedValue = adjuster?.Adjust(value);
+				if (adjustedValue != null)
+					return adjustedValue;
 			}
 
-			var adjuster = GetAdjusterForType(typeToCast);
-
-			return adjuster?.Adjust(value) ?? ValueFactory.Create();
+			return ValueFactory.Create();
 		}
 
-		private static IList<TypeTypeValue> ConstructTypeList(IValue types)
+		internal static TypeTypeValue TypeNumber()
 		{
-			var typesList = new List<TypeTypeValue>();
-			if (types == null)
-				return typesList;
-
-			types = types.GetRawValue();
-			if (types.DataType == DataType.String)
-			{
-				var typeNames = types.AsString().Split(',');
-				foreach (var typeName in typeNames)
-				{
-					if (string.IsNullOrWhiteSpace(typeName))
-						continue;
-
-					var typeValue = new TypeTypeValue(typeName.Trim());
-					if (!typesList.Contains(typeValue))
-						typesList.Add(typeValue);
-				}
-			}
-			else if (types is ArrayImpl)
-			{
-				foreach (var type in (types as ArrayImpl))
-				{
-					var rawType = type.GetRawValue() as TypeTypeValue;
-					if (rawType == null)
-						continue;
-
-					if (!typesList.Contains(rawType))
-						typesList.Add(rawType);
-				}
-			} 
-			else if (types.DataType != DataType.Undefined)
-			{
-				return null; // далее будет исключение
-			}
-			// для Неопределено возвращается пустой список
-
-			return typesList;
+			return new TypeTypeValue(TypeDescriptor.FromDataType(DataType.Number));
 		}
 
-		static TypeTypeValue TypeNumber()
+		internal static TypeTypeValue TypeBoolean()
 		{
-			return new TypeTypeValue(TypeManager.GetTypeById((int)DataType.Number));
+			return new TypeTypeValue(TypeDescriptor.FromDataType(DataType.Boolean));
 		}
 
-		static TypeTypeValue TypeBoolean()
+		internal static TypeTypeValue TypeString()
 		{
-			return new TypeTypeValue(TypeManager.GetTypeById((int)DataType.Boolean));
-		}
-
-		static TypeTypeValue TypeString()
-		{
-			return new TypeTypeValue(TypeManager.GetTypeById((int)DataType.String));
+			return new TypeTypeValue(TypeDescriptor.FromDataType(DataType.String));
 		}
 		
-		static TypeTypeValue TypeDate()
+		internal static TypeTypeValue TypeDate()
 		{
-			return new TypeTypeValue(TypeManager.GetTypeById((int)DataType.Date));
-		}
-
-		static TypeTypeValue TypeBinaryData()
-		{
-			return new TypeTypeValue(TypeManager.GetTypeByName(TYPE_BINARYDATA_NAME));
+			return new TypeTypeValue(TypeDescriptor.FromDataType(DataType.Date));
 		}
 
 		public static TypeDescription StringType(int length = 0,
 		                                         AllowedLengthEnum allowedLength = AllowedLengthEnum.Variable)
 		{
-			var stringQualifier = new StringQualifiers(length, allowedLength);
-			return new TypeDescription(new TypeTypeValue[] { TypeString() }, null, stringQualifier);
+			return TypeDescriptionBuilder.Build(TypeString(), new StringQualifiers(length, allowedLength));
 		}
 
 		public static TypeDescription IntegerType(int length = 10,
 		                                          AllowedSignEnum allowedSign = AllowedSignEnum.Any)
 		{
-			var numberQualifier = new NumberQualifiers(length, 0, allowedSign);
-			return new TypeDescription(new TypeTypeValue[] { TypeNumber() }, numberQualifier);
+			return TypeDescriptionBuilder.Build(TypeNumber(), new NumberQualifiers(length, 0, allowedSign));
 		}
 
 		public static TypeDescription BooleanType()
 		{
-			return new TypeDescription(new TypeTypeValue[] { TypeBoolean() });
-		}
-
-
-		private class TypeQualifiersSet
-		{
-			public readonly NumberQualifiers numberQualifiers = null;
-			public readonly StringQualifiers stringQualifiers = null;
-			public readonly DateQualifiers dateQualifiers = null;
-			public readonly BinaryDataQualifiers binaryDataQualifiers = null;
-
-			public TypeQualifiersSet(IValue p2, IValue p3, IValue p4, IValue p5, IValue p6, IValue p7)
-			{
-				int nParam = 1;
-				foreach (var qual in new[] { p2, p3, p4, p5, p6, p7 })
-				{
-					nParam++;
-
-					if (qual == null || qual.DataType == DataType.Undefined)
-						continue;
-
-                    switch (qual.GetRawValue())
-                    {
-                        case NumberQualifiers nq: numberQualifiers = nq; break;
-
-                        case StringQualifiers sq: stringQualifiers = sq; break;
-
-                        case DateQualifiers dq: dateQualifiers = dq; break;
-
-                        case BinaryDataQualifiers bdq: binaryDataQualifiers = bdq; break;
-
-                        default: throw RuntimeException.InvalidNthArgumentType(nParam);
-                    }
-                }
-            }
+			return TypeDescriptionBuilder.Build(TypeBoolean());
 		}
 
 		[ScriptConstructor]
@@ -265,10 +190,8 @@ namespace ScriptEngine.HostedScript.Library
 				// пустой первый параметр - нет объекта-основания
 				// добавляемые/вычитаемые типы не допускаются, квалификаторы игнорируются
 
-				// только для контроля типов
-				var _ = new TypeQualifiersSet(p2, p3, p4, p5, p6, p7);
-
-				return new TypeDescription();
+				// квалификакторы передаются только для контроля типов
+				return ConstructByQualifiers(UndefinedValue.Instance, p2, p3, p4, p5, p6, p7);
 			}
 
 			if (rawSource is TypeDescription)
@@ -284,8 +207,7 @@ namespace ScriptEngine.HostedScript.Library
 			throw RuntimeException.InvalidArgumentValue();
 		}
 
-		public static TypeDescription ConstructByQualifiers(
-			IValue types,
+		private static TypeDescription ConstructByQualifiers(IValue types,
 			IValue p2 = null,
 			IValue p3 = null,
 			IValue p4 = null,
@@ -293,20 +215,16 @@ namespace ScriptEngine.HostedScript.Library
 			IValue p6 = null,
 			IValue p7 = null)
 		{
-			var typesList = ConstructTypeList(types);
-			if (typesList == null)
-				throw RuntimeException.InvalidNthArgumentType(1);
+			var builder = new TypeDescriptionBuilder();
+			var typesList = TypeList.Construct(types, 1);
+			builder.AddTypes(typesList.List());
 
-			var qualSet = new TypeQualifiersSet(p2,p3,p4,p5,p6,p7);
+			builder.AddQualifiers(new[] { p2, p3, p4, p5, p6, p7 }, 1);
 
-			return new TypeDescription(typesList,
-				qualSet.numberQualifiers,
-				qualSet.stringQualifiers,
-				qualSet.dateQualifiers,
-				qualSet.binaryDataQualifiers);
+			return builder.Build();
 		}
 
-		public static TypeDescription ConstructByOtherDescription(
+		private static TypeDescription ConstructByOtherDescription(
 			IValue typeDescription = null,
 			IValue addTypes = null,
 			IValue removeTypes = null,
@@ -315,34 +233,21 @@ namespace ScriptEngine.HostedScript.Library
 			IValue p6 = null,
 			IValue p7 = null)
 		{
-			var removeTypesList = ConstructTypeList(removeTypes);
-			if (removeTypesList == null)
-				throw RuntimeException.InvalidNthArgumentType(3);
+			var builder = new TypeDescriptionBuilder();
 
-			var typesList = new List<TypeTypeValue>();
 			if (typeDescription is TypeDescription typeDesc)
 			{
-				foreach (var type in typeDesc._types)
-				{
-					if (!removeTypesList.Contains(type))
-					{
-						typesList.Add(type);
-					}
-				}
+				builder.SourceDescription(typeDesc);
 			}
+			
+			var removeTypesList = TypeList.Construct(removeTypes, 3);
+			builder.RemoveTypes(removeTypesList.List());
 
-			var addTypesList = ConstructTypeList(addTypes);
-			if (addTypesList == null)
-				throw RuntimeException.InvalidNthArgumentType(2);
-			typesList.AddRange(addTypesList);
+			var addTypesList = TypeList.Construct(addTypes, 2);
+			builder.AddTypes(addTypesList.List());
+			builder.AddQualifiers(new[] { p4, p5, p6, p7 }, 3);
 
-			var qualSet = new TypeQualifiersSet(null, null, p4, p5, p6, p7);
-
-			return new TypeDescription(typesList,
-				qualSet.numberQualifiers,
-				qualSet.stringQualifiers,
-				qualSet.dateQualifiers,
-				qualSet.binaryDataQualifiers);
+			return builder.Build();
 		}
 	}
 }
