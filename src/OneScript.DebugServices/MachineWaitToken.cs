@@ -26,6 +26,7 @@ namespace OneScript.DebugServices
         public void Dispose()
         {
             Machine.UnsetDebugMode();
+            _threadEvent.Set();
             _threadEvent.Dispose();
         }
     }

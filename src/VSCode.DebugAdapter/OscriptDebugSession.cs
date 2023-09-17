@@ -35,13 +35,14 @@ namespace VSCode.DebugAdapter
 
             _process = DebugeeFactory.CreateProcess(AdapterID, PathStrategy);
             
-            SendResponse(response, new Capabilities()
+            SendResponse(response, new Capabilities
             {
                 supportsConditionalBreakpoints = false,
                 supportsFunctionBreakpoints = false,
                 supportsConfigurationDoneRequest = true,
                 exceptionBreakpointFilters = new dynamic[0],
-                supportsEvaluateForHovers = true
+                supportsEvaluateForHovers = true,
+                supportTerminateDebuggee = true
             });
 
             SendEvent(new InitializedEvent());
@@ -105,7 +106,7 @@ namespace VSCode.DebugAdapter
             }
             catch (Exception e)
             {
-                _process.HandleDisconnect();
+                _process.HandleDisconnect(true);
                 _process = null;
                 SessionLog.WriteLine(e.ToString());
                 SendErrorResponse(response, 4550, "Can't connect: " + e.ToString());
@@ -149,7 +150,14 @@ namespace VSCode.DebugAdapter
 
         public override void Disconnect(Response response, dynamic arguments)
         {
-            _process.HandleDisconnect();
+            bool terminateDebuggee = arguments.terminateDebuggee == true;
+            
+            _process.HandleDisconnect(terminateDebuggee);
+            if (terminateDebuggee)
+            {
+                // Для более быстрого прерывания сессии
+                SendEvent(new TerminatedEvent());
+            }
             SendResponse(response);
         }
 

@@ -21,7 +21,7 @@ namespace OneScript.DebugServices
     {
         private readonly IBreakpointManager _breakpointManager;
         private readonly IVariableVisualizer _visualizer;
-        private ThreadManager _threadManager { get; }
+        private readonly ThreadManager _threadManager;
 
         public DefaultDebugService(IBreakpointManager breakpointManager, ThreadManager threads, IVariableVisualizer visualizer)
         {
@@ -49,7 +49,7 @@ namespace OneScript.DebugServices
             }
         }
 
-        public virtual Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)
+        public Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)
         {
             var confirmedBreakpoints = new List<Breakpoint>();
 
@@ -82,7 +82,7 @@ namespace OneScript.DebugServices
             return confirmedBreakpoints.ToArray();
         }
 
-        public virtual StackFrame[] GetStackFrames(int threadId)
+        public StackFrame[] GetStackFrames(int threadId)
         {
             var machine = _threadManager.GetTokenForThread(threadId).Machine;
             var frames = machine.GetExecutionFrames();
@@ -107,7 +107,7 @@ namespace OneScript.DebugServices
             return _threadManager.GetTokenForThread(threadId).Machine;
         }
 
-        public virtual Variable[] GetVariables(int threadId, int frameIndex, int[] path)
+        public Variable[] GetVariables(int threadId, int frameIndex, int[] path)
         {
             var machine = _threadManager.GetTokenForThread(threadId).Machine;
             var locals = machine.GetFrameLocals(frameIndex);
@@ -121,7 +121,7 @@ namespace OneScript.DebugServices
             return GetDebugVariables(locals);
         }
 
-        public virtual Variable[] GetEvaluatedVariables(string expression, int threadId, int frameIndex, int[] path)
+        public Variable[] GetEvaluatedVariables(string expression, int threadId, int frameIndex, int[] path)
         {
             IValue value;
 
@@ -145,7 +145,7 @@ namespace OneScript.DebugServices
             return GetDebugVariables(locals);
         }
 
-        public virtual Variable Evaluate(int threadId, int contextFrame, string expression)
+        public Variable Evaluate(int threadId, int contextFrame, string expression)
         {
             try
             {
@@ -163,34 +163,34 @@ namespace OneScript.DebugServices
             }
         }
 
-        public virtual void Next(int threadId)
+        public void Next(int threadId)
         {
             var t = _threadManager.GetTokenForThread(threadId);
             t.Machine.StepOver();
             t.Set();
         }
 
-        public virtual void StepIn(int threadId)
+        public void StepIn(int threadId)
         {
             var t = _threadManager.GetTokenForThread(threadId);
             t.Machine.StepIn();
             t.Set();
         }
 
-        public virtual void StepOut(int threadId)
+        public void StepOut(int threadId)
         {
             var t = _threadManager.GetTokenForThread(threadId);
             t.Machine.StepOut();
             t.Set();
         }
 
-        public void Disconnect()
+        public void Disconnect(bool terminate)
         {
             _breakpointManager.Clear();
             _threadManager.ReleaseAllThreads();
         }
 
-        public virtual int[] GetThreads()
+        public int[] GetThreads()
         {
             return _threadManager.GetAllThreadIds();
         }

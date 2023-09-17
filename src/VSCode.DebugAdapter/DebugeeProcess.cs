@@ -147,13 +147,16 @@ namespace VSCode.DebugAdapter
             }
         }
 
-        public void HandleDisconnect()
+        public void HandleDisconnect(bool terminate)
         {
-            _debugger.Disconnect();
+            _debugger.Disconnect(terminate);
+
+            var mustKill = terminate || !_attachMode;
             
-            if (!_attachMode && _process != null && !_process.HasExited)
+            if (mustKill && _process != null && !_process.HasExited)
             {
-                _process.Kill();
+                if (!_process.WaitForExit(2000))
+                    _process.Kill();
             }
         }
 

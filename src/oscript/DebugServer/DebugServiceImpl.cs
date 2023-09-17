@@ -185,7 +185,7 @@ namespace oscript.DebugServer
             t.ThreadEvent.Set();
         }
 
-        public void Disconnect()
+        public void Disconnect(bool terminate)
         {
             Controller.BreakpointManager.Clear();
             Controller.GetAllThreadIds().ForEach(threadId =>

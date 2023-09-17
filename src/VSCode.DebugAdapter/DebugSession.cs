@@ -180,6 +180,7 @@ namespace VSCodeDebug
 		public bool supportsConditionalBreakpoints;
 		public bool supportsEvaluateForHovers;
 		public dynamic[] exceptionBreakpointFilters;
+		public bool supportTerminateDebuggee;
 	}
 
 	public class ErrorResponseBody : ResponseBody {

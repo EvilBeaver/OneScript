@@ -98,14 +98,15 @@ namespace OneScript.DebugProtocol
         [OperationContract(IsOneWay = true)]
 #endif
         void StepOut(int threadId);
-        
+
         /// <summary>
         /// Отключение сеанса отладки по инициативе IDE
         /// </summary>
+        /// <param name="terminate"></param>
 #if NETFRAMEWORK
         [OperationContract(IsOneWay = true)]
 #endif
-        void Disconnect();
+        void Disconnect(bool terminate);
 
 #if NETFRAMEWORK
         [OperationContract]
