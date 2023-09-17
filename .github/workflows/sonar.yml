@@ -46,5 +46,5 @@ jobs:
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"OneScript" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonar.openbsl.ru"
           dotnet publish src/oscript/oscript.csproj
-          dotnet-coverage collect "test src/oscript/oscript.csproj" -f xml -o "coverage.xml"
+          dotnet-coverage collect "test Build_Core.csproj" -f xml -o "coverage.xml"
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
