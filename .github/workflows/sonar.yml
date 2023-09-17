@@ -35,11 +35,16 @@ jobs:
         run: |
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+      - name: Install coverage tool
+        shell: powershell
+        run: |
+          dotnet tool install --global JetBrains.dotCover.GlobalTool
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"OneScript" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonar.openbsl.ru"
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"OneScript" /d:sonar.cs.dotcover.reportsPaths=dotCover.Output.html /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonar.openbsl.ru"
           dotnet publish src/oscript/oscript.csproj
+          dotnet dotcover test --dcReportType=HTML
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
