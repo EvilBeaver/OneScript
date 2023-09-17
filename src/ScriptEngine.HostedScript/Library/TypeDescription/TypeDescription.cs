@@ -81,7 +81,13 @@ namespace ScriptEngine.HostedScript.Library
 		public bool ContainsType(IValue type)
 		{
 			if (type is TypeTypeValue typeVal)
+			{
+				if (typeVal.Value.Equals(UndefinedValue.Instance.SystemType))
+				{
+					return (_types.Count > 1);
+				}
 				return _types.Contains(typeVal);
+			}
 
 			throw RuntimeException.InvalidArgumentType(nameof(type));
 		}
@@ -99,6 +105,9 @@ namespace ScriptEngine.HostedScript.Library
 			
 			if (type.Value.Equals(TypeDescriptor.FromDataType(DataType.Boolean)))
 				return new BooleanTypeAdjuster();
+			
+			if (type.Value.Equals(TypeDescriptor.FromDataType(DataType.Undefined)))
+				return new UndefinedTypeAdjuster();
 
 			return null;
 		}
@@ -112,10 +121,10 @@ namespace ScriptEngine.HostedScript.Library
 				return value ?? ValueFactory.Create();
 			}
 
-			if (value != null && value.DataType != DataType.Undefined)
+			if (value != null)
 			{
 				var valueType = new TypeTypeValue(value.SystemType);
-				if (_types.Contains(valueType))
+				if (ContainsType(valueType))
 				{
 					// Если такой тип у нас есть
 					var adjuster = GetAdjusterForType(valueType);
@@ -248,6 +257,14 @@ namespace ScriptEngine.HostedScript.Library
 			builder.AddQualifiers(new[] { p4, p5, p6, p7 }, 3);
 
 			return builder.Build();
+		}
+	}
+
+	internal class UndefinedTypeAdjuster : IValueAdjuster
+	{
+		public IValue Adjust(IValue value)
+		{
+			return ValueFactory.Create();
 		}
 	}
 }
