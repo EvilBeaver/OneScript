@@ -46,5 +46,5 @@ jobs:
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"OneScript" /d:sonar.cs.dotcover.reportsPaths=dotCover.Output.html /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonar.openbsl.ru"
           dotnet publish src/oscript/oscript.csproj
-          dotnet dotcover test --dcReportType=HTML
+          dotnet dotcover test --dcReportType=HTML src/oscript/oscript.csproj 
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
