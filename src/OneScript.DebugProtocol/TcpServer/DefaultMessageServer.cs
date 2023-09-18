@@ -21,6 +21,11 @@ namespace OneScript.DebugProtocol.TcpServer
         {
             _protocolChannel = protocolChannel;
         }
+        
+        /// <summary>
+        /// Имя, назначаемое потоку сервера. Полезно для отладки и диагностики.
+        /// </summary>
+        public string ServerThreadName { get; set; }
 
         public void Start()
         {
@@ -66,7 +71,7 @@ namespace OneScript.DebugProtocol.TcpServer
                             // Считаем, что факап подписчика - его проблемы.
                         }
                         
-                        // свойство в исключении может быть утановлено в обработчике евента
+                        // свойство в исключении может быть установлено в обработчике евента
                         _serverStopped = e.StopChannel;
                     }
                     catch (Exception)
@@ -75,6 +80,12 @@ namespace OneScript.DebugProtocol.TcpServer
                     }
                 }
             });
+
+            _messageThread.IsBackground = true;
+            if (ServerThreadName != default)
+            {
+                _messageThread.Name = ServerThreadName;
+            }
 
             _messageThread.Start();
         }

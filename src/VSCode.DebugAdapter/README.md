@@ -15,3 +15,47 @@
 ### Подробное описание каждого параметра выводится при наведении мышки на опцию в файле launch.json.
 
 При возникновении вопросов напишите обращение на https://github.com/EvilBeaver/OneScript/issues. Мы обязательно вам поможем.
+
+## Примеры конфигураций запуска
+
+### Запуск 1Script, файл my-program.os с передачей аргументов командной строки и установкой переменных окружения
+
+```json
+{
+    "name": "Отладка 1Script",
+    "type": "oscript",
+    "request": "launch",
+    "cwd": "${workspaceRoot}/src",
+    "program": "my-program.os",
+    "args": ["arg1", "arg2"],
+    "env": {
+        "OSCRIPT_CONFIG": "lib.system=D:/myOsLibraries",
+        "JAVA_HOME": "D:/MyJava/JDK_29_Full"
+    },
+    "debugPort": 5051
+}
+```
+
+### Запуск сервера 1Script.Web, установленного по пути e:/osweb на порту 5051
+
+```json
+{
+    "name": "Отладка 1Script.Web",
+    "type": "oscript.web",
+    "request": "launch",
+    "appDir": "${workspaceRoot}/src",
+    "runtimeExecutable": "e:/osweb/OneScript.WebHost.exe",
+    "debugPort": 5051
+}
+```
+
+### Подключение к работающему процессу 1Script.Web на порту 5051
+
+```json
+{
+    "name": "Отладка 1Script.Web (attach)",
+    "type": "oscript.web",
+    "request": "attach",
+    "debugPort": 5051
+}
+```

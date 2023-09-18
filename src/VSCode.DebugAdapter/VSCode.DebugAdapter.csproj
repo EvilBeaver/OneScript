@@ -15,6 +15,9 @@
     
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Serilog" Version="3.0.1" />
+    <PackageReference Include="Serilog.Settings.AppSettings" Version="2.2.2" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.ServiceModel" />
 	<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />

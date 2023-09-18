@@ -9,6 +9,9 @@ using System;
 
 namespace OneScript.DebugProtocol.Abstractions
 {
+    /// <summary>
+    /// Сервис прослушивания сетевого канала и отправки в него сообщений 
+    /// </summary>
     public interface ICommunicationServer
     {
         void Start();

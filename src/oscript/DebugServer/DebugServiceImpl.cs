@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OneScript.DebugProtocol;
 using OneScript.Language;
+using ScriptEngine;
 using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -182,6 +183,17 @@ namespace oscript.DebugServer
             var t = Controller.GetTokenForThread(threadId);
             t.Machine.StepOut();
             t.ThreadEvent.Set();
+        }
+
+        public void Disconnect(bool terminate)
+        {
+            Controller.BreakpointManager.Clear();
+            Controller.GetAllThreadIds().ForEach(threadId =>
+            {
+                var t = Controller.GetTokenForThread(threadId);
+                t.Machine.UnsetDebugMode();
+                t.ThreadEvent.Set();
+            });
         }
 
         public virtual int[] GetThreads()

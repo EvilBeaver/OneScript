@@ -11,6 +11,9 @@ using System.ServiceModel;
 
 namespace OneScript.DebugProtocol
 {
+    /// <summary>
+    /// Сервис непосредственной работы с командами отладки, шагами, брейкпоинтами и пр. 
+    /// </summary>
 #if NETFRAMEWORK
     [ServiceContract(
         Namespace = "http://oscript.io/services/debugger", 
@@ -95,6 +98,15 @@ namespace OneScript.DebugProtocol
         [OperationContract(IsOneWay = true)]
 #endif
         void StepOut(int threadId);
+
+        /// <summary>
+        /// Отключение сеанса отладки по инициативе IDE
+        /// </summary>
+        /// <param name="terminate"></param>
+#if NETFRAMEWORK
+        [OperationContract(IsOneWay = true)]
+#endif
+        void Disconnect(bool terminate);
 
 #if NETFRAMEWORK
         [OperationContract]

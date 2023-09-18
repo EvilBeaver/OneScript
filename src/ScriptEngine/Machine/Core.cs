@@ -217,7 +217,8 @@ namespace ScriptEngine.Machine
         
         [NonSerialized]
         public IValue DefaultValue;
-        
+        public Type RealType;
+
         public int DefaultValueIndex;
         public AnnotationDefinition[] Annotations;
 

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
 using Newtonsoft.Json.Linq;
+using Serilog;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 
 namespace VSCode.DebugAdapter
@@ -22,6 +23,7 @@ namespace VSCode.DebugAdapter
         private bool _terminated;
         private bool _stdoutEOF;
         private bool _stderrEOF;
+        private bool _attachMode;
 
         private IDebuggerService _debugger;
 
@@ -51,11 +53,20 @@ namespace VSCode.DebugAdapter
             _process.OutputDataReceived += Process_OutputDataReceived;
             _process.ErrorDataReceived += Process_ErrorDataReceived;
             _process.Exited += Process_Exited;
-            
+            _attachMode = false;
             _process.Start();
             System.Threading.Thread.Sleep(1500);
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
+        }
+        
+        public void InitAttached()
+        {
+            var pid = _debugger.GetProcessId();
+            _process = Process.GetProcessById(pid);
+            _attachMode = true;
+            _process.EnableRaisingEvents = true;
+            _process.Exited += Process_Exited;
         }
 
         public void Init(JObject args)
@@ -137,12 +148,28 @@ namespace VSCode.DebugAdapter
             }
         }
 
+        public void HandleDisconnect(bool terminate)
+        {
+            if (_debugger == null)
+            {
+                Log.Debug("Debugger is not connected. Nothing to disconnect");
+                return;
+            }
+            _debugger.Disconnect(terminate);
+
+            var mustKill = terminate || !_attachMode;
+            
+            if (mustKill && _process != null && !_process.HasExited)
+            {
+                if (!_process.WaitForExit(2000))
+                    _process.Kill();
+            }
+        }
+
         public void Kill()
         {
-            if (_process != null && !_process.HasExited)
-            {
-                _process.Kill();
-            }
+            _process.Kill();
+            _process.WaitForExit(1500);
         }
 
         public Breakpoint[] SetBreakpoints(IEnumerable<Breakpoint> breakpoints)
@@ -213,14 +240,6 @@ namespace VSCode.DebugAdapter
         public int[] GetThreads()
         {
             return _debugger.GetThreads();
-        }
-
-        public void InitAttached()
-        {
-            var pid = _debugger.GetProcessId();
-            _process = Process.GetProcessById(pid);
-            _process.EnableRaisingEvents = true;
-            _process.Exited += Process_Exited;
         }
     }
 }

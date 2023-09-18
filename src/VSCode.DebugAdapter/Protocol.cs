@@ -13,6 +13,7 @@ using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+using Serilog;
 
 namespace VSCodeDebug
 {
@@ -93,30 +94,21 @@ namespace VSCodeDebug
      */
 	public abstract class ProtocolServer
 	{
-		public bool TRACE;
-		public bool TRACE_RESPONSE;
-
 		protected const int BUFFER_SIZE = 4096;
 		protected const string TWO_CRLF = "\r\n\r\n";
 		protected static readonly Regex CONTENT_LENGTH_MATCHER = new Regex(@"Content-Length: (\d+)");
 
 		protected static readonly Encoding Encoding = System.Text.Encoding.UTF8;
 
-		private int _sequenceNumber;
+		private int _sequenceNumber = 1;
 
 		private Stream _outputStream;
 
-		private ByteBuffer _rawData;
-		private int _bodyLength;
+		private ByteBuffer _rawData = new ByteBuffer();
+		private int _bodyLength = -1;
 
 		private bool _stopRequested;
 
-
-		public ProtocolServer() {
-			_sequenceNumber = 1;
-			_bodyLength = -1;
-			_rawData = new ByteBuffer();
-		}
 
 		public void Start(Stream inputStream, Stream outputStream)
 		{
@@ -190,9 +182,8 @@ namespace VSCodeDebug
 		{
 			var request = JsonConvert.DeserializeObject<Request>(req);
 			if (request != null && request.type == "request") {
-				if (TRACE)
-					Console.Error.WriteLine(string.Format("C {0}: {1}", request.command, JsonConvert.SerializeObject(request.arguments)));
-
+				Log.Verbose("Got {Command} with args {Args}", request.command, JsonConvert.SerializeObject(request.arguments));
+				
 				var response = new Response(request);
 
 				DispatchRequest(request.command, request.arguments, response);
@@ -205,12 +196,12 @@ namespace VSCodeDebug
 		{
 			message.seq = _sequenceNumber++;
 
-			if (TRACE_RESPONSE && message.type == "response") {
-				Console.Error.WriteLine(string.Format(" R: {0}", JsonConvert.SerializeObject(message)));
+			if (message.type == "response") {
+				Log.Verbose("Response {Response}", JsonConvert.SerializeObject(message));
 			}
-			if (TRACE && message.type == "event") {
+			if (message.type == "event") {
 				Event e = (Event)message;
-				Console.Error.WriteLine(string.Format("E {0}: {1}", e.eventType, JsonConvert.SerializeObject(e.body)));
+				Log.Verbose("Event {EventType} with args {Args}", e.eventType, JsonConvert.SerializeObject(e.body));
 			}
 
 			var data = ConvertToBytes(message);

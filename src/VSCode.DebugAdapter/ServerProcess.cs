@@ -26,6 +26,8 @@ namespace VSCode.DebugAdapter
         
         public IDictionary<string, string> Environment { get; set; } = new Dictionary<string, string>();
         
+        public bool WaitOnStart { get; set; }
+        
         protected override Process CreateProcess()
         {
             var dbgArgs = new List<string>();
@@ -34,7 +36,7 @@ namespace VSCode.DebugAdapter
                 dbgArgs.Add($"--debug.port={DebugPort}");
             }
             dbgArgs.Add("--debug.protocol=tcp");
-            dbgArgs.Add("--debug.wait=1");
+            dbgArgs.Add($"--debug.wait={(WaitOnStart ? "1" : "0")}");
             
             var debugArguments = string.Join(" ", dbgArgs);
             var process = new Process();
@@ -104,6 +106,7 @@ namespace VSCode.DebugAdapter
             DebugPort = options.DebugPort;
             Environment = options.Env;
             DebugProtocol = "tcp";
+            WaitOnStart = options.WaitOnStart;
         }
     }
 }

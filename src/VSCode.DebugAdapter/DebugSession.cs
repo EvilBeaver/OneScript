@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using Serilog;
 using VSCode.DebugAdapter;
 
 namespace VSCodeDebug
@@ -180,6 +181,7 @@ namespace VSCodeDebug
 		public bool supportsConditionalBreakpoints;
 		public bool supportsEvaluateForHovers;
 		public dynamic[] exceptionBreakpointFilters;
+		public bool supportTerminateDebuggee;
 	}
 
 	public class ErrorResponseBody : ResponseBody {
@@ -449,7 +451,6 @@ namespace VSCodeDebug
 
 	    protected virtual void OnRequestError(Exception e)
 	    {
-	        SessionLog.WriteLine(e.ToString());
         }
 
 		public abstract void SetBreakpoints(Response response, dynamic arguments);
