@@ -17,17 +17,6 @@ namespace ScriptEngine.HostedScript.Library
     {
         
         private static readonly TypeDescriptor BinaryDataType = TypeManager.GetTypeByFrameworkType(typeof(BinaryDataContext));
-        private static readonly TypeDescriptor NullDataType = TypeManager.GetTypeByFrameworkType(typeof(NullValue)); 
-
-        private static readonly TypeDescriptor[] Primitives = {
-            TypeDescriptor.FromDataType(DataType.Boolean),
-            BinaryDataType,
-            TypeDescriptor.FromDataType(DataType.String),
-            TypeDescriptor.FromDataType(DataType.Date),
-            NullDataType,
-            TypeDescriptor.FromDataType(DataType.Number),
-            TypeDescriptor.FromDataType(DataType.Type)
-        };
         
         private NumberQualifiers _numberQualifiers;
         private StringQualifiers _stringQualifiers;
@@ -61,58 +50,39 @@ namespace ScriptEngine.HostedScript.Library
             return this;
         }
 
-        public TypeDescriptionBuilder AddQualifiers(IValue[] qualifiers, int nParam = 0)
+        public TypeDescriptionBuilder SetNumberQualifiers(NumberQualifiers nq)
         {
-            foreach (var qualifier in qualifiers)
-            {
-                nParam++;
-                AddQualifier(qualifier, nParam);
-            }
-
+            _numberQualifiers = nq;
             return this;
         }
 
-        public TypeDescriptionBuilder AddQualifier(IValue qualifier, int nParam = 0)
+        public TypeDescriptionBuilder SetStringQualifiers(StringQualifiers sq)
         {
-            if (qualifier != null && !qualifier.Equals(ValueFactory.Create()))
-            {
-                switch (qualifier.GetRawValue())
-                {
-                    case NumberQualifiers nq:
-                        _numberQualifiers = nq;
-                        break;
+            _stringQualifiers = sq;
+            return this;
+        }
 
-                    case StringQualifiers sq:
-                        _stringQualifiers = sq;
-                        break;
+        public TypeDescriptionBuilder SetDateQualifiers(DateQualifiers dq)
+        {
+            _dateQualifiers = dq;
+            return this;
+        }
 
-                    case DateQualifiers dq:
-                        _dateQualifiers = dq;
-                        break;
-
-                    case BinaryDataQualifiers bdq:
-                        _binaryDataQualifiers = bdq;
-                        break;
-
-                    default:
-                        throw nParam == 0
-                            ? RuntimeException.InvalidArgumentType()
-                            : RuntimeException.InvalidNthArgumentType(nParam);
-                }
-            }
-
+        public TypeDescriptionBuilder SetBinaryDataQualifiers(BinaryDataQualifiers bq)
+        {
+            _binaryDataQualifiers = bq;
             return this;
         }
 
         public TypeDescription Build()
         {
             _types = new List<TypeTypeValue>(_types.Distinct());
-            _types.RemoveAll(type => type.Value.Equals(UndefinedValue.Instance.SystemType));
+            _types.RemoveAll(type => type.Value.Equals(CommonTypes.Undefined));
             _types.Sort(new TypeComparer());
-            var hasNumber = _types.Contains(TypeDescription.TypeNumber());
-            var hasString =_types.Contains(TypeDescription.TypeString());
-            var hasDate = _types.Contains(TypeDescription.TypeDate());
-            var hasBinaryData = _types.Any(x => x.Value.Equals(BinaryDataType));
+            var hasNumber = _types.Exists(type => type.Value.Equals(CommonTypes.Number));
+            var hasString = _types.Exists(type => type.Value.Equals(CommonTypes.String));
+            var hasDate = _types.Exists(type => type.Value.Equals(CommonTypes.Date));
+            var hasBinaryData = _types.Exists(type => type.Value.Equals(CommonTypes.BinaryData));
             
             if (!hasNumber || _numberQualifiers == null) _numberQualifiers = new NumberQualifiers();
             if (!hasString || _stringQualifiers == null) _stringQualifiers = new StringQualifiers();
@@ -127,55 +97,13 @@ namespace ScriptEngine.HostedScript.Library
             );
 
         }
-
-        public static TypeDescription Build(TypeTypeValue type, IValue qualifier = null)
+    
+        public static TypeDescriptionBuilder OfType(TypeDescriptor commonType)
         {
             var builder = new TypeDescriptionBuilder();
-            return builder.AddTypes(new[] { type }).AddQualifier(qualifier).Build();
+            builder.AddTypes(new[] { new TypeTypeValue(commonType) });
+            return builder;
         }
         
-        private class TypeComparer : IComparer<TypeTypeValue>
-        {
-            public int Compare(TypeTypeValue x, TypeTypeValue y)
-            {
-                if (x == null)
-                {
-                    return y == null ? 0 : -1;
-                }
-
-                if (y == null) return 1;
-
-                var primitiveX = PrimitiveIndex(x);
-                var primitiveY = PrimitiveIndex(y);
-                
-                if (primitiveX != -1)
-                {
-                    if (primitiveY != -1)
-                        return primitiveX - primitiveY;
-
-                    return -1;
-                }
-
-                if (primitiveY != -1)
-                    return 1;
-
-                return x.Value.ID.CompareTo(y.Value.ID);
-            }
-
-            private static int PrimitiveIndex(TypeTypeValue type)
-            {
-                var typeDescriptor = TypeManager.GetTypeDescriptorFor(type);
-                for (var primitiveIndex = 0; primitiveIndex < Primitives.Length; primitiveIndex++)
-                {
-                    if (typeDescriptor.Equals(Primitives[primitiveIndex]))
-                    {
-                        return primitiveIndex;
-                    }
-                }
-                
-                return -1;
-            }
-
-        }
     }
 }

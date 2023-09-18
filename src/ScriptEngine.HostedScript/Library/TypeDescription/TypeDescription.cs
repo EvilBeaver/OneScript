@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
@@ -82,8 +83,11 @@ namespace ScriptEngine.HostedScript.Library
 		{
 			if (type is TypeTypeValue typeVal)
 			{
-				if (typeVal.Value.Equals(UndefinedValue.Instance.SystemType))
+				if (typeVal.Value.Equals(CommonTypes.Undefined))
 				{
+					// тип "Неопределено" содержится в любом явно определенном составном типе
+					// и не содержится в типе Произвольный (когда явно не указан состав типов)
+					//   или когда указан один конкретный тип
 					return (_types.Count > 1);
 				}
 				return _types.Contains(typeVal);
@@ -94,19 +98,19 @@ namespace ScriptEngine.HostedScript.Library
 
 		IValueAdjuster GetAdjusterForType(TypeTypeValue type)
 		{
-			if (type.Value.Equals(TypeDescriptor.FromDataType(DataType.Number)))
+			if (type.Value.Equals(CommonTypes.Number))
 				return NumberQualifiers;
 
-			if (type.Value.Equals(TypeDescriptor.FromDataType(DataType.String)))
+			if (type.Value.Equals(CommonTypes.String))
 				return StringQualifiers;
 
-			if (type.Value.Equals(TypeDescriptor.FromDataType(DataType.Date)))
+			if (type.Value.Equals(CommonTypes.Date))
 				return DateQualifiers;
 			
-			if (type.Value.Equals(TypeDescriptor.FromDataType(DataType.Boolean)))
+			if (type.Value.Equals(CommonTypes.Boolean))
 				return new BooleanTypeAdjuster();
 			
-			if (type.Value.Equals(TypeDescriptor.FromDataType(DataType.Undefined)))
+			if (type.Value.Equals(CommonTypes.Undefined))
 				return new UndefinedTypeAdjuster();
 
 			return null;
@@ -126,11 +130,10 @@ namespace ScriptEngine.HostedScript.Library
 				var valueType = new TypeTypeValue(value.SystemType);
 				if (ContainsType(valueType))
 				{
-					// Если такой тип у нас есть
+					// Если такой тип у нас есть, возвращаем само значение применив квалификаторы, если они есть
 					var adjuster = GetAdjusterForType(valueType);
-					var adjustedValue = adjuster.Adjust(value);
-					if (adjustedValue != null)
-						return adjustedValue;
+					var adjustedValue = adjuster?.Adjust(value) ?? value;
+					return adjustedValue;
 				}
 			}
 
@@ -145,41 +148,25 @@ namespace ScriptEngine.HostedScript.Library
 			return ValueFactory.Create();
 		}
 
-		internal static TypeTypeValue TypeNumber()
-		{
-			return new TypeTypeValue(TypeDescriptor.FromDataType(DataType.Number));
-		}
-
-		internal static TypeTypeValue TypeBoolean()
-		{
-			return new TypeTypeValue(TypeDescriptor.FromDataType(DataType.Boolean));
-		}
-
-		internal static TypeTypeValue TypeString()
-		{
-			return new TypeTypeValue(TypeDescriptor.FromDataType(DataType.String));
-		}
-		
-		internal static TypeTypeValue TypeDate()
-		{
-			return new TypeTypeValue(TypeDescriptor.FromDataType(DataType.Date));
-		}
-
 		public static TypeDescription StringType(int length = 0,
 		                                         AllowedLengthEnum allowedLength = AllowedLengthEnum.Variable)
 		{
-			return TypeDescriptionBuilder.Build(TypeString(), new StringQualifiers(length, allowedLength));
+			return TypeDescriptionBuilder.OfType(CommonTypes.String)
+				.SetStringQualifiers(new StringQualifiers(length, allowedLength))
+				.Build();
 		}
 
 		public static TypeDescription IntegerType(int length = 10,
 		                                          AllowedSignEnum allowedSign = AllowedSignEnum.Any)
 		{
-			return TypeDescriptionBuilder.Build(TypeNumber(), new NumberQualifiers(length, 0, allowedSign));
+			return TypeDescriptionBuilder.OfType(CommonTypes.Number)
+				.SetNumberQualifiers(new NumberQualifiers(length, 0, allowedSign))
+				.Build();
 		}
 
 		public static TypeDescription BooleanType()
 		{
-			return TypeDescriptionBuilder.Build(TypeBoolean());
+			return TypeDescriptionBuilder.OfType(CommonTypes.Boolean).Build();
 		}
 
 		[ScriptConstructor]
@@ -225,12 +212,45 @@ namespace ScriptEngine.HostedScript.Library
 			IValue p7 = null)
 		{
 			var builder = new TypeDescriptionBuilder();
-			var typesList = TypeList.Construct(types, 1);
+			var typesList = TypeList.Construct(types);
+			CheckNotNull(typesList, 1);
 			builder.AddTypes(typesList.List());
 
-			builder.AddQualifiers(new[] { p2, p3, p4, p5, p6, p7 }, 1);
+			CheckAndAddQualifiers(builder, new[] {null, p2, p3, p4, p5, p6, p7 });
 
 			return builder.Build();
+		}
+
+		private static void CheckAndAddQualifiers(TypeDescriptionBuilder builder, IValue[] parameters)
+		{
+			for (var nParam = 0; nParam < parameters.Length; nParam++)
+			{
+				var rawQualifier = parameters[nParam]?.GetRawValue();
+				if (rawQualifier != null && !rawQualifier.Equals(ValueFactory.Create()))
+				{
+					switch (rawQualifier)
+					{
+						case NumberQualifiers nq:
+							builder.SetNumberQualifiers(nq);
+							break;
+
+						case StringQualifiers sq:
+							builder.SetStringQualifiers(sq);
+							break;
+
+						case DateQualifiers dq:
+							builder.SetDateQualifiers(dq);
+							break;
+
+						case BinaryDataQualifiers bdq:
+							builder.SetBinaryDataQualifiers(bdq);
+							break;
+
+						default:
+							throw RuntimeException.InvalidNthArgumentType(nParam + 1);
+					}
+				}
+			}
 		}
 
 		private static TypeDescription ConstructByOtherDescription(
@@ -249,14 +269,25 @@ namespace ScriptEngine.HostedScript.Library
 				builder.SourceDescription(typeDesc);
 			}
 			
-			var removeTypesList = TypeList.Construct(removeTypes, 3);
+			var removeTypesList = TypeList.Construct(removeTypes);
+			CheckNotNull(removeTypesList, 3);
 			builder.RemoveTypes(removeTypesList.List());
 
-			var addTypesList = TypeList.Construct(addTypes, 2);
+			var addTypesList = TypeList.Construct(addTypes);
+			CheckNotNull(addTypesList, 2);
 			builder.AddTypes(addTypesList.List());
-			builder.AddQualifiers(new[] { p4, p5, p6, p7 }, 3);
+			
+			CheckAndAddQualifiers(builder, new [] {null, null, null, p4, p5, p6, p7 });
 
 			return builder.Build();
+		}
+
+		private static void CheckNotNull(object value, int nParam)
+		{
+			if (value == null)
+			{
+				throw RuntimeException.InvalidNthArgumentType(nParam);
+			}
 		}
 	}
 

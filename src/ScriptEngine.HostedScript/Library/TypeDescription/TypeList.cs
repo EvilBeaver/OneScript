@@ -65,7 +65,7 @@ namespace ScriptEngine.HostedScript.Library
             return new TypeList(typesList);
         }
 
-        public static TypeList Construct(IValue types, int nParam)
+        public static TypeList Construct(IValue types)
         {
             types = types?.GetRawValue();
             if (types == null || types.DataType == DataType.Undefined)
@@ -78,9 +78,9 @@ namespace ScriptEngine.HostedScript.Library
             if (types is ArrayImpl arrayOfTypes)
             {
                 return FromArrayOfTypes(arrayOfTypes);
-            } 
-			
-            throw RuntimeException.InvalidNthArgumentType(nParam);
+            }
+
+            return null;
         }
 
         public static TypeList FromTypeNames(string types)
