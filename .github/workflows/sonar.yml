@@ -36,6 +36,10 @@ jobs:
         run: |
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+      - name: Install coverage tool
+        shell: powershell
+        run: |
+          dotnet tool install --global dotnet-coverage
       - name: Compute branch name
         uses: nelonoel/branch-name@v1.0.1
       - name: Prepare analysis (branch)
@@ -45,7 +49,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"OneScript" /d:sonar.branch.name=${{ env.BRANCH_NAME }} /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonar.openbsl.ru" 
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"OneScript" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml /d:sonar.branch.name=${{ env.BRANCH_NAME }} /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonar.openbsl.ru" 
       - name: Prepare analysis (pull-request)
         if: github.event_name == 'pull_request'
         env:
@@ -53,11 +57,12 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"OneScript" /d:sonar.pullrequest.key=${{ github.event.pull_request.number }} /d:sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }} /d:sonar.pullrequest.base=${{ github.event.pull_request.base.ref }} /d:sonar.scm.revision=${{ github.event.pull_request.head.sha }} /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonar.openbsl.ru"        
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"OneScript" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml /d:sonar.pullrequest.key=${{ github.event.pull_request.number }} /d:sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }} /d:sonar.pullrequest.base=${{ github.event.pull_request.base.ref }} /d:sonar.scm.revision=${{ github.event.pull_request.head.sha }} /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonar.openbsl.ru"        
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
         shell: powershell
         run: |
           dotnet publish src/oscript/oscript.csproj
+          dotnet-coverage collect "dotnet msbuild Build_Core.csproj -t:UnitTests" -f xml -o "coverage.xml"
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
