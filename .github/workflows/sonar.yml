@@ -64,5 +64,5 @@ jobs:
         shell: powershell
         run: |
           dotnet publish src/oscript/oscript.csproj
-          dotnet-coverage collect "dotnet-coverage collect "dotnet msbuild Build_Core.csproj -t:UnitTests" -f xml -o "coverage.xml"
+          dotnet-coverage collect "dotnet msbuild Build_Core.csproj -t:UnitTests" -f xml -o "coverage.xml"
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
