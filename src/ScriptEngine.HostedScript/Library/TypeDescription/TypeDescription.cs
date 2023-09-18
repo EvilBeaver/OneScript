@@ -5,7 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
@@ -179,116 +178,150 @@ namespace ScriptEngine.HostedScript.Library
 			IValue p6 = null,
 			IValue p7 = null)
 		{
+			var builder = new TypeDescriptionBuilder();
+			
+			// параметры, которые заведомо не квалификаторы, заменяем на null, но оставляем,
+			// чтобы указать номер параметра при выводе ошибки несоответствия типа
+			var qualifiers = new[] { null, p2, p3, p4, p5, p6, p7 };
+			
 			var rawSource = source?.GetRawValue();
-
 			if (rawSource == null || rawSource.DataType == DataType.Undefined)
 			{
 				// пустой первый параметр - нет объекта-основания
 				// добавляемые/вычитаемые типы не допускаются, квалификаторы игнорируются
 
 				// квалификакторы передаются только для контроля типов
-				return ConstructByQualifiers(UndefinedValue.Instance, p2, p3, p4, p5, p6, p7);
 			}
-
-			if (rawSource is TypeDescription)
+			else
+			if (rawSource is TypeDescription typeDesc)
 			{
-				return ConstructByOtherDescription(rawSource, p2, p3, p4, p5, p6, p7);
-			}
+				// Если 1 парарметр - ОписаниеТипов, то 2 - добавляемые типы, 3 - убираемые типы,
+				builder.SourceDescription(typeDesc);
+				
+				var typesToAdd = CheckAndParseTypeList(p2, 2);
+				var typesToRemove = CheckAndParseTypeList(p3, 3);
+				
+				builder.RemoveTypes(typesToRemove);
+				builder.AddTypes(typesToAdd);
 
+				qualifiers[1] = null; // эти параметры не квалификаторы
+				qualifiers[2] = null; // эти параметры не квалификаторы
+
+			}
+			else
 			if (rawSource.DataType == DataType.String || rawSource is ArrayImpl)
 			{
-				return ConstructByQualifiers(rawSource, p2, p3, p4, p5, p6, p7);
-			}
-
-			throw RuntimeException.InvalidArgumentValue();
+				// Если 1 парарметр - Массив или строка, то это набор конкретных типов
+				// остальные параметры (2 и далее) - клвалификаторы в произвольном порядке
+				var typesList = CheckAndParseTypeList(rawSource, 1);
+				builder.AddTypes(typesList);
+			} else
+				throw RuntimeException.InvalidArgumentValue();
+			
+			CheckAndAddQualifiers(builder, qualifiers);
+			return builder.Build();
 		}
 
-		private static TypeDescription ConstructByQualifiers(IValue types,
-			IValue p2 = null,
-			IValue p3 = null,
-			IValue p4 = null,
-			IValue p5 = null,
-			IValue p6 = null,
-			IValue p7 = null)
+		/// <summary>
+		/// Преобразует входящий параметр в список типов.
+		/// </summary>
+		/// <param name="types">В качестве типов могут быть переданы Строка или Массив Типов</param>
+		/// <param name="nParam">Номер параметра, который будет указан в исключении, если параметр typeList задан неверно</param>
+		/// <exception cref="RuntimeException">Если typeList не может быть разобран как набор типов</exception>
+		/// <returns>Список переданных типов, приведенный к конкретным TypeTypeValue</returns>
+		private static List<TypeTypeValue> CheckAndParseTypeList(IValue types, int nParam)
 		{
-			var builder = new TypeDescriptionBuilder();
-			var typesList = TypeList.Construct(types);
-			CheckNotNull(typesList, 1);
-			builder.AddTypes(typesList.List());
+			types = types?.GetRawValue();
+			if (types == null || types.DataType == DataType.Undefined)
+				return new List<TypeTypeValue>();
+			
+			if (types.DataType == DataType.String)
+			{
+				return FromTypeNames(types.AsString());
+			}
+			if (types is ArrayImpl arrayOfTypes)
+			{
+				return FromArrayOfTypes(arrayOfTypes);
+			}
 
-			CheckAndAddQualifiers(builder, new[] {null, p2, p3, p4, p5, p6, p7 });
+			throw RuntimeException.InvalidNthArgumentType(nParam);
+		}
 
-			return builder.Build();
+		private static List<TypeTypeValue> FromTypeNames(string types)
+		{
+			var typeNames = types.Split(',');
+			var typesList = new List<TypeTypeValue>();
+			foreach (var typeName in typeNames)
+			{
+				if (string.IsNullOrWhiteSpace(typeName))
+					continue;
+
+				var typeValue = new TypeTypeValue(typeName.Trim());
+				if (!typesList.Contains(typeValue))
+					typesList.Add(typeValue);
+			}
+
+			return typesList;
+		}
+
+		private static List<TypeTypeValue> FromArrayOfTypes(ArrayImpl arrayOfTypes)
+		{
+			var typesList = new List<TypeTypeValue>();
+			foreach (var type in arrayOfTypes)
+			{
+				if (type.GetRawValue() is TypeTypeValue rawType)
+				{
+					typesList.Add(rawType);
+				}
+			}
+			return typesList;
 		}
 
 		private static void CheckAndAddQualifiers(TypeDescriptionBuilder builder, IValue[] parameters)
 		{
-			for (var nParam = 0; nParam < parameters.Length; nParam++)
+			for (var i = 0; i < parameters.Length; i++)
 			{
-				var rawQualifier = parameters[nParam]?.GetRawValue();
+				var rawQualifier = parameters[i]?.GetRawValue();
 				if (rawQualifier != null && !rawQualifier.Equals(ValueFactory.Create()))
 				{
-					switch (rawQualifier)
-					{
-						case NumberQualifiers nq:
-							builder.SetNumberQualifiers(nq);
-							break;
-
-						case StringQualifiers sq:
-							builder.SetStringQualifiers(sq);
-							break;
-
-						case DateQualifiers dq:
-							builder.SetDateQualifiers(dq);
-							break;
-
-						case BinaryDataQualifiers bdq:
-							builder.SetBinaryDataQualifiers(bdq);
-							break;
-
-						default:
-							throw RuntimeException.InvalidNthArgumentType(nParam + 1);
-					}
+					CheckAndAddOneQualifier(builder, rawQualifier, i + 1);
 				}
 			}
 		}
 
-		private static TypeDescription ConstructByOtherDescription(
-			IValue typeDescription = null,
-			IValue addTypes = null,
-			IValue removeTypes = null,
-			IValue p4 = null,
-			IValue p5 = null,
-			IValue p6 = null,
-			IValue p7 = null)
+		/// <summary>
+		/// Проверяет, что переданный параметр является квалификатором типа.
+		/// Если тип параметра не является квалификатором, бросает исключение с указанием номера параметра.
+		/// </summary>
+		/// <param name="builder">Построитель описания типов, которому будет присвоен квалификатор</param>
+		/// <param name="qualifier">Проверяемый входящий параметр</param>
+		/// <param name="nParam">Порядковый номер параметра для выброса исключения</param>
+		/// <exception cref="RuntimeException">Если qualifier не является квалификатором типа</exception>
+		private static void CheckAndAddOneQualifier(TypeDescriptionBuilder builder, IValue qualifier, int nParam)
 		{
-			var builder = new TypeDescriptionBuilder();
-
-			if (typeDescription is TypeDescription typeDesc)
+			switch (qualifier)
 			{
-				builder.SourceDescription(typeDesc);
-			}
-			
-			var removeTypesList = TypeList.Construct(removeTypes);
-			CheckNotNull(removeTypesList, 3);
-			builder.RemoveTypes(removeTypesList.List());
+				case NumberQualifiers nq:
+					builder.SetNumberQualifiers(nq);
+					break;
 
-			var addTypesList = TypeList.Construct(addTypes);
-			CheckNotNull(addTypesList, 2);
-			builder.AddTypes(addTypesList.List());
-			
-			CheckAndAddQualifiers(builder, new [] {null, null, null, p4, p5, p6, p7 });
+				case StringQualifiers sq:
+					builder.SetStringQualifiers(sq);
+					break;
 
-			return builder.Build();
-		}
+				case DateQualifiers dq:
+					builder.SetDateQualifiers(dq);
+					break;
 
-		private static void CheckNotNull(object value, int nParam)
-		{
-			if (value == null)
-			{
-				throw RuntimeException.InvalidNthArgumentType(nParam);
+				case BinaryDataQualifiers bdq:
+					builder.SetBinaryDataQualifiers(bdq);
+					break;
+
+				default:
+					throw RuntimeException.InvalidNthArgumentType(nParam);
 			}
 		}
+
 	}
 
 	internal class UndefinedTypeAdjuster : IValueAdjuster

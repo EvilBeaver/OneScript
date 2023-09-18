@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using System.Linq;
-using ScriptEngine.HostedScript.Library.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Values;
 
@@ -15,8 +14,6 @@ namespace ScriptEngine.HostedScript.Library
 {
     internal class TypeDescriptionBuilder
     {
-        
-        private static readonly TypeDescriptor BinaryDataType = TypeManager.GetTypeByFrameworkType(typeof(BinaryDataContext));
         
         private NumberQualifiers _numberQualifiers;
         private StringQualifiers _stringQualifiers;
