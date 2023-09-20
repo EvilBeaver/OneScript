@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
+using System.Collections.Generic;
 using System.Xml;
 
 using ScriptEngine.HostedScript.Library.Binary;
@@ -16,11 +17,30 @@ namespace ScriptEngine.HostedScript.Library.Xml
     [GlobalContext(Category="Функции работы с XML")]
     public class XmlGlobalFunctions : GlobalContextBase<XmlGlobalFunctions>
     {
+        private static readonly Dictionary<TypeDescriptor, EnumerationContext> _allowedEnums
+            = new Dictionary<TypeDescriptor, EnumerationContext>();
+
+        private static readonly TypeDescriptor _binaryDataTypeDescriptor;
+        private static readonly TypeDescriptor _nullTypeDescriptor;
+
+        static XmlGlobalFunctions()
+        {
+            _binaryDataTypeDescriptor = TypeManager.GetTypeByFrameworkType(typeof(BinaryDataContext));
+            _nullTypeDescriptor = TypeManager.GetTypeByName("NULL");
+
+            foreach (var e in new []{typeof(AllowedSignEnum), typeof(AllowedLengthEnum), typeof(DateFractionsEnum) })
+            { 
+                _allowedEnums.Add(TypeManager.GetTypeByFrameworkType(e), GlobalsManager.GetSimpleEnum(e));
+            }
+        }
+
         [ContextMethod("XMLСтрока", "XMLString")]
         public string XMLString(IValue value)
         {
             switch(value.DataType)
             {
+                case DataType.String:
+                    return value.AsString();
                 case DataType.Undefined:
                     return "";
                 case DataType.Boolean:
@@ -29,21 +49,30 @@ namespace ScriptEngine.HostedScript.Library.Xml
                     return XmlConvert.ToString(value.AsDate(), XmlDateTimeSerializationMode.Unspecified);
                 case DataType.Number:
                     return XmlConvert.ToString(value.AsNumber());
+
+                case DataType.Enumeration:
+                    if (_allowedEnums.TryGetValue(value.SystemType, out var enumeration))
+                    {
+                        return value.AsString();
+                    }
+                    break;
+
                 default:
-                    
-                    if(value.SystemType.Equals(TypeManager.GetTypeByFrameworkType(typeof(BinaryDataContext))))
+                    if(value.SystemType.Equals(_binaryDataTypeDescriptor))
                     {
                         var bdc = value.GetRawValue() as BinaryDataContext;
                         System.Diagnostics.Debug.Assert(bdc != null);
 
                         return Convert.ToBase64String(bdc.Buffer, Base64FormattingOptions.InsertLineBreaks);
                     }
-                    else
+                    else if (value.SystemType.Equals(_nullTypeDescriptor))
                     {
-                        return value.GetRawValue().AsString();
+                        return "";
                     }
-
+                    break;
             }
+
+            throw RuntimeException.InvalidArgumentValue();
         }
 
         [ContextMethod("XMLЗначение", "XMLValue")]
@@ -67,20 +96,42 @@ namespace ScriptEngine.HostedScript.Library.Xml
             {
                 return ValueFactory.Create(presentation);
             }
-            else if (typeValue.Equals(TypeDescriptor.FromDataType(DataType.Undefined)) && presentation == "")
+            else if (typeValue.Equals(TypeDescriptor.FromDataType(DataType.Undefined)))
             {
-                return ValueFactory.Create();
+                if ( presentation.Trim() == "")
+                    return ValueFactory.Create();
+                else
+                {
+                    throw RuntimeException.InvalidNthArgumentValue(2);
+                }
             }
-            else if (typeValue.Equals(TypeManager.GetTypeByFrameworkType(typeof(BinaryDataContext))))
+            else if (typeValue.Equals(_nullTypeDescriptor))
+            {
+                if (presentation.Trim() == "")
+                    return ValueFactory.CreateNullValue();
+                else
+                {
+                    throw RuntimeException.InvalidNthArgumentValue(2);
+                }
+            }
+            else if (typeValue.Equals(_binaryDataTypeDescriptor))
             {
                 byte[] bytes = Convert.FromBase64String(presentation);
                 return new BinaryDataContext(bytes);
             }
-            else
+            else if (_allowedEnums.TryGetValue(typeValue, out var enumerationContext))
             {
-                throw RuntimeException.InvalidArgumentValue();
+                try
+                {
+                    return enumerationContext[presentation];
+                }
+                catch (RuntimeException)
+                {
+                    throw RuntimeException.InvalidNthArgumentValue(2);
+                }
             }
 
+            throw RuntimeException.InvalidNthArgumentValue(1);
         }
         
         public static IAttachableContext CreateInstance()
