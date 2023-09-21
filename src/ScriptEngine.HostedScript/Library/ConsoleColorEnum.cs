@@ -57,7 +57,7 @@ namespace ScriptEngine.HostedScript.Library
             instance.AddValue("ТемноЖелтый", "DarkYellow", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.DarkYellow));
             instance.AddValue("Серый", "Gray", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Gray));
 
-            instance.AddValue("Серый", "DarkGray", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.DarkGray));
+            instance.AddValue("ТемноСерый", "DarkGray", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.DarkGray));
             instance.AddValue("Синий", "Blue", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Blue));
             instance.AddValue("Зеленый", "Green", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Green));
             instance.AddValue("Бирюза", "Cyan", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Cyan));
