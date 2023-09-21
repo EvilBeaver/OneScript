@@ -48,15 +48,23 @@ namespace ScriptEngine.HostedScript.Library
 
             instance = new ConsoleColorEnum(type, enumValueType);
 
-            instance.AddValue("Белый", "White", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.White));
             instance.AddValue("Черный", "Black", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Black));
+            instance.AddValue("ТемноСиний", "DarkBlue", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.DarkBlue));
+            instance.AddValue("ТемноЗеленый", "DarkGreen", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.DarkGreen));
+            instance.AddValue("ТемноБирюзовый", "DarkCyan", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.DarkCyan));
+            instance.AddValue("ТемноКрасный", "DarkRed", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.DarkRed));
+            instance.AddValue("ТемноМалиновый", "DarkMagenta", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.DarkMagenta));
+            instance.AddValue("ТемноЖелтый", "DarkYellow", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.DarkYellow));
+            instance.AddValue("Серый", "Gray", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Gray));
+
+            instance.AddValue("Серый", "DarkGray", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.DarkGray));
             instance.AddValue("Синий", "Blue", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Blue));
-            instance.AddValue("Желтый", "Yellow", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Yellow));
-            instance.AddValue("Красный", "Red", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Red));
             instance.AddValue("Зеленый", "Green", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Green));
             instance.AddValue("Бирюза", "Cyan", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Cyan));
+            instance.AddValue("Красный", "Red", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Red));
             instance.AddValue("Малиновый", "Magenta", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Magenta));
-            instance.AddValue("Серый", "Gray", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Gray));
+            instance.AddValue("Желтый", "Yellow", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.Yellow));
+            instance.AddValue("Белый", "White", new CLREnumValueWrapper<ConsoleColor>(instance, ConsoleColor.White));
 
             return instance;
         }
