@@ -22,11 +22,13 @@ namespace ScriptEngine.HostedScript.Library.Xml
 
         private static readonly TypeDescriptor _binaryDataTypeDescriptor;
         private static readonly TypeDescriptor _nullTypeDescriptor;
+        private static readonly TypeDescriptor _guidTypeDescriptor;
 
         static XmlGlobalFunctions()
         {
             _binaryDataTypeDescriptor = TypeManager.GetTypeByFrameworkType(typeof(BinaryDataContext));
             _nullTypeDescriptor = TypeManager.GetTypeByName("NULL");
+            _guidTypeDescriptor = TypeManager.GetTypeByFrameworkType(typeof(GuidWrapper));
 
             foreach (var e in new []{typeof(AllowedSignEnum), typeof(AllowedLengthEnum), typeof(DateFractionsEnum) })
             { 
@@ -64,6 +66,10 @@ namespace ScriptEngine.HostedScript.Library.Xml
                         System.Diagnostics.Debug.Assert(bdc != null);
 
                         return Convert.ToBase64String(bdc.Buffer, Base64FormattingOptions.InsertLineBreaks);
+                    }
+                    else if (value.SystemType.Equals(_guidTypeDescriptor))
+                    {
+                        return value.AsString();;
                     }
                     else if (value.SystemType.Equals(_nullTypeDescriptor))
                     {
@@ -118,6 +124,17 @@ namespace ScriptEngine.HostedScript.Library.Xml
             {
                 byte[] bytes = Convert.FromBase64String(presentation);
                 return new BinaryDataContext(bytes);
+            }
+            else if (typeValue.Equals(_guidTypeDescriptor))
+            {
+                try
+                {
+                    return new GuidWrapper(presentation);
+                }
+                catch
+                {
+                    throw RuntimeException.InvalidNthArgumentValue(2);
+                }
             }
             else if (_allowedEnums.TryGetValue(typeValue, out var enumerationContext))
             {
