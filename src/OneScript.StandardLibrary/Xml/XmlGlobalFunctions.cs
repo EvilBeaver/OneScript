@@ -15,6 +15,7 @@ using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
 using OneScript.Values;
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -23,12 +24,21 @@ namespace OneScript.StandardLibrary.Xml
     [GlobalContext(Category="Функции работы с XML")]
     public class XmlGlobalFunctions : GlobalContextBase<XmlGlobalFunctions>
     {
-        private static readonly Dictionary<Type, Type> _allowedEnums = new Dictionary<Type, Type>
-        {{typeof(ClrEnumValueWrapper<AllowedSignEnum>),typeof(AllowedSignEnum)},
-         {typeof(ClrEnumValueWrapper<AllowedLengthEnum>),typeof(AllowedLengthEnum)},
-         {typeof(ClrEnumValueWrapper<DateFractionsEnum>),typeof(DateFractionsEnum)}
-        };
-       
+        private static readonly Dictionary<Type, EnumerationContext> _allowedEnums 
+            = new Dictionary<Type, EnumerationContext>();
+        
+        private XmlGlobalFunctions(IGlobalsManager mgr)
+        {
+            foreach (var e in new[] {
+                         (typeof(ClrEnumValueWrapper<AllowedSignEnum>), typeof(AllowedSignEnum)),
+                         (typeof(ClrEnumValueWrapper<AllowedLengthEnum>), typeof(AllowedLengthEnum)),
+                         (typeof(ClrEnumValueWrapper<DateFractionsEnum>), typeof(DateFractionsEnum))
+                     })
+            {
+                _allowedEnums.Add(e.Item1, (EnumerationContext)mgr.GetInstance(e.Item2));
+            }
+        }
+
         /// <summary>
         /// Получает XML представление значения для помещения в текст элемента или значение атрибута XML.
         /// </summary>
@@ -156,11 +166,10 @@ namespace OneScript.StandardLibrary.Xml
                 byte[] bytes = Convert.FromBase64String(presentation);
                 return new BinaryDataContext(bytes);
             }
-            else if (_allowedEnums.TryGetValue(typeValue.ImplementingClass, out var enumType))
+            else if (_allowedEnums.TryGetValue(typeValue.ImplementingClass, out var enumerationContext))
             {
                 try
                 {
-                    var enumerationContext = GlobalsHelper.GetEnum(enumType);
                     return enumerationContext[presentation];
                 }
                 catch (RuntimeException)
@@ -170,12 +179,11 @@ namespace OneScript.StandardLibrary.Xml
             }
  
             throw RuntimeException.InvalidNthArgumentType(1);
-
         }
         
-        public static IAttachableContext CreateInstance()
+        public static IAttachableContext CreateInstance(IGlobalsManager mgr)
         {
-            return new XmlGlobalFunctions();
+            return new XmlGlobalFunctions(mgr);
         }
 
     }
