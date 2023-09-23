@@ -89,12 +89,21 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 		public bool ContainsType(IValue type)
 		{
 			if (type is BslTypeValue typeVal)
+			{
+				if (typeVal.TypeValue.Equals(BasicTypes.Undefined))
+				{
+					// тип "Неопределено" содержится в любом явно определенном составном типе
+					// и не содержится в типе Произвольный (когда явно не указан состав типов)
+					//   или когда указан один конкретный тип
+					return (_types.Count > 1);
+				}
 				return _types.Contains(typeVal);
+			}
 
 			throw RuntimeException.InvalidArgumentType(nameof(type));
 		}
 
-		IValueAdjuster GetAdjusterForType(BslTypeValue type)
+		private IValueAdjuster GetAdjusterForType(BslTypeValue type)
 		{
 			var value = type.TypeValue;
 			
@@ -110,6 +119,9 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			if (value.Equals(BasicTypes.Boolean))
 				return new BooleanTypeAdjuster();
 
+			if (value.Equals(BasicTypes.Undefined))
+				return new UndefinedTypeAdjuster(); 
+
 			return null;
 		}
 
@@ -122,16 +134,15 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 				return value ?? ValueFactory.Create();
 			}
 
-			if (value != null && value.SystemType != BasicTypes.Undefined)
+			if (value != null)
 			{
 				var valueType = new BslTypeValue(value.SystemType);
-				if (_types.Contains(valueType))
+				if (ContainsType(valueType))
 				{
 					// Если такой тип у нас есть
 					var adjuster = GetAdjusterForType(valueType);
-					var adjustedValue = adjuster.Adjust(value);
-					if (adjustedValue != null)
-						return adjustedValue;
+					var adjustedValue = adjuster?.Adjust(value) ?? value;
+					return adjustedValue;
 				}
 			}
 
@@ -146,41 +157,25 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			return ValueFactory.Create();
 		}
 
-		internal static BslTypeValue TypeNumber()
-		{
-			return new BslTypeValue(BasicTypes.Number);
-		}
-
-		internal static BslTypeValue TypeBoolean()
-		{
-			return new BslTypeValue(BasicTypes.Boolean);
-		}
-
-		internal static BslTypeValue TypeString()
-		{
-			return new BslTypeValue(BasicTypes.String);
-		}
-		
-		internal static BslTypeValue TypeDate()
-		{
-			return new BslTypeValue(BasicTypes.Date);
-		}
-
 		public static TypeDescription StringType(int length = 0,
-		                                         AllowedLengthEnum allowedLength = AllowedLengthEnum.Variable)
+			AllowedLengthEnum allowedLength = AllowedLengthEnum.Variable)
 		{
-			return TypeDescriptionBuilder.Build(TypeString(), new StringQualifiers(length, allowedLength));
+			return TypeDescriptionBuilder.OfType(BasicTypes.String)
+				.SetStringQualifiers(new StringQualifiers(length, allowedLength))
+				.Build();
 		}
 
 		public static TypeDescription IntegerType(int length = 10,
-		                                          AllowedSignEnum allowedSign = AllowedSignEnum.Any)
+			AllowedSignEnum allowedSign = AllowedSignEnum.Any)
 		{
-			return TypeDescriptionBuilder.Build(TypeNumber(), new NumberQualifiers(length, 0, allowedSign));
+			return TypeDescriptionBuilder.OfType(BasicTypes.Number)
+				.SetNumberQualifiers(new NumberQualifiers(length, 0, allowedSign))
+				.Build();
 		}
 
 		public static TypeDescription BooleanType()
 		{
-			return TypeDescriptionBuilder.Build(TypeBoolean());
+			return TypeDescriptionBuilder.OfType(BasicTypes.Boolean).Build();
 		}
 
 		[ScriptConstructor]
@@ -194,71 +189,156 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			IValue p6 = null,
 			IValue p7 = null)
 		{
+			var builder = new TypeDescriptionBuilder();
+			
+			// параметры, которые заведомо не квалификаторы, заменяем на null, но оставляем,
+			// чтобы указать номер параметра при выводе ошибки несоответствия типа
+			var qualifiers = new[] { null, p2, p3, p4, p5, p6, p7 };
+			
 			var rawSource = source?.GetRawValue();
-
 			if (rawSource == null || rawSource.SystemType == BasicTypes.Undefined)
 			{
 				// пустой первый параметр - нет объекта-основания
 				// добавляемые/вычитаемые типы не допускаются, квалификаторы игнорируются
 
 				// квалификакторы передаются только для контроля типов
-				return ConstructByQualifiers(context.TypeManager, BslUndefinedValue.Instance, p2, p3, p4, p5, p6, p7);
 			}
-
-			if (rawSource is TypeDescription)
+			else
+			if (rawSource is TypeDescription typeDesc)
 			{
-				return ConstructByOtherDescription(context.TypeManager, rawSource, p2, p3, p4, p5, p6, p7);
-			}
+				// Если 1 парарметр - ОписаниеТипов, то 2 - добавляемые типы, 3 - убираемые типы,
+				builder.SourceDescription(typeDesc);
+				
+				var typesToAdd = CheckAndParseTypeList(context.TypeManager, p2, 2);
+				var typesToRemove = CheckAndParseTypeList(context.TypeManager, p3, 3);
+				
+				builder.RemoveTypes(typesToRemove);
+				builder.AddTypes(typesToAdd);
 
+				qualifiers[1] = null; // эти параметры не квалификаторы
+				qualifiers[2] = null; // эти параметры не квалификаторы
+
+			}
+			else
 			if (rawSource.SystemType == BasicTypes.String || rawSource is ArrayImpl)
 			{
-				return ConstructByQualifiers(context.TypeManager, rawSource, p2, p3, p4, p5, p6, p7);
-			}
-
-			throw RuntimeException.InvalidArgumentValue();
-		}
-
-		private static TypeDescription ConstructByQualifiers(ITypeManager typeManager, IValue types,
-			IValue p2 = null,
-			IValue p3 = null,
-			IValue p4 = null,
-			IValue p5 = null,
-			IValue p6 = null,
-			IValue p7 = null)
-		{
-			var builder = new TypeDescriptionBuilder();
-			var typesList = TypeList.Construct(typeManager, types, 1);
-			builder.AddTypes(typesList.List());
-
-			builder.AddQualifiers(new[] { p2, p3, p4, p5, p6, p7 }, 1);
-
-			return builder.Build();
-		}
-
-		private static TypeDescription ConstructByOtherDescription(ITypeManager typeManager,
-			IValue typeDescription = null,
-			IValue addTypes = null,
-			IValue removeTypes = null,
-			IValue p4 = null,
-			IValue p5 = null,
-			IValue p6 = null,
-			IValue p7 = null)
-		{
-			var builder = new TypeDescriptionBuilder();
-
-			if (typeDescription is TypeDescription typeDesc)
-			{
-				builder.SourceDescription(typeDesc);
-			}
+				// Если 1 парарметр - Массив или строка, то это набор конкретных типов
+				// остальные параметры (2 и далее) - клвалификаторы в произвольном порядке
+				var typesList = CheckAndParseTypeList(context.TypeManager, rawSource, 1);
+				builder.AddTypes(typesList);
+			} else
+				throw RuntimeException.InvalidArgumentValue();
 			
-			var removeTypesList = TypeList.Construct(typeManager, removeTypes, 3);
-			builder.RemoveTypes(removeTypesList.List());
-
-			var addTypesList = TypeList.Construct(typeManager, addTypes, 2);
-			builder.AddTypes(addTypesList.List());
-			builder.AddQualifiers(new[] { p4, p5, p6, p7 }, 3);
-
+			CheckAndAddQualifiers(builder, qualifiers);
 			return builder.Build();
+		}
+
+		/// <summary>
+		/// Преобразует входящий параметр в список типов.
+		/// </summary>
+		/// <param name="types">В качестве типов могут быть переданы Строка или Массив Типов</param>
+		/// <param name="nParam">Номер параметра, который будет указан в исключении, если параметр typeList задан неверно</param>
+		/// <exception cref="RuntimeException">Если typeList не может быть разобран как набор типов</exception>
+		/// <returns>Список переданных типов, приведенный к конкретным TypeTypeValue</returns>
+		private static List<BslTypeValue> CheckAndParseTypeList(ITypeManager typeManager, IValue types, int nParam)
+		{
+			types = types?.GetRawValue();
+			if (types == null || types.SystemType == BasicTypes.Undefined)
+				return new List<BslTypeValue>();
+			
+			if (types.SystemType == BasicTypes.String)
+			{
+				return FromTypeNames(typeManager, types.AsString());
+			}
+			if (types is ArrayImpl arrayOfTypes)
+			{
+				return FromArrayOfTypes(arrayOfTypes);
+			}
+
+			throw RuntimeException.InvalidNthArgumentType(nParam);
+		}
+
+		private static List<BslTypeValue> FromTypeNames(ITypeManager typeManager, string types)
+		{
+			var typeNames = types.Split(',');
+			var typesList = new List<BslTypeValue>();
+			foreach (var typeName in typeNames)
+			{
+				if (string.IsNullOrWhiteSpace(typeName))
+					continue;
+
+				var typeValue = new BslTypeValue(typeManager.GetTypeByName(typeName.Trim()));
+				if (!typesList.Contains(typeValue))
+					typesList.Add(typeValue);
+			}
+
+			return typesList;
+		}
+
+		private static List<BslTypeValue> FromArrayOfTypes(ArrayImpl arrayOfTypes)
+		{
+			var typesList = new List<BslTypeValue>();
+			foreach (var type in arrayOfTypes)
+			{
+				if (type.GetRawValue() is BslTypeValue rawType)
+				{
+					typesList.Add(rawType);
+				}
+			}
+			return typesList;
+		}
+
+		private static void CheckAndAddQualifiers(TypeDescriptionBuilder builder, IValue[] parameters)
+		{
+			for (var i = 0; i < parameters.Length; i++)
+			{
+				var rawQualifier = parameters[i]?.GetRawValue();
+				if (rawQualifier != null && !rawQualifier.Equals(ValueFactory.Create()))
+				{
+					CheckAndAddOneQualifier(builder, rawQualifier, i + 1);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Проверяет, что переданный параметр является квалификатором типа.
+		/// Если тип параметра не является квалификатором, бросает исключение с указанием номера параметра.
+		/// </summary>
+		/// <param name="builder">Построитель описания типов, которому будет присвоен квалификатор</param>
+		/// <param name="qualifier">Проверяемый входящий параметр</param>
+		/// <param name="nParam">Порядковый номер параметра для выброса исключения</param>
+		/// <exception cref="RuntimeException">Если qualifier не является квалификатором типа</exception>
+		private static void CheckAndAddOneQualifier(TypeDescriptionBuilder builder, IValue qualifier, int nParam)
+		{
+			switch (qualifier)
+			{
+				case NumberQualifiers nq:
+					builder.SetNumberQualifiers(nq);
+					break;
+
+				case StringQualifiers sq:
+					builder.SetStringQualifiers(sq);
+					break;
+
+				case DateQualifiers dq:
+					builder.SetDateQualifiers(dq);
+					break;
+
+				case BinaryDataQualifiers bdq:
+					builder.SetBinaryDataQualifiers(bdq);
+					break;
+
+				default:
+					throw RuntimeException.InvalidNthArgumentType(nParam);
+			}
+		}
+	}
+	
+	internal class UndefinedTypeAdjuster : IValueAdjuster
+	{
+		public IValue Adjust(IValue value)
+		{
+			return ValueFactory.Create();
 		}
 	}
 }
