@@ -16,13 +16,15 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ОпределенияXPathXS", "XSXPathDefinition")]
-    public class XSXPathDefinition : AutoContext<XSXPathDefinition>, IXSAnnotated, IXSNamedComponent
+    public sealed class XSXPathDefinition : AutoContext<XSXPathDefinition>, IXSAnnotated, IXSNamedComponent
     {
         private readonly XmlSchemaXPath _xpath;
         private XSAnnotation _annotation;
 
         private XSXPathDefinition() => _xpath = new XmlSchemaXPath();
-        
+
+        internal XSXPathDefinition(XmlSchemaXPath xpath) => _xpath = xpath;
+
         #region OneScript
 
         #region Properties
@@ -39,7 +41,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         [ContextProperty("Компоненты", "Components")]
-        public XSComponentFixedList Components => null;
+        public XSComponentFixedList Components => XSComponentFixedList.EmptyList();
 
         [ContextProperty("Контейнер", "Container")]
         public IXSComponent Container { get; private set; }

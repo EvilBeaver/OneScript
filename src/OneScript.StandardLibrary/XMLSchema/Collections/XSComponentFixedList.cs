@@ -21,6 +21,8 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
 
         public XSComponentFixedList() => _items = new List<IXSComponent>();
 
+        public static XSComponentFixedList EmptyList() => new XSComponentFixedList();
+
         public void Add(IXSComponent value) => _items.Add(value);
         public void Remove(IXSComponent value) => _items.Remove(value);
         public void Clear() => _items.Clear();

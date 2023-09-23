@@ -20,7 +20,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ОпределениеСоставногоТипаXS", "XSComplexTypeDefinition")]
-    public class XSComplexTypeDefinition : AutoContext<XSComplexTypeDefinition>, IXSType, IXSNamedComponent
+    public sealed class XSComplexTypeDefinition : AutoContext<XSComplexTypeDefinition>, IXSType, IXSNamedComponent
     {
         private readonly XmlSchemaComplexType _type;
         private XSAnnotation _annotation;
@@ -417,7 +417,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         //ОпределениеБазовогоТипа(BaseTypeDefinition)
 
         [ContextProperty("Смешанный", "Mixed")]
-        public bool Mixed => _type.ContentModel is XmlSchemaComplexContent complexContent ? complexContent.IsMixed : false;
+        public bool Mixed => _type.ContentModel is XmlSchemaComplexContent complexContent && complexContent.IsMixed;
 
         [ContextProperty("Содержимое", "Content")]
         public IXSComponent Content
@@ -438,7 +438,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         #region Methods
 
         [ContextMethod("КлонироватьКомпоненту", "CloneComponent")]
-        public IXSComponent CloneComponent(bool recursive = true) => throw new NotImplementedException();
+        public IXSComponent CloneComponent(bool recursive) => throw new NotImplementedException();
 
         [ContextMethod("ОбновитьЭлементDOM", "UpdateDOMElement")]
         public void UpdateDOMElement() => throw new NotImplementedException();

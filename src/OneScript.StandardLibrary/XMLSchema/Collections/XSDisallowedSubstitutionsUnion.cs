@@ -10,20 +10,19 @@ using OneScript.Contexts;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using OneScript.Types;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("ОбъединениеНедопустимыхПодстановкиXS", "XSDisallowedSubstitutionsUnion")]
-    public class XsDisallowedSubstitutionsUnion : AutoContext<XsDisallowedSubstitutionsUnion>
+    public sealed class XsDisallowedSubstitutionsUnion : AutoContext<XsDisallowedSubstitutionsUnion>
     {
-        private ArrayImpl _values;
+        private readonly ArrayImpl _values;
 
         private bool Contains(XmlSchemaDerivationMethod value)
         {
-            XSDisallowedSubstitutions enumValue = EnumerationXSDisallowedSubstitutions.FromNativeValue(value);
-            IValue idx = _values.Find(enumValue);
+            var enumValue = EnumerationXSDisallowedSubstitutions.FromNativeValue(value);
+            var idx = _values.Find(enumValue);
             return (idx.SystemType != BasicTypes.Undefined);
         }
 

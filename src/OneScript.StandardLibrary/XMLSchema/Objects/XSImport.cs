@@ -42,7 +42,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public XSAnnotation Annotation => null;
 
         [ContextProperty("Компоненты", "Components")]
-        public XSComponentFixedList Components => null;
+        public XSComponentFixedList Components => XSComponentFixedList.EmptyList();
 
         [ContextProperty("Контейнер", "Container")]
         public IXSComponent Container { get; private set; }
