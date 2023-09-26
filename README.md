@@ -46,3 +46,11 @@ OneScript позволяет создавать и выполнять текст
 - выполнить команду `mono ovm.exe install stable`
 - выполнить команду `mono ovm.exe use stable`
 - перезапустить терминал
+
+Донастройка Self-Contained варианта поставки (не требующего инсталляции dotnet)
+
+```
+chmod +x ./oscript
+xattr -d com.apple.quarantine *.dylib oscript
+codesign -s - ./oscript
+```
