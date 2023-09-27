@@ -20,7 +20,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ОпределениеПростогоТипаXS", "XSSimpleTypeDefinition")]
-    public class XSSimpleTypeDefinition : AutoContext<XSSimpleTypeDefinition>, IXSType, IXSNamedComponent
+    public sealed class XSSimpleTypeDefinition : AutoContext<XSSimpleTypeDefinition>, IXSType, IXSNamedComponent
     {
         private readonly XmlSchemaSimpleType _type;
         private XSAnnotation _annotation;

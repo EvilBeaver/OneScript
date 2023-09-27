@@ -18,7 +18,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ОпределениеОграниченияИдентичностиXS", "XSIdentityConstraintDefinition")]
-    public class XSIdentityConstraintDefinition : AutoContext<XSIdentityConstraintDefinition>, IXSAnnotated, IXSNamedComponent
+    public sealed class XSIdentityConstraintDefinition : AutoContext<XSIdentityConstraintDefinition>, IXSAnnotated, IXSNamedComponent
     {
         private XmlSchemaIdentityConstraint _constraint;
         private XSAnnotation _annotation;

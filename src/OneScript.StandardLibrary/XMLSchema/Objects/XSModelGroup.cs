@@ -18,7 +18,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ГруппаМоделиXS", "XSModelGroup")]
-    public class XSModelGroup : AutoContext<XSModelGroup>, IXSFragment
+    public sealed class XSModelGroup : AutoContext<XSModelGroup>, IXSFragment
     {
         private XmlSchemaGroupBase _group;
         private XSAnnotation _annotation;

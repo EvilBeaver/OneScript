@@ -18,9 +18,15 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
         [EnumValue("EmptyRef", "ПустаяСсылка")]
         EmptyRef,
 
+        /// <summary>
+        /// Простая модель содержания.
+        /// </summary>
         [EnumValue("Simple", "Простая")]
         Simple,
 
+        /// <summary>
+        /// Составная модель содержания.
+        /// </summary>
         [EnumValue("Complex", "Составная")]
         Complex
     }

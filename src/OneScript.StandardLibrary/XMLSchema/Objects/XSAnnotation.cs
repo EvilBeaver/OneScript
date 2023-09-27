@@ -17,7 +17,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("АннотацияXS", "XSAnnotation")]
-    public class XSAnnotation : AutoContext<XSAnnotation>, IXSComponent
+    public sealed class XSAnnotation : AutoContext<XSAnnotation>, IXSComponent
     {
         internal readonly XmlSchemaAnnotation InternalObject;
 

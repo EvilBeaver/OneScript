@@ -14,7 +14,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    public class XSDisallowedSubstitutions : ClrEnumValueWrapper<XmlSchemaDerivationMethod>
+    public sealed class XSDisallowedSubstitutions : ClrEnumValueWrapper<XmlSchemaDerivationMethod>
     {
         internal XSDisallowedSubstitutions(EnumerationXSDisallowedSubstitutions instance, XmlSchemaDerivationMethod realValue) 
             : base(instance, realValue)
@@ -29,7 +29,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
     }
 
     [SystemEnum("НедопустимыеПодстановкиXS", "XSDisallowedSubstitutions")]
-    public class EnumerationXSDisallowedSubstitutions : EnumerationContext
+    public sealed class EnumerationXSDisallowedSubstitutions : EnumerationContext
     {
 
         private readonly Dictionary<XmlSchemaDerivationMethod, XSDisallowedSubstitutions> _valuesCache;

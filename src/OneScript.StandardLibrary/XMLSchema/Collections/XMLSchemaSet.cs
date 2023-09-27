@@ -18,7 +18,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("НаборСхемXML", "XMLSchemaSet")]
-    public class XMLSchemaSet : AutoCollectionContext<XMLSchemaSet, Objects.XMLSchema>
+    public sealed class XMLSchemaSet : AutoCollectionContext<XMLSchemaSet, Objects.XMLSchema>
     {
         private readonly XmlSchemaSet _schemaSet;
         private readonly List<Objects.XMLSchema> _items;

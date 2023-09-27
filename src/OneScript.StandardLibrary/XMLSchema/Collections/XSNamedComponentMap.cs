@@ -18,7 +18,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("КоллекцияИменованныхКомпонентXS", "XSNamedComponentMap")]
-    public class XSNamedComponentMap : AutoCollectionContext<XSNamedComponentMap, IXSNamedComponent>
+    public sealed class XSNamedComponentMap : AutoCollectionContext<XSNamedComponentMap, IXSNamedComponent>
     {
         private readonly List<IXSNamedComponent> _items;
       

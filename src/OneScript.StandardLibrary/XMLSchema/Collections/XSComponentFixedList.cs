@@ -14,7 +14,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("ФиксированныйСписокКомпонентXS", "XSComponentFixedList")]
-    public class XSComponentFixedList : AutoCollectionContext<XSComponentFixedList, IXSComponent>
+    public sealed class XSComponentFixedList : AutoCollectionContext<XSComponentFixedList, IXSComponent>
     {
 
         private readonly List<IXSComponent> _items;

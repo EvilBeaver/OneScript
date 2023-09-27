@@ -14,7 +14,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    public class XSSubstitutionGroupExclusions : ClrEnumValueWrapper<XmlSchemaDerivationMethod>
+    public sealed class XSSubstitutionGroupExclusions : ClrEnumValueWrapper<XmlSchemaDerivationMethod>
     {
         internal XSSubstitutionGroupExclusions(EnumerationXSSubstitutionGroupExclusions instance, XmlSchemaDerivationMethod realValue)
             : base(instance, realValue)
@@ -29,7 +29,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
     }
 
     [SystemEnum("ИсключенияГруппПодстановкиXS", "XSSubstitutionGroupExclusions")]
-    public class EnumerationXSSubstitutionGroupExclusions : EnumerationContext
+    public sealed class EnumerationXSSubstitutionGroupExclusions : EnumerationContext
     {
 
         private readonly Dictionary<XmlSchemaDerivationMethod, XSSubstitutionGroupExclusions> _valuesCache;

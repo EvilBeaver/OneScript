@@ -16,7 +16,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("ОбъединениеЗавершенностиСоставногоТипаXS", "XSComplexFinalUnion")]
-    public class XSComplexFinalUnion : AutoContext<XSComplexFinalUnion>
+    public sealed class XSComplexFinalUnion : AutoContext<XSComplexFinalUnion>
     {
         private readonly ArrayImpl _values;
 
