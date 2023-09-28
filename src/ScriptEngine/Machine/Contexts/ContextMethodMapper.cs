@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using OneScript.Language;
 
 namespace ScriptEngine.Machine.Contexts
@@ -230,9 +231,7 @@ namespace ScriptEngine.Machine.Contexts
                 var body = convertReturnCall;
 
                 var l = Expression.Lambda<ContextCallableDelegate<TInstance>>(body, instParam, argsParam);
-
                 return l.Compile();
-
             }
             private static ContextCallableDelegate<TInstance> CreateProcedure(System.Reflection.MethodInfo target)
             {
@@ -258,13 +257,13 @@ namespace ScriptEngine.Machine.Contexts
             private static InvocationExpression MethodCallExpression(System.Reflection.MethodInfo target, out ParameterExpression instParam, out ParameterExpression argsParam)
             {
                 // For those who dare:
-                // Код ниже формирует следующую лямбду с 2-мя замыканиями realMethodDelegate и defaults:
+                // Код ниже формирует следующую лямбду с замыканиями realMethodDelegate:
                 // (inst, args) =>
                 // {
                 //    realMethodDelegate(inst,
-                //        ConvertParam<TypeOfArg1>(args[i], defaults[i]),
+                //        ConvertParam<TypeOfArg1>(args[i]),
                 //        ...
-                //        ConvertParam<TypeOfArgN>(args[i], defaults[i]));
+                //        ConvertParam<TypeOfArgN>(args[i]));
                 // }
 
                 var methodClojure = CreateDelegateExpr(target);
@@ -272,25 +271,16 @@ namespace ScriptEngine.Machine.Contexts
                 instParam = Expression.Parameter(typeof(TInstance), "inst");
                 argsParam = Expression.Parameter(typeof(IValue[]), "args");
 
-                var argsPass = new List<Expression>();
-                argsPass.Add(instParam);
+                var argsPass = new List<Expression>{ instParam };
 
                 var parameters = target.GetParameters();
-                object[] defaultValues = new object[parameters.Length];
-                var defaultsClojure = Expression.Constant(defaultValues);
 
                 for (int i = 0; i < parameters.Length; i++)
                 {
                     var convertMethod = _genConvertParamMethod.MakeGenericMethod(parameters[i].ParameterType);
 
-                    if (parameters[i].HasDefaultValue)
-                    {
-                        defaultValues[i] = parameters[i].DefaultValue;
-                    }
-
                     var indexedArg = Expression.ArrayIndex(argsParam, Expression.Constant(i));
-                    var defaultArg = Expression.ArrayIndex(defaultsClojure, Expression.Constant(i));
-                    var conversionCall = Expression.Call(convertMethod, indexedArg, defaultArg);
+                    var conversionCall = Expression.Call(convertMethod, indexedArg);
                     argsPass.Add(conversionCall);
                 }
 
@@ -300,9 +290,9 @@ namespace ScriptEngine.Machine.Contexts
 
             private static Expression CreateDelegateExpr(System.Reflection.MethodInfo target)
             {
-                var types = new List<Type>();
-                types.Add(target.DeclaringType);
+                var types = new List<Type> { target.DeclaringType };
                 types.AddRange(target.GetParameters().Select(x => x.ParameterType));
+
                 Type delegateType;
                 if (target.ReturnType == typeof(void))
                 {
@@ -326,12 +316,9 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             // ReSharper disable once UnusedMember.Local
-            private static T ConvertParam<T>(IValue value, object def)
+            private static T ConvertParam<T>(IValue value)
             {
-                if (value == null || value.DataType == DataType.NotAValidValue)
-                    return (T)def;
-
-                return ContextValuesMarshaller.ConvertParam<T>(value);
+                return value == null ? default : ContextValuesMarshaller.ConvertParam<T>(value);
             }
 
             private static IValue ConvertReturnValue<TRet>(TRet param)
