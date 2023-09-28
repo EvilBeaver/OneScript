@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using OneScript.Language;
 
 namespace ScriptEngine.Machine.Contexts
@@ -162,16 +161,29 @@ namespace ScriptEngine.Machine.Contexts
 
             public InternalMethInfo(System.Reflection.MethodInfo target, ContextMethodAttribute binding)
             {
+                MethodInfo = CreateMetadata(target, binding);
+
                 _method = new Lazy<ContextCallableDelegate<TInstance>>(() =>
                 {
+                    CheckDeprecated();
+
                     var isFunc = target.ReturnType != typeof(void);
                     return isFunc ? CreateFunction(target) : CreateProcedure(target);
                 });
-
-                MethodInfo = CreateMetadata(target, binding);
             }
 
             public ContextCallableDelegate<TInstance> Method => _method.Value;
+
+            private void CheckDeprecated()
+            {
+                if (MethodInfo.IsDeprecated)
+                {
+                    if (MethodInfo.ThrowOnUseDeprecated)
+                        throw RuntimeException.DeprecatedMethodCall(MethodInfo.Name);
+
+                    SystemLogger.Write($"ВНИМАНИЕ! Вызов устаревшего метода {MethodInfo.Name}");
+                }
+            }
 
             private static MethodInfo CreateMetadata(System.Reflection.MethodInfo target, ContextMethodAttribute binding)
             {
