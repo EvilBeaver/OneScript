@@ -64,8 +64,12 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
             else if (_type.Content is XmlSchemaSimpleTypeRestriction typeRestriction)
                 InitAtomicVariety(typeRestriction);
 
-            else 
-                _variety = XSSimpleTypeVariety.Atomic;
+            else
+            {
+                var newRestriction = new XmlSchemaSimpleTypeRestriction();
+                _type.Content = newRestriction;
+                InitAtomicVariety(newRestriction);
+            }
         }
 
         private void InitListVariety(XmlSchemaSimpleTypeList typeList)
