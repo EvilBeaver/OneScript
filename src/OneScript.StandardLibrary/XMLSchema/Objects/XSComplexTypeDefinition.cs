@@ -318,7 +318,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public IValue DOMElement => ValueFactory.Create();
 
         [ContextProperty("URIПространстваИмен", "NamespaceURI")]
-        public string URIПространстваИмен => _type.SourceUri;
+        public string NamespaceURI => _type.SourceUri;
 
         [ContextProperty("Имя", "Name")]
         public string Name
