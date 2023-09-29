@@ -31,15 +31,9 @@ namespace ScriptEngine.Machine.Contexts
             _alias = alias;
         }
 
-        public string GetName()
-        {
-            return _name;
-        }
+        public string GetName() => _name;
 
-        public string GetAlias()
-        {
-            return _alias;
-        }
+        public string GetAlias() => _alias;
 
         public string GetAlias(string nativeMethodName)
         {
@@ -75,11 +69,11 @@ namespace ScriptEngine.Machine.Contexts
 
         private readonly object _locker = new object();
 
-        static private readonly System.Reflection.MethodInfo _genConvertParamMethod =
+        private static readonly System.Reflection.MethodInfo _genConvertParamMethod =
             typeof(InternalMethInfo).GetMethod("ConvertParam",
             BindingFlags.Static | BindingFlags.NonPublic);
 
-        static private readonly System.Reflection.MethodInfo _genConvertReturnMethod =
+        private static readonly System.Reflection.MethodInfo _genConvertReturnMethod =
             typeof(InternalMethInfo).GetMethod("ConvertReturnValue",
             BindingFlags.Static | BindingFlags.NonPublic);
 
@@ -90,21 +84,21 @@ namespace ScriptEngine.Machine.Contexts
             {
                 lock (_locker)
                 {
-                    if (_methodPtrs == null)
+                    if (_methodPtrs != null) 
+                        return;
+
+                    var localPtrs = MapType(typeof(TInstance));
+                    _methodNumbers = new IdentifiersTrie<int>();
+                    for (int idx = 0; idx < localPtrs.Count; ++idx)
                     {
-                        var localPtrs = MapType(typeof(TInstance));
-                        _methodNumbers = new IdentifiersTrie<int>();
-                        for (int idx = 0; idx < localPtrs.Count; ++idx)
-                        {
-                            var methinfo = localPtrs[idx].MethodInfo;
+                        var methinfo = localPtrs[idx].MethodInfo;
 
-                            _methodNumbers.Add(methinfo.Name, idx);
-                            if (methinfo.Alias != null)
-                                _methodNumbers.Add(methinfo.Alias, idx);
-                        }
-
-                        _methodPtrs = localPtrs;
+                        _methodNumbers.Add(methinfo.Name, idx);
+                        if (methinfo.Alias != null)
+                            _methodNumbers.Add(methinfo.Alias, idx);
                     }
+
+                    _methodPtrs = localPtrs;
                 }
             }
         }
@@ -115,7 +109,7 @@ namespace ScriptEngine.Machine.Contexts
             return _methodPtrs[number].Method;
         }
 
-        public ScriptEngine.Machine.MethodInfo GetMethodInfo(int number)
+        public MethodInfo GetMethodInfo(int number)
         {
             Init();
             return _methodPtrs[number].MethodInfo;
@@ -146,7 +140,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        private List<InternalMethInfo> MapType(Type type)
+        private static List<InternalMethInfo> MapType(Type type)
         {
             return type.GetMethods()
                 .SelectMany(method => method.GetCustomAttributes(typeof(ContextMethodAttribute), false)
@@ -319,9 +313,8 @@ namespace ScriptEngine.Machine.Contexts
                 var deleg = target.CreateDelegate(delegateType);
 
                 var delegateExpr = Expression.Constant(deleg);
-                var conversion = Expression.Convert(delegateExpr, delegateType);
 
-                var delegateCreator = Expression.Lambda(conversion).Compile();
+                var delegateCreator = Expression.Lambda(delegateExpr).Compile();
                 var methodClojure = Expression.Constant(delegateCreator.DynamicInvoke());
 
                 return methodClojure;
