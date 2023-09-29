@@ -23,8 +23,6 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 	{
 		private readonly List<BslTypeValue> _types = new List<BslTypeValue>();
 
-		private const string TYPE_BINARYDATA_NAME = "ДвоичныеДанные";
-
 		public TypeDescription(IEnumerable<BslTypeValue> types = null)
 		{
 			if (types != null)
@@ -196,39 +194,36 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			var qualifiers = new[] { null, p2, p3, p4, p5, p6, p7 };
 			
 			var rawSource = source?.GetRawValue();
-			if (rawSource == null || rawSource.SystemType == BasicTypes.Undefined)
+			if (rawSource != null && rawSource.SystemType != BasicTypes.Undefined)
 			{
-				// пустой первый параметр - нет объекта-основания
-				// добавляемые/вычитаемые типы не допускаются, квалификаторы игнорируются
+				if (rawSource is TypeDescription typeDesc)
+				{
+					// Если 1 парарметр - ОписаниеТипов, то 2 - добавляемые типы, 3 - убираемые типы,
+					builder.SourceDescription(typeDesc);
 
-				// квалификакторы передаются только для контроля типов
-			}
-			else
-			if (rawSource is TypeDescription typeDesc)
-			{
-				// Если 1 парарметр - ОписаниеТипов, то 2 - добавляемые типы, 3 - убираемые типы,
-				builder.SourceDescription(typeDesc);
-				
-				var typesToAdd = CheckAndParseTypeList(context.TypeManager, p2, 2);
-				var typesToRemove = CheckAndParseTypeList(context.TypeManager, p3, 3);
-				
-				builder.RemoveTypes(typesToRemove);
-				builder.AddTypes(typesToAdd);
+					var typesToAdd = CheckAndParseTypeList(context.TypeManager, p2, 2);
+					var typesToRemove = CheckAndParseTypeList(context.TypeManager, p3, 3);
 
-				qualifiers[1] = null; // эти параметры не квалификаторы
-				qualifiers[2] = null; // эти параметры не квалификаторы
+					builder.RemoveTypes(typesToRemove);
+					builder.AddTypes(typesToAdd);
 
-			}
-			else
-			if (rawSource.SystemType == BasicTypes.String || rawSource is ArrayImpl)
-			{
-				// Если 1 парарметр - Массив или строка, то это набор конкретных типов
-				// остальные параметры (2 и далее) - клвалификаторы в произвольном порядке
-				var typesList = CheckAndParseTypeList(context.TypeManager, rawSource, 1);
-				builder.AddTypes(typesList);
-			} else
-				throw RuntimeException.InvalidArgumentValue();
-			
+					qualifiers[1] = null; // эти параметры не квалификаторы
+					qualifiers[2] = null; // эти параметры не квалификаторы
+				}
+				else if (rawSource.SystemType == BasicTypes.String || rawSource is ArrayImpl)
+				{
+					// Если 1 парарметр - Массив или строка, то это набор конкретных типов
+					// остальные параметры (2 и далее) - клвалификаторы в произвольном порядке
+					var typesList = CheckAndParseTypeList(context.TypeManager, rawSource, 1);
+					builder.AddTypes(typesList);
+				}
+				else
+					throw RuntimeException.InvalidArgumentValue();
+			} /* else 
+				пустой первый параметр - нет объекта-основания
+				добавляемые/вычитаемые типы не допускаются, квалификаторы игнорируются
+				квалификакторы передаются только для контроля типов
+			*/
 			CheckAndAddQualifiers(builder, qualifiers);
 			return builder.Build();
 		}

@@ -12,7 +12,7 @@ using OneScript.Values;
 
 namespace OneScript.StandardLibrary.TypeDescriptions
 {
-    internal partial class TypeDescriptionBuilder
+    internal class TypeDescriptionBuilder
     {
         private NumberQualifiers _numberQualifiers;
         private StringQualifiers _stringQualifiers;
