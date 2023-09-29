@@ -252,6 +252,7 @@
             <TestAssemblies Include="OneScript.DebugProtocol.Test" />
             <TestAssemblies Include="OneScript.Dynamic.Tests" />
             <TestAssemblies Include="OneScript.Language.Tests" />
+            <TestAssemblies Include="TestRunner" />
         </ItemGroup>
 
         <Exec 
