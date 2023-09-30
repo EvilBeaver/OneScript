@@ -10,6 +10,7 @@ using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
+using ScriptEngine;
 using ScriptEngine.HostedScript;
 using ScriptEngine.HostedScript.Extensions;
 using ScriptEngine.Hosting;
@@ -24,19 +25,34 @@ public class TestRunnerHelper : AutoContext<TestRunnerHelper>
     
     public const string GetTestSubName = "ПолучитьСписокТестов";
 
+    private static ScriptingEngine _instance;
+
+    private static ScriptingEngine Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = DefaultEngineBuilder
+                    .Create()
+                    .SetDefaultOptions()
+                    .SetupEnvironment(e =>
+                    {
+                        e.AddStandardLibrary()
+                            .UseTemplateFactory(new DefaultTemplatesFactory());
+                    })
+                    .Build();
+        
+                Locale.SystemLanguageISOName = "RU";
+            }
+
+            return _instance;
+        }
+    }
+
     public static void Run(string filename)
     {
-        var engine = DefaultEngineBuilder
-            .Create()
-            .SetDefaultOptions()
-            .SetupEnvironment(e =>
-            {
-                e.AddStandardLibrary()
-                    .UseTemplateFactory(new DefaultTemplatesFactory());
-            })
-            .Build();
-        
-        Locale.SystemLanguageISOName = "RU";
+        var engine = Instance;
 
         var rootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         var filepath = Path.Combine(rootPath, "..", "..", "..", "..", "..", "..", "tests", filename);
@@ -48,8 +64,6 @@ public class TestRunnerHelper : AutoContext<TestRunnerHelper>
         engine.Initialize();
         var testInstance = (UserScriptContextInstance)engine.NewObject(testModule);
         var testRunnerInstance = new TestRunnerHelper();
-        
-        engine.Dispose();
 
         var getTestsIndex = testInstance.GetMethodNumber(GetTestSubName);
         var tmp1 = testRunnerInstance.GetMethodNumber("ПроверитьРавенство");
@@ -80,5 +94,17 @@ public class TestRunnerHelper : AutoContext<TestRunnerHelper>
     {
         Assert.NotEqual(v1, v2);
     }
-    
+
+    [ContextMethod("ПроверитьИстину")]
+    public void CheckTrue(IValue v1, string extendedInfo = null)
+    {
+        Assert.True(v1?.AsBoolean() ?? false);
+    }
+
+    [ContextMethod("ПроверитьЛожь")]
+    public void CheckFalse(IValue v1, string extendedInfo = null)
+    {
+        Assert.False(v1?.AsBoolean() ?? true);
+    }
+
 }

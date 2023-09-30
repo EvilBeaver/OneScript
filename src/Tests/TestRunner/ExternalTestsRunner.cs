@@ -15,4 +15,28 @@ public class ExternalTestsRunner
     {
         TestRunnerHelper.Run(@"typedescription.os");
     }
+    
+    [Fact]
+    public void ValueTree()
+    {
+        TestRunnerHelper.Run(@"valuetree.os");
+    }
+    
+    [Fact]
+    public void ValueTable()
+    {
+        TestRunnerHelper.Run(@"valuetable.os");
+    }
+    
+    [Fact]
+    public void ValueList()
+    {
+        TestRunnerHelper.Run(@"value-list.os");
+    }
+    
+    [Fact]
+    public void Math()
+    {
+        TestRunnerHelper.Run(@"math.os");
+    }
 }
