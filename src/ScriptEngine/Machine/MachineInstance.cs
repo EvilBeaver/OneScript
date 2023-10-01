@@ -8,14 +8,11 @@ using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine.Values;
-using System.Reflection;
-//using System.Runtime.Remoting.Contexts;
 
 namespace ScriptEngine.Machine
 {
@@ -1103,13 +1100,7 @@ namespace ScriptEngine.Machine
 
         private void ResolveProp(int arg)
         {
-            var objIValue = _operationStack.Pop();
-            if (objIValue.DataType != DataType.Object)
-            {
-                throw RuntimeException.ValueIsNotObjectException();
-            }
-
-            var context = objIValue.AsObject();
+            var context = _operationStack.Pop().AsObject();
             var propName = _module.Constants[arg].AsString();
             var propNum = context.FindProperty(propName);
 
@@ -1152,13 +1143,7 @@ namespace ScriptEngine.Machine
             var factArgs = PopArguments();
             var argCount = factArgs.Length;
 
-            var objIValue = _operationStack.Pop();
-            if (objIValue.DataType != DataType.Object)
-            {
-                throw RuntimeException.ValueIsNotObjectException();
-            }
-
-            context = objIValue.AsObject();
+            context = _operationStack.Pop().AsObject();
             var methodName = _module.Constants[arg].AsString();
             methodId = context.FindMethod(methodName);
     
@@ -1301,23 +1286,15 @@ namespace ScriptEngine.Machine
 
         private void PushIterator(int arg)
         {
-            var collection = _operationStack.Pop();
-            if (collection.DataType == DataType.Object)
+            var objValue = _operationStack.Pop().AsObject();
+            if (!(objValue is ICollectionContext collection))
             {
-                var context = collection.AsObject() as ICollectionContext;
-                if (context == null)
-                {
-                    throw RuntimeException.IteratorIsNotDefined();
-                }
+                throw RuntimeException.IteratorIsNotDefined();
+            }
 
-                var iterator = context.GetManagedIterator();
-                _currentFrame.LocalFrameStack.Push(iterator);
-                NextInstruction();
-            }
-            else
-            {
-                throw RuntimeException.ValueIsNotObjectException();
-            }
+            var iterator = collection.GetManagedIterator();
+            _currentFrame.LocalFrameStack.Push(iterator);
+            NextInstruction();
         }
 
         private void IteratorNext(int arg)

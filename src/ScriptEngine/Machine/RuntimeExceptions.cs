@@ -86,7 +86,7 @@ namespace ScriptEngine.Machine
 
         public static RuntimeException ValueIsNotObjectException()
         {
-            return new RuntimeException("Значение не является значением объектного типа");
+            return new TypeConvertionException();
         }
 
         public static RuntimeException TooManyArgumentsPassed()
@@ -223,6 +223,10 @@ namespace ScriptEngine.Machine
     {
         public TypeConvertionException(string typename) 
             : base($"Преобразование к типу '{typename}' не поддерживается")
+        {
+        }
+        public TypeConvertionException() 
+            : base("Значение не является значением объектного типа")
         {
         }
     }
