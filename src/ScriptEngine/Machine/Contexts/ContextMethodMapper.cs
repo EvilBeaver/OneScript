@@ -31,15 +31,9 @@ namespace ScriptEngine.Machine.Contexts
             _alias = alias;
         }
 
-        public string GetName()
-        {
-            return _name;
-        }
+        public string GetName() => _name;
 
-        public string GetAlias()
-        {
-            return _alias;
-        }
+        public string GetAlias() => _alias;
 
         public string GetAlias(string nativeMethodName)
         {
@@ -75,11 +69,11 @@ namespace ScriptEngine.Machine.Contexts
 
         private readonly object _locker = new object();
 
-        static private readonly System.Reflection.MethodInfo _genConvertParamMethod =
+        private static readonly System.Reflection.MethodInfo _genConvertParamMethod =
             typeof(InternalMethInfo).GetMethod("ConvertParam",
             BindingFlags.Static | BindingFlags.NonPublic);
 
-        static private readonly System.Reflection.MethodInfo _genConvertReturnMethod =
+        private static readonly System.Reflection.MethodInfo _genConvertReturnMethod =
             typeof(InternalMethInfo).GetMethod("ConvertReturnValue",
             BindingFlags.Static | BindingFlags.NonPublic);
 
@@ -90,21 +84,21 @@ namespace ScriptEngine.Machine.Contexts
             {
                 lock (_locker)
                 {
-                    if (_methodPtrs == null)
+                    if (_methodPtrs != null) 
+                        return;
+
+                    var localPtrs = MapType(typeof(TInstance));
+                    _methodNumbers = new IdentifiersTrie<int>();
+                    for (int idx = 0; idx < localPtrs.Count; ++idx)
                     {
-                        var localPtrs = MapType(typeof(TInstance));
-                        _methodNumbers = new IdentifiersTrie<int>();
-                        for (int idx = 0; idx < localPtrs.Count; ++idx)
-                        {
-                            var methinfo = localPtrs[idx].MethodInfo;
+                        var methinfo = localPtrs[idx].MethodInfo;
 
-                            _methodNumbers.Add(methinfo.Name, idx);
-                            if (methinfo.Alias != null)
-                                _methodNumbers.Add(methinfo.Alias, idx);
-                        }
-
-                        _methodPtrs = localPtrs;
+                        _methodNumbers.Add(methinfo.Name, idx);
+                        if (methinfo.Alias != null)
+                            _methodNumbers.Add(methinfo.Alias, idx);
                     }
+
+                    _methodPtrs = localPtrs;
                 }
             }
         }
@@ -115,7 +109,7 @@ namespace ScriptEngine.Machine.Contexts
             return _methodPtrs[number].Method;
         }
 
-        public ScriptEngine.Machine.MethodInfo GetMethodInfo(int number)
+        public MethodInfo GetMethodInfo(int number)
         {
             Init();
             return _methodPtrs[number].MethodInfo;
@@ -146,7 +140,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        private List<InternalMethInfo> MapType(Type type)
+        private static List<InternalMethInfo> MapType(Type type)
         {
             return type.GetMethods()
                 .SelectMany(method => method.GetCustomAttributes(typeof(ContextMethodAttribute), false)
@@ -161,16 +155,29 @@ namespace ScriptEngine.Machine.Contexts
 
             public InternalMethInfo(System.Reflection.MethodInfo target, ContextMethodAttribute binding)
             {
+                MethodInfo = CreateMetadata(target, binding);
+
                 _method = new Lazy<ContextCallableDelegate<TInstance>>(() =>
                 {
+                    CheckDeprecated();
+
                     var isFunc = target.ReturnType != typeof(void);
                     return isFunc ? CreateFunction(target) : CreateProcedure(target);
                 });
-
-                MethodInfo = CreateMetadata(target, binding);
             }
 
             public ContextCallableDelegate<TInstance> Method => _method.Value;
+
+            private void CheckDeprecated()
+            {
+                if (MethodInfo.IsDeprecated)
+                {
+                    if (MethodInfo.ThrowOnUseDeprecated)
+                        throw RuntimeException.DeprecatedMethodCall(MethodInfo.Name);
+
+                    SystemLogger.Write($"ВНИМАНИЕ! Вызов устаревшего метода {MethodInfo.Name}");
+                }
+            }
 
             private static MethodInfo CreateMetadata(System.Reflection.MethodInfo target, ContextMethodAttribute binding)
             {
@@ -230,9 +237,7 @@ namespace ScriptEngine.Machine.Contexts
                 var body = convertReturnCall;
 
                 var l = Expression.Lambda<ContextCallableDelegate<TInstance>>(body, instParam, argsParam);
-
                 return l.Compile();
-
             }
             private static ContextCallableDelegate<TInstance> CreateProcedure(System.Reflection.MethodInfo target)
             {
@@ -258,13 +263,13 @@ namespace ScriptEngine.Machine.Contexts
             private static InvocationExpression MethodCallExpression(System.Reflection.MethodInfo target, out ParameterExpression instParam, out ParameterExpression argsParam)
             {
                 // For those who dare:
-                // Код ниже формирует следующую лямбду с 2-мя замыканиями realMethodDelegate и defaults:
+                // Код ниже формирует следующую лямбду с замыканиями realMethodDelegate:
                 // (inst, args) =>
                 // {
                 //    realMethodDelegate(inst,
-                //        ConvertParam<TypeOfArg1>(args[i], defaults[i]),
+                //        ConvertParam<TypeOfArg1>(args[i]),
                 //        ...
-                //        ConvertParam<TypeOfArgN>(args[i], defaults[i]));
+                //        ConvertParam<TypeOfArgN>(args[i]));
                 // }
 
                 var methodClojure = CreateDelegateExpr(target);
@@ -272,25 +277,16 @@ namespace ScriptEngine.Machine.Contexts
                 instParam = Expression.Parameter(typeof(TInstance), "inst");
                 argsParam = Expression.Parameter(typeof(IValue[]), "args");
 
-                var argsPass = new List<Expression>();
-                argsPass.Add(instParam);
+                var argsPass = new List<Expression>{ instParam };
 
                 var parameters = target.GetParameters();
-                object[] defaultValues = new object[parameters.Length];
-                var defaultsClojure = Expression.Constant(defaultValues);
 
                 for (int i = 0; i < parameters.Length; i++)
                 {
                     var convertMethod = _genConvertParamMethod.MakeGenericMethod(parameters[i].ParameterType);
 
-                    if (parameters[i].HasDefaultValue)
-                    {
-                        defaultValues[i] = parameters[i].DefaultValue;
-                    }
-
                     var indexedArg = Expression.ArrayIndex(argsParam, Expression.Constant(i));
-                    var defaultArg = Expression.ArrayIndex(defaultsClojure, Expression.Constant(i));
-                    var conversionCall = Expression.Call(convertMethod, indexedArg, defaultArg);
+                    var conversionCall = Expression.Call(convertMethod, indexedArg);
                     argsPass.Add(conversionCall);
                 }
 
@@ -300,9 +296,9 @@ namespace ScriptEngine.Machine.Contexts
 
             private static Expression CreateDelegateExpr(System.Reflection.MethodInfo target)
             {
-                var types = new List<Type>();
-                types.Add(target.DeclaringType);
+                var types = new List<Type> { target.DeclaringType };
                 types.AddRange(target.GetParameters().Select(x => x.ParameterType));
+
                 Type delegateType;
                 if (target.ReturnType == typeof(void))
                 {
@@ -317,21 +313,17 @@ namespace ScriptEngine.Machine.Contexts
                 var deleg = target.CreateDelegate(delegateType);
 
                 var delegateExpr = Expression.Constant(deleg);
-                var conversion = Expression.Convert(delegateExpr, delegateType);
 
-                var delegateCreator = Expression.Lambda(conversion).Compile();
+                var delegateCreator = Expression.Lambda(delegateExpr).Compile();
                 var methodClojure = Expression.Constant(delegateCreator.DynamicInvoke());
 
                 return methodClojure;
             }
 
             // ReSharper disable once UnusedMember.Local
-            private static T ConvertParam<T>(IValue value, object def)
+            private static T ConvertParam<T>(IValue value)
             {
-                if (value == null || value.DataType == DataType.NotAValidValue)
-                    return (T)def;
-
-                return ContextValuesMarshaller.ConvertParam<T>(value);
+                return value == null ? default : ContextValuesMarshaller.ConvertParam<T>(value);
             }
 
             private static IValue ConvertReturnValue<TRet>(TRet param)
