@@ -66,7 +66,6 @@ public class TestRunnerHelper : AutoContext<TestRunnerHelper>
         var testRunnerInstance = new TestRunnerHelper();
 
         var getTestsIndex = testInstance.GetMethodNumber(GetTestSubName);
-        var tmp1 = testRunnerInstance.GetMethodNumber("ПроверитьРавенство");
         Assert.NotEqual(-1, getTestsIndex);
 
         testInstance.CallAsFunction(getTestsIndex, new []{ testRunnerInstance }, out var result);
