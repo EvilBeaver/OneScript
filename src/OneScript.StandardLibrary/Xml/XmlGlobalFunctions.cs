@@ -29,6 +29,9 @@ namespace OneScript.StandardLibrary.Xml
         
         private XmlGlobalFunctions(IGlobalsManager mgr)
         {
+            if (_allowedEnums.Count > 0)
+                return;
+
             foreach (var e in new[] {
                          (typeof(ClrEnumValueWrapper<AllowedSignEnum>), typeof(AllowedSignEnum)),
                          (typeof(ClrEnumValueWrapper<AllowedLengthEnum>), typeof(AllowedLengthEnum)),
