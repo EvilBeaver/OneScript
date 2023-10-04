@@ -29,13 +29,17 @@ namespace OneScript.StandardLibrary.Xml
         
         private XmlGlobalFunctions(IGlobalsManager mgr)
         {
-            foreach (var e in new[] {
-                         (typeof(ClrEnumValueWrapper<AllowedSignEnum>), typeof(AllowedSignEnum)),
-                         (typeof(ClrEnumValueWrapper<AllowedLengthEnum>), typeof(AllowedLengthEnum)),
-                         (typeof(ClrEnumValueWrapper<DateFractionsEnum>), typeof(DateFractionsEnum))
-                     })
+            lock (_allowedEnums)
             {
-                _allowedEnums.Add(e.Item1, (EnumerationContext)mgr.GetInstance(e.Item2));
+                _allowedEnums.Clear();
+                foreach (var e in new[] {
+                             (typeof(ClrEnumValueWrapper<AllowedSignEnum>), typeof(AllowedSignEnum)),
+                             (typeof(ClrEnumValueWrapper<AllowedLengthEnum>), typeof(AllowedLengthEnum)),
+                             (typeof(ClrEnumValueWrapper<DateFractionsEnum>), typeof(DateFractionsEnum))
+                         })
+                {
+                    _allowedEnums.Add(e.Item1, (EnumerationContext)mgr.GetInstance(e.Item2));
+                }
             }
         }
 
