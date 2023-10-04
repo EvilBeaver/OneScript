@@ -16,17 +16,12 @@ namespace ScriptEngine.HostedScript.Library
     public class SystemConfigAccessor : GlobalContextBase<SystemConfigAccessor>
     {
         private KeyValueConfig _config;
+        private readonly ConfigurationProviders _providers;
 
-        internal ConfigurationProviders Provider { get; set; }
-
-        public SystemConfigAccessor()
+        public SystemConfigAccessor(ConfigurationProviders providers)
         {
+            _providers = providers;
             Refresh();
-        }
-
-        internal KeyValueConfig GetConfig()
-        {
-            return _config;
         }
 
         /// <summary>
@@ -35,8 +30,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ОбновитьНастройкиСистемы", "RefreshSystemConfig")]
         public void Refresh()
         {
-            if (Provider != null)
-                _config = Provider.CreateConfig();
+            _config = _providers.CreateConfig();
         }
 
         /// <summary>
@@ -61,10 +55,7 @@ namespace ScriptEngine.HostedScript.Library
 
         public static IAttachableContext CreateInstance(ConfigurationProviders providers)
         {
-            return new SystemConfigAccessor
-            {
-                Provider = providers
-            };
+            return new SystemConfigAccessor(providers);
         }
     }
 }
