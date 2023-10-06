@@ -163,7 +163,7 @@ namespace OneScript.Native.Runtime
             return (T) ConstructorCall(typeManager, services, typeName, args);
         }
 
-        public static IRuntimeContextInstance GetExceptionInfo(IExceptionInfoFactory factory, Exception e)
+        public static BslObjectValue GetExceptionInfo(IExceptionInfoFactory factory, Exception e)
         {
             return factory.GetExceptionInfo(e);
         }

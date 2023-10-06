@@ -1039,7 +1039,7 @@ namespace OneScript.Native.Compiler
             else
             {
                 VisitExpression(node.Children[0]);
-                var raiseArgExpression = _statementBuildParts.Pop();
+                var raiseArgExpression = ExpressionHelpers.ToString(_statementBuildParts.Pop());
 
                 var exceptionExpression = ExpressionHelpers.CallOfInstanceMethod(
                     Expression.Constant(ExceptionInfoFactory),

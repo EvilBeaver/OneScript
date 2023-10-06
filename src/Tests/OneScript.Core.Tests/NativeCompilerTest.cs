@@ -12,6 +12,7 @@ using System.Linq.Expressions;
 using FluentAssertions;
 using OneScript.Compilation.Binding;
 using OneScript.DependencyInjection;
+using OneScript.Exceptions;
 using OneScript.Native.Runtime;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
@@ -46,6 +47,7 @@ namespace OneScript.Core.Tests
         {
             var services = new TinyIocImplementation();
             services.Register(tm);
+            services.Register<IExceptionInfoFactory, ExceptionInfoFactory>();
 
             return new CompiledBlock(services.CreateContainer());
         }
@@ -662,7 +664,9 @@ namespace OneScript.Core.Tests
         [Fact]
         public void Can_Do_TryExcept()
         {
-            var block = new CompiledBlock(default);
+            var services = new TinyIocImplementation();
+            services.Register<IExceptionInfoFactory, ExceptionInfoFactory>();
+            var block = new CompiledBlock(services);
             block.Parameters.Insert("Ф", new BslTypeValue(BasicTypes.Number));
             block.CodeBlock = 
                 "Попытка Если Ф = 1 Тогда Возврат 1; КонецЕсли;" +
@@ -1012,7 +1016,7 @@ namespace OneScript.Core.Tests
             block.CodeBlock = "А = ИнформацияОбОшибке();";
 
             var lambda = block.MakeExpression();
-            lambda.Body.As<BlockExpression>().Expressions[0].Type.Should().Be(typeof(BslValue));
+            lambda.Body.As<BlockExpression>().Expressions[0].Type.Should().BeAssignableTo<BslObjectValue>();
         }
         
         [Fact]
@@ -1030,7 +1034,7 @@ namespace OneScript.Core.Tests
 
             tryBlock.Handlers.First().Body.As<BlockExpression>().Expressions[0].Type
                 .Should()
-                .Be(typeof(ExceptionInfoContext));
+                .Be(typeof(BslObjectValue));
         }
         
         [Fact]

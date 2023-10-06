@@ -19,7 +19,7 @@ namespace ScriptEngine.Machine
     /// </summary>
     public class ExceptionInfoFactory : IExceptionInfoFactory
     {
-        public IRuntimeContextInstance GetExceptionInfo(Exception exception)
+        public BslObjectValue GetExceptionInfo(Exception exception)
         {
             if (exception == null)
             {

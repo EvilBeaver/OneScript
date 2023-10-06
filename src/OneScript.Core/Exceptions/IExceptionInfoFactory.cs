@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Contexts;
+using OneScript.Values;
 
 namespace OneScript.Exceptions
 {
@@ -15,7 +16,7 @@ namespace OneScript.Exceptions
     /// </summary>
     public interface IExceptionInfoFactory
     {
-        IRuntimeContextInstance GetExceptionInfo(Exception exception);
+        BslObjectValue GetExceptionInfo(Exception exception);
         
         string GetExceptionDescription(IRuntimeContextInstance exceptionInfo);
 
