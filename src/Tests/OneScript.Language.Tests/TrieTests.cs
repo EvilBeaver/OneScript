@@ -35,5 +35,28 @@ namespace OneScript.Language.Tests
             Assert.Equal(2, t.Get("ИначеЕсли"));
             Assert.Equal(1, t.Get("Иначе"));
         }
+
+        [Fact]
+        public void IdentifiersTrie_Inclusive_Test_ContainsKey()
+        {
+            var t = new IdentifiersTrie<bool>();
+            
+            t.Add("ЕслиИначе", true);
+            Assert.False(t.ContainsKey("Если"));
+            Assert.True(t.ContainsKey("ЕслиИначе"));
+        }
+        
+        [Fact]
+        public void IdentifiersTrie_Inclusive_Test_TryGetValue()
+        {
+            var t = new IdentifiersTrie<int>();
+            
+            t.Add("МетодОдин", 1);
+            t.Add("МетодОдинИДва", 2);
+
+            var exist = t.TryGetValue("Метод", out _);
+            
+            Assert.False(exist);
+        }
     }
 }
