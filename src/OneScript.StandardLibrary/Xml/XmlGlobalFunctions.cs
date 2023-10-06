@@ -138,21 +138,15 @@ namespace OneScript.StandardLibrary.Xml
             {
                 if (presentation.Trim() == "")
                     return ValueFactory.Create();
-                else
-                {
-                    throw RuntimeException.InvalidNthArgumentValue(2);
-                }
-                return ValueFactory.Create();
+                
+                throw RuntimeException.InvalidNthArgumentValue(2);
             }
             else if (typeValue.Equals(BasicTypes.Null))
             {
                 if (presentation.Trim() == "")
                     return ValueFactory.CreateNullValue();
-                else
-                {
-                    throw RuntimeException.InvalidNthArgumentValue(2);
-                }
-                return ValueFactory.Create();
+                
+                throw RuntimeException.InvalidNthArgumentValue(2);
             }
             else if (typeValue.ImplementingClass == typeof(GuidWrapper))
             {

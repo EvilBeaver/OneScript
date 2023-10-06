@@ -74,17 +74,17 @@ namespace OneScript.Language
             node.Value = val;
         }
 
-        public bool ContainsKey(string str)
+        public bool ContainsKey(string key)
         {
             var node = _root;
-            foreach (char ch in str)
+            foreach (char ch in key)
             {
-                var key = node.Find(ch);
-                if (key == null)
+                var keyNode = node.Find(ch);
+                if (keyNode == null)
                 {
                     return false;
                 }
-                node = key.next;
+                node = keyNode.next;
             }
 
             return node.next == null && node.HasValue;
