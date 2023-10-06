@@ -84,14 +84,14 @@
         <Copy SourceFiles="@(CppX64)" DestinationFolder="$(ArtifactsRoot)/fdd-x64/bin" />
 
         <ItemGroup>
-            <BatFiles Include="$(MSBuildProjectDirectory)\install\opm.bat"/>
-            <BatFiles Include="$(MSBuildProjectDirectory)\install\oscript.bat"/>
-            <ShFiles Include="$(MSBuildProjectDirectory)\install\opm.sh"/>
-            <ShFiles Include="$(MSBuildProjectDirectory)\install\oscript.sh"/>
+            <BatFilesFDD Include="$(MSBuildProjectDirectory)\install\opm.bat"/>
+            <BatFilesFDD Include="$(MSBuildProjectDirectory)\install\oscript.bat"/>
+            <ShFilesFDD Include="$(MSBuildProjectDirectory)\install\opm"/>
+            <ShFilesFDD Include="$(MSBuildProjectDirectory)\install\oscript"/>
         </ItemGroup>
         
-        <Copy SourceFiles="@(BatFiles);@(ShFiles)" DestinationFolder="$(ArtifactsRoot)/fdd-x86/bin"/>
-        <Copy SourceFiles="@(BatFiles);@(ShFiles)" DestinationFolder="$(ArtifactsRoot)/fdd-x64/bin"/>
+        <Copy SourceFiles="@(BatFilesFDD);@(ShFilesFDD)" DestinationFolder="$(ArtifactsRoot)/fdd-x86/bin"/>
+        <Copy SourceFiles="@(BatFilesFDD);@(ShFilesFDD)" DestinationFolder="$(ArtifactsRoot)/fdd-x64/bin"/>
 
     </Target>
     
@@ -120,15 +120,13 @@
         <Copy SourceFiles="@(CppX64)" DestinationFolder="$(ArtifactsRoot)/win-x64/bin" />
 
         <ItemGroup>
-            <BatFiles Include="$(MSBuildProjectDirectory)\install\opm.bat"/>
-            <BatFiles Include="$(MSBuildProjectDirectory)\install\oscript.bat"/>
-            <ShFiles Include="$(MSBuildProjectDirectory)\install\opm.sh"/>
-            <ShFiles Include="$(MSBuildProjectDirectory)\install\oscript.sh"/>
+            <BatFilesSCD Include="$(MSBuildProjectDirectory)\install\opm.bat"/>
+            <ShFilesSCD Include="$(MSBuildProjectDirectory)\install\opm"/>
         </ItemGroup>
 
-        <Copy SourceFiles="@(BatFiles)" DestinationFolder="$(ArtifactsRoot)/win-x86/bin"/>
-        <Copy SourceFiles="@(BatFiles)" DestinationFolder="$(ArtifactsRoot)/win-x64/bin"/>
-        <Copy SourceFiles="@(ShFiles)" DestinationFolder="$(ArtifactsRoot)/linux-x64/bin"/>
+        <Copy SourceFiles="@(BatFilesSCD)" DestinationFolder="$(ArtifactsRoot)/win-x86/bin"/>
+        <Copy SourceFiles="@(BatFilesSCD)" DestinationFolder="$(ArtifactsRoot)/win-x64/bin"/>
+        <Copy SourceFiles="@(ShFilesSCD)" DestinationFolder="$(ArtifactsRoot)/linux-x64/bin"/>
 
     </Target>
     
