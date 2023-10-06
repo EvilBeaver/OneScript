@@ -16,13 +16,14 @@ namespace ScriptEngine.HostedScript.Extensions
 {
     public static class EngineBuilderExtensions
     {
-        public static ConfigurationProviders UseConfigFile(this ConfigurationProviders providers, string configFile)
+        public static ConfigurationProviders UseConfigFile(this ConfigurationProviders providers, string configFile, bool required = true)
         {
-            if (System.IO.File.Exists(configFile))
+            if (File.Exists(configFile))
             {
                 var reader = new CfgFileConfigProvider
                 {
-                    FilePath = configFile
+                    FilePath = configFile,
+                    Required = required
                 };
                 providers.Add(reader.GetProvider());
             }
@@ -36,22 +37,22 @@ namespace ScriptEngine.HostedScript.Extensions
             if (string.IsNullOrEmpty(asmLocation))
                 asmLocation = System.Reflection.Assembly.GetEntryAssembly()?.Location;
 
-            var pathPrefix = !string.IsNullOrWhiteSpace(asmLocation) ? 
-                System.IO.Path.GetDirectoryName(asmLocation) :
-                System.Environment.CurrentDirectory;
+            var pathPrefix = (!string.IsNullOrWhiteSpace(asmLocation) ? 
+                Path.GetDirectoryName(asmLocation) :
+                System.Environment.CurrentDirectory) ?? "";
             
-            var configFile = System.IO.Path.Combine(pathPrefix, CfgFileConfigProvider.CONFIG_FILE_NAME);
+            var configFile = Path.Combine(pathPrefix, CfgFileConfigProvider.CONFIG_FILE_NAME);
 
             return providers.UseConfigFile(configFile);
         }
         
         public static ConfigurationProviders UseEntrypointConfigFile(this ConfigurationProviders providers, string entryPoint)
         {
-            var dir = System.IO.Path.GetDirectoryName(entryPoint);
-            var cfgPath = System.IO.Path.Combine(dir, CfgFileConfigProvider.CONFIG_FILE_NAME);
-            if (System.IO.File.Exists(cfgPath))
+            var dir = Path.GetDirectoryName(entryPoint) ?? "";
+            var cfgPath = Path.GetFullPath(Path.Combine(dir, CfgFileConfigProvider.CONFIG_FILE_NAME));
+            if (File.Exists(cfgPath))
             {
-                return providers.UseConfigFile(cfgPath); 
+                return providers.UseConfigFile(cfgPath, false); 
             }
 
             return providers;

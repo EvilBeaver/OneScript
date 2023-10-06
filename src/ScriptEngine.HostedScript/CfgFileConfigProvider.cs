@@ -17,17 +17,32 @@ namespace ScriptEngine.HostedScript
         public const string CONFIG_FILE_NAME = "oscript.cfg";
         
         public string FilePath { get; set; }
-        
+
+        public bool Required { get; set; }
+
         public Func<IDictionary<string, string>> GetProvider()
         {
             var localCopy = FilePath;
             return () => ReadConfigFile(localCopy);
         }
         
-        private static IDictionary<string, string> ReadConfigFile(string configPath)
+        private IDictionary<string, string> ReadConfigFile(string configPath)
         {
             var conf = new Dictionary<string, string>();
-            using (var reader = new StreamReader(configPath, true))
+            StreamReader reader;
+            try
+            {
+                reader = new StreamReader(configPath, true);
+            }
+            catch (IOException)
+            {
+                if (!Required)
+                    return conf;
+
+                throw;
+            }
+            
+            using (reader)
             {
                 while (!reader.EndOfStream)
                 {
