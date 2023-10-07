@@ -19,7 +19,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ОбъявлениеЭлементаXS", "XSElementDeclaration")]
-    public class XSElementDeclaration : AutoContext<XSElementDeclaration>, IXSFragment, IXSNamedComponent
+    public sealed class XSElementDeclaration : AutoContext<XSElementDeclaration>, IXSFragment, IXSNamedComponent
     {
         private readonly XmlSchemaElement _element;
         private XSAnnotation _annotation;

@@ -19,7 +19,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ФрагментXS", "XSParticle")]
-    public class XSParticle : AutoContext<XSParticle>, IXSComponent
+    public sealed class XSParticle : AutoContext<XSParticle>, IXSComponent
     {
         private IXSFragment _term;
         private IValue _minOccurs;

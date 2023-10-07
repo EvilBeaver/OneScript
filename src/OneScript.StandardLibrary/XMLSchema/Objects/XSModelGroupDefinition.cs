@@ -19,7 +19,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ОпределениеГруппыМоделиXS", "XSModelGroupDefinition")]
-    public class XSModelGroupDefinition : AutoContext<XSModelGroupDefinition>, IXSFragment, IXSNamedComponent
+    public sealed class XSModelGroupDefinition : AutoContext<XSModelGroupDefinition>, IXSFragment, IXSNamedComponent
     {
         private XmlSchemaAnnotated _group;
         private string _name;
@@ -42,7 +42,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
 
             if (xmlGroup.Particle is XmlSchemaGroupBase xmlGroupBase)
             {
-                IXSComponent component = XMLSchemaSerializer.CreateInstance(xmlGroupBase);
+                var component = XMLSchemaSerializer.CreateInstance(xmlGroupBase);
 
                 if (component is XSParticle particle)
                     _modelGroup = particle;
@@ -52,7 +52,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
             }
         }
 
-        internal XSModelGroupDefinition(XmlSchemaGroupRef xmlGroupRef)
+        internal XSModelGroupDefinition(in XmlSchemaGroupRef xmlGroupRef)
         {
             _group = xmlGroupRef;
 
@@ -83,7 +83,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         [ContextProperty("Компоненты", "Components")]
-        public XSComponentFixedList Components => null;
+        public XSComponentFixedList Components => XSComponentFixedList.EmptyList();
 
         [ContextProperty("Контейнер", "Container")]
         public IXSComponent Container { get; private set; }
@@ -162,7 +162,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         #region Methods
 
         [ContextMethod("КлонироватьКомпоненту", "CloneComponent")]
-        public IXSComponent CloneComponent(bool recursive = true) => throw new NotImplementedException();
+        public IXSComponent CloneComponent(bool recursive) => throw new NotImplementedException();
 
         [ContextMethod("ОбновитьЭлементDOM", "UpdateDOMElement")]
         public void UpdateDOMElement() => throw new NotImplementedException();

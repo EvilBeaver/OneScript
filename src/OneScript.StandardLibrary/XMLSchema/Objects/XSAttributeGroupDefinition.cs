@@ -18,7 +18,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ОпределениеГруппыАтрибутовXS", "XSAttributeGroupDefinition")]
-    public class XSAttributeGroupDefinition : AutoContext<XSAttributeGroupDefinition>, IXSAnnotated, IXSNamedComponent
+    public sealed class XSAttributeGroupDefinition : AutoContext<XSAttributeGroupDefinition>, IXSAnnotated, IXSNamedComponent
     {
         private XmlSchemaAnnotated _attributeGroup;
         private XSAnnotation _annotation;

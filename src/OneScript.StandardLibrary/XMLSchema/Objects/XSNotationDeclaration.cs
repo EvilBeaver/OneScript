@@ -16,7 +16,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ОбъявлениеНотацииXS", "XSNotationDeclaration")]
-    public class XSNotationDeclaration : AutoContext<XSNotationDeclaration>, IXSAnnotated, IXSNamedComponent
+    public sealed class XSNotationDeclaration : AutoContext<XSNotationDeclaration>, IXSAnnotated, IXSNamedComponent
     {
         private readonly XmlSchemaNotation _notation;
         private XSAnnotation _annotation;
