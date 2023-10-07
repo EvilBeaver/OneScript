@@ -1,1 +1,4 @@
 *.sh    text eol=lf
+
+install/opm     text eol=lf
+install/oscript text eol=lf
