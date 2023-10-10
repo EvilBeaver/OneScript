@@ -60,6 +60,11 @@ namespace OneScript.Language.SyntaxAnalysis
                     $"Local variable can't be exported ({varName})");
         }
 
+        public static CodeError AwaitMustBeInAsyncMethod() => Create(
+            "Оператор Ждать (Await) может употребляться только в асинхронных процедурах или функциях",
+            "Operator Await can be used only in async procedures or functions"
+        );
+
         public static CodeError LiteralExpected() => Create("Ожидается константа", "Constant expected");
 
         public static CodeError NumberExpected() => Create("Ожидается числовая константа", "Numeric constant expected");

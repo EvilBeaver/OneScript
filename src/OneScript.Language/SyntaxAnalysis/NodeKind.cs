@@ -61,6 +61,7 @@ namespace OneScript.Language.SyntaxAnalysis
         RemoveHandler,
         Preprocessor,
         Import,
-        TopLevelExpression
+        TopLevelExpression,
+        Async
     }
 }

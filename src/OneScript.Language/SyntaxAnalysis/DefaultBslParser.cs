@@ -27,6 +27,7 @@ namespace OneScript.Language.SyntaxAnalysis
         private bool _isMethodsDefined;
         private bool _isStatementsDefined;
         private bool _isInFunctionScope;
+        private bool _isInAsyncMethod;
         private bool _lastDereferenceIsWritable;
 
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
@@ -286,7 +287,8 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             if (_lastExtractedLexem.Type != LexemType.Annotation 
                 && _lastExtractedLexem.Token != Token.Procedure 
-                && _lastExtractedLexem.Token != Token.Function)
+                && _lastExtractedLexem.Token != Token.Function
+                && _lastExtractedLexem.Token != Token.Async)
             {
                 return;
             }
@@ -301,7 +303,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 while (true)
                 {
                     BuildAnnotations();
-                    if (_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function)
+                    if (IsStartOfMethod(_lastExtractedLexem))
                     {
                         if (!sectionExist)
                         {
@@ -324,14 +326,26 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
+        private static bool IsStartOfMethod(in Lexem lex)
+        {
+            return lex.Token == Token.Async || lex.Token == Token.Procedure || lex.Token == Token.Function;
+        }
+        
         private void BuildMethod()
         {
-            Debug.Assert(_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function);
+            Debug.Assert(IsStartOfMethod(_lastExtractedLexem));
 
             var method = _nodeContext.AddChild(new MethodNode());
             
             ApplyAnnotations(method);
             PushContext(method);
+            if (_lastExtractedLexem.Token == Token.Async)
+            {
+                method.IsAsync = true;
+                _isInAsyncMethod = true;
+                NextLexem();
+            }
+            
             try
             {
                 BuildMethodSignature();
@@ -345,6 +359,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 _isInFunctionScope = false;
                 _inMethodScope = false;
                 _isStatementsDefined = false;
+                _isInAsyncMethod = false;
                 PopContext();
             }
         }
@@ -382,9 +397,8 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void BuildMethodSignature()
         {
-            var isFunction = _lastExtractedLexem.Token == Token.Function;
-
             var signature = _nodeContext.AddChild(new MethodSignatureNode(_lastExtractedLexem));
+            var isFunction = _lastExtractedLexem.Token == Token.Function;
             CreateChild(signature, isFunction? NodeKind.Function : NodeKind.Procedure, _lastExtractedLexem);
             _isInFunctionScope = isFunction;
             NextLexem();
@@ -676,11 +690,43 @@ namespace OneScript.Language.SyntaxAnalysis
                 case Token.AddHandler:
                 case Token.RemoveHandler:
                     BuildEventHandlerOperation(_lastExtractedLexem.Token);
-                    break;        
+                    break;
+                case Token.Await:
+                    BuildGlobalCallAwaitOperator();
+                    break;
                 default:
                     var expected = _tokenStack.Peek();
                     AddError(LocalizedErrors.TokenExpected(expected));
                     break;
+            }
+        }
+
+        private void BuildGlobalCallAwaitOperator()
+        {
+            Debug.Assert(_lastExtractedLexem.Token == Token.Await);
+            
+            _nodeContext.AddChild(TerminalNode());
+        }
+
+
+        private BslSyntaxNode BuildExpressionAwaitOperator(in Lexem lexem)
+        {
+            Debug.Assert(_lastExtractedLexem.Token == Token.Await);
+            CheckAsyncMethod();
+            var awaitOperator = new UnaryOperationNode(lexem);
+            NextLexem();
+            
+            var call = BuildGlobalCall(_lastExtractedLexem);
+            awaitOperator.AddChild(call);
+
+            return awaitOperator;
+        }
+
+        private void CheckAsyncMethod()
+        {
+            if (!_isInAsyncMethod)
+            {
+                AddError(LocalizedErrors.AwaitMustBeInAsyncMethod(), false);
             }
         }
 
@@ -1329,6 +1375,10 @@ namespace OneScript.Language.SyntaxAnalysis
             else if (LanguageDef.IsBuiltInFunction(_lastExtractedLexem.Token))
             {
                 node = BuildGlobalCall(_lastExtractedLexem);
+            }
+            else if (_lastExtractedLexem.Token == Token.Await)
+            {
+                node = BuildExpressionAwaitOperator(_lastExtractedLexem);
             }
             else
             {

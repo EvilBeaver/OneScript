@@ -12,8 +12,8 @@ namespace OneScript.Language.SyntaxAnalysis
 {
     public class RegionDirectiveHandler : DirectiveHandlerBase
     {
-        private readonly LexemTrie<bool> _preprocRegion = new LexemTrie<bool>();
-        private readonly LexemTrie<bool> _preprocEndRegion = new LexemTrie<bool>();
+        private readonly IdentifiersTrie<bool> _preprocRegion = new IdentifiersTrie<bool>();
+        private readonly IdentifiersTrie<bool> _preprocEndRegion = new IdentifiersTrie<bool>();
 
         private int _regionsNesting = 0;
         

@@ -17,6 +17,8 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         {
         }
 
+        public bool IsAsync { get; set; }
+        
         public MethodSignatureNode Signature { get; private set; }
         
         public BslSyntaxNode MethodBody { get; private set; }
