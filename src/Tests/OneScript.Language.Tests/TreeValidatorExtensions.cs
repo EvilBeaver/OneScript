@@ -27,6 +27,41 @@ namespace OneScript.Language.Tests
             validator.CurrentNode.Kind.Should().Be(type);
             return validator;
         }
+
+        public static SyntaxTreeValidator DownTo(this SyntaxTreeValidator validator, NodeKind type)
+        {
+            var node = DownTo(validator.CurrentNode, type);
+            if (node == null)
+            {
+                throw new Exception("No such child: " + type);
+            }
+
+            return new SyntaxTreeValidator(node);
+        }
+        
+        private static TestAstNode DownTo(this TestAstNode node, NodeKind type)
+        {
+            if (node.Kind == type)
+                return node;
+
+            if (node.Children.Count == 0)
+                return null;
+            
+            foreach (var childNode in node.ChildrenList)
+            {
+                if (childNode.Kind == type)
+                    return childNode;
+
+                if (childNode.ChildrenList.Count == 0)
+                    continue;
+                
+                var result = DownTo(childNode, type);
+                if (result != null)
+                    return result;
+            }
+
+            return null;
+        }
         
         public static void Is(this TestAstNode node, NodeKind type)
         {

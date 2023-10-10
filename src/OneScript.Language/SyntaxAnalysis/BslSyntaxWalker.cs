@@ -158,8 +158,18 @@ namespace OneScript.Language.SyntaxAnalysis
                 VisitGlobalProcedureCall(statement as CallNode);
             else if (statement.Kind == NodeKind.DereferenceOperation)
                 VisitProcedureDereference(statement);
+            else if (statement.Kind == NodeKind.UnaryOperation && statement is UnaryOperationNode
+                     {
+                         Operation: Token.Await
+                     } unaryOp)
+                VisitGlobalAwaitCall(unaryOp);
             else
                 DefaultVisit(statement);
+        }
+
+        private void VisitGlobalAwaitCall(UnaryOperationNode awaitStatement)
+        {
+            VisitStatement(awaitStatement.Children[0]);
         }
 
         protected virtual void VisitAssignment(BslSyntaxNode assignment)

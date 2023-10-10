@@ -1168,6 +1168,73 @@ namespace OneScript.Language.Tests
             });
         }
 
+        [Fact]
+        public void TestAsyncProcedure()
+        {
+            var code = 
+                @"Асинх Процедура Проц1()
+	                Перем Переменная;
+                КонецПроцедуры";
+
+            var node = ParseModuleAndGetValidator(code);
+            node.Is(NodeKind.MethodsSection);
+
+            var methodNode = node.NextChild().Is(NodeKind.Method);
+
+            methodNode.CurrentNode.RealNode.As<MethodNode>().IsAsync.Should().BeTrue();
+        }
+        
+        [Fact]
+        public void TestAsyncFunction()
+        {
+            var code = 
+                @"Асинх Функция Ф1()
+	                Перем Переменная;
+                КонецФункции";
+
+            var node = ParseModuleAndGetValidator(code);
+            node.Is(NodeKind.MethodsSection);
+
+            var methodNode = node.NextChild().Is(NodeKind.Method);
+
+            methodNode.CurrentNode.RealNode.As<MethodNode>().IsAsync.Should().BeTrue();
+        }
+        
+        [Fact]
+        public void TestAwaitPriority()
+        {
+            var code = 
+                @"Асинх Процедура Проц1()
+	                А = Ждать Вызов().Поле;
+                КонецПроцедуры";
+
+            var node = ParseModuleAndGetValidator(code);
+            node.Is(NodeKind.MethodsSection);
+
+            var method = node.NextChild().Is(NodeKind.Method);
+            var expression = method.DownTo(NodeKind.Assignment)
+                .NextChildIs(NodeKind.Identifier)
+                .NextChild();
+
+            expression.CurrentNode.RealNode.As<UnaryOperationNode>().Operation.Should().Be(Token.Await);
+            expression
+                .NextChildIs(NodeKind.DereferenceOperation)
+                .NoMoreChildren();
+        }
+        
+        [Fact]
+        public void TestAwaitMustBeInAsyncOnly()
+        {
+            var code = 
+                @"Процедура Проц1()
+	                Ждать Операция();
+                КонецПроцедуры";
+
+            CatchParsingError(code, errors =>
+            {
+                errors.Single().Description.Should().Contain("Await");
+            });
+        }
 
         private static void CatchParsingError(string code)
         {
