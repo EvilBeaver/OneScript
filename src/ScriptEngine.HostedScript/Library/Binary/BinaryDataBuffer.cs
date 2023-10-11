@@ -521,27 +521,88 @@ namespace ScriptEngine.HostedScript.Library.Binary
 
 
         /// <summary>
-        /// Разделить буфер на части по заданному разделителю.
-        /// 
-        /// НЕ РЕАЛИЗОВАН
+        /// Разделить буфер на части по заданному разделителю или массиву разделителей (Не реализовано).
         /// </summary>
-        ///
-        /// <remarks>
-        /// 
-        /// По двоичному буферу
-        /// </remarks>
         ///
         /// <param name="separator">
         /// Разделитель. </param>
         ///
-        /// <returns name="Array"/>
+        /// <returns name="Array">Массив из буферов двоичных данных</returns>
         ///
         [ContextMethod("Разделить", "Split")]
-        public IValue Split(IValue separator)
+        public ArrayImpl Split(IValue separator)
         {
-            throw new NotImplementedException();
+            var rawSeparator = separator?.GetRawValue();
+            if (rawSeparator is BinaryDataBuffer buffer)
+            {
+                if (buffer._buffer.LongLength == 0)
+                {
+                    throw RuntimeException.InvalidArgumentValue();
+                }
+                return SplitWithOne(buffer);
+            }
+
+            if (rawSeparator is ArrayImpl)
+            {
+                throw new NotImplementedException();
+            }
+
+            throw RuntimeException.InvalidArgumentType();
         }
 
+        private ArrayImpl SplitWithOne(BinaryDataBuffer splitter)
+        {
+            var result = new List<BinaryDataBuffer>();
+            long start = 0;
+            long index = Find(_buffer, splitter._buffer, start);
+            while (index != -1)
+            {
+                var length = index - start;
+                result.Add(new BinaryDataBuffer(Copy(start, length), ByteOrder));
+                start = index + splitter._buffer.LongLength;
+                index = Find(_buffer, splitter._buffer, start);
+            }
+            
+            // хвостовой элемент
+            result.Add(new BinaryDataBuffer(Copy(start, _buffer.LongLength - start)));
+            return new ArrayImpl(result);
+        }
+
+        private byte[] Copy(long start, long length)
+        {
+            if (length == 0) return Array.Empty<byte>();
+            var partition = new byte[length];
+            Array.Copy(_buffer, start, partition, 0, length);
+            return partition;
+        }
+
+        private static long Find(byte[] buffer, byte[] sub, long start)
+        {
+            var maxI = buffer.LongLength - sub.LongLength;
+            for (var i = start; i < maxI; i++)
+            {
+                if (SubsequenceEquals(buffer, i, sub))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private static bool SubsequenceEquals(byte[] sequence, long start, byte[] subsequence)
+        {
+            for (long j = 0; j < subsequence.LongLength; j++)
+            {
+                if (subsequence[j] != sequence[start + j])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        
         /// <summary>
         /// 
         /// Создает копию массива.
