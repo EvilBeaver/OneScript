@@ -96,6 +96,7 @@ namespace ScriptEngine.Machine
             ContextsAttached();
 
             _mem = memory;
+            _codeStatCollector = _mem.Services.TryResolve<ICodeStatCollector>();
         }
         
         internal MachineStoredState SaveState()
@@ -107,7 +108,6 @@ namespace ScriptEngine.Machine
                 CallStack = _callStack,
                 OperationStack = _operationStack,
                 StopManager = _stopManager,
-                CodeStatCollector = _codeStatCollector,
                 Memory = _mem
             };
         }
@@ -120,7 +120,6 @@ namespace ScriptEngine.Machine
             _callStack = state.CallStack;
             _exceptionsStack = state.ExceptionsStack;
             _stopManager = state.StopManager;
-            _codeStatCollector = state.CodeStatCollector;
             _mem = state.Memory; 
             
             SetFrame(_callStack.Peek());
@@ -569,11 +568,6 @@ namespace ScriptEngine.Machine
                 _operationStack.Pop();
 
             return false;
-        }
-
-        public void SetCodeStatisticsCollector(ICodeStatCollector collector)
-        {
-            _codeStatCollector = collector;
         }
 
         private CodeStatEntry CurrentCodeEntry()

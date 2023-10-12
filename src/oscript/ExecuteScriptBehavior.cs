@@ -42,11 +42,16 @@ namespace oscript
 
             var builder = ConsoleHostBuilder.Create(_path);
             builder.WithDebugger(DebugController);
+            CodeStatProcessor codeStatProcessor = null;
+            if (CodeStatisticsEnabled)
+            {
+                codeStatProcessor = new CodeStatProcessor();
+                builder.Services.RegisterSingleton<ICodeStatCollector>(codeStatProcessor);
+            }
 
             var hostedScript = ConsoleHostBuilder.Build(builder);
 
-            if (CodeStatisticsEnabled)
-                hostedScript.EnableCodeStatistics();
+                
             
             var source = hostedScript.Loader.FromFile(_path);
             Process process;
@@ -63,9 +68,10 @@ namespace oscript
             var result = process.Start();
             hostedScript.Dispose();
 
-            if (CodeStatisticsEnabled)
+            if (codeStatProcessor != null)
             {
-                var codeStat = hostedScript.GetCodeStatData();
+                codeStatProcessor.EndCodeStat();
+                var codeStat = codeStatProcessor.GetStatData();
                 var statsWriter = new CodeStatWriter(CodeStatFile, CodeStatWriterType.JSON);
                 statsWriter.Write(codeStat);
             }

@@ -27,8 +27,6 @@ namespace ScriptEngine.HostedScript
         private bool _isInitialized;
 
         private readonly OneScriptLibraryOptions _workingConfig;
-        
-        private CodeStatProcessor _codeStat;
 
         public HostedScriptEngine(ScriptingEngine engine)
         {
@@ -143,22 +141,10 @@ namespace ScriptEngine.HostedScript
             var process = new Process(host, module, _engine);
             return process;
         }
-        
-        public void EnableCodeStatistics()
-        {
-            _codeStat = new CodeStatProcessor();
-            _engine.SetCodeStatisticsCollector(_codeStat);
-        }
-
-        public CodeStatDataCollection GetCodeStatData()
-        {
-            return _codeStat.GetStatData();
-        }
 
         public void Dispose()
         {
             _engine?.Dispose();
-            _codeStat?.EndCodeStat();
         }
     }
 }

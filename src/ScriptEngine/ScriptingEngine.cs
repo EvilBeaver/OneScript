@@ -83,7 +83,7 @@ namespace ScriptEngine
         public void Initialize()
         {
             SetDefaultEnvironmentIfNeeded();
-
+            EnableCodeStatistics();
             UpdateContexts();
 
             _attachedScriptsFactory = new AttachedScriptsFactory(this);
@@ -186,10 +186,13 @@ namespace ScriptEngine
             }
         }
 
-        public void SetCodeStatisticsCollector(ICodeStatCollector collector)
+        private void EnableCodeStatistics()
         {
+            var collector = Services.TryResolve<ICodeStatCollector>();
+            if (collector == default)
+                return;
+            
             ProduceExtraCode |= CodeGenerationFlags.CodeStatistics;
-            MachineInstance.Current.SetCodeStatisticsCollector(collector);
         }
 
         #region IDisposable Members
