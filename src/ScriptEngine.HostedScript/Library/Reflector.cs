@@ -68,26 +68,32 @@ namespace ScriptEngine.HostedScript.Library
 
         private static IValue[] GetArgsToPass(ArrayImpl arguments, MethodInfo methInfo)
         {
-            var argsToPass = new List<IValue>();
-            if (arguments != null)
-            {
-                argsToPass.AddRange(arguments);
-            }
+            var argValues = arguments?.ToArray() ?? Array.Empty<IValue>();
+            // ArrayImpl не может (не должен!) содержать null или NotAValidValue
 
-            if (methInfo.ArgCount < argsToPass.Count)
+            if (argValues.Length > methInfo.ArgCount)
                 throw RuntimeException.TooManyArgumentsPassed();
 
-            for (int i = 0; i < argsToPass.Count; i++)
+            var methodParams = methInfo.Params;
+            var argsToPass = new IValue[methodParams.Length];
+
+            int i = 0;
+            for (; i < argValues.Length; i++)
             {
-                if (!methInfo.Params[i].IsByValue)
-                    argsToPass[i] = Variable.Create(argsToPass[i], $"reflectorArg{i}");
+                if (methodParams[i].IsByValue)
+                    argsToPass[i] = argValues[i];
+                else
+                    argsToPass[i] = Variable.Create(argsToPass[i], string.Empty); // имя не нужно
             }
-            while (argsToPass.Count < methInfo.ArgCount)
+            for (; i < methInfo.ArgCount; i++)
             {
-                argsToPass.Add(null);
+                if (!methodParams[i].HasDefaultValue)
+                    throw RuntimeException.TooFewArgumentsPassed();
+
+                argsToPass[i] = methodParams[i].DefaultValue;
             }
 
-            return argsToPass.ToArray();
+            return argsToPass;
         }
 
         /// <summary>
