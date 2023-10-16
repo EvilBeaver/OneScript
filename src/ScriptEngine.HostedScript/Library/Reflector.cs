@@ -98,11 +98,11 @@ namespace ScriptEngine.HostedScript.Library
         }
 
         /// <summary>
-        /// Проверяет существование указанного метода у переданного объекта..
+        /// Проверяет существование указанного метода у переданного объекта.
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу методов.</param>
         /// <param name="methodName">Имя метода для вызова</param>
-        /// <returns>Истину, если метод существует, и Ложь в обратном случае. </returns>
+        /// <returns>Истина, если метод существует, и Ложь в обратном случае.</returns>
         [ContextMethod("МетодСуществует", "MethodExists")]
         public bool MethodExists(IValue target, string methodName)
         {
