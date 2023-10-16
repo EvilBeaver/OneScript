@@ -68,34 +68,41 @@ namespace ScriptEngine.HostedScript.Library
 
         private static IValue[] GetArgsToPass(ArrayImpl arguments, MethodInfo methInfo)
         {
-            var argsToPass = new List<IValue>();
-            if (arguments != null)
-            {
-                argsToPass.AddRange(arguments);
-            }
+            var argValues = arguments?.ToArray() ?? Array.Empty<IValue>();
+            // ArrayImpl не может (не должен!) содержать null или NotAValidValue
 
-            if (methInfo.ArgCount < argsToPass.Count)
+            var methArgCount = methInfo.ArgCount;
+            if (argValues.Length > methArgCount)
                 throw RuntimeException.TooManyArgumentsPassed();
 
-            for (int i = 0; i < argsToPass.Count; i++)
+            var methodParams = methInfo.Params;
+            var argsToPass = new IValue[methArgCount];
+
+            int i = 0;
+            for (; i < argValues.Length; i++)
             {
-                if (!methInfo.Params[i].IsByValue)
-                    argsToPass[i] = Variable.Create(argsToPass[i], $"reflectorArg{i}");
+                if (methodParams[i].IsByValue)
+                    argsToPass[i] = argValues[i];
+                else
+                    argsToPass[i] = Variable.Create(argsToPass[i], string.Empty); // имя не нужно
             }
-            while (argsToPass.Count < methInfo.ArgCount)
+            for (; i < methArgCount; i++)
             {
-                argsToPass.Add(null);
+                if (!methodParams[i].HasDefaultValue)
+                    throw RuntimeException.TooFewArgumentsPassed();
+
+                argsToPass[i] = methodParams[i].DefaultValue;
             }
 
-            return argsToPass.ToArray();
+            return argsToPass;
         }
 
         /// <summary>
-        /// Проверяет существование указанного метода у переданного объекта..
+        /// Проверяет существование указанного метода у переданного объекта.
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу методов.</param>
         /// <param name="methodName">Имя метода для вызова</param>
-        /// <returns>Истину, если метод существует, и Ложь в обратном случае. </returns>
+        /// <returns>Истина, если метод существует, и Ложь в обратном случае.</returns>
         [ContextMethod("МетодСуществует", "MethodExists")]
         public bool MethodExists(IValue target, string methodName)
         {
