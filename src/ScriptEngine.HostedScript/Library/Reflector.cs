@@ -71,11 +71,12 @@ namespace ScriptEngine.HostedScript.Library
             var argValues = arguments?.ToArray() ?? Array.Empty<IValue>();
             // ArrayImpl не может (не должен!) содержать null или NotAValidValue
 
-            if (argValues.Length > methInfo.ArgCount)
+            var methArgCount = methInfo.ArgCount;
+            if (argValues.Length > methArgCount)
                 throw RuntimeException.TooManyArgumentsPassed();
 
             var methodParams = methInfo.Params;
-            var argsToPass = new IValue[methodParams.Length];
+            var argsToPass = new IValue[methArgCount];
 
             int i = 0;
             for (; i < argValues.Length; i++)
@@ -85,7 +86,7 @@ namespace ScriptEngine.HostedScript.Library
                 else
                     argsToPass[i] = Variable.Create(argsToPass[i], string.Empty); // имя не нужно
             }
-            for (; i < methInfo.ArgCount; i++)
+            for (; i < methArgCount; i++)
             {
                 if (!methodParams[i].HasDefaultValue)
                     throw RuntimeException.TooFewArgumentsPassed();

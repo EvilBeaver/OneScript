@@ -1141,7 +1141,6 @@ namespace ScriptEngine.Machine
         private void PrepareContextCallArguments(int arg, out IRuntimeContextInstance context, out int methodId, out IValue[] argValues)
         {
             var factArgs = PopArguments();
-            var argCount = factArgs.Length;
 
             context = _operationStack.Pop().AsObject();
             var methodName = _module.Constants[arg].AsString();
@@ -1153,20 +1152,23 @@ namespace ScriptEngine.Machine
             }
             else
             {
+                var factArgCount = factArgs.Length;
+
                 var methodInfo = context.GetMethodInfo(methodId);
+                var methArgCount = methodInfo.ArgCount;
                 var methodParams = methodInfo.Params;
 
-                if (argCount > methodParams.Length)
+                if (factArgCount > methArgCount)
                     throw RuntimeException.TooManyArgumentsPassed();
 
-                argValues = new IValue[methodParams.Length];
+                argValues = new IValue[methArgCount];
                 int i = 0;
-                for (; i < argCount; i++)
+                for (; i < factArgCount; i++)
                 {
                     argValues[i] = PrepareArg(factArgs[i], methodParams[i], i);
                 }
 
-                for (; i < methodParams.Length; i++)
+                for (; i < methArgCount; i++)
                 {
                     if (!methodParams[i].HasDefaultValue)
                         throw RuntimeException.TooFewArgumentsPassed();
