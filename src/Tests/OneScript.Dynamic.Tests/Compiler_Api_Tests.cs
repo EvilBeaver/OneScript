@@ -7,15 +7,13 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using FluentAssertions;
-using OneScript.Compilation.Binding;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
-using OneScript.Native.Compiler;
 using Xunit;
 
 namespace OneScript.Dynamic.Tests
 {
-    public class Compiler_Api_Tests
+    public class Compiler_Api_Tests : CompilerTestBase
     {
         [Fact]
         public void CanCompile_Empty_Module()
@@ -135,28 +133,64 @@ namespace OneScript.Dynamic.Tests
             
             errors.Should().BeEmpty();
         }
+        
+        [Fact]
+        public void CanCompile_Func()
+        {
+            var code = @"
+            Функция Тест()
+                Возврат 123;
+            КонецФункции
 
-        private DynamicModule CreateModule(string code)
+            а = Тест();";
+            
+            var errors = new List<CodeError>();
+            CreateModule(code, errors);
+            
+            errors.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void CanCompile_Proc_With_Return()
         {
-            var helper = new CompileHelper();
-            helper.ParseModule(code);
-            return helper.Compile(new SymbolTable());
+            var code = @"
+            Процедура Тест()
+                Возврат;
+            КонецПроцедуры
+
+            Тест();";
+            
+            var errors = new List<CodeError>();
+            CreateModule(code, errors);
+            
+            errors.Should().BeEmpty();
         }
         
-        private DynamicModule CreateModule(string code, List<CodeError> errors)
+        [Fact]
+        public void Detects_Proc_As_Func_Invoke()
         {
-            var helper = new CompileHelper();
-            helper.ParseModule(code);
-            var result = helper.Compile(new SymbolTable());
-            errors.AddRange(helper.Errors);
-            return result;
+            var code = @"
+            Процедура Тест()
+                
+            КонецПроцедуры
+
+            a = Тест();";
+            
+            var errors = new List<CodeError>();
+            CreateModule(code, errors);
+            
+            errors.Should().HaveCount(1);
+            errors[0].ErrorId.Should().Be(nameof(LocalizedErrors.UseProcAsFunction));
         }
         
-        private DynamicModule CreateModule(string code, SymbolTable scopes)
+        [Fact]
+        public void Test_Conversion_To_Boolean_For_Decimals_In_BooleanExpressions()
         {
-            var helper = new CompileHelper();
-            helper.ParseBatch(code);
-            return helper.Compile(scopes);
+            var code = @"
+            Номер = 0;
+            Операнд = 2=2 И Номер+1;";
+
+            CreateModule(code);
         }
     }
 }

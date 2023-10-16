@@ -17,10 +17,6 @@ namespace ScriptEngine.Machine
         private Stopwatch _activeStopwatch = null;
         private HashSet<string> _preparedScripts = new HashSet<string>();
 
-        public CodeStatProcessor()
-        {
-        }
-
         public bool IsPrepared(string ScriptFileName)
         {
             return _preparedScripts.Contains(ScriptFileName);

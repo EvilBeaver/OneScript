@@ -9,6 +9,7 @@ using System;
 using System.Runtime.CompilerServices;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Values;
 
 namespace OneScript.Native.Runtime
@@ -90,7 +91,7 @@ namespace OneScript.Native.Runtime
         }
 
         [ContextMethod("Найти", "Find")]
-        public static int StrPos(string needle, string haystack)
+        public static int StrPos(string haystack, string needle)
         {
             var result = haystack.IndexOf(needle, StringComparison.Ordinal) + 1;
             return result;

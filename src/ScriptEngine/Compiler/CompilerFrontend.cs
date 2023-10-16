@@ -28,7 +28,7 @@ namespace ScriptEngine.Compiler
             IDependencyResolver dependencyResolver) : base(handlers, errorSink, services)
         {
             _dependencyResolver = dependencyResolver;
-            _backendSelector = new CompilerBackendSelector();
+            _backendSelector = services.Resolve<CompilerBackendSelector>();
 
             _backendSelector.NativeBackendInitializer = NativeInitializer;
             _backendSelector.StackBackendInitializer = StackInitializer;

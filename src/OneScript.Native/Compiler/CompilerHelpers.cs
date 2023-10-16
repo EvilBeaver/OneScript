@@ -28,6 +28,7 @@ namespace OneScript.Native.Compiler
                 LexemType.StringLiteral => BslStringValue.Create(lex.Content),
                 LexemType.DateLiteral => BslDateValue.Parse(lex.Content),
                 LexemType.UndefinedLiteral => BslUndefinedValue.Instance,
+                LexemType.NullLiteral => BslNullValue.Instance,
                 _ => throw new NotImplementedException()
             };
         }
@@ -41,24 +42,23 @@ namespace OneScript.Native.Compiler
                 LexemType.StringLiteral => (string)BslStringValue.Create(lex.Content),
                 LexemType.DateLiteral => (DateTime)BslDateValue.Parse(lex.Content),
                 LexemType.UndefinedLiteral => BslUndefinedValue.Instance,
+                LexemType.NullLiteral => BslNullValue.Instance,
                 _ => throw new NotImplementedException()
             };
         }
 
-        public static IEnumerable<object> GetAnnotations(IEnumerable<AnnotationNode> annotations)
+        public static IEnumerable<Attribute> GetAnnotations(IEnumerable<AnnotationNode> annotations)
         {
             // Возможно будут какие-то маппинги на системные атрибуты, не только на BslAnnotation
-            // поэтому возвращаем object[] а не BslAnnotation[]
+            // поэтому возвращаем Attribute[] а не BslAnnotation[]
 
-            var mappedAnnotations = new List<object>();
-            foreach (var node in annotations)
-            {
-                var anno = new BslAnnotationAttribute(node.Name);
-                anno.SetParameters(GetAnnotationParameters(node));
-                mappedAnnotations.Add(anno);
-            }
-
-            return mappedAnnotations;
+            return annotations.Select(GetBslAnnotation).ToList();
+        }
+        
+        public static BslAnnotationAttribute GetBslAnnotation(AnnotationNode node)
+        {
+            var parameters = GetAnnotationParameters(node);
+            return new BslAnnotationAttribute(node.Name, parameters);
         }
         
         public static Type GetClrType(TypeDescriptor type)
@@ -83,8 +83,24 @@ namespace OneScript.Native.Compiler
         private static IEnumerable<BslAnnotationParameter> GetAnnotationParameters(AnnotationNode node)
         {
             return node.Children.Cast<AnnotationParameterNode>()
-                .Select(param => new BslAnnotationParameter(param.Name, ValueFromLiteral(param.Value)))
+                .Select(MakeAnnotationParameter)
                 .ToList();
+        }
+        
+        private static BslAnnotationParameter MakeAnnotationParameter(AnnotationParameterNode param)
+        {
+            BslAnnotationParameter result;
+            if (param.Value.Type != LexemType.NotALexem)
+            {
+                var runtimeValue = ValueFromLiteral(param.Value);
+                result = new BslAnnotationParameter(param.Name, runtimeValue);
+            }
+            else
+            {
+                result = new BslAnnotationParameter(param.Name, null);
+            }
+
+            return result;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -9,6 +9,7 @@ using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Contexts.Enums;
+using OneScript.Exceptions;
 using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts

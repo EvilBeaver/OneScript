@@ -10,7 +10,9 @@ using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
+using OneScript.Exceptions;
 using OneScript.Language;
+using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Runtime;
@@ -22,13 +24,16 @@ namespace OneScript.Native.Compiler
     public class ModuleCompiler : ExpressionTreeGeneratorBase
     {
         private readonly IServiceContainer _runtimeServices;
+        private readonly ICompileTimeDependencyResolver _dependencyResolver;
         private DynamicModule _module;
         private readonly BslMethodInfoFactory<BslNativeMethodInfo> _methodsFactory;
 
-        public ModuleCompiler(IErrorSink errors, IServiceContainer runtimeServices) : base(errors)
+        public ModuleCompiler(IErrorSink errors, IServiceContainer runtimeServices, ICompileTimeDependencyResolver dependencyResolver) : base(errors)
         {
             _runtimeServices = runtimeServices;
+            _dependencyResolver = dependencyResolver;
             _methodsFactory = new BslMethodInfoFactory<BslNativeMethodInfo>(() => new BslNativeMethodInfo());
+            
         }
         
         public DynamicModule Compile(
@@ -73,14 +78,14 @@ namespace OneScript.Native.Compiler
             foreach (var methodNode in methodsSection.Children.Cast<MethodNode>())
             {
                 var signature = methodNode.Signature;
-                if (Symbols.FindMethod(signature.MethodName, out _))
+                if (Symbols.TryFindMethodBinding(signature.MethodName, out _))
                 {
                     AddError(LocalizedErrors.DuplicateMethodDefinition(signature.MethodName), signature.Location);
                     continue;
                 }
 
                 var builder = _methodsFactory.NewMethod();
-                builder.SetAnnotations(methodNode.Annotations);
+                builder.SetAnnotations(CompilerHelpers.GetAnnotations(methodNode.Annotations));
                 builder.SetDispatchingIndex(ownMethodsCount++);
                 
                 VisitMethodSignature(builder, methodNode.Signature);
@@ -185,6 +190,52 @@ namespace OneScript.Native.Compiler
             var context = MakeContext();
             var methCompiler = new MethodCompiler(context, method);
             methCompiler.CompileModuleBody(moduleBody);
+        }
+
+        protected override void VisitModuleAnnotation(AnnotationNode node)
+        {
+            if (node.Kind == NodeKind.Import)
+            {
+                HandleImportClause(node);
+            }
+
+            var annotation = CompilerHelpers.GetBslAnnotation(node);
+            _module.ModuleAttributes.Add(annotation);
+        }
+
+        private void HandleImportClause(AnnotationNode node)
+        {
+            var libName = node.Children
+                .Cast<AnnotationParameterNode>()
+                .First()
+                .Value
+                .Content;
+            
+            try
+            {
+                _dependencyResolver.Resolve(_module.Source, libName);
+            }
+            catch (DependencyResolveException e)
+            {
+                var error = new CodeError
+                {
+                    Description = e.Message,
+                    Position = MakeCodePosition(node.Location),
+                    ErrorId = nameof(CompilerException)
+                };
+                AddError(error);
+            }
+        }
+        
+        private ErrorPositionInfo MakeCodePosition(CodeRange range)
+        {
+            return new ErrorPositionInfo
+            {
+                Code = _module.Source.GetCodeLine(range.LineNumber),
+                LineNumber = range.LineNumber,
+                ColumnNumber = range.ColumnNumber,
+                ModuleName = _module.Source.Name
+            };
         }
     }
 }

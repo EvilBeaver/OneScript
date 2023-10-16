@@ -9,11 +9,11 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using OneScript.Compilation;
 using OneScript.DependencyInjection;
+using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Types;
-using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Hosting
@@ -49,6 +49,7 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<RuntimeEnvironment>();
             services.RegisterSingleton<CompileTimeSymbolsProvider>();
             services.RegisterSingleton<IErrorSink>(svc => new ThrowingErrorSink(CompilerException.FromCodeError));
+            services.RegisterSingleton<IExceptionInfoFactory, ExceptionInfoFactory>();
             
             services.Register<ExecutionDispatcher>();
             services.Register<IDependencyResolver, NullDependencyResolver>();

@@ -17,6 +17,12 @@ namespace ScriptEngine.Compiler
     public class CompilerBackendSelector : BslSyntaxWalker
     {
         private bool _isNative;
+        private bool _isNativeDefault;
+
+        public CompilerBackendSelector(OneScriptCoreOptions options)
+        {
+            _isNativeDefault = options.UseNativeAsDefaultRuntime;
+        }
         
         public Func<ICompilerBackend> StackBackendInitializer { get; set; }
         
@@ -39,6 +45,15 @@ namespace ScriptEngine.Compiler
                 StringComparison.CurrentCultureIgnoreCase))
             {
                 _isNative = true;
+            }
+            else if (string.Equals(node.Name, NativeRuntimeAnnotationHandler.StackRuntimeDirectiveName,
+                         StringComparison.CurrentCultureIgnoreCase))
+            {
+                _isNative = false;
+            }
+            else
+            {
+                _isNative = _isNativeDefault;
             }
         }
 

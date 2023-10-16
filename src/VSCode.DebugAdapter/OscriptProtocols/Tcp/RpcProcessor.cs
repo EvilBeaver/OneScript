@@ -11,6 +11,7 @@ using System.Threading;
 using OneScript.DebugProtocol;
 using OneScript.DebugProtocol.Abstractions;
 using OneScript.DebugProtocol.TcpServer;
+using Serilog;
 
 namespace VSCode.DebugAdapter
 {
@@ -21,6 +22,8 @@ namespace VSCode.DebugAdapter
         private readonly Queue<RpcCallResult> _responses = new Queue<RpcCallResult>();
         private readonly AutoResetEvent _responseAvailable = new AutoResetEvent(false);
 
+        private static readonly ILogger Log = Serilog.Log.ForContext<RpcProcessor>();
+        
         private struct ChannelRecord
         {
             public IMethodsDispatcher Dispatcher;
@@ -46,14 +49,14 @@ namespace VSCode.DebugAdapter
         
         private void ServerOnDataReceived(object sender, CommunicationEventArgs e)
         {
-            SessionLog.WriteLine("Data received " + e.Data);
             if (e.Exception == null)
             {
+                Log.Debug("Data received {@Data}", (TcpProtocolDtoBase)e.Data);
                 DispatchMessage((TcpProtocolDtoBase)e.Data, e.Channel);
             }
             else
             {
-                SessionLog.WriteLine("RPC Exception " + e.Exception + " critical: " + e.Exception.StopChannel);
+                Log.Error(e.Exception, "RPC Exception received. Critical: {Critical}", e.Exception.StopChannel);
                 if (e.Exception.StopChannel)
                 {
                     Stop();
@@ -65,23 +68,24 @@ namespace VSCode.DebugAdapter
         {
             if (!_dispatchers.TryGetValue(data.ServiceName, out var serviceRecord))
             {
-                SessionLog.WriteLine("No dispatcher for " + data.ServiceName);
+                Log.Warning("No dispatcher for {ServiceName}", data.ServiceName);
                 return;
             }
 
             if (data is RpcCall rpcCall)
             {
-                SessionLog.WriteLine("Processing call to " + rpcCall.Id);
+                Log.Debug("Processing call to {Id}", rpcCall.Id);
                 var result = serviceRecord.Dispatcher.Dispatch(serviceRecord.ServiceInstance, rpcCall.Id, rpcCall.Parameters);
                 if (result != null)
                 {
                     var callResult = RpcCallResult.Respond(rpcCall, result);
+                    Log.Debug("Sending response {Result}", callResult.ReturnValue);
                     responseChannel.Write(callResult);
                 }
             }
             else if(data is RpcCallResult result)
             {
-                SessionLog.WriteLine("Saving response to " + result.Id);
+                Log.Debug("Enque response to {Id}. Value {Value}", result.Id, result.ReturnValue);
                 lock (_responses)
                 {
                     _responses.Enqueue(result);

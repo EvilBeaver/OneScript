@@ -7,8 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Xml.Schema;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Xml;
 using OneScript.StandardLibrary.XMLSchema.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
@@ -18,7 +18,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ОпределениеОграниченияИдентичностиXS", "XSIdentityConstraintDefinition")]
-    public class XSIdentityConstraintDefinition : AutoContext<XSIdentityConstraintDefinition>, IXSAnnotated, IXSNamedComponent
+    public sealed class XSIdentityConstraintDefinition : AutoContext<XSIdentityConstraintDefinition>, IXSAnnotated, IXSNamedComponent
     {
         private XmlSchemaIdentityConstraint _constraint;
         private XSAnnotation _annotation;

@@ -7,6 +7,9 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace OneScript.DebugProtocol
 {
+    /// <summary>
+    /// Интерфейс слушателя событий отладки (сообщений, инициируемых со стороны BSL)       
+    /// </summary>
     public interface IDebugEventListener
     {
         void ThreadStopped(int threadId, ThreadStopReason reason);

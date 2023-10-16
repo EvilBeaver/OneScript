@@ -9,7 +9,7 @@ using System;
 using System.IO;
 using System.Xml;
 using Ionic.Zip;
-using OneScript.Commons;
+using OneScript.Exceptions;
 
 namespace OneScript.StandardLibrary.NativeApi
 {

@@ -10,8 +10,8 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Schema;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.XDTO;
 using OneScript.StandardLibrary.Xml;
 using OneScript.StandardLibrary.XMLSchema.Collections;
@@ -25,13 +25,15 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("СхемаXML", "XMLSchema")]
-    public class XMLSchema : AutoContext<XMLSchema>, IXSComponent, IXDTOSerializableXML
+    public sealed class XMLSchema : AutoContext<XMLSchema>, IXSComponent, IXDTOSerializableXML
     {
         private readonly XmlSchema _schema;
 
-        private XMLSchema()
+        private XMLSchema() : this(new XmlSchema()) { }
+
+        public XMLSchema(XmlSchema xmlSchema)
         {
-            _schema = new XmlSchema();
+            _schema = xmlSchema;
             Components = new XSComponentFixedList();
             Annotations = new XSComponentFixedList();
 

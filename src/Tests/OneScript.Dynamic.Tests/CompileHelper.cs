@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.DependencyInjection;
 using OneScript.Language;
@@ -16,6 +17,7 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Native.Compiler;
 using OneScript.Sources;
+using ScriptEngine.Hosting;
 
 namespace OneScript.Dynamic.Tests
 {
@@ -33,7 +35,7 @@ namespace OneScript.Dynamic.Tests
         
         public CompileHelper()
         {
-            _services = default;
+            _services = new TinyIocImplementation();
         }
 
         public IEnumerable<CodeError> Errors => _errors.Errors;
@@ -79,7 +81,8 @@ namespace OneScript.Dynamic.Tests
                 .CreateIterator();
             _codeIndexer = lexer.Iterator.Source;
 
-            var parser = new DefaultBslParser(lexer, _errors, new PreprocessorHandlers());
+            var providers = _services.ResolveEnumerable<IDirectiveHandler>();
+            var parser = new DefaultBslParser(lexer, _errors, new PreprocessorHandlers(providers));
             return parser;
         }
 
@@ -87,8 +90,15 @@ namespace OneScript.Dynamic.Tests
         {
             if (scopes.ScopeCount == 0)
                 scopes.PushScope(new SymbolScope(), null);
-            var compiler = new ModuleCompiler(_errors, _services);
+            var compiler = new ModuleCompiler(_errors, _services, new DependencyResolverMock());
             return compiler.Compile(_codeIndexer, _module, scopes);
+        }
+        
+        private class DependencyResolverMock : ICompileTimeDependencyResolver
+        {
+            public void Resolve(SourceCode module, string libraryName)
+            {
+            }
         }
     }
 }

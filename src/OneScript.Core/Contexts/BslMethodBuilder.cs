@@ -76,7 +76,7 @@ namespace OneScript.Contexts
             return this;
         }
 
-        public BslMethodBuilder<T> SetAnnotations(IEnumerable<object> annotations)
+        public BslMethodBuilder<T> SetAnnotations(IEnumerable<Attribute> annotations)
         {
             _member.SetAnnotations(annotations);
             return this;

@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using OneScript.Contexts;
-using OneScript.Values;
 
 namespace OneScript.Compilation.Binding
 {
@@ -65,7 +64,7 @@ namespace OneScript.Compilation.Binding
             return false;
         }
         
-        public bool FindMethod(string name, out SymbolBinding binding)
+        public bool TryFindMethodBinding(string name, out SymbolBinding binding)
         {
             for (int i = _bindings.Count - 1; i >= 0; i--)
             {
@@ -83,6 +82,18 @@ namespace OneScript.Compilation.Binding
             }
 
             binding = default;
+            return false;
+        }
+
+        public bool TryFindMethod(string name, out IMethodSymbol method)
+        {
+            if (TryFindMethodBinding(name, out var binding))
+            {
+                method = GetMethod(binding);
+                return true;
+            }
+
+            method = default;
             return false;
         }
 

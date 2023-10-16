@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Language;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine.Machine;
@@ -111,11 +112,6 @@ namespace OneScript.StandardLibrary.Tasks
             {
                 State = TaskStateEnum.CompletedWithErrors;
                 ExceptionInfo = new ExceptionInfoContext(exception);
-            }
-            catch (BslCoreException exception)
-            {
-                State = TaskStateEnum.CompletedWithErrors;
-                ExceptionInfo = new ExceptionInfoContext(new ScriptException(exception));
             }
         }
     }

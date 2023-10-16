@@ -21,16 +21,17 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
     /// </summary>
     /// <see cref="System.Xml.Schema.XmlSchemaImport"/> 
     [ContextClass("ИмпортXS", "XSImport")]
-    public class XSImport : AutoContext<XSImport>, IXSDirective
+    public sealed class XSImport : AutoContext<XSImport>, IXSDirective
     {
         private readonly XmlSchemaImport _import;
+        private XMLSchema _resolvedSchema;
 
-        private XSImport() => _import = new XmlSchemaImport();
+        private XSImport() : this(new XmlSchemaImport()) { }
 
         internal XSImport(XmlSchemaImport import)
-            : this()
         {
             _import = import;
+            _resolvedSchema = new XMLSchema(_import.Schema);
         }
 
         #region OneScript
@@ -41,7 +42,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public XSAnnotation Annotation => null;
 
         [ContextProperty("Компоненты", "Components")]
-        public XSComponentFixedList Components => null;
+        public XSComponentFixedList Components => XSComponentFixedList.EmptyList();
 
         [ContextProperty("Контейнер", "Container")]
         public IXSComponent Container { get; private set; }
@@ -56,10 +57,13 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public XSComponentType ComponentType => XSComponentType.Import;
 
         [ContextProperty("РазрешеннаяСхема", "ResolvedSchema")]
-        public XMLSchema ResolvedSchema
-        {
-            get => ResolvedSchema;
-            set => ResolvedSchema = value;
+        public XMLSchema ResolvedSchema 
+        { 
+            get => _resolvedSchema;
+            set {
+                _resolvedSchema = value;
+                _import.Schema = _resolvedSchema.SchemaObject;
+            }
         }
 
         [ContextProperty("РасположениеСхемы", "SchemaLocation")]

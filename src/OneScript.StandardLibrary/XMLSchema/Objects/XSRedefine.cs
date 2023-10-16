@@ -16,25 +16,21 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ПереопределениеXS", "XSRedefine")]
-    public class XSRedefine : AutoContext<XSRedefine>, IXSDirective
+    public sealed class XSRedefine : AutoContext<XSRedefine>, IXSDirective
     {
 
         private readonly XmlSchemaRedefine _redefine;
+        private XMLSchema _resolvedSchema;
 
-        private XSRedefine()
-        {
-            _redefine = new XmlSchemaRedefine();
-            Components = new XSComponentFixedList();
-
-            Content = new XSComponentList();
-            Content.Inserted += Content_Inserted;
-            Content.Cleared += Content_Cleared;
-        }
+        private XSRedefine() : this (new XmlSchemaRedefine()) { }
 
         internal XSRedefine(XmlSchemaRedefine redefine)
-            : this()
         {
             _redefine = redefine;
+            _resolvedSchema = new XMLSchema(_redefine.Schema);
+
+            Components = new XSComponentFixedList();
+            Content = new XSComponentList();
 
             Content.Inserted -= Content_Inserted;
             Content.Cleared -= Content_Cleared;
@@ -47,7 +43,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
                 Components.Add(component);
                 Content.Add(component);
             }
-                       
+
             Content.Inserted += Content_Inserted;
             Content.Cleared += Content_Cleared;
         }
@@ -77,8 +73,12 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         [ContextProperty("РазрешеннаяСхема", "ResolvedSchema")]
         public XMLSchema ResolvedSchema
         {
-            get => ResolvedSchema;
-            set => ResolvedSchema = value;
+            get => _resolvedSchema;
+            set
+            {
+                _resolvedSchema = value;
+                _redefine.Schema = _resolvedSchema.SchemaObject;
+            }
         }
 
         [ContextProperty("РасположениеСхемы", "SchemaLocation")]

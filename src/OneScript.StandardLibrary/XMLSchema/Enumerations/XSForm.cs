@@ -14,7 +14,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    public class XSForm : ClrEnumValueWrapper<XmlSchemaForm>
+    public sealed class XSForm : ClrEnumValueWrapper<XmlSchemaForm>
     {
         internal XSForm(EnumerationXSForm instance, XmlSchemaForm realValue) : base(instance, realValue )
         {
@@ -26,7 +26,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
     }
        
     [SystemEnum("ФормаПредставленияXS", "XSForm")]
-    public class EnumerationXSForm : EnumerationContext
+    public sealed class EnumerationXSForm : EnumerationContext
     {
         private readonly Dictionary<XmlSchemaForm, XSForm> _valuesCache;
 

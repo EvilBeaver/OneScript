@@ -21,7 +21,7 @@ namespace ScriptEngine.Compiler
 
         public NativeCompilerBackend(IErrorSink errorSink, IServiceContainer services)
         {
-            _codeGen = new ModuleCompiler(errorSink, services);
+            _codeGen = new ModuleCompiler(errorSink, services, services.Resolve<IDependencyResolver>());
         }
 
         public bool GenerateDebugCode { get; set; }

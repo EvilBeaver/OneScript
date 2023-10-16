@@ -7,8 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Xml.Schema;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.XMLSchema.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using OneScript.StandardLibrary.XMLSchema.Interfaces;
@@ -17,7 +17,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("АннотацияXS", "XSAnnotation")]
-    public class XSAnnotation : AutoContext<XSAnnotation>, IXSComponent
+    public sealed class XSAnnotation : AutoContext<XSAnnotation>, IXSComponent
     {
         internal readonly XmlSchemaAnnotation InternalObject;
 

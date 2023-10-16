@@ -8,8 +8,8 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Xml;
 using System.Xml.Schema;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Xml;
 using OneScript.Types;
 using OneScript.Values;
@@ -20,7 +20,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XDTO
 {
     [ContextClass("СериализаторXDTO", "XDTOSerializer")]
-    public class XDTOSerializer : AutoContext<XDTOSerializer>
+    public sealed class XDTOSerializer : AutoContext<XDTOSerializer>
     {
         private readonly ITypeManager _typeManager;
         private readonly XmlGlobalFunctions _xmlGlobalFunctions;
@@ -223,7 +223,7 @@ namespace OneScript.StandardLibrary.XDTO
                 }
                 else if (xsiNil.SystemType == BasicTypes.String)
                     typeValue = new BslTypeValue(BasicTypes.Undefined);
-            };
+            }
 
             if (typeValue == null)
                 throw RuntimeException.InvalidArgumentValue();

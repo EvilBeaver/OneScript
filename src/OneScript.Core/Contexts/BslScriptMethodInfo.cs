@@ -23,7 +23,7 @@ namespace OneScript.Contexts
         private Type _returnType = typeof(void);
         private string _name;
         private bool _isPrivate = true;
-        private BslParameterInfo[] _parameters = Array.Empty<BslParameterInfo>();
+        protected BslParameterInfo[] _parameters = Array.Empty<BslParameterInfo>();
 
         protected BslScriptMethodInfo()
         {

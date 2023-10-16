@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -12,14 +13,29 @@ namespace OneScript.Language
 {
     public class IdentifiersTrie<T> : IDictionary<string, T>
     {
+        private readonly TrieNode _root = new TrieNode();
+        
         private class TrieNode
         {
             public char charL;
             public char charU;
-            public T value;
             public TrieNode sibl;
             public TrieNode next;
 
+            private T _value;
+
+            public T Value
+            {
+                get => _value;
+                set
+                {
+                    HasValue = true;
+                    _value = value;
+                }
+            }
+            
+            public bool HasValue { get; private set; }
+            
             public TrieNode Find(char ch)
             {
                 var node = sibl;
@@ -31,13 +47,7 @@ namespace OneScript.Language
                 }
                 return null;
             }
-        }
 
-        private readonly TrieNode _root;
-
-        public IdentifiersTrie()
-        {
-            _root = new TrieNode();
         }
 
         public void Add(string str, T val)
@@ -52,7 +62,7 @@ namespace OneScript.Language
                     {
                         charL = char.ToLower(ch),
                         charU = char.ToUpper(ch),
-                        value = default(T),
+                        Value = default(T),
                         sibl = node.sibl
                     };
                     node.sibl = key;
@@ -61,12 +71,23 @@ namespace OneScript.Language
                 node = key.next;
             }
 
-            node.value = val;
+            node.Value = val;
         }
 
         public bool ContainsKey(string key)
         {
-            throw new System.NotImplementedException();
+            var node = _root;
+            foreach (char ch in key)
+            {
+                var keyNode = node.Find(ch);
+                if (keyNode == null)
+                {
+                    return false;
+                }
+                node = keyNode.next;
+            }
+
+            return node.next == null && node.HasValue;
         }
 
         public bool Remove(string key)
@@ -85,8 +106,11 @@ namespace OneScript.Language
 
                 node = key.next;
             }
+            
+            if (!node.HasValue)
+                throw new KeyNotFoundException();
 
-            return node.value;
+            return node.Value;
         }
 
         public T this[string index]
@@ -95,8 +119,8 @@ namespace OneScript.Language
             set => Add(index, value);
         }
 
-        public ICollection<string> Keys { get; }
-        public ICollection<T> Values { get; }
+        public ICollection<string> Keys => throw new NotSupportedException();
+        public ICollection<T> Values => throw new NotSupportedException();
 
         public bool TryGetValue(string str, out T value)
         {
@@ -106,14 +130,20 @@ namespace OneScript.Language
                 var key = node.Find(ch);
                 if (key == null)
                 {
-                    value = default(T);
+                    value = default;
                     return false;
                 }
 
                 node = key.next;
             }
 
-            value = node.value;
+            if (!node.HasValue)
+            {
+                value = default;
+                return false;
+            }
+            
+            value = node.Value;
             return true;
         }
 

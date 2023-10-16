@@ -12,17 +12,20 @@ using System.Threading;
 using OneScript.DebugProtocol;
 using OneScript.DebugProtocol.Abstractions;
 using OneScript.DebugProtocol.TcpServer;
+using Serilog;
 
 namespace VSCode.DebugAdapter
 {
-    public class TcpDebugConnector : IDebuggerService
+    public class TcpDebugServerClient : IDebuggerService
     {
         private readonly int _port;
         private readonly IDebugEventListener _eventBackChannel;
         private BinaryChannel _commandsChannel;
         private RpcProcessor _processor;
+        
+        private static readonly ILogger Log = Serilog.Log.ForContext<TcpDebugServerClient>();
 
-        public TcpDebugConnector(int port, IDebugEventListener eventBackChannel)
+        public TcpDebugServerClient(int port, IDebugEventListener eventBackChannel)
         {
             _port = port;
             _eventBackChannel = eventBackChannel;
@@ -32,13 +35,11 @@ namespace VSCode.DebugAdapter
         {
             var debuggerUri = GetDebuggerUri(_port); 
             
-            SessionLog.WriteLine("Creating commands tcp channel");
-
             var client = new TcpClient();
             TryConnect(client, debuggerUri);
             _commandsChannel = new BinaryChannel(client);
             
-            SessionLog.WriteLine("connected");
+            Log.Debug("Connected to {Host}:{Port}", debuggerUri.Host, debuggerUri.Port);
 
             RunEventsListener(_commandsChannel);
         }
@@ -69,7 +70,7 @@ namespace VSCode.DebugAdapter
                     if (i == limit - 1)
                         throw;
                     
-                    SessionLog.WriteLine("Error. Retry connect");
+                    Log.Warning("Error. Retry connect {Attempt}", i);
                     Thread.Sleep(1500);
                 }
             }
@@ -95,26 +96,28 @@ namespace VSCode.DebugAdapter
 
         private void WriteCommand<T>(T data, [CallerMemberName] string command = "")
         {
-            SessionLog.WriteLine($"Sending {command} to debuggee"); 
+            Log.Verbose("Sending {Command} to debuggee, param {Parameter}", command, data); 
             var dto = RpcCall.Create(nameof(IDebuggerService), command, data);
             _commandsChannel.Write(dto);
+            Log.Verbose("Successfully written: {Command}", command);
 
         }
         
         private void WriteCommand(object[] data, [CallerMemberName] string command = "")
         {
-            SessionLog.WriteLine($"Sending {command} to debuggee"); 
+            Log.Verbose("Sending {Command} to debuggee, params {Parameters}", command, data);
             var dto = RpcCall.Create(nameof(IDebuggerService), command, data);
             _commandsChannel.Write(dto);
+            Log.Verbose("Successfully written: {Command}", command);
         }
         
         private T GetResponse<T>()
         {
             var rpcResult = _processor.GetResult();
-            SessionLog.WriteLine("Response received " + rpcResult.Id + " t = " + rpcResult.ReturnValue);
+            Log.Verbose("Response received {Result} = {Value}", rpcResult.Id, rpcResult.ReturnValue);
             if (rpcResult.ReturnValue is RpcExceptionDto excDto)
             {
-                SessionLog.WriteLine($"Exception received: {excDto.Description}");
+                Log.Verbose("RPC Exception received: {Description}", excDto.Description);
                 throw new RpcOperationException(excDto);
             }
             
@@ -188,6 +191,11 @@ namespace VSCode.DebugAdapter
         public void StepOut(int threadId)
         {
             WriteCommand(threadId);
+        }
+
+        public void Disconnect(bool terminate)
+        {
+            WriteCommand(terminate);
         }
 
         public int[] GetThreads()

@@ -5,29 +5,29 @@ pipeline {
 
     environment {
         VersionPrefix = '2.0.0'
-        VersionSuffix = 'rc2'
+        VersionSuffix = 'rc3'
         outputEnc = '65001'
     }
 
     stages {
+        stage('Prepare Linux Environment') {
+            agent{ label 'master'}
+            steps{
+                dir('install'){
+                    sh 'chmod +x make-dockers.sh && ./make-dockers.sh'
+                }
+                withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'dockerpassword', usernameVariable: 'dockeruser')]) {
+                    sh """
+                    docker login -p $dockerpassword -u $dockeruser
+                    docker push oscript/onescript-builder:deb
+                    docker push oscript/onescript-builder:rpm
+                    docker push oscript/onescript-builder:gcc
+                    """.stripIndent()
+                }
+            }
+        }
         stage('Build'){
             parallel {
-                stage('Prepare Linux Environment') {
-                    agent{ label 'master'}
-                    steps{
-                        dir('install'){
-                            sh 'chmod +x make-dockers.sh && ./make-dockers.sh'
-                        }
-                        withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'dockerpassword', usernameVariable: 'dockeruser')]) {
-                            sh """
-                            docker login -p $dockerpassword -u $dockeruser
-                            docker push oscript/onescript-builder:deb
-                            docker push oscript/onescript-builder:rpm
-                            """.stripIndent()
-                        }
-                    }
-                }
-
                 stage('Windows Build') {
                     agent { label 'windows' }
 
@@ -62,6 +62,32 @@ pipeline {
                             
                             stash includes: 'tests, built/**', name: 'buildResults'
                         }
+                    }
+                }
+                
+                stage('Linux Build') {
+                    agent {
+                        docker {
+                            image 'oscript/onescript-builder:gcc'
+                            label 'linux'
+                        }
+                    }
+                    
+                    steps {
+                        sh 'mkdir -p built/tmp/na-proxy && mkdir -p built/tmp/na-tests'
+                        dir('src/ScriptEngine.NativeApi') {
+                            sh './build.sh'
+                            sh 'cp *.so ../../built/tmp/na-proxy'
+                        }
+                        dir('tests/native-api') {
+                            sh './build.sh'
+                            sh 'cp *.so ../../built/tmp/na-tests'
+                        }
+                        dir('output') {
+                            sh 'cp -Rv ../built/tmp/* .'
+                        }
+                        stash includes: 'output/na-proxy/*.so', name: 'nativeApiSo'
+                        stash includes: 'output/na-tests/*.so', name: 'nativeApiTestsSo'
                     }
                 }
             }
@@ -125,6 +151,11 @@ pipeline {
                         }
                         
                         unstash 'buildResults'
+                        unstash 'nativeApiSo'
+                        unstash 'nativeApiTestsSo'
+                        
+                        sh 'cp output/na-proxy/*.so ./built/linux-x64/bin/'
+                        sh 'mkdir -p tests/native-api/build64 && cp output/na-tests/*.so ./tests/native-api/build64/'
 
                         sh '''\
                         if [ ! -d lintests ]; then
@@ -154,6 +185,10 @@ pipeline {
                     }
                     
                     unstash 'buildResults'
+                    unstash 'nativeApiSo'
+                    
+                    bat 'xcopy output\\na-proxy\\*64.so built\\linux-64\\bin\\'
+                    
                     script
                     {
                         if (env.BRANCH_NAME == "preview") {
@@ -197,7 +232,7 @@ pipeline {
             }
         }
 
-		stage ('Publishing preview') {
+        stage ('Publishing preview') {
             when { anyOf {
                 branch 'release/preview';
                 }

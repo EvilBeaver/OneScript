@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Language.Extensions;
@@ -99,14 +100,12 @@ namespace ScriptEngine.Compiler
                 // if(_ctx is ModuleCompilerContext moduleContext)
                 //     moduleContext.Update();
             }
-            catch (CompilerException e)
+            catch (DependencyResolveException e)
             {
                 var error = new CodeError
                 {
                     Description = e.Message,
-                    Position = e.GetPosition()?.LineNumber == default
-                        ? MakeCodePosition(node.Location)
-                        : e.GetPosition(),
+                    Position = MakeCodePosition(node.Location),
                     ErrorId = nameof(CompilerException)
                 };
                 AddError(error);
@@ -119,7 +118,7 @@ namespace ScriptEngine.Compiler
             {
                 foreach (var item in _forwardedMethods)
                 {
-                    if (!_ctx.FindMethod(item.identifier, out var methN))
+                    if (!_ctx.TryFindMethodBinding(item.identifier, out var methN))
                     {
                         AddError(LocalizedErrors.SymbolNotFound(item.identifier), item.location);
                         continue;
@@ -605,7 +604,7 @@ namespace ScriptEngine.Compiler
             else
             {
                 var parameters = BuiltinFunctions.ParametersInfo(funcId);
-                CheckFactArguments(parameters, node.ArgumentList);
+                FullCheckFactArguments(parameters, node.ArgumentList);
             }
 
             AddCommand(funcId, argsPassed);
@@ -630,7 +629,34 @@ namespace ScriptEngine.Compiler
         {
             CheckFactArguments(method.GetParameters(), argList);
         }
-        
+
+        private void FullCheckFactArguments(ParameterInfo[] parameters, BslSyntaxNode argList)
+        {
+            var argsPassed = argList.Children.Count;
+            if (argsPassed > parameters.Length)
+            {
+                AddError(CompilerErrors.TooManyArgumentsPassed(), argList.Location);
+                return;
+            }
+
+            int i = 0;
+            for (; i < argsPassed; i++)
+            {
+                if (!parameters[i].HasDefaultValue && argList.Children[i].Children.Count == 0)
+                {
+                    AddError(CompilerErrors.MissedArgument(), argList.Location);
+                }
+            }
+            for (; i < parameters.Length; i++)
+            {
+                if (!parameters[i].HasDefaultValue)
+                {
+                    AddError(CompilerErrors.TooFewArgumentsPassed(), argList.Location);
+                    return;
+                }
+            }
+        }
+
         protected override void VisitGlobalProcedureCall(CallNode node)
         {
             if (LanguageDef.IsBuiltInFunction(node.Identifier.Lexem.Token))
@@ -722,7 +748,7 @@ namespace ScriptEngine.Compiler
             
             var identifier = identifierNode.Lexem.Content;
             
-            var hasMethod = _ctx.FindMethod(identifier, out var methBinding);
+            var hasMethod = _ctx.TryFindMethodBinding(identifier, out var methBinding);
             if (hasMethod)
             {
                 var scope = _ctx.GetScope(methBinding.ScopeNumber);
@@ -875,7 +901,7 @@ namespace ScriptEngine.Compiler
             {
                 var terminal = handlerNode.AsTerminal();
                 var identifier = terminal.GetIdentifier();
-                if (_ctx.FindMethod(identifier, out _))
+                if (_ctx.TryFindMethodBinding(identifier, out _))
                 {
                     var lex = terminal.Lexem;
                     lex.Type = LexemType.StringLiteral;
@@ -1062,9 +1088,9 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.PushConst, num);
         }
 
-        private IEnumerable<object> GetAnnotationAttributes(AnnotatableNode node)
+        private IEnumerable<BslAnnotationAttribute> GetAnnotationAttributes(AnnotatableNode node)
         {
-            var mappedAnnotations = new List<object>();
+            var mappedAnnotations = new List<BslAnnotationAttribute>();
             foreach (var annotation in node.Annotations)
             {
                 var anno = new BslAnnotationAttribute(annotation.Name);

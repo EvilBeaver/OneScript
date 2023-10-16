@@ -5,20 +5,16 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Threading;
 using ScriptEngine.Machine;
 
 namespace OneScript.DebugServices
 {
-    public class MachineWaitToken
+    public class MachineWaitToken: IDisposable
     {
-        private ManualResetEventSlim _threadEvent;
+        private ManualResetEventSlim _threadEvent = new ManualResetEventSlim();
 
-        public MachineWaitToken()
-        {
-            _threadEvent = new ManualResetEventSlim();
-        }
-        
         public MachineInstance Machine { get; set; }
 
         public void Wait() => _threadEvent.Wait();
@@ -26,5 +22,12 @@ namespace OneScript.DebugServices
         public void Set() => _threadEvent.Set();
         
         public void Reset() => _threadEvent.Reset();
+        
+        public void Dispose()
+        {
+            Machine.UnsetDebugMode();
+            _threadEvent.Set();
+            _threadEvent.Dispose();
+        }
     }
 }

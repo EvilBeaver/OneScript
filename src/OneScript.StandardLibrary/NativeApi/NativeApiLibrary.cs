@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using OneScript.Commons;
+using OneScript.Exceptions;
 using OneScript.Types;
 using ScriptEngine.Machine;
 

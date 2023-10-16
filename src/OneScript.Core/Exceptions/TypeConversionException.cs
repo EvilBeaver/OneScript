@@ -5,15 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
-using OneScript.Language;
+using OneScript.Localization;
 
-namespace OneScript.Native.Runtime
+namespace OneScript.Exceptions
 {
-    public class ExternalSystemException : ScriptException
+    public class TypeConversionException : RuntimeException
     {
-        public ExternalSystemException(Exception reason)
-            : base(new ErrorPositionInfo(), $"Внешнее исключение ({reason.GetType().FullName}): {reason.Message}", reason)
+        public TypeConversionException(BilingualString message) : base(message)
         {
         }
     }

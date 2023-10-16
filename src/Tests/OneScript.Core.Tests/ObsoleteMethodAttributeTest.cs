@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using Moq;
-using OneScript.Commons;
+using OneScript.Exceptions;
 using ScriptEngine;
 using Xunit;
 

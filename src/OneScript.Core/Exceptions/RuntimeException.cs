@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using OneScript.Localization;
 
-namespace OneScript.Commons
+namespace OneScript.Exceptions
 {
     public class RuntimeException : BslCoreException
     {
@@ -20,8 +20,6 @@ namespace OneScript.Commons
         {
         }
 
-        
-        
         #region Static Factory Methods
 
         public static RuntimeException DeprecatedMethodCall(string name)

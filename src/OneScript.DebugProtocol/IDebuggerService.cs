@@ -7,6 +7,9 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace OneScript.DebugProtocol
 {
+    /// <summary>
+    /// Сервис непосредственной работы с командами отладки, шагами, брейкпоинтами и пр. 
+    /// </summary>
     public interface IDebuggerService
     {
         /// <summary>
@@ -58,6 +61,12 @@ namespace OneScript.DebugProtocol
         void StepIn(int threadId);
 
         void StepOut(int threadId);
+
+        /// <summary>
+        /// Отключение сеанса отладки по инициативе IDE
+        /// </summary>
+        /// <param name="terminate"></param>
+        void Disconnect(bool terminate);
 
         int[] GetThreads();
         

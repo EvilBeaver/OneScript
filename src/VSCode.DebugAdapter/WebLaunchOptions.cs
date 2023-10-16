@@ -10,5 +10,7 @@ namespace VSCode.DebugAdapter
     public class WebLaunchOptions : CommonLaunchOptions
     {
         public string AppDir { get; set; }
+        
+        public bool WaitOnStart { get; set; }
     }
 }

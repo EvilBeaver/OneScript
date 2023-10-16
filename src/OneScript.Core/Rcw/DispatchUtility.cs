@@ -99,8 +99,26 @@ namespace OneScript.Rcw
         /// </remarks>
         public static object Invoke(object obj, int dispId, object[] args)
         {
+            object result = Invoke(obj, dispId, args, null);
+            return result;
+        }
+
+        /// <summary>
+        /// Invokes a member by DISPID.
+        /// </summary>
+        /// <param name="obj">An object that implements IDispatch.</param>
+        /// <param name="dispId">The DISPID of a member.  This can be obtained using
+        /// <see cref="TryGetDispId(object, string, out int)"/>.</param>
+        /// <param name="args">The arguments to pass to the member.</param>
+        /// <param name="modifiers">ByRef modifiers</param>
+        /// <returns>The member's return value.</returns>
+        /// <remarks>
+        /// This can invoke a method or a property get accessor.
+        /// </remarks>
+        public static object Invoke(object obj, int dispId, object[] args, ParameterModifier[] modifiers)
+        {
             string memberName = "[DispId=" + dispId + "]";
-            object result = Invoke(obj, memberName, args);
+            object result = Invoke(obj, memberName, args, modifiers);
             return result;
         }
 
@@ -114,12 +132,12 @@ namespace OneScript.Rcw
         /// <remarks>
         /// This can invoke a method or a property get accessor.
         /// </remarks>
-        public static object Invoke(object obj, string memberName, object[] args)
+        public static object Invoke(object obj, string memberName, object[] args, ParameterModifier[] modifiers)
         {
             RequireReference(obj, "obj");
             Type type = obj.GetType();
             object result = type.InvokeMember(memberName, BindingFlags.InvokeMethod | BindingFlags.GetProperty,
-                null, obj, args, null);
+                null, obj, args, modifiers, null, null);
             return result;
         }
 

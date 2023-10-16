@@ -10,9 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using FluentAssertions;
-using Microsoft.VisualBasic;
 using OneScript.Compilation.Binding;
 using OneScript.DependencyInjection;
+using OneScript.Exceptions;
 using OneScript.Native.Runtime;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
@@ -25,6 +25,7 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Types;
 using Xunit;
 
@@ -46,6 +47,7 @@ namespace OneScript.Core.Tests
         {
             var services = new TinyIocImplementation();
             services.Register(tm);
+            services.Register<IExceptionInfoFactory, ExceptionInfoFactory>();
 
             return new CompiledBlock(services.CreateContainer());
         }
@@ -404,6 +406,23 @@ namespace OneScript.Core.Tests
             statements[0].NodeType.Should().Be(ExpressionType.Assign);
             statements[1].NodeType.Should().Be(ExpressionType.Assign);
         }
+        
+        [Fact]
+        public void ClrIntegers_Can_Be_Used_As_Bsl_Numbers()
+        {
+            var block = new CompiledBlock(default);
+            block.CodeBlock = 
+                @"Равенство = (Найти(""123"",""2"") = 0);
+                  Неравенство = (КодСимвола(""А"") <> 0)";
+            
+            var statements = block.MakeExpression()
+                .Body
+                .As<BlockExpression>()
+                .Expressions;
+
+            statements[0].NodeType.Should().Be(ExpressionType.Assign);
+            statements[1].NodeType.Should().Be(ExpressionType.Assign);
+        }
 
         public static IEnumerable<object[]> TypesForTestEqualityOperators()
         {
@@ -645,7 +664,9 @@ namespace OneScript.Core.Tests
         [Fact]
         public void Can_Do_TryExcept()
         {
-            var block = new CompiledBlock(default);
+            var services = new TinyIocImplementation();
+            services.Register<IExceptionInfoFactory, ExceptionInfoFactory>();
+            var block = new CompiledBlock(services);
             block.Parameters.Insert("Ф", new BslTypeValue(BasicTypes.Number));
             block.CodeBlock = 
                 "Попытка Если Ф = 1 Тогда Возврат 1; КонецЕсли;" +
@@ -699,7 +720,7 @@ namespace OneScript.Core.Tests
             tm.RegisterClass(typeof(ArrayImpl));
             var blockCompiler = new CompiledBlock(default);
 
-            var N = 5000;
+            var N = 50000;
             var arr = new ArrayImpl();
             for (int i = 0; i < N; i++)
             {
@@ -995,7 +1016,7 @@ namespace OneScript.Core.Tests
             block.CodeBlock = "А = ИнформацияОбОшибке();";
 
             var lambda = block.MakeExpression();
-            lambda.Body.As<BlockExpression>().Expressions[0].Type.Should().Be(typeof(BslValue));
+            lambda.Body.As<BlockExpression>().Expressions[0].Type.Should().BeAssignableTo<BslObjectValue>();
         }
         
         [Fact]
@@ -1013,7 +1034,7 @@ namespace OneScript.Core.Tests
 
             tryBlock.Handlers.First().Body.As<BlockExpression>().Expressions[0].Type
                 .Should()
-                .Be(typeof(ExceptionInfoClass));
+                .Be(typeof(BslObjectValue));
         }
         
         [Fact]
@@ -1038,7 +1059,7 @@ namespace OneScript.Core.Tests
         {
             var tm = new DefaultTypeManager();
             var objectType = tm.RegisterClass(typeof(StructureImpl));
-            var block = GetCompiler(new DefaultTypeManager());
+            var block = GetCompiler(tm);
             block.Parameters.Insert("Ф", new BslTypeValue(objectType));
             block.CodeBlock = "Возврат Ложь И Ф;"; // Ф не должен быть вычислен
             
@@ -1048,6 +1069,38 @@ namespace OneScript.Core.Tests
             var testData = new StructureImpl();
 
             ((bool)(BslBooleanValue)func.DynamicInvoke(new object[] { testData })).Should().Be(false);
+        }
+        
+        [Fact]
+        public void TypeFuncValue_Is_BslTypeValue()
+        {
+            var tm = new DefaultTypeManager();
+            var objectType = tm.RegisterClass(typeof(StructureImpl));
+            var block = GetCompiler(tm);
+            block.CodeBlock = "Возврат Тип(\"Структура\");";
+            
+            var lambda = block.MakeExpression();
+            var func = lambda.Compile();
+
+            var testType = new BslTypeValue(objectType);
+            var result = func.DynamicInvoke();
+
+            result.Should().BeOfType<BslTypeValue>().And.Be(testType);
+        }
+        
+        [Fact]
+        public void TypeOfFuncValue_Is_BslTypeValue()
+        {
+            var block = GetCompiler(new DefaultTypeManager());
+            block.CodeBlock = "Возврат ТипЗнч(42);";
+            
+            var lambda = block.MakeExpression();
+            var func = lambda.Compile();
+
+            var testType = new BslTypeValue(BasicTypes.Number);
+            var result = func.DynamicInvoke();
+
+            result.Should().BeOfType<BslTypeValue>().And.Be(testType);
         }
     }
 }

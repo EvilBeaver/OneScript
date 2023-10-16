@@ -7,8 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Xml.Schema;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.XMLSchema.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
@@ -18,7 +18,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("МаскаXS", "XSWildcard")]
-    public class XSWildcard : AutoContext<XSWildcard>, IXSAnnotated, IXSFragment
+    public sealed class XSWildcard : AutoContext<XSWildcard>, IXSFragment
     {
         private XmlSchemaAnnotated _wildcard;
         private XSAnnotation _annotation;
@@ -43,6 +43,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
 
             SetNamespaceConstraint();
         }
+
         internal XSWildcard(XmlSchemaAnyAttribute xmlAnyAttribute)
         {
             _wildcard = xmlAnyAttribute;
@@ -120,7 +121,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         [ContextProperty("Компоненты", "Components")]
-        public XSComponentFixedList Components => null;
+        public XSComponentFixedList Components => XSComponentFixedList.EmptyList();
 
         [ContextProperty("Контейнер", "Container")]
         public IXSComponent Container { get; private set; }
@@ -164,7 +165,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         #region Methods
 
         [ContextMethod("КлонироватьКомпоненту", "CloneComponent")]
-        public IXSComponent CloneComponent(bool recursive = true) => throw new NotImplementedException();
+        public IXSComponent CloneComponent(bool recursive) => throw new NotImplementedException();
 
         [ContextMethod("ОбновитьЭлементDOM", "UpdateDOMElement")]
         public void UpdateDOMElement() => throw new NotImplementedException();

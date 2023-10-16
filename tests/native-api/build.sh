@@ -11,5 +11,6 @@ cmake -E make_directory build64
 cd build64
 cmake -D CMAKE_BUILD_TYPE:STRING=Release -D TARGET_PLATFORM_32:BOOL=OFF --build ..
 cmake --build .
+chmod +x *.so
 cp *.so ..
 cd ..

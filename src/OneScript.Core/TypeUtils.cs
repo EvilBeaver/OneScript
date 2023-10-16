@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Contexts;
 using OneScript.Values;
 
 namespace OneScript
@@ -34,6 +35,8 @@ namespace OneScript
         }
 
         public static bool IsValue(this Type type) => typeof(BslValue).IsAssignableFrom(type);
+        
+        public static bool IsContext(this Type type) => typeof(IRuntimeContextInstance).IsAssignableFrom(type);
         
         public static bool IsObjectValue(this Type type) => typeof(BslObjectValue).IsAssignableFrom(type);
     }

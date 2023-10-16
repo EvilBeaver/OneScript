@@ -7,8 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Dynamic;
 using System.Linq;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Types;
 using OneScript.Values;
 
@@ -81,21 +81,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override int CompareTo(IValue other)
         {
-            if (other.SystemType.Equals(this.SystemType))
-            {
-                if (this.Equals(other))
-                {
-                    return 0;
-                }
-                else
-                {
-                    throw RuntimeException.ComparisonNotSupportedException();
-                }
-            }
-            else
-            {
-                return this.SystemType.ToString().CompareTo(other.SystemType.ToString());
-            }
+            throw RuntimeException.ComparisonNotSupportedException();
         }
 
         #endregion
@@ -281,6 +267,9 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             var parameters = GetMethodInfo(methIdx).GetParameters();
+            if (args.Length > parameters.Length)
+                throw RuntimeException.TooManyArgumentsPassed();
+
             var valueArgs = new IValue[parameters.Length];
             var passedArgs = args.Select(x => ContextValuesMarshaller.ConvertDynamicValue(x)).ToArray();
             

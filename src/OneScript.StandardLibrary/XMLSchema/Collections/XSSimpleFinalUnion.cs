@@ -10,20 +10,19 @@ using OneScript.Contexts;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using OneScript.Types;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("ОбъединениеЗавершенностиПростогоТипаXS", "XSSimpleFinalUnion")]
-    public class XSSimpleFinalUnion : AutoContext<XSSimpleFinalUnion>
+    public sealed class XSSimpleFinalUnion : AutoContext<XSSimpleFinalUnion>
     {
         private ArrayImpl _values;
 
         private bool Contains(XmlSchemaDerivationMethod _value)
         {
-            XSSimpleFinal enumValue = EnumerationXSSimpleFinal.FromNativeValue(_value);
-            IValue idx = _values.Find(enumValue);
+            var enumValue = EnumerationXSSimpleFinal.FromNativeValue(_value);
+            var idx = _values.Find(enumValue);
             return idx.SystemType != BasicTypes.Undefined;
         }
 

@@ -27,5 +27,7 @@ namespace ScriptEngine.Machine
         void SetLineStops(string module, int[] lines);
         
         bool Find(string module, int line);
+
+        void Clear();
     }
 }

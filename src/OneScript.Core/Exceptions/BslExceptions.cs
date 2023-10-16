@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using OneScript.Localization;
 using OneScript.Values;
 
-namespace OneScript.Commons
+namespace OneScript.Exceptions
 {
     public static class BslExceptions
     {
