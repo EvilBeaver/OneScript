@@ -1235,6 +1235,22 @@ namespace OneScript.Language.Tests
                 errors.Single().Description.Should().Contain("Await");
             });
         }
+        
+        [Fact]
+        public void AwaitISNotKeywordInNonAsyncContext()
+        {
+            var code = 
+                @"Процедура Проц1()
+	                А = Ждать;
+                КонецПроцедуры";
+
+            var validator = ParseModuleAndGetValidator(code)
+                .DownTo(NodeKind.Assignment);
+            
+            validator
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.Identifier);
+        }
 
         private static void CatchParsingError(string code)
         {

@@ -1536,11 +1536,17 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        #endregion  
-        
+        #endregion
+
         private void NextLexem()
         {
-            _lastExtractedLexem = _lexer.NextLexem();
+            var localLexem = _lexer.NextLexem();
+            if (localLexem.Token == Token.Await && !_isInAsyncMethod)
+            {
+                localLexem.Token = Token.NotAToken;
+            }
+
+            _lastExtractedLexem = localLexem;
         }
 
         private bool NextExpected(Token expected)
