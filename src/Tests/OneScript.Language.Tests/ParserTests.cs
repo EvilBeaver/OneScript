@@ -1237,7 +1237,7 @@ namespace OneScript.Language.Tests
         }
         
         [Fact]
-        public void AwaitISNotKeywordInNonAsyncContext()
+        public void AwaitIsNotKeywordInNonAsyncContext()
         {
             var code = 
                 @"Процедура Проц1()
@@ -1250,6 +1250,17 @@ namespace OneScript.Language.Tests
             validator
                 .NextChildIs(NodeKind.Identifier)
                 .NextChildIs(NodeKind.Identifier);
+        }
+        
+        [Fact]
+        public void AwaitRequiresExpression()
+        {
+            var code = 
+                @"Асинх Процедура Проц1()
+	                А = Ждать;
+                КонецПроцедуры";
+
+            CatchParsingError(code, err => err.Single().ErrorId.Should().Be("ExpressionExpected"));
         }
 
         private static void CatchParsingError(string code)
