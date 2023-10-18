@@ -489,14 +489,32 @@ namespace OneScript.StandardLibrary
         /// <summary>
         /// Возвращает все известные типы
         /// </summary>
-        /// <returns>Массив известных типов</returns>
+        /// <returns>
+        ///     Массив из Структура:
+        ///         * Тип - Тип - Тип
+        ///         * Имя - Строка - Имя типа
+        ///         * Примитивный - Булево - Тип является примитивным
+        ///         * Пользовательский - Булево - Тип является пользовательским
+        ///
+        /// </returns>
         [ContextMethod("ИзвестныеТипы", "KnownTypes")]
         public ArrayImpl KnownTypes()
         {
             var result = new ArrayImpl();
 
             _typeManager.RegisteredTypes()
-                .Select(descriptor => new BslTypeValue(descriptor))
+                .Select(descriptor =>
+                {
+                    var typeDefinition = new StructureImpl();
+                    typeDefinition.Insert("Тип", new BslTypeValue(descriptor));
+                    typeDefinition.Insert("Имя", BslStringValue.Create(descriptor.ToString()));
+                    typeDefinition.Insert("Примитивный",
+                        descriptor.ImplementingClass.IsSubclassOf(typeof(BslPrimitiveValue)) ? BslBooleanValue.True : BslBooleanValue.False);
+                    typeDefinition.Insert("Пользовательский",
+                        descriptor.ImplementingClass == typeof(AttachedScriptsFactory) ? BslBooleanValue.True : BslBooleanValue.False);
+
+                    return typeDefinition;
+                })
                 .ForEach(value => result.Add(value));
 
             return result;
