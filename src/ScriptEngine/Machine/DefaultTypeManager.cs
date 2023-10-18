@@ -143,6 +143,11 @@ namespace ScriptEngine.Machine
             return _knownTypes.Any(x => x.Name.ToUpperInvariant() == nameToUpper);
         }
 
+        public List<TypeDescriptor> RegisteredTypes()
+        {
+            return _knownTypes;
+        }
+
         public Type NewInstanceHandler 
         { 
             get

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
@@ -30,6 +31,13 @@ namespace OneScript.StandardLibrary
     [ContextClass("Рефлектор","Reflector")]
     public class ReflectorContext : AutoContext<ReflectorContext>
     {
+        private readonly ITypeManager _typeManager;
+
+        private ReflectorContext(ITypeManager typeManager)
+        {
+            _typeManager = typeManager;
+        }
+
         /// <summary>
         /// Вызывает метод по его имени.
         /// </summary>
@@ -478,10 +486,26 @@ namespace OneScript.StandardLibrary
                    .Build();
         }
 
-        [ScriptConstructor]
-        public static IRuntimeContextInstance CreateNew()
+        /// <summary>
+        /// Возвращает все известные типы
+        /// </summary>
+        /// <returns>Массив известных типов</returns>
+        [ContextMethod("ИзвестныеТипы", "KnownTypes")]
+        public ArrayImpl KnownTypes()
         {
-            return new ReflectorContext();
+            var result = new ArrayImpl();
+
+            _typeManager.RegisteredTypes()
+                .Select(descriptor => new BslTypeValue(descriptor))
+                .ForEach(value => result.Add(value));
+
+            return result;
+        }
+
+        [ScriptConstructor]
+        public static IValue CreateNew(TypeActivationContext context)
+        {
+            return new ReflectorContext(context.TypeManager);
         }
     }
 }
