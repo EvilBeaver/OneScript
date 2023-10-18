@@ -1237,7 +1237,7 @@ namespace OneScript.Language.Tests
         }
         
         [Fact]
-        public void AwaitIsNotKeywordInNonAsyncContext()
+        public void AwaitIsNotKeywordInNonAsyncContext_Variable()
         {
             var code = 
                 @"Процедура Проц1()
@@ -1253,6 +1253,69 @@ namespace OneScript.Language.Tests
         }
         
         [Fact]
+        public void AwaitIsNotKeywordInNonAsyncContext_Method()
+        {
+            var code = 
+                @"Процедура Проц1()
+	                А = Ждать();
+                КонецПроцедуры";
+
+            var validator = ParseModuleAndGetValidator(code)
+                .DownTo(NodeKind.Assignment);
+            
+            validator
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.GlobalCall);
+        }
+        
+        [Fact]
+        public void AwaitIsNotKeywordInNonAsyncContext_PropertyName()
+        {
+            var code = 
+                @"Процедура Проц1()
+	                А = П.Ждать;
+                КонецПроцедуры";
+
+            var validator = ParseModuleAndGetValidator(code)
+                .DownTo(NodeKind.DereferenceOperation);
+            
+            validator
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.Identifier);
+        }
+        
+        [Fact]
+        public void AwaitIsNotKeywordInNonAsyncContext_MemberMethodName()
+        {
+            var code = 
+                @"Процедура Проц1()
+	                А = П.Ждать();
+                КонецПроцедуры";
+
+            var validator = ParseModuleAndGetValidator(code)
+                .DownTo(NodeKind.DereferenceOperation);
+            
+            validator
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.MethodCall);
+        }
+        
+        [Fact]
+        public void Await_In_NonAsync_Expression_Fails()
+        {
+            var code = 
+                @"Процедура Проц1()
+	                Если Ждать ВтороеСлово Тогда
+                    КонецЕсли;
+                КонецПроцедуры";
+
+            CatchParsingError(code, err =>
+            {
+                err.Single().ErrorId.Should().Be("AwaitMustBeInAsyncMethod");
+            });
+        }
+        
+        [Fact]
         public void AwaitRequiresExpression()
         {
             var code = 
@@ -1260,7 +1323,18 @@ namespace OneScript.Language.Tests
 	                А = Ждать;
                 КонецПроцедуры";
 
-            CatchParsingError(code, err => err.Single().ErrorId.Should().Be("ExpressionExpected"));
+            CatchParsingError(code, err => err.Single().ErrorId.Should().Be("ExpressionSyntax"));
+        }
+        
+        [Fact]
+        public void DoubleAwaitIsForbidden()
+        {
+            var code = 
+                @"Асинх Процедура Проц1()
+	                А = Ждать Ждать Б;
+                КонецПроцедуры";
+
+            CatchParsingError(code, err => err.Single().ErrorId.Should().Be("ExpressionSyntax"));
         }
 
         private static void CatchParsingError(string code)

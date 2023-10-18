@@ -286,7 +286,7 @@ namespace OneScript.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsLiteral(ref Lexem lex)
+        public static bool IsLiteral(in Lexem lex)
         {
             return lex.Type == LexemType.StringLiteral
                    || lex.Type == LexemType.NumberLiteral
