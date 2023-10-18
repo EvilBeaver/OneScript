@@ -489,39 +489,49 @@ namespace OneScript.StandardLibrary
         /// <summary>
         /// Возвращает все известные типы
         /// </summary>
+        /// <param name="filter">Структура - Условия поиска. Ключ - имя колонки, значение - искомое значение </param>
         /// <returns>
-        ///     Соответствие из КлючИЗначение:
-        ///         * Ключ - Тип - Тип
-        ///         * Значение - Структура - Описание типа:
-        ///             * Имя - Строка - Имя типа
-        ///             * Примитивный - Булево - Тип является примитивным
-        ///             * Пользовательский - Булево - Тип является пользовательским
-        ///
+        ///  ТаблицаЗначений:
+        ///    * Имя - Строка - Имя типа
+        ///    * Значение - Тип - Тип
+        ///    * Примитивный - Булево - Это примитивный тип 
+        ///    * Пользовательский - Булево - Это пользовательский типа
+        ///    * Коллекция - Булево - Это коллекция
         /// </returns>
         [ContextMethod("ИзвестныеТипы", "KnownTypes")]
-        public MapImpl KnownTypes()
+        public ValueTable KnownTypes(StructureImpl filter = default)
         {
-            var result = new MapImpl();
+            var result = new ValueTable();
+            
+            var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType());
+            var valueColumn = result.Columns.Add("Значение", new TypeDescription(new List<BslTypeValue>() { new BslTypeValue(BasicTypes.Type) }));
+            var primitiveColumn = result.Columns.Add("Примитивный", TypeDescription.BooleanType());
+            var userColumn = result.Columns.Add("Пользовательский", TypeDescription.BooleanType());
+            var collectionColumn = result.Columns.Add("Коллекция", TypeDescription.BooleanType());
+            
+            _typeManager.RegisteredTypes().ForEach(descriptor =>
+            {
+                var row = result.Add();
+                
+                row.Set(nameColumn, ValueFactory.Create(descriptor.ToString()));
+                row.Set(valueColumn, new BslTypeValue(descriptor));
+                row.Set(primitiveColumn, ValueFactory.Create(descriptor.ImplementingClass.IsSubclassOf(typeof(BslPrimitiveValue))));
+                row.Set(userColumn, ValueFactory.Create(descriptor.ImplementingClass == typeof(AttachedScriptsFactory)));
+                row.Set(collectionColumn, ValueFactory.Create(
+                    descriptor.ImplementingClass.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICollectionContext<>))
+                ));
+            });
 
-            _typeManager.RegisteredTypes()
-                .ToDictionary(descriptor => new BslTypeValue(descriptor), descriptor =>
-                {
-                    var typeDefinition = new StructureImpl();
-                    typeDefinition.Insert("Имя", BslStringValue.Create(descriptor.ToString()));
-                    typeDefinition.Insert("Примитивный",
-                        descriptor.ImplementingClass.IsSubclassOf(typeof(BslPrimitiveValue)) ? BslBooleanValue.True : BslBooleanValue.False);
-                    typeDefinition.Insert("Пользовательский",
-                        descriptor.ImplementingClass == typeof(AttachedScriptsFactory) ? BslBooleanValue.True : BslBooleanValue.False);
-                    
-                    return typeDefinition;
-                })
-                .ForEach(value => result.Insert(value.Key, value.Value));
-
+            if (filter != default)
+            {
+                result = result.Copy(filter);
+            }
+            
             return result;
         }
 
         [ScriptConstructor]
-        public static IValue CreateNew(TypeActivationContext context)
+        public static ReflectorContext CreateNew(TypeActivationContext context)
         {
             return new ReflectorContext(context.TypeManager);
         }

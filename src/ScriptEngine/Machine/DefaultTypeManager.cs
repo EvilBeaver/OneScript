@@ -143,7 +143,7 @@ namespace ScriptEngine.Machine
             return _knownTypes.Any(x => x.Name.ToUpperInvariant() == nameToUpper);
         }
 
-        public List<TypeDescriptor> RegisteredTypes()
+        public IReadOnlyList<TypeDescriptor> RegisteredTypes()
         {
             return _knownTypes;
         }

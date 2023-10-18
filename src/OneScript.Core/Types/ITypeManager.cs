@@ -27,7 +27,7 @@ namespace OneScript.Types
         bool IsKnownType(Type type);
         bool IsKnownType(string typeName);
 
-        List<TypeDescriptor> RegisteredTypes();
+        IReadOnlyList<TypeDescriptor> RegisteredTypes();
 
     }
 }
