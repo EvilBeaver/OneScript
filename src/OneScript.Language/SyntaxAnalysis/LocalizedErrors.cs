@@ -43,6 +43,9 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public static CodeError IdentifierExpected() 
             => Create("Ожидается идентификатор", "Identifier expecting");
+        
+        public static CodeError LabelNameExpected() 
+            => Create("Ожидается имя метки", "Label name expected");
 
         public static CodeError ExpressionSyntax()
             => Create("Ошибка в выражении", "Expression syntax error");
@@ -139,5 +142,8 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public static CodeError SymbolNotFound(string symbol) =>
             Create($"Неизвестный символ: {symbol}", $"Symbol not found {symbol}");
+
+        public static CodeError AsyncMethodsNotSupported() =>
+            Create("Асинхронные методы не поддерживаются", "Async methods aren't supported");
     }
 }

@@ -1336,6 +1336,38 @@ namespace OneScript.Language.Tests
 
             CatchParsingError(code, err => err.Single().ErrorId.Should().Be("ExpressionSyntax"));
         }
+        
+        [Fact]
+        public void Labels_Can_Appear_In_CodeBlocks()
+        {
+            var code = 
+                @"А = 1;
+                ~Метка:
+                Б = 2;
+                ";
+
+            var validator = ParseBatchAndGetValidator(code);
+
+            validator.NextChildIs(NodeKind.Assignment);
+            validator.NextChildIs(NodeKind.Label);
+            validator.NextChildIs(NodeKind.Assignment);
+        }
+        
+        [Fact]
+        public void Goto_Can_Appear_In_CodeBlocks()
+        {
+            var code = 
+                @"А = 1;
+                Перейти ~Метка;
+                Б = 2;
+                ";
+
+            var validator = ParseBatchAndGetValidator(code);
+
+            validator.NextChildIs(NodeKind.Assignment);
+            validator.NextChildIs(NodeKind.Goto);
+            validator.NextChildIs(NodeKind.Assignment);
+        }
 
         private static void CatchParsingError(string code)
         {

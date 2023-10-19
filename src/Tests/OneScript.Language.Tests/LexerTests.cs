@@ -634,9 +634,10 @@ namespace OneScript.Language.Tests
         }
         
         [Fact]
-        public void Leer_Extracts_Labels()
+        public void Lexer_Extracts_Labels()
         {
-            string code = "~ImALabel: ~LabelRef;";
+            string code = "~ImALabel:\n" +
+                          " ~LabelRef;";
             var lexer = GetLexerForCode(code);
 
             var lex = lexer.NextLexem();

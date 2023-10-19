@@ -621,6 +621,12 @@ namespace OneScript.Language.SyntaxAnalysis
                     continue;
                 }
 
+                if (_lastExtractedLexem.Type == LexemType.Label)
+                {
+                    DefineLabel(_lastExtractedLexem);
+                    continue;
+                }
+                
                 if (_lastExtractedLexem.Type != LexemType.Identifier && _lastExtractedLexem.Token != Token.EndOfText)
                 {
                     AddError(LocalizedErrors.UnexpectedOperation());
@@ -640,6 +646,13 @@ namespace OneScript.Language.SyntaxAnalysis
                 NextLexem();
             }
             PopStructureToken();
+        }
+
+        private void DefineLabel(Lexem label)
+        {
+            var node = new LabelNode(label);
+            _nodeContext.AddChild(node);
+            NextLexem();
         }
 
         #region Statements
@@ -694,6 +707,9 @@ namespace OneScript.Language.SyntaxAnalysis
                 case Token.Await:
                     BuildGlobalCallAwaitOperator();
                     break;
+                case Token.Goto:
+                    BuildGotoOperator();
+                    break;
                 default:
                     var expected = _tokenStack.Peek();
                     AddError(LocalizedErrors.TokenExpected(expected));
@@ -733,6 +749,22 @@ namespace OneScript.Language.SyntaxAnalysis
                 AddError(LocalizedErrors.ExpressionSyntax());
                 return new ErrorTerminalNode(_lastExtractedLexem);
             }
+        }
+
+        private void BuildGotoOperator()
+        {
+            var gotoNode = new NonTerminalNode(NodeKind.Goto, _lastExtractedLexem);
+            NextLexem();
+
+            if (_lastExtractedLexem.Type != LexemType.LabelRef)
+            {
+                AddError(LocalizedErrors.LabelNameExpected());
+            }
+            
+            gotoNode.AddChild(new LabelNode(_lastExtractedLexem));
+            NextLexem();
+
+            _nodeContext.AddChild(gotoNode);
         }
         
         private void CheckAsyncMethod()

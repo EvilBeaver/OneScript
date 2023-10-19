@@ -9,6 +9,11 @@ namespace OneScript.Language.LexicalAnalysis
             "Ожидается имя метки",
             "Label name expected"
         );
+        
+        private static BilingualString INVALID_LABEL = new BilingualString(
+            "Неверно задана метка",
+            "Invalid label definition"
+        );
 
         WordLexerState _wordExtractor = new WordLexerState();
         
@@ -25,11 +30,20 @@ namespace OneScript.Language.LexicalAnalysis
                 throw CreateExceptionOnCurrentLine(MESSAGE_NAME_EXPECTED.ToString(), iterator);
             
             var result = _wordExtractor.ReadNextLexem(iterator);
+            if (!LanguageDef.IsUserSymbol(result))
+            {
+                throw CreateExceptionOnCurrentLine(INVALID_LABEL.ToString(), iterator);
+            }
+            
             result.Type = LexemType.LabelRef;
             if (iterator.CurrentSymbol == SpecialChars.Colon)
             {
                 result.Type = LexemType.Label;
-                iterator.MoveNext();
+                var tail = iterator.ReadToLineEnd();
+                if (tail.Trim().Length != 0)
+                {
+                    throw CreateExceptionOnCurrentLine(INVALID_LABEL.ToString(), iterator);
+                }
             }
 
             result.Location = start;

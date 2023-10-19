@@ -51,7 +51,17 @@ namespace OneScript.Language.SyntaxAnalysis
             _nodeVisitors[(int)NodeKind.RemoveHandler] = VisitHandlerOperation;
             _nodeVisitors[(int)NodeKind.NewObject] = (x) => VisitNewObjectCreation((NewObjectNode)x);
             _nodeVisitors[(int)NodeKind.Preprocessor] = (x) => VisitPreprocessorDirective((PreprocessorDirectiveNode)x);
+            _nodeVisitors[(int)NodeKind.Goto] = (x) => VisitGotoNode((NonTerminalNode)x);
+            _nodeVisitors[(int)NodeKind.Label] = (x) => VisitLabelNode((LabelNode)x);
 
+        }
+
+        protected virtual void VisitGotoNode(NonTerminalNode node)
+        {
+        }
+        
+        protected virtual void VisitLabelNode(LabelNode node)
+        {
         }
 
         protected void SetDefaultVisitorFor(NodeKind kind, Action<BslSyntaxNode> action)

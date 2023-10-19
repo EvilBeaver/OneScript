@@ -62,5 +62,7 @@ namespace OneScript.Language.SyntaxAnalysis
         Preprocessor,
         Import,
         TopLevelExpression,
+        Label,
+        Goto
     }
 }
