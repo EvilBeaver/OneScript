@@ -18,6 +18,8 @@ namespace OneScript.Language
         public const char QuestionMark = '?';
         public const char Preprocessor = '#';
         public const char Annotation = '&';
+        public const char Tilde = '~';
+        public const char Colon = ':';
 
         public static bool IsOperatorChar(char symbol)
         {

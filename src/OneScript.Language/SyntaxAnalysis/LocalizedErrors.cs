@@ -43,6 +43,9 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public static CodeError IdentifierExpected() 
             => Create("Ожидается идентификатор", "Identifier expecting");
+        
+        public static CodeError LabelNameExpected() 
+            => Create("Ожидается имя метки", "Label name expected");
 
         public static CodeError ExpressionSyntax()
             => Create("Ошибка в выражении", "Expression syntax error");
@@ -59,6 +62,11 @@ namespace OneScript.Language.SyntaxAnalysis
             return Create($"Локальная переменная не может быть экспортирована ({varName})",
                     $"Local variable can't be exported ({varName})");
         }
+
+        public static CodeError AwaitMustBeInAsyncMethod() => Create(
+            "Оператор Ждать (Await) может употребляться только в асинхронных процедурах или функциях",
+            "Operator Await can be used only in async procedures or functions"
+        );
 
         public static CodeError LiteralExpected() => Create("Ожидается константа", "Constant expected");
 
@@ -134,5 +142,8 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public static CodeError SymbolNotFound(string symbol) =>
             Create($"Неизвестный символ: {symbol}", $"Symbol not found {symbol}");
+
+        public static CodeError AsyncMethodsNotSupported() =>
+            Create("Асинхронные методы не поддерживаются", "Async methods aren't supported");
     }
 }

@@ -13,7 +13,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
     {
         public Token Operation { get; }
 
-        public UnaryOperationNode(Lexem operation) : base(NodeKind.UnaryOperation)
+        public UnaryOperationNode(Lexem operation) : base(NodeKind.UnaryOperation, operation)
         {
             Operation = operation.Token;
         }

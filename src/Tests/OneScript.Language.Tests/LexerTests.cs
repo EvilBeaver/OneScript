@@ -586,12 +586,12 @@ namespace OneScript.Language.Tests
             Assert.Equal("Б", lex.Content);
         }
 
-        [Fact(Skip = "Рефакторинг")]
+        [Fact]
         public void New_Exception_Shows_Negative_Line_And_Column()
         {
-            //var e = new ScriptException();
-            //Assert.True(e.LineNumber == -1);
-            //Assert.True(e.ColumnNumber == -1);
+            var e = new ScriptException("fake");
+            Assert.True(e.LineNumber == -1);
+            Assert.True(e.ColumnNumber == -1);
         }
 
         [Fact]
@@ -631,6 +631,23 @@ namespace OneScript.Language.Tests
             lex = lexer.NextLexem();
             Assert.Equal(LexemType.Identifier, lex.Type);
             Assert.Equal("value", lex.Content);
+        }
+        
+        [Fact]
+        public void Lexer_Extracts_Labels()
+        {
+            string code = "~ImALabel:\n" +
+                          " ~LabelRef;";
+            var lexer = GetLexerForCode(code);
+
+            var lex = lexer.NextLexem();
+
+            Assert.Equal(LexemType.Label, lex.Type);
+            Assert.Equal("ImALabel", lex.Content);
+
+            lex = lexer.NextLexem();
+            Assert.Equal(LexemType.LabelRef, lex.Type);
+            Assert.Equal("LabelRef", lex.Content);
         }
         
         private ILexer GetLexerForCode(string code)

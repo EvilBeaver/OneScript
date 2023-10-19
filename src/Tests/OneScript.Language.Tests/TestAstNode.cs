@@ -31,13 +31,18 @@ namespace OneScript.Language.Tests
                     BinaryOperationNode binary => binary.Operation.ToString(),
                     UnaryOperationNode unary => unary.Operation.ToString(),
                     PreprocessorDirectiveNode preproc => preproc.DirectiveName,
-                    _ => Value
+                    _ => nonTerm.ToString()
                 };
             }
             else if(node is TerminalNode term)
             {
                 _childrenLazy = new Lazy<IReadOnlyList<TestAstNode>>(new TestAstNode[0]);
                 Value = term.Lexem.Content;
+            }
+            else
+            {
+                _childrenLazy = new Lazy<IReadOnlyList<TestAstNode>>(new TestAstNode[0]);
+                Value = node.ToString();
             }
         }
         

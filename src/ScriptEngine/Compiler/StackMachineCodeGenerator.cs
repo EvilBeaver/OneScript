@@ -224,9 +224,23 @@ namespace ScriptEngine.Compiler
             return localCtx.Variables.Select(v => v.Name).ToArray();
 
         }
+        
+        protected override void VisitGotoNode(NonTerminalNode node)
+        {
+            throw new NotSupportedException();
+        }
+
+        protected override void VisitLabelNode(LabelNode node)
+        {
+            throw new NotSupportedException();
+        }
 
         protected override void VisitMethod(MethodNode methodNode)
         {
+            if (methodNode.IsAsync)
+            {
+                AddError(LocalizedErrors.AsyncMethodsNotSupported(), methodNode.Location);
+            }
             var signature = methodNode.Signature;
             var methodBuilder = NewMethod();
 
