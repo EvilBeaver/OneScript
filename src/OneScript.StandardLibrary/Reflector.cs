@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
@@ -30,6 +31,13 @@ namespace OneScript.StandardLibrary
     [ContextClass("Рефлектор","Reflector")]
     public class ReflectorContext : AutoContext<ReflectorContext>
     {
+        private readonly ITypeManager _typeManager;
+
+        private ReflectorContext(ITypeManager typeManager)
+        {
+            _typeManager = typeManager;
+        }
+
         /// <summary>
         /// Вызывает метод по его имени.
         /// </summary>
@@ -478,10 +486,54 @@ namespace OneScript.StandardLibrary
                    .Build();
         }
 
-        [ScriptConstructor]
-        public static IRuntimeContextInstance CreateNew()
+        /// <summary>
+        /// Возвращает все известные типы
+        /// </summary>
+        /// <param name="filter">Структура - Условия поиска. Ключ - имя колонки, значение - искомое значение </param>
+        /// <returns>
+        ///  ТаблицаЗначений:
+        ///    * Имя - Строка - Имя типа
+        ///    * Значение - Тип - Тип
+        ///    * Примитивный - Булево - Это примитивный тип 
+        ///    * Пользовательский - Булево - Это пользовательский типа
+        ///    * Коллекция - Булево - Это коллекция
+        /// </returns>
+        [ContextMethod("ИзвестныеТипы", "KnownTypes")]
+        public ValueTable KnownTypes(StructureImpl filter = default)
         {
-            return new ReflectorContext();
+            var result = new ValueTable();
+            
+            var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType());
+            var valueColumn = result.Columns.Add("Значение", new TypeDescription(new List<BslTypeValue>() { new BslTypeValue(BasicTypes.Type) }));
+            var primitiveColumn = result.Columns.Add("Примитивный", TypeDescription.BooleanType());
+            var userColumn = result.Columns.Add("Пользовательский", TypeDescription.BooleanType());
+            var collectionColumn = result.Columns.Add("Коллекция", TypeDescription.BooleanType());
+            
+            _typeManager.RegisteredTypes().ForEach(descriptor =>
+            {
+                var row = result.Add();
+                
+                row.Set(nameColumn, ValueFactory.Create(descriptor.ToString()));
+                row.Set(valueColumn, new BslTypeValue(descriptor));
+                row.Set(primitiveColumn, ValueFactory.Create(descriptor.ImplementingClass.IsSubclassOf(typeof(BslPrimitiveValue))));
+                row.Set(userColumn, ValueFactory.Create(descriptor.ImplementingClass == typeof(AttachedScriptsFactory)));
+                row.Set(collectionColumn, ValueFactory.Create(
+                    descriptor.ImplementingClass.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICollectionContext<>))
+                ));
+            });
+
+            if (filter != default)
+            {
+                result = result.Copy(filter);
+            }
+            
+            return result;
+        }
+
+        [ScriptConstructor]
+        public static ReflectorContext CreateNew(TypeActivationContext context)
+        {
+            return new ReflectorContext(context.TypeManager);
         }
     }
 }
