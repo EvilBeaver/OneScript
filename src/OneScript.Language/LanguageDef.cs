@@ -131,8 +131,6 @@ namespace OneScript.Language
             AddToken(Token.Equal, "=");
             AddToken(Token.Semicolon, ";");
             AddToken(Token.Question, "?");
-            AddToken(Token.Tilde, "~");
-            AddToken(Token.Colon, ":");
 
             #endregion
 
