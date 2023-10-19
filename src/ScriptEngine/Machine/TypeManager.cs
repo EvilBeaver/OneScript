@@ -24,6 +24,7 @@ namespace ScriptEngine.Machine
         bool IsKnownType(Type type);
         bool IsKnownType(string typeName);
         Type NewInstanceHandler { get; set; }
+        IReadOnlyList<TypeDescriptor> RegisteredTypes();
     }
 
     class StandartTypeManager : ITypeManager
@@ -206,6 +207,11 @@ namespace ScriptEngine.Machine
             }
         }
 
+        public IReadOnlyList<TypeDescriptor> RegisteredTypes()
+        {
+            return _knownTypes.Select(type => type.Descriptor).ToList();
+        }
+
         public TypeDescriptor GetTypeDescriptorFor(IValue typeTypeValue)
         {
             if (typeTypeValue.DataType != DataType.Type)
@@ -322,6 +328,11 @@ namespace ScriptEngine.Machine
             }
 
             return factory;
+        }
+
+        public static IReadOnlyList<TypeDescriptor> RegisteredTypes()
+        {
+            return _instance.RegisteredTypes();
         }
     }
 
