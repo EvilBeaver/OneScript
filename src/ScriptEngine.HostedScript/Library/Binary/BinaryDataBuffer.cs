@@ -97,11 +97,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// </summary>
         /// <value>Булево (Boolean)</value>
         [ContextProperty("ТолькоЧтение", "ReadOnly")]
-        public bool ReadOnly
-        {
-            get { return _readOnly; }
-
-        }
+        public bool ReadOnly => _readOnly;
 
         /// <summary>
         /// 
@@ -521,7 +517,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
 
 
         /// <summary>
-        /// Разделить буфер на части по заданному разделителю или массиву разделителей (Не реализовано).
+        /// Разделить буфер на части по заданному разделителю или массиву разделителей.
         /// </summary>
         ///
         /// <param name="separator">
@@ -532,40 +528,88 @@ namespace ScriptEngine.HostedScript.Library.Binary
         [ContextMethod("Разделить", "Split")]
         public ArrayImpl Split(IValue separator)
         {
-            var rawSeparator = separator?.GetRawValue();
-            if (rawSeparator is BinaryDataBuffer buffer)
-            {
-                if (buffer._buffer.LongLength == 0)
-                {
-                    throw RuntimeException.InvalidArgumentValue();
-                }
-                return SplitWithOne(buffer);
-            }
-
-            if (rawSeparator is ArrayImpl)
-            {
-                throw new NotImplementedException();
-            }
-
-            throw RuntimeException.InvalidArgumentType();
+            var buffers = ParseParam(separator);
+            
+            // Функция поиска требует, чтобы буферы были в порядке убывания размера
+            buffers.Sort((a, b) => b._buffer.LongLength.CompareTo(a._buffer.LongLength));
+            return SplitBuffer(buffers.ToArray());
         }
 
-        private ArrayImpl SplitWithOne(BinaryDataBuffer splitter)
+        private static List<BinaryDataBuffer> ParseParam(IValue separator)
+        {
+            var rawSeparator = separator?.GetRawValue();
+            switch (rawSeparator)
+            {
+                case BinaryDataBuffer buffer:
+                    return new List<BinaryDataBuffer> { CheckedBuffer(buffer) };
+                
+                case ArrayImpl array:
+                {
+                    var buffers = new List<BinaryDataBuffer>();
+                
+                    foreach (var element in array)
+                    {
+                        buffers.AddRange(ParseParam(element));
+                    }
+
+                    return buffers;
+                }
+                
+                default:
+                    throw RuntimeException.InvalidArgumentType();
+            }
+        }
+
+        private static BinaryDataBuffer CheckedBuffer(BinaryDataBuffer buffer)
+        {
+            if (buffer.Size == 0)
+            {
+                throw RuntimeException.InvalidArgumentValue();
+            }
+
+            return buffer;
+        }
+
+        private ArrayImpl SplitBuffer(BinaryDataBuffer[] splitter)
         {
             var result = new List<BinaryDataBuffer>();
             long start = 0;
-            long index = Find(_buffer, splitter._buffer, start);
-            while (index != -1)
+            var foundPosition = FindFirst(splitter, start);
+            while (foundPosition != null)
             {
-                var length = index - start;
+                var length = foundPosition.Item2 - start;
                 result.Add(new BinaryDataBuffer(Copy(start, length), ByteOrder));
-                start = index + splitter._buffer.LongLength;
-                index = Find(_buffer, splitter._buffer, start);
+                start = foundPosition.Item2 + foundPosition.Item1.Size;
+                foundPosition = FindFirst(splitter, start);
             }
             
             // хвостовой элемент
             result.Add(new BinaryDataBuffer(Copy(start, _buffer.LongLength - start)));
             return new ArrayImpl(result);
+        }
+
+        /// <summary>
+        /// Ищет ближайшее вхождение любого из буферов. Если на одной позиции находятся два и более буфера, берется бОльший.
+        /// </summary>
+        /// <param name="buffers">Массив искомых буферов</param>
+        /// <param name="start">Начальная позиция поиска</param>
+        /// <returns>Буфер и позиция или null, если нет вхождений</returns>
+        private Tuple<BinaryDataBuffer, long> FindFirst(BinaryDataBuffer[] buffers, long start)
+        {
+            var maxI = Size - buffers[buffers.Length - 1].Size;
+            for (var i = start; i < maxI; i++)
+            {
+                foreach (var expectedBuffer in buffers)
+                {
+                    if (SubsequenceEquals(_buffer, i, expectedBuffer._buffer))
+                    {
+                        var result = new Tuple<BinaryDataBuffer, long>(expectedBuffer, i);
+                        return result;
+                    }
+                }
+            }
+
+            return null;
         }
 
         private byte[] Copy(long start, long length)
@@ -574,20 +618,6 @@ namespace ScriptEngine.HostedScript.Library.Binary
             var partition = new byte[length];
             Array.Copy(_buffer, start, partition, 0, length);
             return partition;
-        }
-
-        private static long Find(byte[] buffer, byte[] sub, long start)
-        {
-            var maxI = buffer.LongLength - sub.LongLength;
-            for (var i = start; i < maxI; i++)
-            {
-                if (SubsequenceEquals(buffer, i, sub))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
         }
 
         private static bool SubsequenceEquals(byte[] sequence, long start, byte[] subsequence)
