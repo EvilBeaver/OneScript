@@ -107,11 +107,11 @@ namespace OneScript.StandardLibrary
         }
 
         /// <summary>
-        /// Проверяет существование указанного метода у переданного объекта..
+        /// Проверяет существование указанного метода у переданного объекта.
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу методов.</param>
         /// <param name="methodName">Имя метода для вызова</param>
-        /// <returns>Истину, если метод существует, и Ложь в обратном случае. </returns>
+        /// <returns>Истина, если метод существует, и Ложь в обратном случае. </returns>
         [ContextMethod("МетодСуществует", "MethodExists")]
         public bool MethodExists(IValue target, string methodName)
         {
@@ -211,10 +211,10 @@ namespace OneScript.StandardLibrary
         }
 
         /// <summary>
-        /// Получает таблицу методов для переданного объекта..
+        /// Получает таблицу методов для переданного объекта.
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу методов.</param>
-        /// <returns>Таблица значений колонками: Имя, Количество, ЭтоФункция, Аннотации</returns>
+        /// <returns>Таблица значений с колонками: Имя, Количество, ЭтоФункция, Аннотации, Параметры, Экспорт</returns>
         [ContextMethod("ПолучитьТаблицуМетодов", "GetMethodsTable")]
         public ValueTable GetMethodsTable(IValue target)
         {
@@ -367,11 +367,11 @@ namespace OneScript.StandardLibrary
         }
 
         /// <summary>
-        /// Получает таблицу свойств для переданного объекта..
+        /// Получает таблицу свойств для переданного объекта.
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу свойств.</param>
         /// <param name="withPrivate">Включить в результат приватные поля</param>
-        /// <returns>Таблица значений с колонками - Имя, Аннотации</returns>
+        /// <returns>Таблица значений с колонками - Имя, Аннотации, Экспорт</returns>
         [ContextMethod("ПолучитьТаблицуСвойств", "GetPropertiesTable")]
         public ValueTable GetPropertiesTable(IValue target, bool withPrivate = false)
         {
