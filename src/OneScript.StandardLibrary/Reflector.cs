@@ -79,26 +79,31 @@ namespace OneScript.StandardLibrary
 
         private static IValue[] GetArgsToPass(ArrayImpl arguments, ParameterInfo[] parameters)
         {
-            var argsToPass = new List<IValue>();
-            if (arguments != null)
-            {
-                argsToPass.AddRange(arguments);
-            }
-
-            if (parameters.Length < argsToPass.Count)
+            var argValues = arguments?.ToArray() ?? Array.Empty<IValue>();
+            // ArrayImpl не может (не должен!) содержать null или NotAValidValue
+            
+            if (argValues.Length > parameters.Length)
                 throw RuntimeException.TooManyArgumentsPassed();
 
-            for (int i = 0; i < argsToPass.Count; i++)
+            var argsToPass = new IValue[parameters.Length];
+
+            int i = 0;
+            for (; i < argValues.Length; i++)
             {
                 if (parameters[i].IsByRef())
-                    argsToPass[i] = Variable.Create(argsToPass[i], $"reflectorArg{i}");
+                    argsToPass[i] = Variable.Create(argValues[i], "");
+                else
+                    argsToPass[i] = argValues[i];
             }
-            while (argsToPass.Count < parameters.Length)
+            for (; i < parameters.Length; i++)
             {
-                argsToPass.Add(null);
+                if (!parameters[i].HasDefaultValue)
+                    throw RuntimeException.TooFewArgumentsPassed();
+
+                // else keep null as a default value
             }
 
-            return argsToPass.ToArray();
+            return argsToPass;
         }
 
         /// <summary>
