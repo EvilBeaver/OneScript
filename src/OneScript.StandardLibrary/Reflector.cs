@@ -325,7 +325,7 @@ namespace OneScript.StandardLibrary
             var isFunctionColumn = result.Columns.Add("ЭтоФункция", TypeDescription.BooleanType(), "Это функция");
             var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
             var paramsColumn = result.Columns.Add("Параметры", new TypeDescription(), "Параметры");
-            var isExportlColumn = result.Columns.Add("Экспорт", new TypeDescription(), "Экспорт");
+            var isExportlColumn = result.Columns.Add("Экспорт", TypeDescription.BooleanType(), "Экспорт");
 
             foreach (var methInfo in methods)
             {
@@ -344,7 +344,7 @@ namespace OneScript.StandardLibrary
                 var paramNameColumn = paramTable.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
                 var paramByValue = paramTable.Columns.Add("ПоЗначению", TypeDescription.BooleanType(), "По значению");
                 var paramHasDefaultValue = paramTable.Columns.Add("ЕстьЗначениеПоУмолчанию", TypeDescription.BooleanType(), "Есть значение по-умолчанию");
-                var paramDefaultValue = paramTable.Columns.Add("ЗначениеПоУмолчанию", null, "Значение по умолчанию");
+                var paramDefaultValue = paramTable.Columns.Add("ЗначениеПоУмолчанию", new TypeDescription(), "Значение по умолчанию");
                 var paramAnnotationsColumn = paramTable.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
 
                 new_row.Set(paramsColumn, paramTable);
