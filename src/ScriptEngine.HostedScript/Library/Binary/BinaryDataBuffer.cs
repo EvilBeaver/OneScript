@@ -575,7 +575,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
             var result = new List<BinaryDataBuffer>();
             long start = 0;
             var foundPosition = FindFirst(splitter, start);
-            while (foundPosition != null)
+            while (foundPosition.pos != -1)
             {
                 var length = foundPosition.Item2 - start;
                 result.Add(new BinaryDataBuffer(Copy(start, length), ByteOrder));
@@ -594,7 +594,7 @@ namespace ScriptEngine.HostedScript.Library.Binary
         /// <param name="buffers">Массив искомых буферов</param>
         /// <param name="start">Начальная позиция поиска</param>
         /// <returns>Буфер и позиция или null, если нет вхождений</returns>
-        private Tuple<BinaryDataBuffer, long> FindFirst(BinaryDataBuffer[] buffers, long start)
+        private (BinaryDataBuffer buffer, long pos) FindFirst(BinaryDataBuffer[] buffers, long start)
         {
             var maxI = Size - buffers[buffers.Length - 1].Size;
             for (var i = start; i < maxI; i++)
@@ -603,13 +603,12 @@ namespace ScriptEngine.HostedScript.Library.Binary
                 {
                     if (SubsequenceEquals(_buffer, i, expectedBuffer._buffer))
                     {
-                        var result = new Tuple<BinaryDataBuffer, long>(expectedBuffer, i);
-                        return result;
+                        return (expectedBuffer, i);
                     }
                 }
             }
 
-            return null;
+            return (null, -1);
         }
 
         private byte[] Copy(long start, long length)
