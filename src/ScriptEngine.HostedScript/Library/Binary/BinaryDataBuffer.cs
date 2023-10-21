@@ -577,9 +577,9 @@ namespace ScriptEngine.HostedScript.Library.Binary
             var foundPosition = FindFirst(splitter, start);
             while (foundPosition.pos != -1)
             {
-                var length = foundPosition.Item2 - start;
+                var length = foundPosition.pos - start;
                 result.Add(new BinaryDataBuffer(Copy(start, length), ByteOrder));
-                start = foundPosition.Item2 + foundPosition.Item1.Size;
+                start = foundPosition.pos + foundPosition.buffer.Size;
                 foundPosition = FindFirst(splitter, start);
             }
             
