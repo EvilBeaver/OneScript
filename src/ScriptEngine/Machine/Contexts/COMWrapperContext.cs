@@ -327,14 +327,8 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
 
-        public override bool DynamicMethodSignatures
-        {
-            get
-            {
-                return true;
-            }
-        }
-
+        public override bool DynamicMethodSignatures => true;
+ 
         [ScriptConstructor]
         public static COMWrapperContext Constructor(IValue[] args)
         {

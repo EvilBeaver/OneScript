@@ -51,8 +51,12 @@ namespace OneScript.StandardLibrary
             var methodIdx = target.GetMethodNumber(methodName);
             var methInfo = target.GetMethodInfo(methodIdx);
 
-            var argsToPass = GetArgsToPass(arguments, methInfo.GetParameters());
-
+            IValue[] argsToPass;
+            if (target.DynamicMethodSignatures)
+                argsToPass = arguments?.ToArray() ?? Array.Empty<IValue>();
+            else
+                argsToPass = GetArgsToPass(arguments, methInfo.GetParameters());
+ 
             IValue retValue = ValueFactory.Create();
             if (methInfo.IsFunction())
             {
