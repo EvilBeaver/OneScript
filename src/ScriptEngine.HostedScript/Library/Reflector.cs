@@ -84,7 +84,7 @@ namespace ScriptEngine.HostedScript.Library
                 if (methodParams[i].IsByValue)
                     argsToPass[i] = argValues[i];
                 else
-                    argsToPass[i] = Variable.Create(argsToPass[i], string.Empty); // имя не нужно
+                    argsToPass[i] = Variable.Create(argValues[i], string.Empty); // имя не нужно
             }
             for (; i < methArgCount; i++)
             {
