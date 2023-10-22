@@ -95,10 +95,8 @@ namespace ScriptEngine.Compiler
         public VariableBinding GetVariable(string name)
         {
             var sb = GetSymbol(name, ExtractVariableIndex);
-            var varSymbol = _scopeStack[sb.ScopeNumber].Variables[sb.MemberNumber];
             return new VariableBinding
             {
-                type = varSymbol is IPropertySymbol? SymbolType.ContextProperty : SymbolType.Variable,
                 binding = sb
             };
         }
@@ -122,10 +120,8 @@ namespace ScriptEngine.Compiler
                 return false;
             }
 
-            var varSymbol = _scopeStack[sb.ScopeNumber].Variables[sb.MemberNumber];
-            vb = new VariableBinding()
+            vb = new VariableBinding
             {
-                type = varSymbol is IPropertySymbol? SymbolType.ContextProperty : SymbolType.Variable,
                 binding = sb
             };
             return true;

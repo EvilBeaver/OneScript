@@ -75,7 +75,7 @@ namespace ScriptEngine.Machine
                 case DataType.Undefined:
                     result = BslUndefinedValue.Instance;
                     break;
-                case DataType.GenericValue:
+                case DataType.Null:
                     if (string.Compare(presentation, "null", StringComparison.OrdinalIgnoreCase) == 0)
                         result = ValueFactory.CreateNullValue();
                     else

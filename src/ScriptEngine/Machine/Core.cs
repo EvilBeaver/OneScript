@@ -158,10 +158,7 @@ namespace ScriptEngine.Machine
         Number,
         Date,
         Boolean,
-        Type,
-        Object,
-        NotAValidValue, // default argument value
-        GenericValue
+        Null
     }
 
     [Serializable]
@@ -216,33 +213,9 @@ namespace ScriptEngine.Machine
         }
     }
 
-    public enum SymbolType
-    {
-        Variable,
-        ContextProperty
-    }
-
-    [Serializable]
-    public struct VariableInfo
-    {
-        public int Index;
-        public string Identifier;
-        public string Alias;
-        public SymbolType Type;
-        
-        public AnnotationDefinition[] Annotations;
-
-        public int AnnotationsCount => Annotations?.Length ?? 0;
-
-        public override string ToString()
-        {
-            return $"{Index}:{Identifier}";
-        }
-    }
-
+    [Obsolete("Can be replaced with SymbolBinding")]
     public struct VariableBinding
     {
-        public SymbolType type;
         public SymbolBinding binding;
     }
 }

@@ -1173,7 +1173,7 @@ namespace ScriptEngine.Compiler
                     constType = DataType.String;
                     break;
                 case LexemType.NullLiteral:
-                    constType = DataType.GenericValue;
+                    constType = DataType.Null;
                     break;
                 case LexemType.UndefinedLiteral:
                     constType = DataType.Undefined;

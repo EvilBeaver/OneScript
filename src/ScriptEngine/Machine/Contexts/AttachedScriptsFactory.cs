@@ -16,6 +16,7 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Types;
+using ScriptEngine.Persistence;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -150,27 +151,6 @@ namespace ScriptEngine.Machine.Contexts
             _engine.TypeManager.RegisterType(typeName, default, typeof(AttachedScriptsFactory));
         }
         
-        public void LoadImageAndRegister(string typeName, ModuleImage module)
-        {
-            if (_loadedModules.ContainsKey(typeName))
-            {
-                var alreadyLoadedSrc = _loadedModules[typeName].Source.Location;
-                var currentSrc = module.Source.Location;
-
-                if(alreadyLoadedSrc != currentSrc)
-                    throw new RuntimeException("Type «" + typeName + "» already registered");
-
-                return;
-            }
-
-            throw new NotImplementedException("Deserialization of module not implemented");
-            // var loadedModule = new LoadedModule(module);
-            // _loadedModules.Add(typeName, loadedModule);
-            //
-            // _engine.TypeManager.RegisterType(typeName, default, typeof(AttachedScriptsFactory));
-
-        }
-
         private IRuntimeContextInstance LoadAndCreate(ICompilerFrontend compiler, SourceCode code, ExternalContextData externalContext)
         {
             var module = CompileModuleFromSource(compiler, code, externalContext);
