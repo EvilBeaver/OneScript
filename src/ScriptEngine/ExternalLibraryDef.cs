@@ -55,23 +55,13 @@ namespace ScriptEngine
         }
     }
     
-    [Serializable]
     public class UserAddedScript
     {
         public UserAddedScriptType Type;
-        public ModuleImage Image;
         public string Symbol;
-
-        [NonSerialized]
         public string FilePath;
 
-        [NonSerialized]
         public IExecutableModule Module;
-        
-        public string ModuleName()
-        {
-            return Image.Source.Name;
-        }
     }
 
     [Serializable]
