@@ -47,6 +47,7 @@ namespace oscript
             initializers.Add("-encoding", ProcessEncodingKey);
             initializers.Add("-codestat", EnableCodeStatistics);
             initializers.Add("-debug", DebugBehavior.Create);
+            initializers.Add("-make", MakeAppBehavior.Create);
 
             var param = helper.Parse(helper.Current());
             if(initializers.TryGetValue(param.Name.ToLowerInvariant(), out var action))
