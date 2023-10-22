@@ -130,7 +130,6 @@ namespace ScriptEngine
                 
                 var propId = _injectedProperties.GetPropertyNumber(module.Symbol);
                 _injectedProperties.SetPropValue(propId, instance);
-                module.InjectOrder = propId;
                 loadedObjects[i++] = instance;
             }
             
