@@ -61,8 +61,7 @@ namespace ScriptEngine
         public UserAddedScriptType Type;
         public ModuleImage Image;
         public string Symbol;
-        public int InjectOrder;
-        
+
         [NonSerialized]
         public string FilePath;
 
