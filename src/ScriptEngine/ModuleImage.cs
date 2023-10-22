@@ -17,29 +17,15 @@ namespace ScriptEngine
     [Serializable]
     public class ModuleImage
     {
-        public ModuleImage()
-        {
-            EntryMethodIndex = -1;
-            Code = new List<Command>();
-            VariableRefs = new List<SymbolBinding>();
-            MethodRefs = new List<SymbolBinding>();
-            Methods = new List<MethodDescriptor>();
-            Constants = new List<ConstDefinition>();
-            ExportedProperties = new List<ExportedSymbol>();
-            ExportedMethods = new List<ExportedSymbol>();
-            Variables = new VariablesFrame();
-            Annotations = new List<AnnotationDefinition>();
-        }
-
-        public VariablesFrame Variables { get; }
-        public int EntryMethodIndex { get; set; }
-        public IList<Command> Code { get; set; }
-        public IList<SymbolBinding> VariableRefs { get; set; }
-        public IList<SymbolBinding> MethodRefs { get; set; }
-        public IList<MethodDescriptor> Methods { get; set; }
-        public IList<ConstDefinition> Constants { get; set; }
-        public IList<ExportedSymbol> ExportedProperties { get; set; }
-        public IList<ExportedSymbol> ExportedMethods { get; set; }
+        public VariablesFrame Variables { get; } = new VariablesFrame();
+        public int EntryMethodIndex { get; set; } = -1;
+        public IList<Command> Code { get; set; } = new List<Command>();
+        public IList<SymbolBinding> VariableRefs { get; set; } = new List<SymbolBinding>();
+        public IList<SymbolBinding> MethodRefs { get; set; } = new List<SymbolBinding>();
+        public IList<MethodDescriptor> Methods { get; set; } = new List<MethodDescriptor>();
+        public IList<ConstDefinition> Constants { get; set; } = new List<ConstDefinition>();
+        public IList<ExportedSymbol> ExportedProperties { get; set; } = new List<ExportedSymbol>();
+        public IList<ExportedSymbol> ExportedMethods { get; set; } = new List<ExportedSymbol>();
         public int LoadAddress { get; set; }
         
         [Obsolete("Use Source")]
@@ -52,7 +38,7 @@ namespace ScriptEngine
             get => _sourceBackField;
             set => _sourceBackField = value;
         }
-        public IList<AnnotationDefinition> Annotations { get; set; }
+        public IList<AnnotationDefinition> Annotations { get; set; } = new List<AnnotationDefinition>();
     }
 
     [Serializable]
