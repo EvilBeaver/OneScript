@@ -174,8 +174,11 @@ namespace ScriptEngine.Machine.Contexts
 
         public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
-            //TODO: Доработать RcwMethodMetadata
-            return BslMethodBuilder.Create().Build();
+            var md = _methods[methodNumber];
+            return BslMethodBuilder.Create()
+                .Name(md.Name)
+                .ReturnType(md.IsFunction ?? true ? typeof(IValue) : typeof(void))
+                .Build();
         }
 
         private MethodSignature GetMethodDescription(int methodNumber)
