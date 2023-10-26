@@ -11,7 +11,7 @@ namespace OneScript.Language.LexicalAnalysis
 {
     public class PreprocessorDirectiveLexerState : LexerState
     {
-        WordLexerState _wordExtractor = new WordLexerState();
+        private readonly WordLexerState _wordExtractor = new WordLexerState();
         const string MESSAGE_DIRECTIVE_EXPECTED = "Ожидается директива препроцессора";
 
         public override Lexem ReadNextLexem(SourceCodeIterator iterator)

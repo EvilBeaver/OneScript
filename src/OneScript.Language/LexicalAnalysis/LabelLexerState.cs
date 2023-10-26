@@ -22,7 +22,7 @@ namespace OneScript.Language.LexicalAnalysis
             "Invalid label definition"
         );
 
-        WordLexerState _wordExtractor = new WordLexerState();
+        private readonly WordLexerState _wordExtractor = new WordLexerState();
         
         public override Lexem ReadNextLexem(SourceCodeIterator iterator)
         {

@@ -9,8 +9,8 @@ namespace OneScript.Language.LexicalAnalysis
 {
     public class AnnotationLexerState : LexerState
     {
-        WordLexerState _wordExtractor = new WordLexerState();
         const string MESSAGE_ANNOTATION_EXPECTED = "Ожидается имя аннотации";
+        private readonly WordLexerState _wordExtractor = new WordLexerState();
 
         public override Lexem ReadNextLexem(SourceCodeIterator iterator)
         {
