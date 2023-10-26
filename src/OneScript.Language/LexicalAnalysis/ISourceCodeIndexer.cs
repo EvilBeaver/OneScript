@@ -9,6 +9,6 @@ namespace OneScript.Language.LexicalAnalysis
 {
     public interface ISourceCodeIndexer
     {
-        string GetCodeLine(int index);
+        string GetCodeLine(int lineNumber);
     }
 }

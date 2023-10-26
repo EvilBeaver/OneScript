@@ -15,11 +15,10 @@ namespace OneScript.StandardLibrary.Processes
 {
     class ProcessOutputWrapper : TextReader
     {
-        private sys.Process _process;
-        private OutputVariant _variant;
-        private StringBuilder _buffer = new StringBuilder(4096);
-        private ReaderWriterLockSlim _locker;
-        
+        private readonly sys.Process _process;
+        private readonly OutputVariant _variant;
+        private readonly StringBuilder _buffer = new StringBuilder(4096);
+
         private int _bufferIndex = 0;
 
         private bool AlreadyReading { get; set; }
@@ -36,7 +35,6 @@ namespace OneScript.StandardLibrary.Processes
         {
             _process = process;
             _variant = variant;
-            _locker = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         }
 
         public void StartReading()

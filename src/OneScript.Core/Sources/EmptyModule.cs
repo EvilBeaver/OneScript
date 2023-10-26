@@ -14,7 +14,7 @@ namespace OneScript.Sources
 {
     public sealed class EmptyModule : IExecutableModule
     {
-        public static IExecutableModule Instance = new EmptyModule(); 
+        public static readonly IExecutableModule Instance = new EmptyModule(); 
         
         private EmptyModule()
         {

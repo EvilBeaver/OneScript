@@ -30,6 +30,7 @@ namespace OneScript.StandardLibrary
         {
             var builder = BslMethodBuilder.Create()
                 .DeclaringType(typeof(DelegateAction))
+                .ReturnType(typeof(BslValue))
                 .SetNames(MethodName_Ru, MethodName_En);
 
             ExecuteMethodInfo = builder.Build();
@@ -66,10 +67,7 @@ namespace OneScript.StandardLibrary
 
         public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
-            return BslMethodBuilder.Create()
-                .SetNames(MethodName_Ru, MethodName_En)
-                .ReturnType(typeof(BslValue))
-                .Build();
+            return ExecuteMethodInfo;
         }
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)

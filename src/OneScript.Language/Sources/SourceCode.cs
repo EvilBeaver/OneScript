@@ -35,9 +35,9 @@ namespace OneScript.Sources
 
         public string GetSourceCode() => _source.GetSourceCode();
 
-        public string GetCodeLine(int index)
+        public string GetCodeLine(int lineNumber)
         {
-            return _indexer?.GetCodeLine(index);
+            return _indexer?.GetCodeLine(lineNumber);
         }
 
         public override string ToString() => Name ?? Location;

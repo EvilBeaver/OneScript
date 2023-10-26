@@ -106,33 +106,33 @@ namespace OneScript.StandardLibrary.NativeApi
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate bool TCallAsFunc(IntPtr ptr, Int32 lMethodNum, IntPtr value, PointerDelegate response);
 
-        public static TGetClassObject GetClassObject;
-        public static TDestroyObject DestroyObject;
-        public static TCreateVariant CreateVariant;
-        public static TFreeVariant FreeVariant;
-        public static TGetNProps GetNProps;
-        public static TFindProp FindProp;
-        public static TIsPropReadable IsPropReadable;
-        public static TIsPropWritable IsPropWritable;
-        public static TGetPropName GetPropName;
-        public static TGetPropVal GetPropVal;
-        public static TSetPropVal SetPropVal;
-        public static TGetVariant GetVariant;
-        public static TSetVariantEmpty SetVariantEmpty;
-        public static TSetVariantBool SetVariantBool;
-        public static TSetVariantReal SetVariantReal;
-        public static TSetVariantBlob SetVariantBlob;
-        public static TSetVariantInt SetVariantInt;
-        public static TSetVariantStr SetVariantStr;
-        public static TGetNMethods GetNMethods;
-        public static TFindMethod FindMethod;
-        public static TGetMethodName GetMethodName;
-        public static TGetNParams GetNParams;
-        public static THasParamDefValue HasParamDefValue;
-        public static TGetParamDefValue GetParamDefValue;
-        public static THasRetVal HasRetVal;
-        public static TCallAsProc CallAsProc;
-        public static TCallAsFunc CallAsFunc;
+        public static readonly TGetClassObject GetClassObject;
+        public static readonly TDestroyObject DestroyObject;
+        public static readonly TCreateVariant CreateVariant;
+        public static readonly TFreeVariant FreeVariant;
+        public static readonly TGetNProps GetNProps;
+        public static readonly TFindProp FindProp;
+        public static readonly TIsPropReadable IsPropReadable;
+        public static readonly TIsPropWritable IsPropWritable;
+        public static readonly TGetPropName GetPropName;
+        public static readonly TGetPropVal GetPropVal;
+        public static readonly TSetPropVal SetPropVal;
+        public static readonly TGetVariant GetVariant;
+        public static readonly TSetVariantEmpty SetVariantEmpty;
+        public static readonly TSetVariantBool SetVariantBool;
+        public static readonly TSetVariantReal SetVariantReal;
+        public static readonly TSetVariantBlob SetVariantBlob;
+        public static readonly TSetVariantInt SetVariantInt;
+        public static readonly TSetVariantStr SetVariantStr;
+        public static readonly TGetNMethods GetNMethods;
+        public static readonly TFindMethod FindMethod;
+        public static readonly TGetMethodName GetMethodName;
+        public static readonly TGetNParams GetNParams;
+        public static readonly THasParamDefValue HasParamDefValue;
+        public static readonly TGetParamDefValue GetParamDefValue;
+        public static readonly THasRetVal HasRetVal;
+        public static readonly TCallAsProc CallAsProc;
+        public static readonly TCallAsFunc CallAsFunc;
 
         public static bool IsAvailable { get; private set; }
         

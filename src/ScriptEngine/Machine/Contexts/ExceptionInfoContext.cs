@@ -207,7 +207,7 @@ namespace ScriptEngine.Machine.Contexts
         
         private class EmptyScriptException : ScriptException
         {
-            public static EmptyScriptException Instance = new EmptyScriptException();
+            public static readonly EmptyScriptException Instance = new EmptyScriptException();
             private EmptyScriptException() : base("")
             {
                 LineNumber = 0;
