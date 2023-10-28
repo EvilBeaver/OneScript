@@ -28,7 +28,16 @@ namespace ScriptEngine.Machine
             for (int i = 0; i < image.Constants.Count; i++)
             {
                 var def = image.Constants[i];
-                Constants[i] = ValueFactory.Parse(def.Presentation, def.Type);
+                if (def.Type == DataType.Object)
+                {
+                    var unresolved = AnnotationDefinition.FromConstValue(def.Presentation);
+                    EvaluateSingleAnnotationParametersValues(unresolved);
+                    Constants[i] = new InternalAnnotationDefinitionWrapper(unresolved);
+                }
+                else
+                {
+                    Constants[i] = ValueFactory.Parse(def.Presentation, def.Type);
+                }
             }
 
             ResolveAnnotationConstants();
@@ -74,14 +83,18 @@ namespace ScriptEngine.Machine
         {
             for (int i = 0; i < annotations?.Length; i++)
             {
-                var parameters = annotations[i].Parameters;
-                for (int j = 0; j < parameters?.Length; j++)
+                EvaluateSingleAnnotationParametersValues(annotations[i]);
+            }
+        }
+        private void EvaluateSingleAnnotationParametersValues(AnnotationDefinition annotation)
+        {
+            var parameters = annotation.Parameters;
+            for (int j = 0; j < parameters?.Length; j++)
+            {
+                var pa = parameters[j];
+                if (pa.ValueIndex != AnnotationParameter.UNDEFINED_VALUE_INDEX)
                 {
-                    var pa = parameters[j];
-                    if (pa.ValueIndex != AnnotationParameter.UNDEFINED_VALUE_INDEX)
-                    {
-                        annotations[i].Parameters[j].RuntimeValue = Constants[pa.ValueIndex];
-                    }
+                    annotation.Parameters[j].RuntimeValue = Constants[pa.ValueIndex];
                 }
             }
         }
