@@ -225,41 +225,7 @@ namespace ScriptEngine.Machine
             return HasDefaultValue && DefaultValueIndex != UNDEFINED_VALUE_INDEX;
         }
     }
-
-    [Serializable]
-    public struct AnnotationDefinition
-    {
-        public string Name;
-        public AnnotationParameter[] Parameters;
-
-        public int ParamCount => Parameters?.Length ?? 0;
-    }
-
-    [Serializable]
-    public struct AnnotationParameter
-    {
-        public string Name;
-        public int ValueIndex;
-
-        [NonSerialized]
-        public IValue RuntimeValue;
-        
-        public const int UNDEFINED_VALUE_INDEX = -1;
-
-        public override string ToString()
-        {
-            if (string.IsNullOrEmpty(Name))
-            {
-                return string.Format("[{0}]", ValueIndex);
-            }
-            if (ValueIndex == UNDEFINED_VALUE_INDEX)
-            {
-                return Name;
-            }
-            return String.Format("{0}=[{1}]", Name, ValueIndex);
-        }
-    }
-
+    
     public struct TypeDescriptor : IEquatable<TypeDescriptor>
     {
         public int ID;

@@ -166,12 +166,22 @@ namespace ScriptEngine.HostedScript.Library
                         {
                             parameterRow.Set(parameterNameColumn, ValueFactory.Create(annotationParameter.Name));
                         }
-                        parameterRow.Set(parameterValueColumn, annotationParameter.RuntimeValue);
+                        parameterRow.Set(parameterValueColumn, ResolveAnnotaionParameterValue(annotationParameter.RuntimeValue));
                     }
                 }
             }
 
             return annotationsTable;
+        }
+
+        private static IValue ResolveAnnotaionParameterValue(IValue source)
+        {
+            if (source is InternalAnnotationDefinitionWrapper internalDefinition)
+            {
+                var result = CreateAnnotationTable(new []{ internalDefinition.AnnotationDefinition });
+                return result;
+            }
+            return source;
         }
 
         private static bool MethodExistsForType(TypeTypeValue type, string methodName)
