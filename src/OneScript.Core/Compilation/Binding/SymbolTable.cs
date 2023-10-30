@@ -18,7 +18,7 @@ namespace OneScript.Compilation.Binding
             public IRuntimeContextInstance target;
         }
         
-        private List<BindingRecord> _bindings = new List<BindingRecord>();
+        private readonly List<BindingRecord> _bindings = new List<BindingRecord>();
         
         public SymbolScope GetScope(int index) => _bindings[index].scope;
 

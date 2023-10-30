@@ -60,8 +60,8 @@ namespace OneScript.Compilation
 
         private class SymbolProvider : IModuleSymbolsProvider
         {
-            private CompileTimeSymbolsProvider _provider;
-            private Filler _filler;
+            private readonly CompileTimeSymbolsProvider _provider;
+            private readonly Filler _filler;
 
             public SymbolProvider(CompileTimeSymbolsProvider provider, Filler filler)
             {

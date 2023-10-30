@@ -96,7 +96,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         #region Methods
 
         [ContextMethod("КлонироватьКомпоненту", "CloneComponent")]
-        public IXSComponent CloneComponent(bool recursive) => throw new NotImplementedException();
+        public IXSComponent CloneComponent(bool recursive = true) => throw new NotImplementedException();
 
         [ContextMethod("ОбновитьЭлементDOM", "UpdateDOMElement")]
         public void UpdateDOMElement() => throw new NotImplementedException();

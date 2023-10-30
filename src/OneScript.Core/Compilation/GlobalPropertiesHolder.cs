@@ -18,8 +18,8 @@ namespace OneScript.Compilation
 {
     internal class GlobalPropertiesHolder : IContext
     {
-        private IndexedNameValueCollection<BslValue> _values= new IndexedNameValueCollection<BslValue>();
-        private List<ExternalPropertyInfo> _properties = new List<ExternalPropertyInfo>();
+        private readonly IndexedNameValueCollection<BslValue> _values= new IndexedNameValueCollection<BslValue>();
+        private readonly List<ExternalPropertyInfo> _properties = new List<ExternalPropertyInfo>();
 
         public BslPropertyInfo Register(BilingualString names, BslValue value)
         {
@@ -90,12 +90,12 @@ namespace OneScript.Compilation
 
         public void CallAsProcedure(BslMethodInfo method, IReadOnlyList<BslValue> arguments)
         {
-            throw new ArgumentException();
+            throw new InvalidOperationException();
         }
 
         public BslValue CallAsFunction(BslMethodInfo method, IReadOnlyList<BslValue> arguments)
         {
-            throw new ArgumentException();
+            throw new InvalidOperationException();
         }
 
         #endregion
