@@ -36,7 +36,7 @@ namespace ScriptEngine.Machine
         public static AnnotationParameter FromString(string presentation)
         {
             var result = new AnnotationParameter();
-            var parts = presentation.Split(',');
+            var parts = presentation.Split('=');
             if (parts.Length == 1)
             {
                 if (parts[0].StartsWith("["))

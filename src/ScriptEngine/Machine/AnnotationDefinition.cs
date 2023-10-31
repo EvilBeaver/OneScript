@@ -22,11 +22,7 @@ namespace ScriptEngine.Machine
             var builder = new StringBuilder("&");
             builder.Append(Name);
             builder.Append("(");
-            
-            foreach (var parameter in Parameters)
-            {
-                builder.Append(parameter);
-            }
+            builder.Append(string.Join(",", Parameters));
             builder.Append(")");
             
             return builder.ToString();
