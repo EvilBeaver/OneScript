@@ -9,6 +9,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 
 namespace ScriptEngine.HostedScript.Library.Json
 {
@@ -79,9 +80,10 @@ namespace ScriptEngine.HostedScript.Library.Json
                 }
                 else
                 {
-                    throw new RuntimeException();
+                    throw new InvalidOperationException();
                 }
             }
+
             public JsonReaderInternal(JSONReader reader)
             {
                 _reader = reader;
@@ -91,8 +93,9 @@ namespace ScriptEngine.HostedScript.Library.Json
 
             private void AddProperty(IValue obj, string str, IValue val) => _inserter(obj, str, val);
             
-            public IValue Read<T>()
+            public IValue Read<T>() where T: IEnumerable<KeyAndValueImpl>
             {
+                System.Diagnostics.Debug.Assert(typeof(T)==typeof(StructureImpl)||typeof(T)==typeof(MapImpl));
                 Init<T>();
 
                 try
@@ -100,8 +103,9 @@ namespace ScriptEngine.HostedScript.Library.Json
                     if (ReadJsonValue(out var value))
                         return value;
                 }
-                catch (JsonReaderException)
+                catch (Exception exc)
                 {
+                    throw InvalidJsonException(exc.Message);
                 }
 
                 throw InvalidJsonException();
@@ -130,7 +134,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                         {
                             var propertyName = _reader.CurrentValue.AsString();
                             if (!ReadJsonValue(out value))
-                                throw InvalidJsonException();
+                                return false;
 
                             AddProperty(jsonObject, propertyName, value);
                         }
@@ -171,12 +175,13 @@ namespace ScriptEngine.HostedScript.Library.Json
                 return false;
             }
 
-            private RuntimeException InvalidJsonException()
+            private RuntimeException InvalidJsonException(string message=null)
             {
+                var addition = string.IsNullOrWhiteSpace(message) ? string.Empty : $"\n({message})";
                 return new RuntimeException(string.Format(Locale.NStr
-                    ("ru='Недопустимое состояние потока чтения JSON в строке {0} позиции {1}'"
-                    +"en='Invalid JSON reader state at line {0} position {1}'"),
-                        _reader.CurrentLine, _reader.CurrentPosition));
+                    ("ru='Недопустимое состояние потока чтения JSON в строке {0} позиции {1}{2}'"
+                     + "en='Invalid JSON reader state at line {0} position {1}{2}'"),
+                    _reader.CurrentLine, _reader.CurrentPosition, addition));
             }
         }
 
