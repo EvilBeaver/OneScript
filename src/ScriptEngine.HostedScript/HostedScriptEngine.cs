@@ -12,6 +12,7 @@ using ScriptEngine.Machine;
 using OneScript.Commons;
 using OneScript.Compilation;
 using OneScript.Contexts;
+using OneScript.DependencyInjection;
 using OneScript.Execution;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Tasks;
@@ -78,13 +79,28 @@ namespace ScriptEngine.HostedScript
         }
 
         public ScriptSourceFactory Loader => _engine.Loader;
+        public IServiceContainer Services => _engine.Services;
 
-        public ICompilerFrontend GetCompilerService()
+        /// <summary>
+        /// Создать компилятор
+        /// </summary>
+        /// <returns>Компилятор, которым можно обработать исходник</returns>
+        public ICompilerFrontend GetCompilerService() 
+            => InitCompiler(_engine.GetCompilerService());
+
+        /// <summary>
+        /// Создать компилятор по преднастроенному набору сервисов DI
+        /// </summary>
+        /// <param name="compilerServices">контейнер сервисов для компилятора</param>
+        /// <returns>Компилятор, которым можно обработать исходник</returns>
+        public ICompilerFrontend GetCompilerService(IServiceContainer compilerServices) 
+            => InitCompiler(_engine.GetCompilerService(compilerServices));
+
+        private ICompilerFrontend InitCompiler(ICompilerFrontend compiler)
         {
-            var compilerSvc = _engine.GetCompilerService();
-            compilerSvc.FillSymbols(typeof(UserScriptContextInstance));
+            compiler.FillSymbols(typeof(UserScriptContextInstance));
             
-            return compilerSvc;
+            return compiler;
         }
 
         public Process CreateProcess(IHostApplication host, SourceCode src)

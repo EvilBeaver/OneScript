@@ -108,10 +108,24 @@ namespace ScriptEngine
 
         public ScriptSourceFactory Loader { get; }
 
+        /// <summary>
+        /// Создать компилятор
+        /// </summary>
+        /// <returns>Компилятор, которым можно обработать исходник</returns>
         public ICompilerFrontend GetCompilerService()
         {
             using var scope = Services.CreateScope();
-            var compiler = scope.Resolve<CompilerFrontend>();
+            return GetCompilerService(scope);
+        }
+
+        /// <summary>
+        /// Создать компилятор по преднастроенному набору сервисов DI
+        /// </summary>
+        /// <param name="compilationServices">контейнер сервисов для компилятора</param>
+        /// <returns>Компилятор, которым можно обработать исходник</returns>
+        public ICompilerFrontend GetCompilerService(IServiceContainer compilationServices)
+        {
+            var compiler = compilationServices.Resolve<CompilerFrontend>();
             compiler.SharedSymbols = Environment.Symbols;
             
             switch (System.Environment.OSVersion.Platform)

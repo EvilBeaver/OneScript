@@ -50,7 +50,7 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<CompileTimeSymbolsProvider>();
             services.RegisterSingleton<IErrorSink>(svc => new ThrowingErrorSink(CompilerException.FromCodeError));
             services.RegisterSingleton<IExceptionInfoFactory, ExceptionInfoFactory>();
-            
+
             services.Register<ExecutionDispatcher>();
             services.Register<IDependencyResolver, NullDependencyResolver>();
             

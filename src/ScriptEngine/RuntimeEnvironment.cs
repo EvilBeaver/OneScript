@@ -20,20 +20,11 @@ namespace ScriptEngine
         private readonly SymbolTable _symbols = new SymbolTable();
         private SymbolScope _scopeOfGlobalProperties;
 
-//***        
-        //private readonly ICompilerContext _symbolScopes = new CompilerContext();
-        //private SymbolScope _globalScope;
-        private readonly PropertyBag _injectedProperties;
+        private readonly PropertyBag _injectedProperties = new PropertyBag();
 
         private readonly List<AttachedContext> _contexts = new List<AttachedContext>();
 
         private readonly List<ExternalLibraryDef> _externalLibs = new List<ExternalLibraryDef>();
-//***
-
-        public RuntimeEnvironment()
-        {
-            _injectedProperties = new PropertyBag();
-        }
 
         private void CreateGlobalScopeIfNeeded()
         {

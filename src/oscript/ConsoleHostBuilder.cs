@@ -14,6 +14,11 @@ namespace oscript
 {
     internal static class ConsoleHostBuilder
     {
+        /// <summary>
+        /// Создать построитель движка с файлом конфигурации возле точки входа.
+        /// </summary>
+        /// <param name="codePath">Путь точки входа. Нужен для определения расположения конфиг-файла oscript.cfg</param>
+        /// <returns>Преднастроеный построитель движка для консольного приложения</returns>
         public static IEngineBuilder Create(string codePath)
         {
             var builder = DefaultEngineBuilder.Create()

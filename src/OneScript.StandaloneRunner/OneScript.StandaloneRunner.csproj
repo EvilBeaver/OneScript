@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <PublishSingleFile>true</PublishSingleFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\OneScript.Core\OneScript.Core.csproj" />
+      <ProjectReference Include="..\OneScript.StandardLibrary\OneScript.StandardLibrary.csproj" />
+      <ProjectReference Include="..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj" />
+      <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
+    </ItemGroup>
+
+</Project>
