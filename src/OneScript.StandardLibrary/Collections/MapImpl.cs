@@ -73,6 +73,14 @@ namespace OneScript.StandardLibrary.Collections
             return _content.ContainsKey(key);
         }
 
+        public IEnumerable<IValue> Keys()
+        {
+            foreach (var key in _content.Keys)
+            {
+                yield return key;
+            }
+        }
+
         #region ICollectionContext Members
 
         [ContextMethod("Вставить", "Insert")]

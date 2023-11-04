@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.StandardLibrary.Collections.Indexes;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -21,17 +22,15 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
     /// Представляет из себя коллекцию строк с заранее заданной структурой.
     /// </summary>
     [ContextClass("ТаблицаЗначений", "ValueTable")]
-    public class ValueTable : AutoCollectionContext<ValueTable, ValueTableRow>
+    public class ValueTable : AutoCollectionContext<ValueTable, ValueTableRow>, IIndexCollectionSource
     {
-        private readonly ValueTableColumnCollection _columns;
         private readonly List<ValueTableRow> _rows;
-        private readonly CollectionIndexes _indexes;
 
         public ValueTable()
         {
-            _columns = new ValueTableColumnCollection(this);
+            Columns = new ValueTableColumnCollection(this);
             _rows = new List<ValueTableRow>();
-            _indexes = new CollectionIndexes();
+            Indexes = new CollectionIndexes(this);
     }
 
         /// <summary>
@@ -39,20 +38,14 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// </summary>
         /// <value>КоллекцияКолонокТаблицыЗначений</value>
         [ContextProperty("Колонки", "Columns")]
-        public ValueTableColumnCollection Columns
-        {
-            get { return _columns; }
-        }
+        public ValueTableColumnCollection Columns { get; }
 
         /// <summary>
         /// Коллекция индексов
         /// </summary>
         /// <value>ИндексыКоллекции</value>
         [ContextProperty("Индексы", "Indexes")]
-        public CollectionIndexes Indexes
-        {
-            get { return _indexes; }
-        }
+        public CollectionIndexes Indexes { get; }
 
         /// <summary>
         /// Количество строк в Таблице значений
@@ -71,8 +64,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Добавить", "Add")]
         public ValueTableRow Add()
         {
-            ValueTableRow row = new ValueTableRow(this);
+            var row = new ValueTableRow(this);
             _rows.Add(row);
+            Indexes.ElementAdded(row);
             return row;
         }
 
@@ -84,8 +78,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Вставить", "Insert")]
         public ValueTableRow Insert(int index)
         {
-            ValueTableRow row = new ValueTableRow(this);
+            var row = new ValueTableRow(this);
             _rows.Insert(index, row);
+            Indexes.ElementAdded(row);
             return row;
         }
 
@@ -99,8 +94,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Удалить", "Delete")]
         public void Delete(IValue row)
         {
-            int index = IndexByValue(row);
-
+            var index = IndexByValue(row);
+            Indexes.ElementRemoved(_rows[index]);
             _rows.RemoveAt(index);
         }
 
@@ -120,10 +115,14 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             var row_iterator = _rows.GetEnumerator();
             var array_iterator = (values as ArrayImpl).GetEnumerator();
 
+            Indexes.ClearIndexes();
+            
             while (row_iterator.MoveNext() && array_iterator.MoveNext())
             {
                 row_iterator.Current.Set(columnIndex, array_iterator.Current);
             }
+            
+            Indexes.Rebuild();
         }
 
         /// <summary>
@@ -138,9 +137,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("ВыгрузитьКолонку", "UnloadColumn")]
         public ArrayImpl UnloadColumn(IValue column)
         {
-            ArrayImpl result = new ArrayImpl();
+            var result = new ArrayImpl();
 
-            foreach (ValueTableRow row in _rows)
+            foreach (var row in _rows)
             {
                 result.Add(row.Get(column));
             }
@@ -159,10 +158,10 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                     return processing_list;
                 }
 
-                foreach (string column_name in ColumnNames.Split(','))
+                foreach (var column_name in ColumnNames.Split(','))
                 {
-                    string name = column_name.Trim();
-                    ValueTableColumn Column = Columns.FindColumnByName(name);
+                    var name = column_name.Trim();
+                    var Column = Columns.FindColumnByName(name);
 
                     if (Column == null)
                         throw WrongColumnNameException(name);
@@ -173,8 +172,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             }
             else if (!EmptyListInCaseOfNull)
             {
-                foreach (ValueTableColumn Column in _columns)
-                    processing_list.Add(Column);
+                processing_list.AddRange(Columns);
             }
             return processing_list;
         }
@@ -187,14 +185,16 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("ЗаполнитьЗначения", "FillValues")]
         public void FillValues(IValue value, string columnNames = null)
         {
-            List<ValueTableColumn> processing_list = GetProcessingColumnList(columnNames);
-            foreach (ValueTableRow row in _rows)
+            var processing_list = GetProcessingColumnList(columnNames);
+            Indexes.ClearIndexes();
+            foreach (var row in _rows)
             {
-                foreach (ValueTableColumn col in processing_list)
+                foreach (var col in processing_list)
                 {
                     row.Set(col, value);
                 }
             }
+            Indexes.Rebuild();
         }
 
         /// <summary>
@@ -207,8 +207,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         {
             row = row.GetRawValue();
 
-            if (row is ValueTableRow)
-                return _rows.IndexOf(row as ValueTableRow);
+            if (row is ValueTableRow tableRow)
+                return _rows.IndexOf(tableRow);
 
             return -1;
         }
@@ -225,13 +225,13 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Итог", "Total")]
         public IValue Total(IValue columnIndex)
         {
-            ValueTableColumn Column = Columns.GetColumnByIIndex(columnIndex);
+            var Column = Columns.GetColumnByIIndex(columnIndex);
             bool has_data = false;
             decimal Result = 0;
 
-            foreach (ValueTableRow row in _rows)
+            foreach (var row in _rows)
             {
-                IValue current_value = row.Get(Column);
+                var current_value = row.Get(Column);
                 if (current_value.SystemType == BasicTypes.Number)
                 {
                     has_data = true;
@@ -239,10 +239,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                 }
             }
             
-            if (has_data)
-                return ValueFactory.Create(Result);
-
-            return ValueFactory.Create();
+            return has_data ? ValueFactory.Create(Result) : ValueFactory.Create();
         }
 
         /// <summary>
@@ -255,12 +252,12 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Найти", "Find")]
         public IValue Find(IValue value, string columnNames = null)
         {
-            List<ValueTableColumn> processing_list = GetProcessingColumnList(columnNames);
+            var processing_list = GetProcessingColumnList(columnNames);
             foreach (ValueTableRow row in _rows)
             {
-                foreach (ValueTableColumn col in processing_list)
+                foreach (var col in processing_list)
                 {
-                    IValue current = row.Get(col);
+                    var current = row.Get(col);
                     if (value.Equals(current))
                         return row;
                 }
@@ -270,9 +267,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         private bool CheckFilterCriteria(ValueTableRow Row, StructureImpl Filter)
         {
-            foreach (KeyAndValueImpl kv in Filter)
+            foreach (var kv in Filter)
             {
-                ValueTableColumn Column = Columns.FindColumnByName(kv.Key.AsString());
+                var Column = Columns.FindColumnByName(kv.Key.AsString());
                 if (Column == null)
                     throw WrongColumnNameException(kv.Key.AsString());
 
@@ -294,15 +291,32 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             if (filter == null)
                 throw RuntimeException.InvalidArgumentType();
 
-            ArrayImpl Result = new ArrayImpl();
+            var result = new ArrayImpl();
 
-            foreach (ValueTableRow row in _rows)
+            var mapped = ColumnsMap(filter);
+            var suitableIndex = Indexes.FindSuitableIndex(mapped.Keys());
+            var dataToScan = suitableIndex != null ? suitableIndex.GetData(mapped) : _rows; 
+
+            foreach (var element in dataToScan)
             {
+                var row = (ValueTableRow)element;
                 if (CheckFilterCriteria(row, filter))
-                    Result.Add(row);
+                    result.Add(row);
             }
 
-            return Result;
+            return result;
+        }
+
+        private MapImpl ColumnsMap(StructureImpl filter)
+        {
+            var result = new MapImpl();
+            foreach (var kv in filter)
+            {
+                var key = Columns.FindColumnByName(kv.Key.AsString());
+                result.Insert(key, kv.Value);
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -312,6 +326,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         public void Clear()
         {
             _rows.Clear();
+            Indexes.Clear();
         }
 
         /// <summary>
@@ -350,21 +365,21 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             {
                 if (uniqueRows.ContainsKey(row))
                 {
-                    ValueTableRow old_row = uniqueRows[row];
+                    var old_row = uniqueRows[row];
 
                     foreach (var Column in AggregateColumns)
                     {
-                        IValue current = row.Get(Column);
+                        var current = row.Get(Column);
                         if (current.SystemType == BasicTypes.Number)
                         {
-                            decimal sum = old_row.Get(Column).AsNumber() + current.AsNumber();
+                            var sum = old_row.Get(Column).AsNumber() + current.AsNumber();
                             old_row.Set(Column, ValueFactory.Create(sum));
                         }
                     }
                 }
                 else
                 {
-                    ValueTableRow new_row = _rows[new_idx++];
+                    var new_row = _rows[new_idx++];
 
                     foreach (var Column in GroupColumns)
                         new_row.Set(Column, row.Get(Column));
@@ -382,11 +397,11 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             _rows.RemoveRange(new_idx, _rows.Count()-new_idx);
 
             int i = 0;
-            while (i < _columns.Count())
+            while (i < Columns.Count())
             {
-                ValueTableColumn Column = _columns.FindColumnByIndex(i);
+                ValueTableColumn Column = Columns.FindColumnByIndex(i);
                 if (GroupColumns.IndexOf(Column) == -1 && AggregateColumns.IndexOf(Column) == -1)
-                    _columns.Delete(Column);
+                    Columns.Delete(Column);
                 else
                     ++i;
             }
@@ -426,9 +441,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
             int index;
 
-            if (item is ValueTableRow)
+            if (item is ValueTableRow row)
             {
-                index = IndexOf(item as ValueTableRow);
+                index = IndexOf(row);
                 if (index == -1)
                     throw new RuntimeException("Строка не принадлежит таблице значений");
             }
@@ -490,11 +505,10 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("СкопироватьКолонки", "CopyColumns")]
         public ValueTable CopyColumns(string columnNames = null)
         {
-            ValueTable Result = new ValueTable();
+            var Result = new ValueTable();
+            var columns = GetProcessingColumnList(columnNames);
 
-            List<ValueTableColumn> columns = GetProcessingColumnList(columnNames);
-
-            foreach (ValueTableColumn Column in columns)
+            foreach (var Column in columns)
             {
                 Result.Columns.Add(Column.Name, Column.ValueType, Column.Title, Column.Width);
             }
@@ -516,8 +530,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Скопировать", "Copy")]
         public ValueTable Copy(IValue rows = null, string columnNames = null)
         {
-            ValueTable Result = CopyColumns(columnNames);
-            List<ValueTableColumn> columns = GetProcessingColumnList(columnNames);
+            var Result = CopyColumns(columnNames);
+            var columns = GetProcessingColumnList(columnNames);
             
             IEnumerable<ValueTableRow> requestedRows;
             if (rows == null)
@@ -544,8 +558,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
             foreach (var row in requestedRows)
             {
-                ValueTableRow new_row = Result.Add();
-                foreach (ValueTableColumn Column in columns)
+                var new_row = Result.Add();
+                foreach (var Column in columns)
                 {
                     new_row.Set(columnMap[Column], row.Get(Column));
                 }
@@ -672,6 +686,11 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             throw new NotSupportedException();
         }
 
+        IEnumerator<PropertyNameIndexAccessor> IEnumerable<PropertyNameIndexAccessor>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         public override IEnumerator<ValueTableRow> GetEnumerator()
         {
             foreach (var item in _rows)
@@ -705,6 +724,18 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         private static RuntimeException ColumnsMixedException(string columnName)
         {
             return new RuntimeException(string.Format("Колонка '{0}' не может одновременно быть колонкой группировки и колонкой суммирования", columnName));
+        }
+
+        public string GetName(IValue field)
+        {
+            if (field is ValueTableColumn column)
+                return column.Name;
+            throw RuntimeException.InvalidArgumentType(nameof(field));
+        }
+
+        public IValue GetField(string name)
+        {
+            return Columns.FindColumnByName(name);
         }
     }
 }
