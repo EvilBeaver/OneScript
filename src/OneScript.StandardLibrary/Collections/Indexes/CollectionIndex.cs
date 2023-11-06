@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
