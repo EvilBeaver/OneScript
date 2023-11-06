@@ -127,7 +127,7 @@ namespace ScriptEngine.Machine.Contexts
         protected static (object[] values, ParameterModifier[] flags) MarshalArguments(IValue[] arguments)
         {
             var values = new object[arguments.Length];
-            ParameterModifier[] flagsArray = null;
+            ParameterModifier[] flagsArray = new ParameterModifier[1];
             if (arguments.Length > 0)
             {
                 var flags = new ParameterModifier(arguments.Length);
@@ -137,7 +137,11 @@ namespace ScriptEngine.Machine.Contexts
                     flags[i] = arguments[i] is IVariable;
                 }
 
-                flagsArray = new[] { flags };
+                flagsArray[0] = flags;
+            }
+            else
+            {
+                flagsArray[0] = new ParameterModifier();
             }
 
             return (values, flagsArray);
