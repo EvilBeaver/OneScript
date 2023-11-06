@@ -27,6 +27,10 @@ namespace ScriptEngine.Compiler
 
         public SymbolBinding DefineMethod(MethodInfo method)
         {
+            if (_outerCtx.TryGetMethod(method.Name, out _))
+            {
+                throw new CompilerException($"Symbol already defined {method.Name}");
+            }
             var sb = _moduleCtx.DefineMethod(method);
             ShiftIndex(ref sb);
 
