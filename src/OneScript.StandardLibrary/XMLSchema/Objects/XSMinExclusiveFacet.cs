@@ -6,8 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Diagnostics.Contracts;
 using System.Xml.Schema;
-using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.XMLSchema.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
@@ -18,13 +18,14 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ФасетМинимальногоИсключающегоЗначенияXS", "XSMinExclusiveFacet")]
-    public class XSMinExclusiveFacet : AutoContext<XSMinExclusiveFacet>, IXSFacet
+    public sealed class XSMinExclusiveFacet : AutoContext<XSMinExclusiveFacet>, IXSFacet
     {
         private readonly XmlSchemaMinExclusiveFacet _facet;
         private XSAnnotation _annotation;
         private IValue _value;
 
         private XSMinExclusiveFacet() => _facet = new XmlSchemaMinExclusiveFacet();
+        
         internal XSMinExclusiveFacet(XmlSchemaMinExclusiveFacet minExclusiveFace)
         {
             _facet = minExclusiveFace;
@@ -36,6 +37,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
                 _annotation.BindToContainer(RootContainer, this);
             }
         }
+
         #region OneScript
 
         #region Properties
@@ -53,7 +55,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         [ContextProperty("Компоненты", "Components")]
-        public XSComponentFixedList Components => null;
+        public XSComponentFixedList Components => XSComponentFixedList.EmptyList();
 
         [ContextProperty("Контейнер", "Container")]
         public IXSComponent Container => SimpleTypeDefinition;
@@ -135,9 +137,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
 
         void IXSComponent.BindToContainer(IXSComponent rootContainer, IXSComponent container)
         {
-            if (!(container is XSSimpleTypeDefinition))
-                throw RuntimeException.InvalidArgumentType();
-
+            Contract.Requires(container is XSSimpleTypeDefinition);
             RootContainer = rootContainer;
             SimpleTypeDefinition = container as XSSimpleTypeDefinition;
         }

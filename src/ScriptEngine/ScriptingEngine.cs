@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -15,7 +15,6 @@ using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Compiler;
-using ScriptEngine.Hosting;
 
 namespace ScriptEngine
 {
@@ -27,7 +26,7 @@ namespace ScriptEngine
         public ScriptingEngine(ITypeManager types,
             IGlobalsManager globals,
             RuntimeEnvironment env, 
-            ConfigurationProviders configurationProviders,
+            OneScriptCoreOptions options,
             IServiceContainer services)
         {
             TypeManager = types;
@@ -40,17 +39,10 @@ namespace ScriptEngine
             Services = services;
             ContextDiscoverer = new ContextDiscoverer(types, globals, services);
             DebugController = services.TryResolve<IDebugController>();
-            ApplyConfiguration(configurationProviders.CreateConfig());
+            Loader.ReaderEncoding = options.FileReaderEncoding;
         }
 
         public IServiceContainer Services { get; }
-
-        private void ApplyConfiguration(KeyValueConfig config)
-        {
-            var options = new OneScriptCoreOptions(config);
-
-            Loader.ReaderEncoding = options.FileReaderEncoding;
-        }
 
         private ContextDiscoverer ContextDiscoverer { get; }
         
@@ -91,7 +83,7 @@ namespace ScriptEngine
         public void Initialize()
         {
             SetDefaultEnvironmentIfNeeded();
-
+            EnableCodeStatistics();
             UpdateContexts();
 
             _attachedScriptsFactory = new AttachedScriptsFactory(this);
@@ -194,16 +186,20 @@ namespace ScriptEngine
             }
         }
 
-        public void SetCodeStatisticsCollector(ICodeStatCollector collector)
+        private void EnableCodeStatistics()
         {
+            var collector = Services.TryResolve<ICodeStatCollector>();
+            if (collector == default)
+                return;
+            
             ProduceExtraCode |= CodeGenerationFlags.CodeStatistics;
-            MachineInstance.Current.SetCodeStatisticsCollector(collector);
         }
 
         #region IDisposable Members
 
         public void Dispose()
         {
+            DebugController?.Dispose();
             AttachedScriptsFactory.SetInstance(null);
         }
 

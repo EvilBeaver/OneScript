@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Commons;
+using OneScript.Exceptions;
 using OneScript.Types;
 using OneScript.Values;
 
@@ -49,23 +49,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override int CompareTo(BslValue other)
         {
-            if (other != null)
-            {
-                if (other is EnumerationValue)
-                {
-                    int thisIdx = _owner.IndexOf(this);
-                    int otherIdx = _owner.IndexOf((EnumerationValue)other);
-                    return thisIdx - otherIdx;
-                }
-                else
-                {
-                    throw RuntimeException.ComparisonNotSupportedException();
-                }
-            }
-            else
-            {
-                return 1;
-            }
+            throw RuntimeException.ComparisonNotSupportedException();
         }
 
         public override bool Equals(BslValue other)

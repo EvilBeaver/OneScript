@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using OneScript.Commons;
+using OneScript.Exceptions;
 using OneScript.Types;
 using ScriptEngine.Machine;
 
@@ -19,7 +19,7 @@ namespace OneScript.StandardLibrary.NativeApi
     /// Класс, ассоциированный с экземпляром библиотеки внешних компонент 
     /// Native API и осуществляющий непосредственное создание экземпляра компоненты.
     /// </summary>
-    class NativeApiLibrary
+    class NativeApiLibrary : IDisposable
     {
         private delegate IntPtr GetClassNames();
 
@@ -45,15 +45,6 @@ namespace OneScript.StandardLibrary.NativeApi
             }
             if (Loaded) 
                 RegisterComponents(identifier, typeManager);
-        }
-
-        public void Dispose()
-        {
-            foreach (var component in _components)
-                component.Dispose();
-            if (Loaded && NativeApiKernel.FreeLibrary(Module))
-                if (!String.IsNullOrEmpty(_tempfile))
-                    try { File.Delete(_tempfile); } catch (Exception) { }
         }
 
         public IntPtr Module { get; private set; } = IntPtr.Zero;
@@ -83,6 +74,41 @@ namespace OneScript.StandardLibrary.NativeApi
             var component = new NativeApiComponent(host, this, typeDef, componentName);
             _components.Add(component);
             return component;
+        }
+
+        private void ReleaseUnmanagedResources(bool isDisposing)
+        {
+            try
+            {
+                foreach (var component in _components)
+                {
+                    component.Dispose();
+                }
+                
+                if (Loaded && NativeApiKernel.FreeLibrary(Module))
+                {
+                    if (!String.IsNullOrEmpty(_tempfile))
+                    {
+                        File.Delete(_tempfile);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                if (isDisposing)
+                    throw;
+            }
+        }
+
+        public void Dispose()
+        {
+            ReleaseUnmanagedResources(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~NativeApiLibrary()
+        {
+            ReleaseUnmanagedResources(false);
         }
     }
 }

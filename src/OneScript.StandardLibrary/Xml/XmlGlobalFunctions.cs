@@ -6,13 +6,16 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Xml;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Binary;
+using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
 using OneScript.Values;
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -21,10 +24,43 @@ namespace OneScript.StandardLibrary.Xml
     [GlobalContext(Category="Функции работы с XML")]
     public class XmlGlobalFunctions : GlobalContextBase<XmlGlobalFunctions>
     {
+        private static readonly Dictionary<Type, EnumerationContext> _allowedEnums 
+            = new Dictionary<Type, EnumerationContext>();
+        
+        private XmlGlobalFunctions(IGlobalsManager mgr)
+        {
+            lock (_allowedEnums)
+            {
+                _allowedEnums.Clear();
+                foreach (var e in new[] {
+                             (typeof(ClrEnumValueWrapper<AllowedSignEnum>), typeof(AllowedSignEnum)),
+                             (typeof(ClrEnumValueWrapper<AllowedLengthEnum>), typeof(AllowedLengthEnum)),
+                             (typeof(ClrEnumValueWrapper<DateFractionsEnum>), typeof(DateFractionsEnum))
+                         })
+                {
+                    _allowedEnums.Add(e.Item1, (EnumerationContext)mgr.GetInstance(e.Item2));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Получает XML представление значения для помещения в текст элемента или значение атрибута XML.
+        /// </summary>
+        /// <param name="value">
+        /// Значение. Допустимые типы: Булево, Число, Строка, Дата, УникальныйИдентификатор, ДвоичныеДанные,
+        /// Неопределено, Null, а также значения перечислений ДопустимыйЗнак, ДопустимаяДлина, ЧастиДаты
+        /// </param>
+        /// <returns>
+        /// Строковое представление значения. Для двоичных данных - строка в формате Вase64.
+        /// При недопустимом типе значения выбрасывается исключение
+        /// </returns>
+        ///
         [ContextMethod("XMLСтрока", "XMLString")]
         public string XMLString(IValue value)
         {
-            if (value.SystemType == BasicTypes.Undefined)
+            if (value.SystemType == BasicTypes.String)
+                return value.AsString();
+            else if (value.SystemType == BasicTypes.Undefined || value.SystemType == BasicTypes.Null)
                 return "";
             else if(value.SystemType == BasicTypes.Boolean)
                 return XmlConvert.ToString(value.AsBoolean());
@@ -34,23 +70,47 @@ namespace OneScript.StandardLibrary.Xml
                 return XmlConvert.ToString(value.AsNumber());
             else
             {
-                if(value.GetRawValue() is BinaryDataContext bdc)
+                var rawValue = value.GetRawValue();
+                if(rawValue is BinaryDataContext bdc)
                 {
                     return Convert.ToBase64String(bdc.Buffer, Base64FormattingOptions.InsertLineBreaks);
                 }
-                else
+                if(rawValue is GuidWrapper guid)
                 {
-                    return value.GetRawValue().AsString();
+                    return guid.AsString();
+                }
+                else if (_allowedEnums.ContainsKey(rawValue.GetType()))
+                {
+                    return rawValue.AsString();
                 }
             }
+
+            throw RuntimeException.InvalidArgumentValue();
         }
 
+        /// <summary>
+        /// Выполняет преобразование из строки, полученной из текста элемента или значения атрибута XML,
+        /// в значение в соответствии с указанным типом. Действие, обратное действию метода XMLСтрока
+        /// </summary>
+        /// <param name="givenType">
+        /// Тип, значение которого надо получить при преобразовании из строкового представления XML.
+        /// Допустимые типы: Булево, Число, Строка, Дата, УникальныйИдентификатор, ДвоичныеДанные,
+        /// Неопределено, Null, перечисления ДопустимыйЗнак, ДопустимаяДлина, ЧастиДаты
+        /// </param>
+        /// <param name="presentation">
+        /// Строка, содержащая строковое представление значения соответствующего типа
+        /// </param>
+        /// <returns>
+        /// Значение заданного типа.
+        /// При недопустимом типе или неправильном строковом представлении выбрасывается исключение
+        /// </returns>
+        ///
         [ContextMethod("XMLЗначение", "XMLValue")]
         public IValue XMLValue(IValue givenType, string presentation)
         {
             if (givenType.GetRawValue().SystemType != BasicTypes.Type)
             {
-                throw new ArgumentException(nameof(givenType));
+                throw RuntimeException.InvalidNthArgumentType(1);
             }
 
             var dataType = givenType.GetRawValue() as BslTypeValue;
@@ -74,25 +134,54 @@ namespace OneScript.StandardLibrary.Xml
             {
                 return ValueFactory.Create(presentation);
             }
-            else if (typeValue.Equals(BasicTypes.Undefined) && presentation == "")
+            else if (typeValue.Equals(BasicTypes.Undefined))
             {
-                return ValueFactory.Create();
+                if (presentation.Trim() == "")
+                    return ValueFactory.Create();
+                
+                throw RuntimeException.InvalidNthArgumentValue(2);
+            }
+            else if (typeValue.Equals(BasicTypes.Null))
+            {
+                if (presentation.Trim() == "")
+                    return ValueFactory.CreateNullValue();
+                
+                throw RuntimeException.InvalidNthArgumentValue(2);
+            }
+            else if (typeValue.ImplementingClass == typeof(GuidWrapper))
+            {
+                try
+                {
+                    return new GuidWrapper(presentation);
+                }
+                catch
+                {
+                    throw RuntimeException.InvalidNthArgumentValue(2);
+                }
             }
             else if (typeValue.ImplementingClass == typeof(BinaryDataContext))
             {
                 byte[] bytes = Convert.FromBase64String(presentation);
                 return new BinaryDataContext(bytes);
             }
-            else
+            else if (_allowedEnums.TryGetValue(typeValue.ImplementingClass, out var enumerationContext))
             {
-                throw RuntimeException.InvalidArgumentValue();
+                try
+                {
+                    return enumerationContext[presentation];
+                }
+                catch (RuntimeException)
+                {
+                    throw RuntimeException.InvalidNthArgumentValue(2);
+                }
             }
-
+ 
+            throw RuntimeException.InvalidNthArgumentType(1);
         }
         
-        public static IAttachableContext CreateInstance()
+        public static IAttachableContext CreateInstance(IGlobalsManager mgr)
         {
-            return new XmlGlobalFunctions();
+            return new XmlGlobalFunctions(mgr);
         }
 
     }

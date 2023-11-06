@@ -43,7 +43,8 @@ namespace OneScript.Language.LexicalAnalysis
         RemoveHandler,
         Async,
         Await,
-
+        Goto,
+        
         // operators
         Plus,
         Minus,

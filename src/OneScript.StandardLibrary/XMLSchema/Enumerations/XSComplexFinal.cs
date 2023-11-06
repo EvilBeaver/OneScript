@@ -14,7 +14,7 @@ using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    public class XSComplexFinal : EnumerationValue
+    public sealed class XSComplexFinal : EnumerationValue
     {
         private readonly XmlSchemaDerivationMethod _derivationMethod;
         public XSComplexFinal(EnumerationContext owner, XmlSchemaDerivationMethod derivationMethod)
@@ -28,7 +28,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
     }
 
     [SystemEnum("ЗавершенностьСоставногоТипаXS", "XSComplexFinal")]
-    public class EnumerationXSComplexFinal : EnumerationContext
+    public sealed class EnumerationXSComplexFinal : EnumerationContext
     {
         private readonly Dictionary<XmlSchemaDerivationMethod, XSComplexFinal> _valuesCache;
 
@@ -69,7 +69,5 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
             return instance;
         }
     }
-
-
 
 }

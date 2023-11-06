@@ -9,5 +9,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Interfaces
 {
     public interface IXSType : IXSAnnotated
     {
+        string NamespaceURI { get; }
+        string Name { get; set; }
     }
 }

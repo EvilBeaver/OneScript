@@ -17,7 +17,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ДокументацияXS", "XSDocumentation")]
-    public class XSDocumentation : AutoContext<XSDocumentation>, IXSAnnotationItem
+    public sealed class XSDocumentation : AutoContext<XSDocumentation>, IXSAnnotationItem
     {
 
         private readonly XmlSchemaDocumentation _documentation;
@@ -34,7 +34,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public XSAnnotation Annotation => null;
 
         [ContextProperty("Компоненты", "Components")]
-        public XSComponentFixedList Components => null;
+        public XSComponentFixedList Components => XSComponentFixedList.EmptyList();
 
         [ContextProperty("Контейнер", "Container")]
         public IXSComponent Container { get; private set; }

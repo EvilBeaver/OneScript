@@ -7,8 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Xml.Schema;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.XMLSchema.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using OneScript.StandardLibrary.XMLSchema.Interfaces;
@@ -19,7 +19,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ФрагментXS", "XSParticle")]
-    public class XSParticle : AutoContext<XSParticle>, IXSComponent
+    public sealed class XSParticle : AutoContext<XSParticle>, IXSComponent
     {
         private IXSFragment _term;
         private IValue _minOccurs;

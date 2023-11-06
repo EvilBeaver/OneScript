@@ -17,19 +17,12 @@ EndProject
 
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D14BF321-348C-46B8-B96A-43A22BA7AC10}"
 	ProjectSection(SolutionItems) = preProject
-		..\Build.csproj = ..\Build.csproj
 		oscommon.targets = oscommon.targets
 		..\Build_Core.csproj = ..\Build_Core.csproj
+		..\Jenkinsfile = ..\Jenkinsfile
 	EndProjectSection
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{BBE794A6-B159-422F-B655-B7F03F25F223}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnitTests", "NUnitTests\NUnitTests.csproj", "{93ACC849-E7E1-4695-B59D-54B3737E48A6}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2590E2BB-CC1F-4775-80ED-451F45C9A4F1} = {2590E2BB-CC1F-4775-80ED-451F45C9A4F1}
-		{F09A46BD-5737-45E7-BA60-A47C9F7821A9} = {F09A46BD-5737-45E7-BA60-A47C9F7821A9}
-		{F062D1D9-D307-492A-A56B-FF3C55F8F6C0} = {F062D1D9-D307-492A-A56B-FF3C55F8F6C0}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Component", "Component\Component.csproj", "{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}"
 EndProject
@@ -41,11 +34,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{91059C5B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneScript.Language", "OneScript.Language\OneScript.Language.csproj", "{0B30DF8B-BD15-4C63-9CC4-1E123566B5B3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneScript.Language.Tests", "OneScript.Language.Tests\OneScript.Language.Tests.csproj", "{872BFF20-7AD9-4741-B163-CD648AD3418F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneScript.Language.Tests", "Tests\OneScript.Language.Tests\OneScript.Language.Tests.csproj", "{872BFF20-7AD9-4741-B163-CD648AD3418F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneScriptDocumenter", "OneScriptDocumenter\OneScriptDocumenter.csproj", "{76F2521D-44D7-48C9-A678-074E22B46092}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneScript.Core.Tests", "OneScript.Core.Tests\OneScript.Core.Tests.csproj", "{4FF7C82D-BFEF-415E-81FF-5C0337E99845}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneScript.Core.Tests", "Tests\OneScript.Core.Tests\OneScript.Core.Tests.csproj", "{4FF7C82D-BFEF-415E-81FF-5C0337E99845}"
 EndProject
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.StandardLibrary", "OneScript.StandardLibrary\OneScript.StandardLibrary.csproj", "{86CFEC6C-2835-4EEB-9842-14B6A455A80C}"
@@ -54,13 +47,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScriptEngine.NativeApi", "S
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AddInNative", "..\tests\native-api\AddInNative.vcxproj", "{55890DF2-D13E-4C89-A01D-79CAD6726246}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.DebugProtocol.Test", "OneScript.DebugProtocol.Test\OneScript.DebugProtocol.Test.csproj", "{6D02017A-189F-45D7-B286-D67536AB4907}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.DebugProtocol.Test", "Tests\OneScript.DebugProtocol.Test\OneScript.DebugProtocol.Test.csproj", "{6D02017A-189F-45D7-B286-D67536AB4907}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.DebugServices", "OneScript.DebugServices\OneScript.DebugServices.csproj", "{B17AE4BE-3640-49CB-B771-C9D653067C5E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.Core", "OneScript.Core\OneScript.Core.csproj", "{6A246728-007D-4C1E-830A-DC8420ACA864}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.Dynamic.Tests", "OneScript.Dynamic.Tests\OneScript.Dynamic.Tests.csproj", "{0F5E6099-39BA-41CF-B55F-357F7DF4DE00}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.Dynamic.Tests", "Tests\OneScript.Dynamic.Tests\OneScript.Dynamic.Tests.csproj", "{0F5E6099-39BA-41CF-B55F-357F7DF4DE00}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.Native", "OneScript.Native\OneScript.Native.csproj", "{90E896C1-FEAE-4C71-8E47-3E3F2D9C926C}"
 EndProject
@@ -117,11 +110,6 @@ Global
 		{BBE794A6-B159-422F-B655-B7F03F25F223}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BBE794A6-B159-422F-B655-B7F03F25F223}.Release|x86.ActiveCfg = Release|x86
 		{BBE794A6-B159-422F-B655-B7F03F25F223}.LinuxDebug|Any CPU.ActiveCfg = LinuxDebug|Any CPU
-		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.Release|x86.ActiveCfg = Release|Any CPU
-		{93ACC849-E7E1-4695-B59D-54B3737E48A6}.LinuxDebug|Any CPU.ActiveCfg = LinuxDebug|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{B6C3C000-699B-4A2F-92D1-EEAEA9CFE2AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -269,7 +257,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{93ACC849-E7E1-4695-B59D-54B3737E48A6} = {91059C5B-526C-4B81-B106-99DEFF542D1F}
 		{4FF7C82D-BFEF-415E-81FF-5C0337E99845} = {91059C5B-526C-4B81-B106-99DEFF542D1F}
 		{872BFF20-7AD9-4741-B163-CD648AD3418F} = {91059C5B-526C-4B81-B106-99DEFF542D1F}
 		{6D02017A-189F-45D7-B286-D67536AB4907} = {91059C5B-526C-4B81-B106-99DEFF542D1F}

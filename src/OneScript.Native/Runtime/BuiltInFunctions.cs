@@ -9,18 +9,19 @@ using System;
 using System.Runtime.CompilerServices;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Values;
 
 namespace OneScript.Native.Runtime
 {
     public static class BuiltInFunctions
     {
-        //[ContextMethod("Вычислить", "Eval")]
+        [ContextMethod("Вычислить", "Eval")]
         public static BslValue Eval(string arg)
         {
             throw new NotSupportedException();
         }
-
+        
         #region String Functions
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -90,7 +91,7 @@ namespace OneScript.Native.Runtime
         }
 
         [ContextMethod("Найти", "Find")]
-        public static int StrPos(string needle, string haystack)
+        public static int StrPos(string haystack, string needle)
         {
             var result = haystack.IndexOf(needle, StringComparison.Ordinal) + 1;
             return result;
@@ -142,13 +143,13 @@ namespace OneScript.Native.Runtime
         }
 
         [ContextMethod("Символ", "Char")]
-        public static object Chr(int code)
+        public static string Chr(int code)
         {
             return new string(new char[1] { (char)code });
         }
 
         [ContextMethod("КодСимвола", "CharCode")]
-        public static object ChrCode(string strChar, int? position = null)
+        public static int ChrCode(string strChar, int? position = null)
         {
             if(position != null)
             {
@@ -410,29 +411,40 @@ namespace OneScript.Native.Runtime
         public static decimal Round(decimal num, int? digits = null, int? mode = null)
         {
             var digitsMath = digits??0;
-            var modeMath = mode??0;
+            var modeMath = mode??1;// по умолчанию Окр15как20
             if (modeMath != 0)
                 modeMath = 1;
             
-            decimal scale = (decimal)Math.Pow(10.0, digitsMath);
-            decimal scaled = Math.Abs(num) * scale;
-
-            var director = (int)((scaled - (long)scaled) * 10 % 10);
-
-            decimal round;
-            if (director == 5)
-                round = Math.Floor(scaled + modeMath * 0.5m * Math.Sign(digitsMath));
-            else if (director > 5)
-                round = Math.Ceiling(scaled);
-            else
-                round = Math.Floor(scaled);
-            
             decimal result;
-            
-            if(digits >= 0)
-                result = (Math.Sign(num) * round / scale);
+            if (digits >= 0)
+            {
+                result = Math.Round(num, digitsMath, MidpointRounding.AwayFromZero);
+                if (modeMath == 0)
+                {
+                    int scale = (int)Math.Pow(10, digitsMath);
+                    // для.Net Core 3+, 5+ можно использовать MidpointRounding.ToZero
+                    var diff = (result - num) * scale;
+                    if (diff == 0.5m)
+                        result -= 1m / scale;
+                    else if (diff == -0.5m)
+                        result += 1m / scale;
+                }
+            }
             else
-                result = (Math.Sign(num) * round * scale);
+            {
+                int scale = (int)Math.Pow(10, -digitsMath);
+                num /= scale;
+                result = Math.Round(num, MidpointRounding.AwayFromZero);
+                if (mode == 0)
+                {
+                    var diff = result - num;
+                    if (diff == 0.5m)
+                        result -= 1m;
+                    else if (diff == -0.5m)
+                        result += 1m;
+                }
+                result *= scale;
+            }
 
             return result;
         }
@@ -527,6 +539,13 @@ namespace OneScript.Native.Runtime
         [ContextMethod("ТипЗнч", "TypeOf")]
         public static BslValue ValType(BslValue value) => new BslTypeValue(value.SystemType);
         
+        
+        [ContextMethod("Формат", "Format")]
+        public static string Format(BslValue value, string format)
+        {
+            return ValueFormatter.Format(value, format);
+        }
+        
         private static decimal PowInt(decimal bas, uint exp)
         {
             decimal pow = 1;
@@ -541,31 +560,5 @@ namespace OneScript.Native.Runtime
 
             return pow;
         }
-
-        // private void Format(int arg)
-        // {
-        //     var formatString = _operationStack.Pop().AsString();
-        //     var valueToFormat = _operationStack.Pop().GetRawValue();
-        //
-        //     var formatted = ValueFormatter.Format(valueToFormat, formatString);
-        //
-        //     _operationStack.Push(ValueFactory.Create(formatted));
-        //     NextInstruction();
-        //
-        // }
-        
-        // private void ModuleInfo(int arg)
-        // {
-        //     var currentScript = this.CurrentScript;
-        //     if (currentScript != null)
-        //     {
-        //         _operationStack.Push(currentScript);
-        //     }
-        //     else
-        //     {
-        //         _operationStack.Push(ValueFactory.Create());
-        //     }
-        //     NextInstruction();
-        // }
     }
 }

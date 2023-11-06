@@ -6,8 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -17,9 +17,9 @@ namespace OneScript.StandardLibrary.NativeApi
     /// <summary>
     /// Экземпляр внешней компоненты Native API
     /// </summary>
-    class NativeApiComponent : NativeApiValue, IRuntimeContextInstance, IValue
+    class NativeApiComponent : NativeApiValue, IRuntimeContextInstance, IDisposable
     {
-        private readonly IntPtr _object;
+        private IntPtr _object;
 
         public override IRuntimeContextInstance AsObject()
         {
@@ -94,11 +94,6 @@ namespace OneScript.StandardLibrary.NativeApi
                 }
             );
             DefineType(typeDef);
-        }
-
-        public void Dispose()
-        {
-            try { NativeApiProxy.DestroyObject(_object); } catch (Exception) { }
         }
 
         public bool IsIndexed => true;
@@ -270,6 +265,37 @@ namespace OneScript.StandardLibrary.NativeApi
                 );
             }
             retValue = result;
+        }
+
+        private void ReleaseUnmanagedResources(bool isDisposing)
+        {
+            if (_object == IntPtr.Zero)
+                return;
+            
+            try
+            {
+                NativeApiProxy.DestroyObject(_object);
+            }
+            catch (Exception)
+            {
+                if (isDisposing)
+                    throw;
+            }
+            finally
+            {
+                _object = IntPtr.Zero;
+            }
+        }
+
+        public void Dispose()
+        {
+            ReleaseUnmanagedResources(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~NativeApiComponent()
+        {
+            ReleaseUnmanagedResources(false);
         }
     }
 }

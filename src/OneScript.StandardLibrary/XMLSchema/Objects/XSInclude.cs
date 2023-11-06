@@ -16,17 +16,18 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ВключениеXS", "XSInclude")]
-    public class XSInclude : AutoContext<XSInclude>, IXSDirective
+    public sealed class XSInclude : AutoContext<XSInclude>, IXSDirective
     {
 
         private readonly XmlSchemaInclude _include;
+        private XMLSchema _resolvedSchema;
 
-        private XSInclude() => _include = new XmlSchemaInclude();
+        private XSInclude() : this(new XmlSchemaInclude()) { }
 
         internal XSInclude(XmlSchemaInclude include)
-            : this()
         {
             _include = include;
+            _resolvedSchema = new XMLSchema(_include.Schema);
         }
 
         #region OneScript
@@ -37,7 +38,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public XSAnnotation Annotation => null;
 
         [ContextProperty("Компоненты", "Components")]
-        public XSComponentFixedList Components => null;
+        public XSComponentFixedList Components => XSComponentFixedList.EmptyList();
 
         [ContextProperty("Контейнер", "Container")]
         public IXSComponent Container { get; private set; }
@@ -54,8 +55,12 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         [ContextProperty("РазрешеннаяСхема", "ResolvedSchema")]
         public XMLSchema ResolvedSchema
         {
-            get => ResolvedSchema;
-            set => ResolvedSchema = value;
+            get => _resolvedSchema;
+            set
+            {
+                _resolvedSchema = value;
+                _include.Schema = _resolvedSchema.SchemaObject;
+            }
         }
 
         [ContextProperty("РасположениеСхемы", "SchemaLocation")]
@@ -70,7 +75,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         #region Methods
 
         [ContextMethod("КлонироватьКомпоненту", "CloneComponent")]
-        public IXSComponent CloneComponent(bool recursive = false) => throw new NotImplementedException();
+        public IXSComponent CloneComponent(bool recursive = true) => throw new NotImplementedException();
 
         [ContextMethod("ОбновитьЭлементDOM", "UpdateDOMElement")]
         public void UpdateDOMElement() => throw new NotImplementedException();

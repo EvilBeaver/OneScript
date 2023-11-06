@@ -8,8 +8,8 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Xml;
 using System.Xml.Schema;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Xml;
 using OneScript.Types;
 using OneScript.Values;
@@ -20,16 +20,14 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XDTO
 {
     [ContextClass("СериализаторXDTO", "XDTOSerializer")]
-    public class XDTOSerializer : AutoContext<XDTOSerializer>
+    public sealed class XDTOSerializer : AutoContext<XDTOSerializer>
     {
-        private readonly ITypeManager _typeManager;
         private readonly XmlGlobalFunctions _xmlGlobalFunctions;
         private readonly XmlNodeTypeEnum _xmlNodeEnum;
 
 
-        private XDTOSerializer(ITypeManager typeManager, IGlobalsManager globalsManager)
+        private XDTOSerializer(IGlobalsManager globalsManager)
         {
-            _typeManager = typeManager;
             _xmlGlobalFunctions = globalsManager.GetInstance<XmlGlobalFunctions>();
             _xmlNodeEnum = globalsManager.GetInstance<XmlNodeTypeEnum>();
         }
@@ -192,7 +190,7 @@ namespace OneScript.StandardLibrary.XDTO
             if (valueType is BslTypeValue typeTypeValue)
                 typeValue = typeTypeValue;
 
-            else if (xmlReader.NodeType == _xmlNodeEnum.FromNativeValue(XmlNodeType.Element))
+            else if (xmlReader.NodeType.Equals(_xmlNodeEnum.FromNativeValue(XmlNodeType.Element)))
             {
                 IValue xsiType = xmlReader.GetAttribute(ValueFactory.Create("type"), XmlSchema.InstanceNamespace);
                 IValue xsiNil = xmlReader.GetAttribute(ValueFactory.Create("nil"), XmlSchema.InstanceNamespace);
@@ -214,7 +212,7 @@ namespace OneScript.StandardLibrary.XDTO
                             break;
 
                         case "dateTime":
-                            typeValue = new BslTypeValue(BasicTypes.Number);
+                            typeValue = new BslTypeValue(BasicTypes.Date);
                             break;
 
                         default:
@@ -223,7 +221,7 @@ namespace OneScript.StandardLibrary.XDTO
                 }
                 else if (xsiNil.SystemType == BasicTypes.String)
                     typeValue = new BslTypeValue(BasicTypes.Undefined);
-            };
+            }
 
             if (typeValue == null)
                 throw RuntimeException.InvalidArgumentValue();
@@ -237,10 +235,10 @@ namespace OneScript.StandardLibrary.XDTO
                 result = ValueFactory.Create();
                 xmlReader.Skip();
             }
-            else if (implType == typeof(DataType)) // TODO: такого не должно быть.
+            else if (typeof(BslPrimitiveValue).IsAssignableFrom(implType))
             {
                 xmlReader.Read();
-                if (xmlReader.NodeType == _xmlNodeEnum.FromNativeValue(XmlNodeType.Text))
+                if (xmlReader.NodeType.Equals(_xmlNodeEnum.FromNativeValue(XmlNodeType.Text)))
                 {
                     result = XMLValue(typeValue, xmlReader.Value);
                     xmlReader.Read();
@@ -249,7 +247,7 @@ namespace OneScript.StandardLibrary.XDTO
                     throw RuntimeException.InvalidArgumentValue();
             }
             else if (typeof(IXDTOSerializableXML).IsAssignableFrom(implType))
-                result = Activator.CreateInstance(implType, new object[] { xmlReader, this }) as IValue;
+                result = Activator.CreateInstance(implType, xmlReader, this) as IValue;
 
             xmlReader.Read();
             return result;
@@ -263,7 +261,7 @@ namespace OneScript.StandardLibrary.XDTO
         public static XDTOSerializer CreateInstance(TypeActivationContext context)
         {
             var globalsManager = context.Services.Resolve<IGlobalsManager>();
-            return new XDTOSerializer(context.TypeManager, globalsManager);
+            return new XDTOSerializer(globalsManager);
         }
 
         #endregion

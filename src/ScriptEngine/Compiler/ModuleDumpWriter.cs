@@ -8,10 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using OneScript.Commons;
 using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
+using OneScript.Native.Compiler;
+using OneScript.Native.Runtime;
 using OneScript.Sources;
 using ScriptEngine.Machine;
 
@@ -28,10 +32,78 @@ namespace ScriptEngine.Compiler
 
         public void Write(TextWriter output, SourceCode source)
         {
-            var module = (StackRuntimeModule)_compiler.Compile(source);
+            var compilerResult = _compiler.Compile(source);
+            if (compilerResult is StackRuntimeModule stackModule)
+            {
+                var module = stackModule;
+                WriteImage(output, module);
+            }
+            else
+            {
+                WriteNativeModule(output, (DynamicModule)compilerResult);
+            }
 
-            WriteImage(output, module);
+        }
 
+        private void WriteNativeModule(TextWriter output, DynamicModule compilerResult)
+        {
+            foreach (var attribute in compilerResult.ModuleAttributes)
+            {
+                output.WriteLine($"[{attribute.Name}]");
+            }
+            output.WriteLine("class DynamicModule");
+            output.WriteLine("{");
+            output.WriteLine(".fields");
+            foreach (var field in compilerResult.Fields)
+            {
+                PrintField(output, field);
+            }
+            
+            output.WriteLine(".properties");
+            foreach (var prop in compilerResult.Properties)
+            {
+                PrintProperty(output, prop);
+            }
+            
+            output.WriteLine(".methods");
+            foreach (var method in compilerResult.Methods)
+            {
+                PrintMethod(output, (BslNativeMethodInfo)method);
+            }
+            
+            output.WriteLine("}");
+        }
+
+        private void PrintProperty(TextWriter output, BslPropertyInfo prop)
+        {
+            output.WriteLine();
+            foreach (var attribute in prop.GetAnnotations())
+            {
+                output.WriteLine($"[{attribute.Name}]");
+            }
+            output.WriteLine($"{prop.PropertyType} {prop.Name}");
+        }
+        
+        private void PrintMethod(TextWriter output, BslNativeMethodInfo method)
+        {
+            output.WriteLine();
+            foreach (var attribute in method.GetAnnotations())
+            {
+                output.WriteLine($"[{attribute.Name}]");
+            }
+            
+            var propertyInfo = typeof(Expression).GetProperty("DebugView", BindingFlags.Instance | BindingFlags.NonPublic);
+            output.WriteLine(propertyInfo.GetValue(method.Implementation) as string);
+        }
+
+        private void PrintField(TextWriter output, BslFieldInfo field)
+        {
+            output.WriteLine();
+            foreach (var attribute in field.GetAnnotations())
+            {
+                output.WriteLine($"[{attribute.Name}]");
+            }
+            output.WriteLine($"{field.FieldType} {field.Name}");
         }
 
         public void Write(TextWriter output, StackRuntimeModule module)

@@ -16,7 +16,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("ОбъединениеЗапрещенныхПодстановокXS", "XSProhibitedSubstitutionsUnion")]
-    public class XsProhibitedSubstitutionsUnion : AutoContext<XsProhibitedSubstitutionsUnion>
+    public sealed class XsProhibitedSubstitutionsUnion : AutoContext<XsProhibitedSubstitutionsUnion>
     {
         private readonly ArrayImpl _values;
 

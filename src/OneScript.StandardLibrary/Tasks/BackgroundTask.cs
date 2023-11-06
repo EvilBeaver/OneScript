@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Language;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine.Machine;
@@ -73,7 +74,7 @@ namespace OneScript.StandardLibrary.Tasks
         /// <summary>
         /// Ждать завершения задания указанное число миллисекунд
         /// </summary>
-        /// <param name="timeout">Таймаут. Если ноль - ждать вечно</param>
+        /// <param name="timeout">Таймаут в миллисекундах. Если ноль - ждать вечно</param>
         /// <returns>Истина - дождались завершения. Ложь - сработал таймаут</returns>
         [ContextMethod("ОжидатьЗавершения", "Wait")]
         public bool Wait(int timeout = 0)
@@ -111,11 +112,6 @@ namespace OneScript.StandardLibrary.Tasks
             {
                 State = TaskStateEnum.CompletedWithErrors;
                 ExceptionInfo = new ExceptionInfoContext(exception);
-            }
-            catch (BslCoreException exception)
-            {
-                State = TaskStateEnum.CompletedWithErrors;
-                ExceptionInfo = new ExceptionInfoContext(new ScriptException(exception));
             }
         }
     }

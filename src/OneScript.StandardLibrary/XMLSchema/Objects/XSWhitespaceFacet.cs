@@ -6,8 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Diagnostics.Contracts;
 using System.Xml.Schema;
-using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.XMLSchema.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
@@ -17,7 +17,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ФасетПробельныхСимволовXS", "XSWhitespaceFacet")]
-    public class XSWhitespaceFacet : AutoContext<XSWhitespaceFacet>, IXSFacet
+    public sealed class XSWhitespaceFacet : AutoContext<XSWhitespaceFacet>, IXSFacet
     {
         private readonly XmlSchemaWhiteSpaceFacet _facet;
         private XSAnnotation _annotation;
@@ -52,7 +52,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         [ContextProperty("Компоненты", "Components")]
-        public XSComponentFixedList Components => null;
+        public XSComponentFixedList Components => XSComponentFixedList.EmptyList();
 
         [ContextProperty("Контейнер", "Container")]
         public IXSComponent Container => SimpleTypeDefinition;
@@ -156,9 +156,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
 
         void IXSComponent.BindToContainer(IXSComponent rootContainer, IXSComponent container)
         {
-            if (!(container is XSSimpleTypeDefinition))
-                throw RuntimeException.InvalidArgumentType();
-
+            Contract.Requires(container is XSSimpleTypeDefinition);
             RootContainer = rootContainer;
             SimpleTypeDefinition = container as XSSimpleTypeDefinition;
         }

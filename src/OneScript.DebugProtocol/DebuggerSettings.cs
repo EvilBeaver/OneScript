@@ -4,11 +4,17 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
+using System.Text;
+
 namespace OneScript.DebugProtocol
 {
     public static class DebuggerSettings
     {
         public const int MAX_BUFFER_SIZE = 5000000;
+        
         public const int MAX_PRESENTATION_LENGTH = (int)(MAX_BUFFER_SIZE / 2.5);
+        
+        public static readonly Encoding DebugModeEncoding = Encoding.UTF8;
     }
 }

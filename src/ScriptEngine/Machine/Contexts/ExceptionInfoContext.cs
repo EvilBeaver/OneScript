@@ -9,26 +9,58 @@ using System.Collections.Generic;
 using System.Text;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Language;
+using OneScript.Localization;
+using OneScript.Types;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
     /// <summary>
     /// Класс позволяет узнать информацию о произошедшем исключении.
     /// </summary>
-    [ContextClass("ИнформацияОбОшибке", "ErrorInfo")]
+    [ContextClass("ИнформацияОбОшибке", "ErrorInfo", TypeUUID = "E0EDED59-D37A-42E7-9796-D6C061934B5D")]
     public class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
     {
-        readonly ScriptException _exc;
-        IValue _innerException;
+        private static readonly TypeDescriptor ObjectType = typeof(ExceptionInfoContext).GetTypeFromClassMarkup();
+        
+        private ScriptException _exc;
+        private IValue _innerException;
 
-        public ExceptionInfoContext(ScriptException source)
+        public ExceptionInfoContext(ScriptException source) : base(ObjectType)
         {
-            _exc = source ?? throw new ArgumentNullException();
-            if (source.InnerException is ParametrizedRuntimeException pre)
+            SetActualException(source);
+        }
+
+        private ExceptionInfoContext(string message, IValue parameters) : base(ObjectType)
+        {
+            Description = message;
+            Parameters = parameters;
+        }
+
+        public bool IsErrorTemplate => _exc == null;
+
+        private void SetActualException(ScriptException exception)
+        {
+            _exc = exception ?? throw new ArgumentNullException();
+            Description = _exc.ErrorDescription;
+            if (exception is ParametrizedRuntimeException pre)
             {
                 Parameters = pre.Parameter;
             }
+        }
+
+        private ScriptException ActualException()
+        {
+            if (IsErrorTemplate)
+            {
+                throw new RuntimeException(BilingualString.Localize(
+                    "Эта ИнформацияОбОшибке еще не была выброшена оператором ВызватьИсключение",
+                    "This ErrorInfo is not have been thrown by Raise operator yet"));
+            }
+
+            return _exc;
         }
         
         /// <summary>
@@ -45,51 +77,43 @@ namespace ScriptEngine.Machine.Contexts
         /// Содержит краткое описание ошибки. Эквивалент Exception.Message в C#
         /// </summary>
         [ContextProperty("Описание", "Description")]
-        public string Description 
-        { 
-            get { return _exc.ErrorDescription; } 
-        }
+        public string Description { get; private set;  }
 
-        public string MessageWithoutCodeFragment
-        {
-            get { return _exc.MessageWithoutCodeFragment; }
-        }
+        public string MessageWithoutCodeFragment => ActualException().MessageWithoutCodeFragment;
 
-        public string DetailedDescription
+        public string GetDetailedDescription()
         {
-            get
+            var exc = ActualException();
+            var sb = new StringBuilder(exc.Message);
+            var inner = exc.InnerException;
+            while (inner != default)
             {
-                var sb = new StringBuilder(_exc.Message);
-                var inner = _exc.InnerException;
-                while (inner != default)
-                {
-                    sb.AppendLine();
-                    sb.AppendLine(Locale.NStr("ru = 'по причине:';en = 'caused by:'"));
-                    sb.AppendLine(inner.Message);
-                    inner = inner.InnerException;
-                }
-
-                return sb.ToString();
+                sb.AppendLine();
+                sb.AppendLine(Locale.NStr("ru = 'по причине:';en = 'caused by:'"));
+                sb.AppendLine(inner.Message);
+                inner = inner.InnerException;
             }
+
+            return sb.ToString();
         }
 
         /// <summary>
         /// Имя модуля, вызвавшего исключение.
         /// </summary>
         [ContextProperty("ИмяМодуля", "ModuleName")]
-        public string ModuleName => _exc.ModuleName ?? string.Empty;
+        public string ModuleName => ActualException().ModuleName ?? string.Empty;
 
         /// <summary>
         /// Номер строки, вызвавшей исключение.
         /// </summary>
         [ContextProperty("НомерСтроки", "LineNumber")]
-        public int LineNumber => _exc.LineNumber;
+        public int LineNumber => ActualException().LineNumber;
 
         /// <summary>
         /// Строка исходного кода, вызвавшего исключение.
         /// </summary>
         [ContextProperty("ИсходнаяСтрока", "SourceLine")]
-        public string SourceLine => _exc.Code ?? string.Empty;
+        public string SourceLine => ActualException().Code ?? string.Empty;
 
         /// <summary>
         /// Предоставляет доступ к стеку вызовов процедур.
@@ -99,11 +123,8 @@ namespace ScriptEngine.Machine.Contexts
         [ContextMethod("ПолучитьСтекВызовов", "GetStackTrace")]
         public IValue GetStackTrace()
         {
-            if (_exc.RuntimeSpecificInfo is IList<ExecutionFrameInfo> frames)
+            if (ActualException().RuntimeSpecificInfo is IList<ExecutionFrameInfo> frames)
             {
-                // var frames = rte.CallStackFrames;
-                // if (frames == null)
-                //    return ValueFactory.Create();
                 return new StackTraceCollectionContext(frames);
             }
             return ValueFactory.Create();
@@ -126,30 +147,24 @@ namespace ScriptEngine.Machine.Contexts
 
         private IValue CreateInnerExceptionInfo()
         {
-            if (_exc.InnerException == null)
+            var exc = ActualException();
+            if (exc.InnerException == null)
                 return ValueFactory.Create();
 
-            bool alreadyWrapped = _exc is ExternalSystemException;
+            var alreadyWrapped = ActualException() is ExternalSystemException;
             if (!alreadyWrapped)
             {
-                ScriptException inner;
-                inner = _exc.InnerException as ScriptException;
-                if (inner == null)
-                {
-                    inner = new ExternalSystemException(_exc.InnerException);
-                }
-                if (inner.ModuleName == null)
-                    inner.ModuleName = _exc.ModuleName;
-                if (inner.Code == null)
-                    inner.Code = _exc.Code;
+                var inner = exc.InnerException as ScriptException ?? new ExternalSystemException(exc.InnerException);
+                inner.ModuleName ??= exc.ModuleName;
+                inner.Code ??= exc.Code;
                 return new ExceptionInfoContext(inner);
             }
             else
             {
-                if (_exc.InnerException.InnerException == null)
+                if (exc.InnerException.InnerException == null)
                     return ValueFactory.Create();
 
-                var inner = new ExternalSystemException(_exc.InnerException.InnerException);
+                var inner = new ExternalSystemException(exc.InnerException.InnerException);
                 if (inner.LineNumber == ErrorPositionInfo.OUT_OF_TEXT)
                 {
                     inner.ModuleName = this.ModuleName;
@@ -170,7 +185,7 @@ namespace ScriptEngine.Machine.Contexts
         [ContextMethod("ПодробноеОписаниеОшибки", "DetailedDescription")]
         public string GetDescription()
         {
-            return _exc.ToString();
+            return ActualException().ToString();
         }
 
         public override string ToString()
@@ -180,10 +195,28 @@ namespace ScriptEngine.Machine.Contexts
 
 
         [ScriptConstructor(Name = "С возможностью передачи параметров")]
-        public static ExceptionTemplate Create(IValue msg, IValue parameter)
+        public static ExceptionInfoContext Create(IValue msg, IValue parameter)
         {
-            return new ExceptionTemplate(msg.AsString(), parameter);
+            return new ExceptionInfoContext(msg.AsString(), parameter);
         }
 
+        public static ExceptionInfoContext EmptyExceptionInfo()
+        {
+            return new ExceptionInfoContext(EmptyScriptException.Instance);
+        }
+        
+        private class EmptyScriptException : ScriptException
+        {
+            public static readonly EmptyScriptException Instance = new EmptyScriptException();
+            private EmptyScriptException() : base("")
+            {
+                LineNumber = 0;
+                ColumnNumber = 0;
+            }
+
+            public override string Message => "";
+
+            public override string ToString() => "";
+        }
     }
 }

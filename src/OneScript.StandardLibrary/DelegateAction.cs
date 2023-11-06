@@ -30,6 +30,7 @@ namespace OneScript.StandardLibrary
         {
             var builder = BslMethodBuilder.Create()
                 .DeclaringType(typeof(DelegateAction))
+                .ReturnType(typeof(BslValue))
                 .SetNames(MethodName_Ru, MethodName_En);
 
             ExecuteMethodInfo = builder.Build();
@@ -42,7 +43,8 @@ namespace OneScript.StandardLibrary
 
         public DelegateAction(Func<BslValue[], BslValue> action)
         {
-            _action = parameters => (IValue)action(parameters.Cast<BslValue>().ToArray());
+            _action = parameters => action( parameters.Select(x=>x.GetRawValue())
+                .Cast<BslValue>().ToArray() );
         }
         
         public override bool DynamicMethodSignatures => true;
@@ -65,9 +67,7 @@ namespace OneScript.StandardLibrary
 
         public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
-            return BslMethodBuilder.Create()
-                .SetNames(MethodName_Ru, MethodName_En)
-                .Build();
+            return ExecuteMethodInfo;
         }
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)

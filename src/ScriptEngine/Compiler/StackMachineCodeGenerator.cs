@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Language.Extensions;
@@ -99,14 +100,12 @@ namespace ScriptEngine.Compiler
                 // if(_ctx is ModuleCompilerContext moduleContext)
                 //     moduleContext.Update();
             }
-            catch (CompilerException e)
+            catch (DependencyResolveException e)
             {
                 var error = new CodeError
                 {
                     Description = e.Message,
-                    Position = e.GetPosition()?.LineNumber == default
-                        ? MakeCodePosition(node.Location)
-                        : e.GetPosition(),
+                    Position = MakeCodePosition(node.Location),
                     ErrorId = nameof(CompilerException)
                 };
                 AddError(error);
@@ -119,7 +118,7 @@ namespace ScriptEngine.Compiler
             {
                 foreach (var item in _forwardedMethods)
                 {
-                    if (!_ctx.FindMethod(item.identifier, out var methN))
+                    if (!_ctx.TryFindMethodBinding(item.identifier, out var methN))
                     {
                         AddError(LocalizedErrors.SymbolNotFound(item.identifier), item.location);
                         continue;
@@ -225,9 +224,23 @@ namespace ScriptEngine.Compiler
             return localCtx.Variables.Select(v => v.Name).ToArray();
 
         }
+        
+        protected override void VisitGotoNode(NonTerminalNode node)
+        {
+            throw new NotSupportedException();
+        }
+
+        protected override void VisitLabelNode(LabelNode node)
+        {
+            throw new NotSupportedException();
+        }
 
         protected override void VisitMethod(MethodNode methodNode)
         {
+            if (methodNode.IsAsync)
+            {
+                AddError(LocalizedErrors.AsyncMethodsNotSupported(), methodNode.Location);
+            }
             var signature = methodNode.Signature;
             var methodBuilder = NewMethod();
 
@@ -274,15 +287,16 @@ namespace ScriptEngine.Compiler
             methodInfo.SetRuntimeParameters(entryPoint, GetVariableNames(methodCtx));
             
             SymbolBinding binding;
-            try
+            if (!_ctx.TryFindMethodBinding(signature.MethodName, out _))
             {
                 binding = _ctx.DefineMethod(methodInfo.ToSymbol());
             }
-            catch (CompilerException)
+            else
             {
                 AddError(LocalizedErrors.DuplicateMethodDefinition(signature.MethodName), signature.Location);
                 binding = default;
             }
+
             _module.MethodRefs.Add(binding);
             _module.Methods.Add(methodInfo);
         }
@@ -605,7 +619,7 @@ namespace ScriptEngine.Compiler
             else
             {
                 var parameters = BuiltinFunctions.ParametersInfo(funcId);
-                CheckFactArguments(parameters, node.ArgumentList);
+                FullCheckFactArguments(parameters, node.ArgumentList);
             }
 
             AddCommand(funcId, argsPassed);
@@ -630,7 +644,34 @@ namespace ScriptEngine.Compiler
         {
             CheckFactArguments(method.GetParameters(), argList);
         }
-        
+
+        private void FullCheckFactArguments(ParameterInfo[] parameters, BslSyntaxNode argList)
+        {
+            var argsPassed = argList.Children.Count;
+            if (argsPassed > parameters.Length)
+            {
+                AddError(CompilerErrors.TooManyArgumentsPassed(), argList.Location);
+                return;
+            }
+
+            int i = 0;
+            for (; i < argsPassed; i++)
+            {
+                if (!parameters[i].HasDefaultValue && argList.Children[i].Children.Count == 0)
+                {
+                    AddError(CompilerErrors.MissedArgument(), argList.Location);
+                }
+            }
+            for (; i < parameters.Length; i++)
+            {
+                if (!parameters[i].HasDefaultValue)
+                {
+                    AddError(CompilerErrors.TooFewArgumentsPassed(), argList.Location);
+                    return;
+                }
+            }
+        }
+
         protected override void VisitGlobalProcedureCall(CallNode node)
         {
             if (LanguageDef.IsBuiltInFunction(node.Identifier.Lexem.Token))
@@ -722,7 +763,7 @@ namespace ScriptEngine.Compiler
             
             var identifier = identifierNode.Lexem.Content;
             
-            var hasMethod = _ctx.FindMethod(identifier, out var methBinding);
+            var hasMethod = _ctx.TryFindMethodBinding(identifier, out var methBinding);
             if (hasMethod)
             {
                 var scope = _ctx.GetScope(methBinding.ScopeNumber);
@@ -870,16 +911,32 @@ namespace ScriptEngine.Compiler
             VisitConstant(eventName);
 
             var handlerNode = node.Children[1];
-            if(handlerNode.Kind == NodeKind.Identifier)
-                VisitConstant((TerminalNode)handlerNode);
+            int commandArg;
+            if (handlerNode.Kind == NodeKind.Identifier)
+            {
+                var terminal = handlerNode.AsTerminal();
+                var identifier = terminal.GetIdentifier();
+                if (_ctx.TryFindMethodBinding(identifier, out _))
+                {
+                    var lex = terminal.Lexem;
+                    lex.Type = LexemType.StringLiteral;
+                    VisitConstant(lex);
+                }
+                else
+                {
+                    AddError(LocalizedErrors.SymbolNotFound(identifier));
+                }
+                commandArg = 1;
+            }
             else
             {
                 var (handler, procedureName) = SplitExpressionAndName(node.Children[1]);
                 VisitExpression(handler);
                 VisitConstant(procedureName);
+                commandArg = 0;
             }
 
-            AddCommand(node.Kind == NodeKind.AddHandler ? OperationCode.AddHandler : OperationCode.RemoveHandler);
+            AddCommand(node.Kind == NodeKind.AddHandler ? OperationCode.AddHandler : OperationCode.RemoveHandler, commandArg);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1036,9 +1093,7 @@ namespace ScriptEngine.Compiler
 
         protected override void VisitConstant(TerminalNode node)
         {
-            var cDef = CreateConstDefinition(node.Lexem);
-            var num = GetConstNumber(cDef);
-            AddCommand(OperationCode.PushConst, num);
+            VisitConstant(node.Lexem);
         }
         
         private void VisitConstant(in Lexem constant)
@@ -1048,9 +1103,9 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.PushConst, num);
         }
 
-        private IEnumerable<object> GetAnnotationAttributes(AnnotatableNode node)
+        private IEnumerable<BslAnnotationAttribute> GetAnnotationAttributes(AnnotatableNode node)
         {
-            var mappedAnnotations = new List<object>();
+            var mappedAnnotations = new List<BslAnnotationAttribute>();
             foreach (var annotation in node.Annotations)
             {
                 var anno = new BslAnnotationAttribute(annotation.Name);
@@ -1103,7 +1158,7 @@ namespace ScriptEngine.Compiler
         
         private static ConstDefinition CreateConstDefinition(in Lexem lex)
         {
-            DataType constType = DataType.Undefined;
+            DataType constType;
             switch (lex.Type)
             {
                 case LexemType.BooleanLiteral:
@@ -1121,6 +1176,11 @@ namespace ScriptEngine.Compiler
                 case LexemType.NullLiteral:
                     constType = DataType.GenericValue;
                     break;
+                case LexemType.UndefinedLiteral:
+                    constType = DataType.Undefined;
+                    break;
+                default:
+                    throw new ArgumentException($"Can't create constant for literal from {lex.ToString()}");
             }
 
             ConstDefinition cDef = new ConstDefinition()

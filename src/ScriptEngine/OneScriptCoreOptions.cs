@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using OneScript.Commons;
+using OneScript.Native.Compiler;
 using ScriptEngine.Hosting;
 
 namespace ScriptEngine
@@ -18,22 +19,30 @@ namespace ScriptEngine
         private const string FILE_READER_ENCODING = "encoding.script";
         private const string SYSTEM_LANGUAGE_KEY = "SystemLanguage";
         private const string PREPROCESSOR_DEFINITIONS_KEY = "preprocessor.define";
+        private const string DEFAULT_RUNTIME_KEY = "runtime.default";
 
         public OneScriptCoreOptions(KeyValueConfig config)
         {
             SystemLanguage = config[SYSTEM_LANGUAGE_KEY];
             FileReaderEncoding = SetupEncoding(config[FILE_READER_ENCODING]);
             PreprocessorDefinitions = SetupDefinitions(config[PREPROCESSOR_DEFINITIONS_KEY]);
+            UseNativeAsDefaultRuntime = SetupDefaultRuntime(config[DEFAULT_RUNTIME_KEY]);
         }
 
+        public string SystemLanguage { get; }
+
+        public Encoding FileReaderEncoding { get; }
+
+        public bool UseNativeAsDefaultRuntime { get; }
+        
         public IEnumerable<string> PreprocessorDefinitions { get; set; }
 
-        private IEnumerable<string> SetupDefinitions(string s)
+        private static IEnumerable<string> SetupDefinitions(string s)
         {
-            return s?.Split(',') ?? new string[0];
+            return s?.Split(',') ?? Array.Empty<string>();
         }
 
-        private Encoding SetupEncoding(string openerEncoding)
+        private static Encoding SetupEncoding(string openerEncoding)
         {
             if (string.IsNullOrWhiteSpace(openerEncoding)) 
                 return Encoding.UTF8;
@@ -43,9 +52,10 @@ namespace ScriptEngine
             else
                 return Encoding.GetEncoding(openerEncoding);
         }
-
-        public string SystemLanguage { get; set; }
-
-        public Encoding FileReaderEncoding { get; set; }
+        
+        private static bool SetupDefaultRuntime(string runtimeId)
+        {
+            return runtimeId == NativeRuntimeAnnotationHandler.NativeDirectiveName;
+        }
     }
 }

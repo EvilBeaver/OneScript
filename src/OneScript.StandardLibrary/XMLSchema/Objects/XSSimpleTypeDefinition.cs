@@ -6,9 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Diagnostics.Contracts;
 using System.Xml;
 using System.Xml.Schema;
-using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Xml;
 using OneScript.StandardLibrary.XMLSchema.Collections;
@@ -20,31 +20,21 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ОпределениеПростогоТипаXS", "XSSimpleTypeDefinition")]
-    public class XSSimpleTypeDefinition : AutoContext<XSSimpleTypeDefinition>, IXSType, IXSNamedComponent
+    public sealed class XSSimpleTypeDefinition : AutoContext<XSSimpleTypeDefinition>, IXSType, IXSNamedComponent
     {
         private readonly XmlSchemaSimpleType _type;
+        private readonly XSComponentFixedList _components = new XSComponentFixedList();
+        private readonly XSComponentList _typeDefinitions = new XSComponentList();
+        private readonly XSComponentList _facets = new XSComponentList();
+
         private XSAnnotation _annotation;
         private XMLExpandedName _baseTypeName;
         private XMLExpandedName _itemTypeName;
         private XSSimpleTypeVariety _variety;
 
-        private XSSimpleTypeDefinition()
-        {
-            _type = new XmlSchemaSimpleType();
-            Facets = new XSComponentList();
-            Facets.Inserted += Facets_Inserted;
-            Facets.Cleared += Facets_Cleared;
-
-            MemberTypeDefinitions = new XSComponentList();
-            MemberTypeDefinitions.Inserted += MemberTypeDefinitions_Inserted;
-            MemberTypeDefinitions.Cleared += MemberTypeDefinitions_Cleared;
-
-            Components = new XSComponentFixedList();
-            Variety = XSSimpleTypeVariety.Atomic;
-        }
+        private XSSimpleTypeDefinition() : this(new XmlSchemaSimpleType()) { }
 
         internal XSSimpleTypeDefinition(XmlSchemaSimpleType simpleType)
-            : this()
         {
             _type = simpleType;
 
@@ -54,45 +44,124 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
                 _annotation.BindToContainer(RootContainer, this);
             }
 
+            InitContentTypeVariety();
+
+            _facets.Inserted += Facets_Inserted;
+            _facets.Cleared += Facets_Cleared;
+
+            _typeDefinitions.Inserted += MemberTypeDefinitions_Inserted;
+            _typeDefinitions.Cleared += MemberTypeDefinitions_Cleared;
+        }
+
+        private void InitContentTypeVariety()
+        {
             if (_type.Content is XmlSchemaSimpleTypeList typeList)
-            {
-                _variety = XSSimpleTypeVariety.List;
+                InitListVariety(typeList);
 
-                if (typeList.ItemTypeName is XmlQualifiedName qualifiedName)
-                    _itemTypeName = new XMLExpandedName(qualifiedName);
-
-            }
             else if (_type.Content is XmlSchemaSimpleTypeUnion typeUnion)
-            {
-                _variety = XSSimpleTypeVariety.Union;
+                InitUnionVariety(typeUnion);
 
-                MemberTypeDefinitions.Inserted -= MemberTypeDefinitions_Inserted;
-                foreach (XmlSchemaObject item in typeUnion.BaseTypes)
-                {
-                    IXSComponent component = XMLSchemaSerializer.CreateInstance(item);
-                    component.BindToContainer(RootContainer, this);
-                    MemberTypeDefinitions.Add(component);
-                    Components.Add(component);
-                }
-                MemberTypeDefinitions.Inserted += MemberTypeDefinitions_Inserted;
-            }
             else if (_type.Content is XmlSchemaSimpleTypeRestriction typeRestriction)
+                InitAtomicVariety(typeRestriction);
+
+            else
             {
-                _variety = XSSimpleTypeVariety.Atomic;
-
-                if (typeRestriction.BaseTypeName is XmlQualifiedName qualifiedName)
-                    _baseTypeName = new XMLExpandedName(qualifiedName);
-
-                Facets.Inserted -= Facets_Inserted;
-                foreach (XmlSchemaObject item in typeRestriction.Facets)
-                {
-                    IXSComponent component = XMLSchemaSerializer.CreateInstance(item);
-                    component.BindToContainer(RootContainer, this);
-                    Facets.Add(component);
-                    Components.Add(component);
-                }
-                Facets.Inserted += Facets_Inserted;
+                var newRestriction = new XmlSchemaSimpleTypeRestriction();
+                _type.Content = newRestriction;
+                InitAtomicVariety(newRestriction);
             }
+        }
+
+        private void InitListVariety(XmlSchemaSimpleTypeList typeList)
+        {
+            _variety = XSSimpleTypeVariety.List;
+            InitItemTypeName(typeList.ItemTypeName);
+        }
+
+        private void InitUnionVariety(XmlSchemaSimpleTypeUnion typeUnion)
+        {
+            _variety = XSSimpleTypeVariety.Union;
+            foreach (var item in typeUnion.BaseTypes)
+            {
+                var component = XMLSchemaSerializer.CreateInstance(item);
+                component.BindToContainer(RootContainer, this);
+                _typeDefinitions.Add(component);
+                _components.Add(component);
+            }          
+        }
+
+        private void InitAtomicVariety(XmlSchemaSimpleTypeRestriction typeRestriction)
+        {
+            _variety = XSSimpleTypeVariety.Atomic;
+            InitBaseTypeName(typeRestriction.BaseTypeName);
+
+            foreach (var item in typeRestriction.Facets)
+            {
+                var component = XMLSchemaSerializer.CreateInstance(item);
+                component.BindToContainer(RootContainer, this);
+                _facets.Add(component);
+                _components.Add(component);
+            }
+        }
+
+        private void InitItemTypeName(XmlQualifiedName xmlQualifiedName)
+        {
+            if (xmlQualifiedName is XmlQualifiedName qualifiedName)
+                _itemTypeName = new XMLExpandedName(qualifiedName);
+        }
+
+        private void InitBaseTypeName(XmlQualifiedName xmlQualifiedName)
+        {
+            if (xmlQualifiedName is XmlQualifiedName qualifiedName)
+                _baseTypeName = new XMLExpandedName(qualifiedName);
+        }
+
+        private void SetContentTypeVariety(XSSimpleTypeVariety value)
+        {
+            if (_variety == value) return;
+            _variety = value;
+
+            switch (_variety)
+            {
+                case XSSimpleTypeVariety.List:
+                    _type.Content = new XmlSchemaSimpleTypeList();
+                    _itemTypeName = default;
+                    break;
+
+                case XSSimpleTypeVariety.Union:
+                    _type.Content = new XmlSchemaSimpleTypeUnion();
+                    _typeDefinitions.Clear();
+                    break;
+
+                case XSSimpleTypeVariety.Atomic:
+                    _type.Content = new XmlSchemaSimpleTypeRestriction();
+                    _baseTypeName = default;
+                    _facets.Clear();
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        private void SetBaseTypeName(XMLExpandedName value)
+        {
+            if (_baseTypeName == value) return;
+            Contract.Requires(Variety == XSSimpleTypeVariety.Atomic);
+            _baseTypeName = value;
+            
+             var content = _type.Content as XmlSchemaSimpleTypeRestriction;
+             content.BaseTypeName = _baseTypeName?.NativeValue;
+        }
+
+        private void SetItemTypeName(XMLExpandedName value)
+        {
+            if (_itemTypeName == value) return;
+            Contract.Requires(Variety == XSSimpleTypeVariety.List);
+            _itemTypeName = value;
+
+            var content = _type.Content as XmlSchemaSimpleTypeList;
+            content.ItemTypeName = _itemTypeName?.NativeValue;
         }
 
         #region OneScript
@@ -112,7 +181,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         [ContextProperty("Компоненты", "Components")]
-        public XSComponentFixedList Components { get; }
+        public XSComponentFixedList Components => _components;
 
         [ContextProperty("Контейнер", "Container")]
         public IXSComponent Container { get; private set; }
@@ -130,7 +199,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public IValue DOMElement => ValueFactory.Create();
 
         [ContextProperty("URIПространстваИмен", "NamespaceURI")]
-        public string URIПространстваИмен => _type.SourceUri;
+        public string NamespaceURI => _type.SourceUri;
 
         [ContextProperty("Имя", "Name")]
         public string Name
@@ -152,19 +221,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public XSSimpleTypeVariety Variety
         {
             get => _variety;
-            set
-            {
-                _variety = value;
-
-                if (_variety == XSSimpleTypeVariety.List)
-                    _type.Content = new XmlSchemaSimpleTypeList();
-
-                else if (_variety == XSSimpleTypeVariety.Union)
-                    _type.Content = new XmlSchemaSimpleTypeUnion();
-
-                else
-                    _type.Content = new XmlSchemaSimpleTypeRestriction();
-            }
+            set => SetContentTypeVariety(value);
         }
 
         [ContextProperty("Завершенность", "Final")]
@@ -177,32 +234,14 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public XMLExpandedName BaseTypeName
         {
             get => _baseTypeName;
-            set
-            {
-                _baseTypeName = value;
-                if (Variety == XSSimpleTypeVariety.Atomic)
-                {
-                    XmlSchemaSimpleTypeRestriction content = _type.Content as XmlSchemaSimpleTypeRestriction;
-                    content.BaseTypeName = _baseTypeName.NativeValue;
-                }
-                else
-                    throw RuntimeException.InvalidArgumentValue();
-            }
+            set => SetBaseTypeName(value);
         }
 
         [ContextProperty("ИмяТипаЭлемента", "ItemTypeName")]
         public XMLExpandedName ItemTypeName
         {
             get => _itemTypeName;
-            set
-            {
-                _itemTypeName = value;
-                if (Variety == XSSimpleTypeVariety.List)
-                {
-                    XmlSchemaSimpleTypeList content = (XmlSchemaSimpleTypeList)_type.Content;
-                    content.ItemTypeName = _itemTypeName.NativeValue;
-                }
-            }
+            set => SetItemTypeName(value);
         }
 
         [ContextProperty("ОпределениеБазовогоТипа", "BaseTypeDefinition")]
@@ -215,10 +254,10 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public XSSimpleTypeDefinition ItemTypeDefinition { get; set; }
 
         [ContextProperty("ОпределенияТиповОбъединения", "MemberTypeDefinitions")]
-        public XSComponentList MemberTypeDefinitions { get; }
+        public XSComponentList MemberTypeDefinitions => _typeDefinitions;
 
         [ContextProperty("Фасеты", "Facets")]
-        public XSComponentList Facets { get; }
+        public XSComponentList Facets => _facets;
 
         #endregion
 
@@ -264,46 +303,46 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
 
         private void Facets_Inserted(object sender, XSComponentListEventArgs e)
         {
-            IXSComponent component = e.Component;
-
-            if (!(component is IXSFacet))
-                throw RuntimeException.InvalidArgumentType();
+            var component = e.Component;
+            Contract.Requires(_variety == XSSimpleTypeVariety.Atomic);
+            Contract.Requires(component is IXSFacet);
 
             component.BindToContainer(RootContainer, this);
-            Components.Add(component);
+            _components.Add(component);
 
-            if (_type.Content is XmlSchemaSimpleTypeRestriction content)
-                content.Facets.Add(component.SchemaObject);
+            var content = _type.Content as XmlSchemaSimpleTypeRestriction;
+            content.Facets.Add(component.SchemaObject);
         }
 
         private void Facets_Cleared(object sender, EventArgs e)
         {
-            Components.Clear();
+            Contract.Requires(_variety == XSSimpleTypeVariety.Atomic);
+            _components.Clear();
 
-            if (_type.Content is XmlSchemaSimpleTypeRestriction content)
-                content.Facets.Clear();
+            var content = _type.Content as XmlSchemaSimpleTypeRestriction;
+            content.Facets.Clear();
         }
 
         private void MemberTypeDefinitions_Inserted(object sender, XSComponentListEventArgs e)
         {
-            IXSComponent component = e.Component;
-
-            if (!(component is XSSimpleTypeDefinition))
-                throw RuntimeException.InvalidArgumentType();
+            var component = e.Component;
+            Contract.Requires(_variety == XSSimpleTypeVariety.Union);
+            Contract.Requires(component is XSSimpleTypeDefinition);
 
             component.BindToContainer(RootContainer, this);
-            Components.Add(component);
+            _components.Add(component);
 
-            if (_type.Content is XmlSchemaSimpleTypeUnion content)
-                content.BaseTypes.Add(component.SchemaObject);
+            var content = _type.Content as XmlSchemaSimpleTypeUnion;
+            content.BaseTypes.Add(component.SchemaObject);
         }
 
         private void MemberTypeDefinitions_Cleared(object sender, EventArgs e)
         {
-            Components.Clear();
+            Contract.Requires(_variety == XSSimpleTypeVariety.Union);
+            _components.Clear();
 
-            if (_type.Content is XmlSchemaSimpleTypeUnion content)
-                content.BaseTypes.Clear();
+            var content = _type.Content as XmlSchemaSimpleTypeUnion;
+            content.BaseTypes.Clear();
         }
 
         #endregion

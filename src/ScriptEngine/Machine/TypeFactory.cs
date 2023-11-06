@@ -8,11 +8,12 @@ at http://mozilla.org/MPL/2.0/.
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using OneScript.Types;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using ScriptEngine.Types;
 using Refl = System.Reflection;
 
@@ -181,7 +182,16 @@ namespace ScriptEngine.Machine
                     if (i < args.Length)
                         methArgs[i] = args[i];
                 }
-                return (IValue) methodInfo.Invoke(null, methArgs);
+
+                try
+                {
+                    return (IValue) methodInfo.Invoke(null, methArgs);
+                }
+                catch (Refl.TargetInvocationException e)
+                {
+                    Debug.Assert(e.InnerException != null, "e.InnerException != null");
+                    throw e.InnerException;
+                }
             };
         }
 

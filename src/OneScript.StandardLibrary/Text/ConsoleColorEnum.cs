@@ -26,15 +26,23 @@ namespace OneScript.StandardLibrary.Text
                 typeManager,
                 (t,v) => new ConsoleColorEnum(t,v));
             
-            instance.WrapClrValue("Белый", "White", ConsoleColor.White);
             instance.WrapClrValue("Черный", "Black", ConsoleColor.Black);
+            instance.WrapClrValue("ТемноСиний", "DarkBlue", ConsoleColor.DarkBlue);
+            instance.WrapClrValue("ТемноЗеленый", "DarkGreen", ConsoleColor.DarkGreen);
+            instance.WrapClrValue("ТемноБирюзовый", "DarkCyan", ConsoleColor.DarkCyan);
+            instance.WrapClrValue("ТемноКрасный", "DarkRed", ConsoleColor.DarkRed);
+            instance.WrapClrValue("ТемноМалиновый", "DarkMagenta", ConsoleColor.DarkMagenta);
+            instance.WrapClrValue("ТемноЖелтый", "DarkYellow", ConsoleColor.DarkYellow);
+            instance.WrapClrValue("Серый", "Gray", ConsoleColor.Gray);
+            
+            instance.WrapClrValue("ТемноСерый", "DarkGray", ConsoleColor.DarkGray);
             instance.WrapClrValue("Синий", "Blue", ConsoleColor.Blue);
-            instance.WrapClrValue("Желтый", "Yellow", ConsoleColor.Yellow);
-            instance.WrapClrValue("Красный", "Red", ConsoleColor.Red);
             instance.WrapClrValue("Зеленый", "Green", ConsoleColor.Green);
             instance.WrapClrValue("Бирюза", "Cyan", ConsoleColor.Cyan);
+            instance.WrapClrValue("Красный", "Red", ConsoleColor.Red);
             instance.WrapClrValue("Малиновый", "Magenta", ConsoleColor.Magenta);
-            instance.WrapClrValue("Серый", "Gray", ConsoleColor.Gray);
+            instance.WrapClrValue("Желтый", "Yellow", ConsoleColor.Yellow);
+            instance.WrapClrValue("Белый", "White", ConsoleColor.White);
 
             OnInstanceCreation(instance);
             

@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using ScriptEngine.Machine;
@@ -49,8 +50,17 @@ namespace OneScript.StandardLibrary.Tasks
             var worker = new Task(() =>
             {
                 MachineInstance.Current.SetMemory(_runtimeContext);
-                task.ExecuteOnCurrentThread();
-                
+                var debugger = _runtimeContext.Services.TryResolve<IDebugController>();
+                debugger?.AttachToThread();
+                try
+                {
+                    task.ExecuteOnCurrentThread();
+                }
+                finally
+                {
+                    debugger?.DetachFromThread();
+                }
+
             }, taskCreationOptions);
 
             task.WorkerTask = worker;

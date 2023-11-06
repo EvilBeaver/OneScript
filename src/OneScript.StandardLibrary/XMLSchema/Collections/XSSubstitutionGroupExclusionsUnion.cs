@@ -16,7 +16,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("ОбъединениеИсключенийГруппПодстановкиXS", "XSSubstitutionGroupExclusionsUnion")]
-    public class XsSubstitutionGroupExclusionsUnion : AutoContext<XsSubstitutionGroupExclusionsUnion>
+    public sealed class XsSubstitutionGroupExclusionsUnion : AutoContext<XsSubstitutionGroupExclusionsUnion>
     {
         private readonly ArrayImpl _values;
         private bool Contains(XmlSchemaDerivationMethod value)

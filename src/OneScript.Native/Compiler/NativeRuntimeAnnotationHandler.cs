@@ -27,19 +27,19 @@ namespace OneScript.Native.Compiler
         }
 
         public static string NativeDirectiveName => "native";
+        public static string StackRuntimeDirectiveName => "stack";
         
         protected override bool DirectiveSupported(string directive)
         {
-            return string.Equals(directive, NativeDirectiveName, StringComparison.CurrentCultureIgnoreCase);
+            return string.Equals(directive, NativeDirectiveName, StringComparison.CurrentCultureIgnoreCase) ||
+                   string.Equals(directive, StackRuntimeDirectiveName, StringComparison.CurrentCultureIgnoreCase);
         }
 
         protected override void ParseAnnotationInternal(ref Lexem lastExtractedLexem, ILexer lexer, ParserContext parserContext)
         {
             var node = new AnnotationNode(NodeKind.Annotation, lastExtractedLexem);
             _allLineContentLexer.Iterator = lexer.Iterator;
-
-            var child = new TerminalNode(NodeKind.Unknown, lastExtractedLexem);
-            node.AddChild(child);
+            
             parserContext.AddChild(node);
             
             // после ничего не должно находиться

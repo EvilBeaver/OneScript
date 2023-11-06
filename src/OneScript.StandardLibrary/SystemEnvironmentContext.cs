@@ -10,6 +10,7 @@ using System.Collections;
 using System.Reflection;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine;
 using ScriptEngine.HostedScript.Library;
@@ -49,8 +50,18 @@ namespace OneScript.StandardLibrary
         /// <summary>
         /// Версия OneScript, выполняющая данный сценарий
         /// </summary>
-        [ContextProperty("Версия","Version")]
-        public string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        [ContextProperty("Версия", "Version")]
+        public string Version
+        {
+            get
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var informationVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                    .InformationalVersion ?? assembly.GetName().Version?.ToString() ?? "<unset>";
+
+                return informationVersion;
+            }
+        }
 
         /// <summary>
         /// Тип операционной системы, на которой выполняется сценарий

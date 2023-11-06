@@ -9,6 +9,7 @@ using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Contexts.Enums;
+using OneScript.Exceptions;
 using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
@@ -124,6 +125,10 @@ namespace ScriptEngine.Machine.Contexts
             else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
             {
                 valueObj = value.AsObject();
+            }
+            else if (value is EnumerationValue && typeof(EnumerationValue).IsAssignableFrom(type))
+            {
+                valueObj = value;
             }
             else
             {

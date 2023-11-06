@@ -5,14 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Sources;
+using OneScript.Compilation;
 
 namespace ScriptEngine
 {
-    public interface IDependencyResolver
+    public interface IDependencyResolver : ICompileTimeDependencyResolver
     {
-        ExternalLibraryDef Resolve(SourceCode module, string libraryName);
-
         void Initialize(ScriptingEngine engine);
     }
 }

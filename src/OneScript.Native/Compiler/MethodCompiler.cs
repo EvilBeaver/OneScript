@@ -18,12 +18,14 @@ using OneScript.Commons;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
+using OneScript.Exceptions;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
+using OneScript.Sources;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -41,31 +43,35 @@ namespace OneScript.Native.Compiler
         
         private readonly BinaryOperationCompiler _binaryOperationCompiler = new BinaryOperationCompiler();
         private ITypeManager _typeManager;
+        private IExceptionInfoFactory _exceptionInfoFactory;
         private readonly IServiceContainer _services;
         private readonly BuiltInFunctionsCache _builtInFunctions = new BuiltInFunctionsCache();
 
         private readonly ContextMethodsCache _methodsCache = new ContextMethodsCache();
         private readonly ContextPropertiesCache _propertiesCache = new ContextPropertiesCache();
+        private readonly SourceCode _source;
 
         public MethodCompiler(BslWalkerContext walkContext, BslNativeMethodInfo method) : base(walkContext)
         {
             _method = method;
             _services = walkContext.Services;
+            _source = walkContext.Source;
         }
 
-        private ITypeManager CurrentTypeManager
-        {
-            get
-            {
-                if (_typeManager != default) 
-                    return _typeManager;
-                
-                _typeManager = _services.TryResolve<ITypeManager>();
-                if (_typeManager == default)
-                    throw new NotSupportedException("Type manager is not registered in services.");
+        private ITypeManager CurrentTypeManager => GetService(_services, ref _typeManager);
 
-                return _typeManager;
-            }
+        private IExceptionInfoFactory ExceptionInfoFactory => GetService(_services, ref _exceptionInfoFactory);
+
+        private static T GetService<T>(IServiceContainer services, ref T value) where T : class
+        {
+            if (value != default) 
+                return value;
+                
+            value = services.TryResolve<T>();
+            if (value == default)
+                throw new NotSupportedException($"{typeof(T)} is not registered in services.");
+
+            return value;
         }
         
         public void CompileMethod(MethodNode methodNode)
@@ -183,20 +189,21 @@ namespace OneScript.Native.Compiler
             catch (NativeCompilerException e)
             {
                 RestoreNestingLevel(nestingLevel);
-                e.Position ??= ToCodePosition(statement.Location);
+                e.SetPositionIfEmpty(ToCodePosition(statement.Location));
                 AddError(new CodeError
                 {
                     Description = e.Message,
-                    Position = e.Position,
+                    Position = e.GetPosition(),
                     ErrorId = nameof(NativeCompilerException)
                 });
             }
             catch (Exception e)
             {
+                
                 RestoreNestingLevel(nestingLevel);
                 if (e is NativeCompilerException ce)
                 {
-                    ce.Position ??= ToCodePosition(statement.Location);
+                    ce.SetPositionIfEmpty(ToCodePosition(statement.Location));
                     throw;
                 }
                 
@@ -657,13 +664,25 @@ namespace OneScript.Native.Compiler
         
         protected override void VisitReturnNode(BslSyntaxNode node)
         {
-            Debug.Assert(node.Children.Count > 0);
+            if (_method.IsFunction() && node.Children.Count == 0)
+            {
+                AddError(LocalizedErrors.FuncEmptyReturnValue(), node.Location);
+                return;
+            }
             
+            var label = _blocks.GetCurrentBlock().MethodReturn;
+
+            if (!_method.IsFunction() && node.Children.Count == 0)
+            {
+                var undefinedExpr = Expression.Constant(BslUndefinedValue.Instance);
+                _blocks.Add(Expression.Return(label, undefinedExpr));
+                return;
+            }
+
             VisitExpression(node.Children[0]);
 
             var resultExpr = _statementBuildParts.Pop();
-
-            var label = _blocks.GetCurrentBlock().MethodReturn;
+            
             if (!resultExpr.Type.IsValue())
                 resultExpr = ExpressionHelpers.ConvertToType(resultExpr, typeof(BslValue));
             
@@ -1020,15 +1039,13 @@ namespace OneScript.Native.Compiler
             else
             {
                 VisitExpression(node.Children[0]);
-                var expression = Expression.Call(
-                    _statementBuildParts.Pop(),
-                    typeof(object).GetMethod("ToString"));
+                var raiseArgExpression = ExpressionHelpers.ToString(_statementBuildParts.Pop());
+
+                var exceptionExpression = ExpressionHelpers.CallOfInstanceMethod(
+                    Expression.Constant(ExceptionInfoFactory),
+                    nameof(IExceptionInfoFactory.Raise),
+                    raiseArgExpression);
                 
-                var exceptionType = typeof(RuntimeException);
-                var ctor = exceptionType.GetConstructor(new Type[] {typeof(BilingualString)});
-                var exceptionExpression = Expression.New(
-                    ctor, 
-                    Expression.Convert(expression, typeof(BilingualString)));
                 _blocks.Add(Expression.Throw(exceptionExpression));
             }
             base.VisitRaiseNode(node);
@@ -1057,6 +1074,15 @@ namespace OneScript.Native.Compiler
                 _statementBuildParts.Push(CreateBuiltInFunctionCall(node));
                 return;
             }
+
+            var methodExists = Symbols.TryFindMethod(
+                node.Identifier.GetIdentifier(), out var methodSymbol);
+            
+            if (methodExists && !methodSymbol.Method.IsFunction())
+            {
+                AddError(LocalizedErrors.UseProcAsFunction(), node.Location);
+            }
+
             var expression = CreateMethodCall(node);
             _statementBuildParts.Push(expression);
         }
@@ -1097,7 +1123,7 @@ namespace OneScript.Native.Compiler
             }
             else
             {
-                AddError(new BilingualString($"Тип {targetType} не является объектным типом.",$"Type {targetType} is not an object type."), node.Location);
+                AddError(NativeCompilerErrors.TypeIsNotAnObjectType(targetType), node.Location);
             }
         }
 
@@ -1106,7 +1132,7 @@ namespace OneScript.Native.Compiler
             return argList.Children.Select(passedArg =>
                 passedArg.Children.Count > 0
                     ? ConvertToExpressionTree(passedArg.Children[0])
-                    : null);
+                    : Expression.Constant(BslSkippedParameterValue.Instance));
         }
 
         protected override void VisitObjectFunctionCall(BslSyntaxNode node)
@@ -1121,13 +1147,17 @@ namespace OneScript.Native.Compiler
                 var methodInfo = FindMethodOfType(node, targetType, name);
                 if (methodInfo.ReturnType == typeof(void))
                 {
-                    throw new NativeCompilerException(new BilingualString(
+                    throw new NativeCompilerException(BilingualString.Localize(
                         $"Метод {targetType}.{name} не является функцией",
                         $"Method {targetType}.{name} is not a function"), ToCodePosition(node.Location));
                 }
             
                 var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters());
                 _statementBuildParts.Push(Expression.Call(target, methodInfo, args));
+            }
+            else if (targetType.IsContext())
+            {
+                _statementBuildParts.Push(ExpressionHelpers.CallContextMethod(target, name, PrepareDynamicCallArguments(call.ArgumentList)));
             }
             else if (targetType.IsValue() || target is DynamicExpression)
             {
@@ -1151,7 +1181,7 @@ namespace OneScript.Native.Compiler
             }
             else
             {
-                AddError(new BilingualString($"Тип {targetType} не является объектным типом.",$"Type {targetType} is not an object type."), node.Location);
+                AddError(NativeCompilerErrors.TypeIsNotAnObjectType(targetType), node.Location);
             }
         }
 
@@ -1164,7 +1194,7 @@ namespace OneScript.Native.Compiler
             }
             catch (InvalidOperationException)
             {
-                throw new NativeCompilerException(new BilingualString(
+                throw new NativeCompilerException(BilingualString.Localize(
                     $"Метод {name} не определен для типа {targetType}",
                     $"Method {name} is not defined for type {targetType}"), ToCodePosition(node.Location));
             }
@@ -1196,7 +1226,7 @@ namespace OneScript.Native.Compiler
             }
             catch (InvalidOperationException)
             {
-                throw new NativeCompilerException(new BilingualString(
+                throw new NativeCompilerException(BilingualString.Localize(
                     $"Свойство {name} не определено для типа {targetType}",
                     $"Property {name} is not defined for type {targetType}"));
             }
@@ -1206,7 +1236,7 @@ namespace OneScript.Native.Compiler
 
         private Expression CreateMethodCall(CallNode node)
         {
-            if (!Symbols.FindMethod(node.Identifier.GetIdentifier(), out var binding))
+            if (!Symbols.TryFindMethodBinding(node.Identifier.GetIdentifier(), out var binding))
             {
                 AddError($"Unknown method {node.Identifier.GetIdentifier()}", node.Location);
                 return null;
@@ -1261,7 +1291,7 @@ namespace OneScript.Native.Compiler
                 case Token.Type:
                     CheckArgumentsCount(node.ArgumentList, 1);
                     result = ExpressionHelpers.TypeByNameCall(CurrentTypeManager,
-                        ConvertToExpressionTree(node.ArgumentList.Children[0]));
+                        ConvertToExpressionTree(node.ArgumentList.Children[0].Children[0]));
                     break;
                 case Token.ExceptionInfo:
                     CheckArgumentsCount(node.ArgumentList, 0);
@@ -1271,6 +1301,10 @@ namespace OneScript.Native.Compiler
                 case Token.ExceptionDescr:
                     CheckArgumentsCount(node.ArgumentList, 0);
                     result = GetRuntimeExceptionDescription();
+                    break;
+                case Token.ModuleInfo:
+                    var factory = _services.Resolve<IScriptInformationFactory>();
+                    result = ExpressionHelpers.CallScriptInfo(factory, _source);
                     break;
                 default:
                     var methodName = node.Identifier.GetIdentifier();
@@ -1288,20 +1322,37 @@ namespace OneScript.Native.Compiler
 
         private Expression GetRuntimeExceptionDescription()
         {
-            var excInfo = GetRuntimeExceptionObject();
-            if (excInfo.Type == typeof(BslUndefinedValue))
-                return excInfo;
-            
-            return Expression.Property(excInfo, nameof(ExceptionInfoClass.Description));
+            var excVariable = _blocks.GetCurrentBlock().CurrentException;
+            Expression factoryArgument;
+            // нас вызвали вне попытки-исключения
+            factoryArgument = excVariable == null ? Expression.Constant(null, typeof(IRuntimeContextInstance)) : GetRuntimeExceptionObject();
+
+            var factory = Expression.Constant(ExceptionInfoFactory);
+            return ExpressionHelpers.CallOfInstanceMethod(
+                factory,
+                nameof(IExceptionInfoFactory.GetExceptionDescription),
+                factoryArgument);
         }
 
         private Expression GetRuntimeExceptionObject()
         {
             var excVariable = _blocks.GetCurrentBlock().CurrentException;
+            Expression factoryArgument;
             if (excVariable == null)
-                return Expression.Constant(BslUndefinedValue.Instance);
-            
-            return ExpressionHelpers.GetExceptionInfo(excVariable);
+            {
+                // нас вызвали вне попытки-исключения
+                factoryArgument = Expression.Constant(null, typeof(Exception));
+            }
+            else
+            {
+                factoryArgument = excVariable;
+            }
+
+            var factory = Expression.Constant(ExceptionInfoFactory);
+            return ExpressionHelpers.CallOfInstanceMethod(
+                factory,
+                nameof(IExceptionInfoFactory.GetExceptionInfo),
+                factoryArgument);
         }
 
         private void CheckArgumentsCount(BslSyntaxNode argList, int needed)
@@ -1369,8 +1420,22 @@ namespace OneScript.Native.Compiler
                 }
                 else
                 {
-                    var convertedOrDirect = PassSingleParameter(passedArg, declaredParam.ParameterType, argList.Location);
-                    factArguments.Add(convertedOrDirect);
+                    if (passedArg != null)
+                    {
+                        var convertedOrDirect = PassSingleParameter(passedArg, declaredParam.ParameterType, argList.Location);
+                        factArguments.Add(convertedOrDirect);
+                    }
+                    else if (declaredParam.HasDefaultValue)
+                    {
+                        factArguments.Add(Expression.Constant(declaredParam.DefaultValue, declaredParam.ParameterType));
+                    }
+                    else
+                    {
+                        var errText = new BilingualString(
+                            $"Пропущен обязательный параметр {declaredParam.Position+1} '{declaredParam.Name}'",
+                            $"Missing mandatory parameter {declaredParam.Position+1} '{declaredParam.Name}'");
+                        AddError(errText, argList.Location);
+                    }
                 }
 
                 --parametersToProcess;
@@ -1400,15 +1465,16 @@ namespace OneScript.Native.Compiler
         {
             if (passedArg == null)
             {
-                return Expression.Default(targetType);
+                return Expression.Constant(BslSkippedParameterValue.Instance);
             }
-            
+
             var convertedOrDirect = ExpressionHelpers.TryConvertParameter(passedArg, targetType);
             if (convertedOrDirect == null)
             {
                 AddError(
                     new BilingualString(
-                        $"Не удается выполнить преобразование из типа {passedArg.Type} в тип {targetType}"),
+                        $"Не удается выполнить преобразование параметра из типа {passedArg.Type} в тип {targetType}",
+                        $"Cannot convert parameter from type {passedArg.Type} to type {targetType}"),
                     location);
             }
 
@@ -1445,9 +1511,18 @@ namespace OneScript.Native.Compiler
             else
             {
                 var typeNameString = node.TypeNameNode.GetIdentifier();
-                var typeDef = CurrentTypeManager.GetTypeByName(typeNameString);
-                var call = ExpressionHelpers.ConstructorCall(CurrentTypeManager, services, typeDef, parameters);
-                _statementBuildParts.Push(call);
+                var isKnownType = CurrentTypeManager.TryGetType(typeNameString, out var typeDef);
+                if (isKnownType)
+                {
+                    var call = ExpressionHelpers.ConstructorCall(CurrentTypeManager, services, typeDef, parameters);
+                    _statementBuildParts.Push(call);
+                }
+                else // это может быть тип, подключенный через ПодключитьСценарий
+                {
+                    var typeName = Expression.Constant(typeNameString);
+                    var call = ExpressionHelpers.ConstructorCall(CurrentTypeManager, services, typeName, parameters);
+                    _statementBuildParts.Push(call);
+                }
             }
             
         }

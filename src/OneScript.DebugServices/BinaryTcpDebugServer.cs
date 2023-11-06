@@ -24,7 +24,10 @@ namespace OneScript.DebugServices
         {
             var listener = TcpListener.Create(_port);
             var channel = new DelayedConnectionChannel(listener);
-            var ipcServer = new DefaultMessageServer<RpcCall>(channel);
+            var ipcServer = new DefaultMessageServer<RpcCall>(channel)
+            {
+                ServerThreadName = "debug-server"
+            };
             var callback = new TcpEventCallbackChannel(channel);
             var threadManager = new ThreadManager();
             var breakpoints = new DefaultBreakpointManager();

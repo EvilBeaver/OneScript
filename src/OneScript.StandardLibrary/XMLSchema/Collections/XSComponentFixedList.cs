@@ -14,12 +14,14 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Collections
 {
     [ContextClass("ФиксированныйСписокКомпонентXS", "XSComponentFixedList")]
-    public class XSComponentFixedList : AutoCollectionContext<XSComponentFixedList, IXSComponent>
+    public sealed class XSComponentFixedList : AutoCollectionContext<XSComponentFixedList, IXSComponent>
     {
 
         private readonly List<IXSComponent> _items;
 
         public XSComponentFixedList() => _items = new List<IXSComponent>();
+
+        public static XSComponentFixedList EmptyList() => new XSComponentFixedList();
 
         public void Add(IXSComponent value) => _items.Add(value);
         public void Remove(IXSComponent value) => _items.Remove(value);

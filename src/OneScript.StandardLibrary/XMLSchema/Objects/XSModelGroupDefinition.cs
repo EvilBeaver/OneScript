@@ -8,8 +8,8 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Xml;
 using System.Xml.Schema;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Xml;
 using OneScript.StandardLibrary.XMLSchema.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
@@ -19,7 +19,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ОпределениеГруппыМоделиXS", "XSModelGroupDefinition")]
-    public class XSModelGroupDefinition : AutoContext<XSModelGroupDefinition>, IXSFragment, IXSNamedComponent
+    public sealed class XSModelGroupDefinition : AutoContext<XSModelGroupDefinition>, IXSFragment, IXSNamedComponent
     {
         private XmlSchemaAnnotated _group;
         private string _name;
@@ -42,7 +42,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
 
             if (xmlGroup.Particle is XmlSchemaGroupBase xmlGroupBase)
             {
-                IXSComponent component = XMLSchemaSerializer.CreateInstance(xmlGroupBase);
+                var component = XMLSchemaSerializer.CreateInstance(xmlGroupBase);
 
                 if (component is XSParticle particle)
                     _modelGroup = particle;
@@ -52,7 +52,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
             }
         }
 
-        internal XSModelGroupDefinition(XmlSchemaGroupRef xmlGroupRef)
+        internal XSModelGroupDefinition(in XmlSchemaGroupRef xmlGroupRef)
         {
             _group = xmlGroupRef;
 
@@ -83,7 +83,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         [ContextProperty("Компоненты", "Components")]
-        public XSComponentFixedList Components => null;
+        public XSComponentFixedList Components => XSComponentFixedList.EmptyList();
 
         [ContextProperty("Контейнер", "Container")]
         public IXSComponent Container { get; private set; }

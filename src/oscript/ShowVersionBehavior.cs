@@ -5,15 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System.Reflection;
-
 namespace oscript
 {
 	internal class ShowVersionBehavior : AppBehavior
 	{
 		public override int Execute()
 		{
-			Output.WriteLine($"{Assembly.GetExecutingAssembly().GetName().Version}");
+			Output.WriteLine(Program.GetVersion());
 			return 0;
 		}
 	}

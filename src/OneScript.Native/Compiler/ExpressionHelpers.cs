@@ -12,11 +12,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using Microsoft.CSharp.RuntimeBinder;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
+using OneScript.Sources;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -32,6 +35,9 @@ namespace OneScript.Native.Compiler
         
         public static Expression CastToDecimal(Expression value)
         {
+            if (value.Type == typeof(decimal))
+                return value;
+            
             return Expression.Convert(value, typeof(decimal));
         }
 
@@ -104,6 +110,11 @@ namespace OneScript.Native.Compiler
 
             if (right.Type.IsValue())
                 return ConvertBslValueToPrimitiveType(right, typeof(bool));
+
+            if (right.Type.IsNumeric())
+            {
+                return Expression.NotEqual(right, Expression.Default(right.Type));
+            }
             
             return Expression.Convert(right, typeof(bool));
         }
@@ -175,7 +186,7 @@ namespace OneScript.Native.Compiler
         {
             return TryConvertBslValueToPrimitiveType(right, type) ??
                    throw new NativeCompilerException(
-                        new BilingualString(
+                        BilingualString.Localize(
                             $"Преобразование {right.Type} в тип {type} недоступно",
                             $"Conversion from {right.Type} to {type} is unavailable")
                     );
@@ -350,27 +361,25 @@ namespace OneScript.Native.Compiler
         public static Expression CallCompareTo(Expression target, Expression argument)
         {
             var compareToMethod = OperationsCache.GetOrAdd(
-                typeof(IComparable<BslValue>),
-                nameof(IComparable<BslValue>.CompareTo),
-                BindingFlags.Instance | BindingFlags.Public
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.Comparison)
             );
 
-            var bslArgument = ConvertToBslValue(argument);
+            Debug.Assert(argument.Type.IsValue());
 
-            return Expression.Call(target, compareToMethod, bslArgument);
+            return Expression.Call(compareToMethod, target, argument);
         }
         
         public static Expression CallEquals(Expression target, Expression argument)
         {
             var equalsMethod = OperationsCache.GetOrAdd(
-                typeof(IEquatable<BslValue>),
-                nameof(IEquatable<BslValue>.Equals),
-                BindingFlags.Instance | BindingFlags.Public
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.Equality)
             );
 
-            var bslArgument = ConvertToBslValue(argument);
+            Debug.Assert(argument.Type.IsValue());
 
-            return Expression.Call(target, equalsMethod, bslArgument);
+            return Expression.Call(equalsMethod, target, argument);
         }
         
         public static Expression ConvertToBslValue(Expression value)
@@ -381,7 +390,8 @@ namespace OneScript.Native.Compiler
             var factoryClass = GetValueFactoryType(value.Type);
             if (factoryClass == null)
             {
-                if (value.Type == typeof(object))
+                if (value.Type==typeof(IValue) || value.Type.IsSubclassOf(typeof(IValue)) 
+                    || value.Type == typeof(object))
                 {
                     // это результат динамической операции
                     // просто верим, что он BslValue
@@ -390,7 +400,7 @@ namespace OneScript.Native.Compiler
                         nameof(DynamicOperations.WrapClrObjectToValue));
                     return Expression.Call(meth, value);
                 }
-                throw new NativeCompilerException(new BilingualString(
+                throw new NativeCompilerException(BilingualString.Localize(
                     $"Преобразование из типа {value.Type} в тип BslValue не поддерживается",
                     $"Conversion from type {value.Type} into BslValue is not supported"));
             }
@@ -403,6 +413,7 @@ namespace OneScript.Native.Compiler
             var factory = OperationsCache.GetOrAdd(factoryClass, "Create");
             return Expression.Call(factory, value);
         }
+
         public static (Expression, Expression) ConvertToCompatibleBslValues(Expression value1, Expression value2)
         {
             value1 = ConvertToBslValue(value1);
@@ -431,19 +442,17 @@ namespace OneScript.Native.Compiler
             {
                 factoryClass = typeof(BslBooleanValue);
             }
-            else if (clrType == typeof(decimal))
+            else if (clrType.IsNumeric())
             {
-                factoryClass = typeof(BslNumericValue);
-            }
-            else if (clrType == typeof(int) ||
-                     clrType == typeof(long) ||
-                     clrType == typeof(double))
-            {
-                factoryClass = typeof(BslNumericValue);
+                 factoryClass = typeof(BslNumericValue);
             }
             else if (clrType == typeof(DateTime))
             {
                 factoryClass = typeof(BslDateValue);
+            }
+            else if (clrType == typeof(TypeDescriptor))
+            {
+                factoryClass = typeof(BslTypeValue);
             }
 
             return factoryClass;
@@ -483,7 +492,7 @@ namespace OneScript.Native.Compiler
             if (canBeCasted)
                 return conversion;
             
-            throw new NativeCompilerException(new BilingualString(
+            throw new NativeCompilerException(BilingualString.Localize(
                 $"Преобразование из типа {source.Type} в тип {targetType} не поддерживается",
                 $"Conversion from type {source.Type} into {targetType} is not supported"));
         }
@@ -507,12 +516,23 @@ namespace OneScript.Native.Compiler
         public static Expression ConstructorCall(ITypeManager typeManager, Expression services, TypeDescriptor knownType,
             Expression[] argsArray)
         {
-            var genericMethod = OperationsCache.GetOrAdd(
-                typeof(DynamicOperations),
-                nameof(DynamicOperations.StrictConstructorCall));
+            MethodInfo method;
 
-            var method = genericMethod.MakeGenericMethod(knownType.ImplementingClass);
-            
+            if (knownType.ImplementingClass.IsValue())
+            {
+                var genericMethod = OperationsCache.GetOrAdd(
+                    typeof(DynamicOperations),
+                    nameof(DynamicOperations.StrictConstructorCall));
+
+                method = genericMethod.MakeGenericMethod(knownType.ImplementingClass);
+            }
+            else // подключенный сценарий
+            {
+                method = OperationsCache.GetOrAdd(
+                    typeof(DynamicOperations),
+                    nameof(DynamicOperations.ConstructorCall));
+            }
+
             var arrayOfArgs = Expression.NewArrayInit(typeof(BslValue), argsArray.Select(ConvertToBslValue));
             
             return Expression.Call(method, 
@@ -525,20 +545,30 @@ namespace OneScript.Native.Compiler
         public static Expression TypeByNameCall(ITypeManager manager, Expression argument)
         {
             var method = OperationsCache.GetOrAdd(typeof(DynamicOperations), nameof(DynamicOperations.GetTypeByName),
-                BindingFlags.Instance | BindingFlags.Public);
+                BindingFlags.Static | BindingFlags.Public);
             
             Debug.Assert(method != null);
 
             return Expression.Call(method, Expression.Constant(manager), argument);
         }
 
-        public static Expression GetExceptionInfo(ParameterExpression excVariable)
+        public static Expression GetExceptionInfo(Expression factory, ParameterExpression excVariable)
         {
             var method = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
                 nameof(DynamicOperations.GetExceptionInfo));
 
-            return Expression.Call(method, excVariable);
+            return Expression.Call(method, factory, excVariable);
+        }
+
+        public static Expression CallOfInstanceMethod(Expression instance, string name, params Expression[] arguments)
+        {
+            var method = OperationsCache.GetOrAdd(
+                instance.Type,
+                name,
+                BindingFlags.Public | BindingFlags.Instance);
+
+            return Expression.Call(instance, method, arguments);
         }
 
         public static Expression AccessModuleVariable(ParameterExpression thisArg, int variableIndex)
@@ -565,11 +595,11 @@ namespace OneScript.Native.Compiler
                 nameof(IRuntimeContextInstance.GetPropValue),
                 BindingFlags.Instance | BindingFlags.Public);
 
-            return Expression.Call(
+            return Expression.Convert(Expression.Call(
                 Expression.Constant(target),
                 getter,
                 Expression.Constant(propertyNumber)
-            );
+            ), typeof(BslValue));
         }
         
         public static Expression GetContextPropertyValue(Expression target, string propertyName)
@@ -621,7 +651,7 @@ namespace OneScript.Native.Compiler
                 PackArgsToArgsArray(args));
         }
 
-        private static Expression PackArgsToArgsArray(List<Expression> args)
+        private static Expression PackArgsToArgsArray(IEnumerable<Expression> args)
         {
             return Expression.NewArrayInit(typeof(BslValue), args.Select(ConvertToBslValue));
         }
@@ -656,6 +686,16 @@ namespace OneScript.Native.Compiler
             return Expression.Assign(counterVar, plusOne);
         }
 
+        public static Expression CallScriptInfo(IScriptInformationFactory factory, SourceCode source)
+        {
+            var methodInfo = OperationsCache.GetOrAdd(
+                typeof(IScriptInformationFactory), 
+                nameof(IScriptInformationFactory.GetInfo),
+                BindingFlags.Public | BindingFlags.Instance);
+
+            return Expression.Call(Expression.Constant(factory), methodInfo, Expression.Constant(source));
+        }
+
         private static bool IsModuleVariable(Expression counterVar)
         {
             if (!(counterVar is MemberExpression memberExpr))
@@ -663,6 +703,23 @@ namespace OneScript.Native.Compiler
 
             return memberExpr.Expression.Type == typeof(IVariable)
                    && memberExpr.Member.Name == nameof(IVariable.BslValue);
+        }
+
+        public static Expression CallContextMethod(Expression target, string name, IEnumerable<Expression> arguments)
+        {
+            var methodInfo = OperationsCache.GetOrAdd(
+                typeof(DynamicOperations),
+                nameof(DynamicOperations.CallContextMethod)
+            );
+
+            var argExpressions = new List<Expression>
+            {
+                target,
+                Expression.Constant(name),
+                PackArgsToArgsArray(arguments)
+            };
+
+            return Expression.Call(methodInfo, argExpressions);
         }
     }
 }

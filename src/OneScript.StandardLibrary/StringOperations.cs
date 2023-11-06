@@ -10,6 +10,7 @@ using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Contexts.Enums;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using ScriptEngine.Machine;
@@ -204,7 +205,7 @@ namespace OneScript.StandardLibrary
         /// <param name="p1-p10">Параметры, строковые представления которых должны быть подставлены в шаблон</param>
         /// <returns>Строка шаблона с подставленными параметрами</returns>
         [ContextMethod("СтрШаблон", "StrTemplate")]
-        public IValue StrTemplate(IValue template,
+        public string StrTemplate(IValue template,
             IValue p1=null, IValue p2=null, IValue p3=null, IValue p4=null, IValue p5=null,
             IValue p6=null, IValue p7=null, IValue p8=null, IValue p9=null, IValue p10=null)
         {
@@ -249,7 +250,7 @@ namespace OneScript.StandardLibrary
             if (passedArgsCount > maxNumber)
                 throw RuntimeException.TooManyArgumentsPassed();
 
-            return ValueFactory.Create(result);
+            return result;
         }
 
         public static IAttachableContext CreateInstance()

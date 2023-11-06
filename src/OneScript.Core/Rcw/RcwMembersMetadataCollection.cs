@@ -13,22 +13,15 @@ namespace OneScript.Rcw
 {
     public class RcwMembersMetadataCollection<T> where T : RcwMemberMetadata
     {
-        private readonly List<T> _collection;
-        private readonly Dictionary<int, T> _dispIds;
-        private readonly Dictionary<string, T> _names;
+        private readonly List<T> _collection = new List<T>();
+        private readonly Dictionary<int, T> _dispIds = new Dictionary<int, T>();
+        private readonly Dictionary<string, T> _names = new Dictionary<string, T>(StringComparer.InvariantCultureIgnoreCase);
 
         public IReadOnlyDictionary<int, T> DispatchIds => new ReadOnlyDictionary<int, T>(_dispIds);
 
         public IReadOnlyDictionary<string, T> Names => new ReadOnlyDictionary<string, T>(_names);
 
         public T this[int index] => _collection[index];
-
-        public RcwMembersMetadataCollection()
-        {
-            _collection = new List<T>();
-            _dispIds = new Dictionary<int, T>();
-            _names = new Dictionary<string, T>(StringComparer.InvariantCultureIgnoreCase);
-        }
 
         public int IndexOf(T item) => _collection.IndexOf(item);
         

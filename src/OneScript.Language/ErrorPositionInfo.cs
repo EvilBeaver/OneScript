@@ -22,5 +22,6 @@ namespace OneScript.Language
         public string Code { get; set; }
         public string ModuleName { get; set; }
 
+        public bool IsEmpty => LineNumber == OUT_OF_TEXT && ColumnNumber == OUT_OF_TEXT && ModuleName == default;
     }
 }

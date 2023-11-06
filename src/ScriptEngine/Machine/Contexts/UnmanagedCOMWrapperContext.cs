@@ -9,18 +9,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Rcw;
 using OneScript.Values;
-using ScriptEngine.Machine.Rcw;
+using System.Reflection;
 
 namespace ScriptEngine.Machine.Contexts
 {
     public class UnmanagedCOMWrapperContext : COMWrapperContext, IDebugPresentationAcceptor
     {
-        private const uint E_DISP_MEMBERNOTFOUND = 0x80020003;
-
         private readonly RcwMembersMetadataCollection<RcwPropertyMetadata> _props;
         private readonly RcwMembersMetadataCollection<RcwMethodMetadata> _methods;
         private readonly bool _isCollection;
@@ -158,11 +156,11 @@ namespace ScriptEngine.Machine.Contexts
             }
             catch (System.MissingMemberException)
             {
-                throw OneScript.Commons.PropertyAccessException.PropNotFoundException(prop.Name);
+                throw PropertyAccessException.PropNotFoundException(prop.Name);
             }
             catch (System.MemberAccessException)
             {
-                throw OneScript.Commons.PropertyAccessException.PropIsNotWritableException(prop.Name);
+                throw PropertyAccessException.PropIsNotWritableException(prop.Name);
             }
         }
 
@@ -176,8 +174,11 @@ namespace ScriptEngine.Machine.Contexts
 
         public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
-            //TODO: Доработать RcwMethodMetadata
-            return BslMethodBuilder.Create().Build();
+            var md = _methods[methodNumber];
+            return BslMethodBuilder.Create()
+                .Name(md.Name)
+                .ReturnType(md.IsFunction ?? true ? typeof(IValue) : typeof(void))
+                .Build();
         }
 
         private MethodSignature GetMethodDescription(int methodNumber)
@@ -196,7 +197,11 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    DispatchUtility.Invoke(Instance, dispId, MarshalArguments(arguments));
+                    var argsData = MarshalArguments(arguments);
+                    var initialValues = new object[argsData.values.Length]; 
+                    Array.Copy(argsData.values, initialValues, initialValues.Length);
+                    DispatchUtility.Invoke(Instance, dispId, argsData.values, argsData.flags);
+                    RemapOutputParams(arguments, argsData.values, argsData.flags[0], initialValues);
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
@@ -222,7 +227,11 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    var result = DispatchUtility.Invoke(Instance, dispId, MarshalArguments(arguments));
+                    var argsData = MarshalArguments(arguments);
+                    var initialValues = new object[argsData.values.Length]; 
+                    Array.Copy(argsData.values, initialValues, initialValues.Length);
+                    var result = DispatchUtility.Invoke(Instance, dispId, argsData.values, argsData.flags);
+                    RemapOutputParams(arguments, argsData.values, argsData.flags[0], initialValues);
                     retValue = CreateIValue(result);
                 }
                 catch (System.Reflection.TargetInvocationException e)
@@ -233,6 +242,19 @@ namespace ScriptEngine.Machine.Contexts
             catch (System.MissingMemberException)
             {
                 throw RuntimeException.MethodNotFoundException(method.Name);
+            }
+        }
+        
+        private void RemapOutputParams(IValue[] arguments, object[] values, ParameterModifier flags,
+            object[] initialValues)
+        {
+            for (int i = 0; i < arguments.Length; i++)
+            {
+                if (flags[i] && !initialValues[i].Equals(values[i]))
+                {
+                    var variable = (IVariable)arguments[i];
+                    variable.Value = CreateIValue(values[i]);
+                }
             }
         }
 

@@ -62,6 +62,7 @@ src/DebugServer/node_modules/
 src/OpenCover
 TestResult.xml
 tests/component/Component.dll
+tests/tests.xml
 
 src/oscript/Properties/launchSettings\.json
 

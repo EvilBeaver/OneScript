@@ -12,6 +12,7 @@ using OneScript.Commons;
 using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Types;
 using OneScript.Values;
@@ -302,17 +303,25 @@ namespace ScriptEngine.Machine.Contexts
 
         void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
         {
-            var thisId = GetPropertyNumber(THISOBJ_RU);
-            var total = GetPropCount();
-            var props = new List<IVariable>(total);
-            for (int i = 0; i < total; i++)
-            {
-                if (i != thisId)
-                {
-                    props.Add(Variable.Create(GetPropValue(i), GetPropName(i)));
-                }
-            }
-            
+            var instanceProps = Module
+                .Properties
+                .OfType<BslScriptPropertyInfo>()
+                .OrderBy(x => x.DispatchId)
+                .ToDictionary(x => x.Name, x => x.DispatchId);
+
+            var instanceFields = Module
+                .Fields
+                .OfType<BslScriptFieldInfo>()
+                .OrderBy(x => x.DispatchId)
+                .Where(x => !instanceProps.ContainsKey(x.Name))
+                .ToDictionary(x => $"${x.Name}", x => x.DispatchId);
+
+            var props = instanceProps
+                .Concat(instanceFields)
+                .Select(x => 
+                    Variable.Create(GetPropValue(x.Value), x.Key))
+                .ToList();
+
             visitor.ShowCustom(props);
         }
     }

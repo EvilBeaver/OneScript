@@ -7,33 +7,26 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Linq.Expressions;
-using OneScript.Commons;
+using OneScript.Compilation;
+using OneScript.Exceptions;
 using OneScript.Language;
 using OneScript.Localization;
 
 namespace OneScript.Native.Compiler
 {
-    public class NativeCompilerException : BslCoreException
+    public class NativeCompilerException : CompilerException
     {
-        public ErrorPositionInfo Position { get; set; }
-
-        public NativeCompilerException(BilingualString message) : base(message)
+        public NativeCompilerException(string message) : base(message)
         {
         }
         
-        public NativeCompilerException(BilingualString message, ErrorPositionInfo position) : base(message)
+        public NativeCompilerException(string message, ErrorPositionInfo position) : base(message, position)
         {
-            Position = position;
-        }
-        
-        public NativeCompilerException(BilingualString message, ErrorPositionInfo position, Exception innerException) : base(message, innerException)
-        {
-            Position = position;
         }
 
         public static NativeCompilerException OperationNotDefined(ExpressionType opCode, Type left, Type right) =>
             new NativeCompilerException(
-                new BilingualString(
+                BilingualString.Localize(
                     $"Операция {opCode} не определена для типов {left} и {right}",
                     $"Operation {opCode} is not defined for {left} and {right}")
             );

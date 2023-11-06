@@ -1,7 +1,7 @@
 {
   "name": "oscript-debug",
   "displayName": "OneScript Debug (BSL)",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "publisher": "EvilBeaver",
   "description": "Visual Studio Code debugger extension for OneScript (BSL)",
   "icon": "images/logo-dbg.png",
@@ -131,7 +131,8 @@
             "env": {},
             "runtimeExecutable": null,
             "runtimeArgs" : [],
-            "debugPort": 2801
+            "debugPort": 2801,
+            "waitOnStart": false
           }
         ],
         "configurationAttributes": {
@@ -166,6 +167,11 @@
                 "type": "number",
                 "description": "Порт для запуска отладчика. Одновременные сеансы отладки должны быть разделены по портам",
                 "default": 2801
+              },
+              "waitOnStart": {
+                "type": "boolean",
+                "description": "Ожидать подключения отладчика при старте приложения (не выполнять bsl до его подключения)",
+                "default": false
               }
             }
           },

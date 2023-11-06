@@ -58,7 +58,7 @@ namespace OneScript.Commons
         public void AddName(int index, string name)
         {
             if (index < 0 || index >= _values.Count)
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(index));
 
             _nameIndex[name] = index;
         }

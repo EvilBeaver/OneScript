@@ -17,7 +17,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ИспользованиеАтрибутаXS", "XSAttributeUse")]
-    public class XSAttributeUse : AutoContext<XSAttributeUse>, IXSComponent
+    public sealed class XSAttributeUse : AutoContext<XSAttributeUse>, IXSComponent
     {
 
         private IValue _value;

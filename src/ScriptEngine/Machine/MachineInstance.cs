@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Language;
 using OneScript.Sources;
 using OneScript.Types;
@@ -42,6 +43,7 @@ namespace ScriptEngine.Machine
         // для отладчика.
         // актуален в момент останова машины
         private IList<ExecutionFrameInfo> _fullCallstackCache;
+        private ScriptInformationContext _debugInfo;
 
         private MachineInstance() 
         {
@@ -50,33 +52,10 @@ namespace ScriptEngine.Machine
         }
 
         public event EventHandler<MachineStoppedEventArgs> MachineStopped;
-        
-        private class EmptyExceptionInfo : ScriptException
-        {
-            public EmptyExceptionInfo() : base("")
-            {
-                LineNumber = 0;
-                ColumnNumber = 0;
-            }
 
-            public override string Message => "";
-
-            public override string ToString() => "";
-        }
-        
         public void AttachContext(IAttachableContext context)
         {
-            IVariable[] vars;
-            BslMethodInfo[] methods;
-            context.OnAttach(out vars, out methods);
-            var scope = new Scope()
-            {
-                Variables = vars,
-                Methods = methods,
-                Instance = context
-            };
-
-            _scopes.Add(scope);
+            _scopes.Add(CreateModuleScope(context));
         }
 
         private Scope CreateModuleScope(IAttachableContext context)
@@ -117,6 +96,7 @@ namespace ScriptEngine.Machine
             ContextsAttached();
 
             _mem = memory;
+            _codeStatCollector = _mem.Services.TryResolve<ICodeStatCollector>();
         }
         
         internal MachineStoredState SaveState()
@@ -128,7 +108,6 @@ namespace ScriptEngine.Machine
                 CallStack = _callStack,
                 OperationStack = _operationStack,
                 StopManager = _stopManager,
-                CodeStatCollector = _codeStatCollector,
                 Memory = _mem
             };
         }
@@ -141,46 +120,10 @@ namespace ScriptEngine.Machine
             _callStack = state.CallStack;
             _exceptionsStack = state.ExceptionsStack;
             _stopManager = state.StopManager;
-            _codeStatCollector = state.CodeStatCollector;
             _mem = state.Memory; 
             
             SetFrame(_callStack.Peek());
         } 
-
-        // [Obsolete]
-        // internal void ExecuteModuleBody(IRunnable sdo)
-        // {
-        //     var module = sdo.Module;
-        //     if (module.EntryMethodIndex >= 0)
-        //     {
-        //         var entryRef = module.MethodRefs[module.EntryMethodIndex];
-        //         PrepareReentrantMethodExecution(sdo, (MachineMethodInfo)module.Methods[entryRef.CodeIndex]);
-        //         ExecuteCode();
-        //         if (_callStack.Count > 1)
-        //             PopFrame();
-        //     }
-        // }
-        
-        // [Obsolete]
-        // internal async Task ExecuteModuleBodyAsync(IRunnable sdo)
-        // {
-        //     if (sdo.Module.EntryMethodIndex < 0)
-        //     {
-        //         return;
-        //     }
-        //
-        //     var state = SaveState();
-        //     void Startup()
-        //     {
-        //         var m = MachineInstance.Current;
-        //         m.Reset();
-        //         m._scopes = state.Scopes;
-        //         m._mem = state.Memory;
-        //         m.ExecuteModuleBody(sdo);
-        //     };
-        //
-        //     await Task.Run(Startup);
-        // }
 
         internal Task<IValue> ExecuteMethodAsync(IRunnable sdo, int methodIndex, IValue[] arguments)
         {
@@ -227,30 +170,17 @@ namespace ScriptEngine.Machine
         
         internal IValue ExecuteMethod(IRunnable sdo, MachineMethodInfo methodInfo, IValue[] arguments)
         {
-            PrepareReentrantMethodExecution(sdo, methodInfo);
-            var parameters = methodInfo.GetBslParameters();
-            for (int i = 0; i < parameters.Length; i++)
+            var module = sdo.Module as StackRuntimeModule;
+            Debug.Assert(module != null);
+            var frame = new ExecutionFrame
             {
-                if (i >= arguments.Length)
-                    _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(parameters[i]), parameters[i].Name);
-                else if (arguments[i] is IVariable)
-                {
-                    if (parameters[i].ExplicitByVal)
-                    {
-                        var value = ((IVariable)arguments[i]).Value;
-                        _currentFrame.Locals[i] = Variable.Create(value, parameters[i].Name);
-                    }
-                    else
-                    {
-                        // TODO: Alias ?
-                        _currentFrame.Locals[i] = Variable.CreateReference((IVariable)arguments[i], parameters[i].Name);
-                    }
-                }
-                else if (arguments[i] == null || arguments[i].IsSkippedArgument())
-                    _currentFrame.Locals[i] = Variable.Create(GetDefaultArgValue(parameters[i]), parameters[i].Name);
-                else
-                    _currentFrame.Locals[i] = Variable.Create(arguments[i], parameters[i].Name);
-            }
+                Module = module,
+                ModuleScope = CreateModuleScope(sdo),
+                ModuleLoadIndex = module.LoadAddress,
+                IsReentrantCall = true,
+            };
+            SetExecutionFrame(frame, methodInfo, arguments);
+
             ExecuteCode();
 
             IValue methodResult = null;
@@ -269,13 +199,72 @@ namespace ScriptEngine.Machine
 
             return methodResult;
         }
-        
+
+        private void SetExecutionFrame(ExecutionFrame frame, MachineMethodInfo methodInfo, IValue[] argValues)
+        {
+            var methDescr = methodInfo.GetRuntimeMethod();
+            frame.MethodName = methodInfo.Name;
+            frame.InstructionPointer = methDescr.EntryPoint;
+
+            var parameters = methodInfo.GetBslParameters();
+            var variables = methDescr.LocalVariables;
+            var locals = new IVariable[variables.Length];
+            int i = 0;
+            for (; i < argValues.Length; i++)
+            {
+                var paramDef = parameters[i];
+                var argValue = argValues[i];
+                if (argValue is IVariable argVar)
+                {
+                    if (paramDef.ExplicitByVal)
+                    {
+                        locals[i] = Variable.Create(argVar.Value, variables[i]);
+                    }
+                    else
+                    {
+                        // TODO: Alias ?
+                        locals[i] = Variable.CreateReference(argVar, variables[i]);
+                    }
+                }
+                else if (argValue == null || argValue.IsSkippedArgument())
+                {
+                    var value = paramDef.HasDefaultValue ? (IValue)paramDef.DefaultValue : ValueFactory.Create();
+                    locals[i] = Variable.Create(value, variables[i]);
+                }
+                else
+                {
+                    locals[i] = Variable.Create(argValue, variables[i]);
+                }
+            }
+            for (; i < parameters.Length; i++)
+            {
+                var paramDef = parameters[i];
+                var value = paramDef.HasDefaultValue ? (IValue)paramDef.DefaultValue : ValueFactory.Create();
+                locals[i] = Variable.Create(value, variables[i]);
+            }
+            for (; i < locals.Length; i++)
+            {
+                locals[i] = Variable.Create(ValueFactory.Create(), variables[i]);
+            }
+
+            frame.Locals = locals;
+            PushFrame(frame);
+        }
+
         #region Debug protocol methods
 
         public void SetDebugMode(IBreakpointManager breakpointManager)
         {
-            if(_stopManager == null)
+            if (_stopManager == null)
                 _stopManager = new MachineStopManager(this, breakpointManager);
+        }
+        
+        public void UnsetDebugMode()
+        {
+            if (_stopManager != null)
+                PrepareDebugContinuation();
+
+            _stopManager = null;
         }
 
         public void StepOver()
@@ -310,50 +299,89 @@ namespace ScriptEngine.Machine
             _stopManager.Continue();
         }
 
-        public IValue Evaluate(string expression, bool separate = false)
+        public IValue Evaluate(string expression)
         {
-            var code = _executeModuleCache.GetOrAdd(expression, CompileExpressionModule);
+            var code = CompileCached(expression, CompileExpressionModule);
 
-            MachineInstance runner;
-            MachineInstance currentMachine;
-            if (separate)
+            var localScope = new Scope
             {
-                runner = new MachineInstance();
-                runner._mem = _mem;
-                runner._scopes = new List<Scope>(_scopes);
-                currentMachine = Current;
-                SetCurrentMachineInstance(runner);
-            }
-            else
-            {
-                currentMachine = null;
-                runner = this;
-            }
+                Instance = new UserScriptContextInstance(code),
+                Methods = new BslMethodInfo[0],
+                Variables = _currentFrame.Locals
+            };
+            _scopes.Add(localScope);
 
-            ExecutionFrame frame;
+            var frame = new ExecutionFrame
+            {
+                MethodName = code.Source.Name,
+                Module = code,
+                ModuleScope = localScope,
+                ModuleLoadIndex = _scopes.Count - 1,
+                Locals = new IVariable[0],
+                InstructionPointer = 0,
+            };
 
             try
             {
-                frame = new ExecutionFrame();
-                frame.MethodName = code.Source.Name;
-                frame.Locals = new IVariable[0];
-                frame.InstructionPointer = 0;
-                frame.Module = code;
-
-                var mlocals = new Scope();
-                mlocals.Instance = new UserScriptContextInstance(code);
-                mlocals.Methods = TopScope.Methods;
-                mlocals.Variables = _currentFrame.Locals;
-                runner._scopes.Add(mlocals);
-                frame.ModuleScope = mlocals;
-                frame.ModuleLoadIndex = runner._scopes.Count - 1;
+                PushFrame(frame);
+                MainCommandLoop();
             }
             finally
             {
-                if (separate)
+                PopFrame();
+                _scopes.RemoveAt(_scopes.Count - 1);
+            }
+
+            return _operationStack.Pop();
+        }
+
+        public IValue EvaluateInFrame(string expression, int frameId)
+        {
+            System.Diagnostics.Debug.Assert(_fullCallstackCache != null);
+            if (frameId < 0 || frameId >= _fullCallstackCache.Count)
+                throw new ScriptException("Wrong stackframe");
+
+            ExecutionFrame selectedFrame = _fullCallstackCache[frameId].FrameObject;
+
+            MachineInstance currentMachine;
+            MachineInstance runner = new MachineInstance
+            {
+                _mem = this._mem,
+                _scopes = new List<Scope>(this._scopes.GetRange(0, selectedFrame.ModuleLoadIndex + 1)),
+                _debugInfo = CurrentScript
+            };
+            currentMachine = Current;
+            SetCurrentMachineInstance(runner);
+
+            runner.SetFrame(selectedFrame);
+
+            ExecutionFrame frame;
+            try
+            {
+                var code = runner.CompileExpressionModule(expression);
+
+                var localScope = new Scope
                 {
-                    SetCurrentMachineInstance(currentMachine);
-                }
+                    Instance = new UserScriptContextInstance(code),
+                    Methods = new BslMethodInfo[0],
+                    Variables = selectedFrame.Locals
+                };
+                runner._scopes.Add(localScope);
+
+                frame = new ExecutionFrame
+                {
+                    MethodName = code.Source.Name,
+                    Module = code,
+                    ModuleScope = localScope,
+                    ModuleLoadIndex = runner._scopes.Count - 1,
+                    Locals = new IVariable[0],
+                    InstructionPointer = 0,
+                };
+            }
+            catch
+            {
+                SetCurrentMachineInstance(currentMachine);
+                throw;
             }
 
             try
@@ -363,21 +391,16 @@ namespace ScriptEngine.Machine
             }
             finally
             {
-                if (!separate)
-                {
-                    PopFrame();
-                    _scopes.RemoveAt(_scopes.Count - 1);
-                }
-                else
-                {
-                    SetCurrentMachineInstance(currentMachine);
-                }
+                SetCurrentMachineInstance(currentMachine);
             }
 
-            var result = runner._operationStack.Pop();
+            return runner._operationStack.Pop().GetRawValue();
+        }
 
-            return result.GetRawValue();
-
+        private StackRuntimeModule CompileCached(string code, Func<string, StackRuntimeModule> compile)
+        {
+            var cacheKey = HashCode.Combine(code, _module.Source.Location, _currentFrame.ToString()).ToString("X8");
+            return _executeModuleCache.GetOrAdd(cacheKey, _ => compile(code));
         }
         
         #endregion
@@ -396,13 +419,6 @@ namespace ScriptEngine.Machine
                 else
                     return null;
             }
-        }
-
-        private static IValue GetDefaultArgValue(BslParameterInfo parameter)
-        {
-            return parameter.HasDefaultValue
-                ? (IValue)parameter.DefaultValue
-                : ValueFactory.Create();
         }
 
         internal void Cleanup()
@@ -454,27 +470,6 @@ namespace ScriptEngine.Machine
             _currentFrame = null;
             _mem = null;
         }
-        
-        private void PrepareReentrantMethodExecution(IRunnable sdo, MachineMethodInfo methodInfo)
-        {
-            var module = sdo.Module as StackRuntimeModule;
-            Debug.Assert(module != null);
-            var methDescr = methodInfo.GetRuntimeMethod();
-            var frame = CreateNewFrame();
-            frame.MethodName = methodInfo.Name;
-            frame.Locals = new IVariable[methDescr.LocalVariables.Length];
-            frame.Module = module;
-            frame.ModuleScope = CreateModuleScope(sdo);
-            frame.ModuleLoadIndex = module.LoadAddress;
-            frame.IsReentrantCall = true;
-            for (int i = 0; i < frame.Locals.Length; i++)
-            {
-                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.LocalVariables[i]);
-            }
-
-            frame.InstructionPointer = methDescr.EntryPoint;
-            PushFrame(frame);
-        }
 
         private void PrepareCodeStatisticsData(StackRuntimeModule _module)
         {
@@ -524,8 +519,7 @@ namespace ScriptEngine.Machine
                 }
                 catch (ScriptException exc)
                 {
-                    if(exc.LineNumber == ErrorPositionInfo.OUT_OF_TEXT) 
-                        SetScriptExceptionSource(exc);
+                    SetScriptExceptionSource(exc);
 
                     if (ShouldRethrowException(exc))
                         throw;
@@ -576,11 +570,6 @@ namespace ScriptEngine.Machine
             return false;
         }
 
-        public void SetCodeStatisticsCollector(ICodeStatCollector collector)
-        {
-            _codeStatCollector = collector;
-        }
-
         private CodeStatEntry CurrentCodeEntry()
         {
             return new CodeStatEntry(CurrentScript?.Source, _currentFrame.MethodName, _currentFrame.LineNumber);
@@ -619,13 +608,11 @@ namespace ScriptEngine.Machine
             {
                 throw;
             }
-            catch (ScriptException)
+            catch (ScriptException exc)
             {
+                exc.SetPositionIfEmpty(GetPositionInfo());
+
                 throw;
-            }
-            catch (BslCoreException exc)
-            {
-                throw new ScriptException(GetPositionInfo(), exc);
             }
             catch (Exception exc)
             {
@@ -639,7 +626,7 @@ namespace ScriptEngine.Machine
         {
             var epi = new ErrorPositionInfo();
             epi.LineNumber = _currentFrame.LineNumber;
-            if (_module.Source != null)
+            if (_module.Source != null && epi.LineNumber > 0)
             {
                 epi.ModuleName = _module.Source.Name;
                 epi.Code = _module.Source.GetCodeLine(epi.LineNumber) ?? "<исходный код недоступен>";
@@ -654,10 +641,7 @@ namespace ScriptEngine.Machine
 
         private void SetScriptExceptionSource(ScriptException exc)
         {
-            var epi = GetPositionInfo();
-            exc.Code = epi.Code;
-            exc.LineNumber = epi.LineNumber;
-            exc.ModuleName = epi.ModuleName;
+            exc.SetPositionIfEmpty(GetPositionInfo());
         }
 
         #region Commands
@@ -827,19 +811,19 @@ namespace ScriptEngine.Machine
         {
             var vm = _module.VariableRefs[arg];
             var scope = _scopes[vm.ScopeNumber];
-            scope.Variables[vm.MemberNumber].Value = BreakVariableLink(_operationStack.Pop());
+            scope.Variables[vm.MemberNumber].Value = PopRawValue();
             NextInstruction();
         }
 
         private void LoadLoc(int arg)
         {
-            _currentFrame.Locals[arg].Value = BreakVariableLink(_operationStack.Pop());
+            _currentFrame.Locals[arg].Value = PopRawValue();
             NextInstruction();
         }
 
         private void AssignRef(int arg)
         {
-            var value = BreakVariableLink(_operationStack.Pop());
+            var value = PopRawValue();
 
             IVariable reference;
             try
@@ -860,7 +844,6 @@ namespace ScriptEngine.Machine
             var op1 = _operationStack.Pop();
             _operationStack.Push(ValueFactory.Add(op1.GetRawValue(), op2.GetRawValue()));
             NextInstruction();
-
         }
 
         private void Sub(int arg)
@@ -969,7 +952,6 @@ namespace ScriptEngine.Machine
                 _operationStack.Pop();
                 NextInstruction();
             }
-            
         }
 
         private void Or(int arg)
@@ -998,11 +980,16 @@ namespace ScriptEngine.Machine
             _currentFrame.DiscardReturnValue = needsDiscarding;
         }
 
-        private ExecutionFrame CreateNewFrame()
+        private IValue[] PopArguments()
         {
-            var frame = new ExecutionFrame();
-            frame.ModuleLoadIndex = _scopes.Count - 1;
-            return frame;
+            int argCount = (int)_operationStack.Pop().AsNumber();
+            IValue[] args = new IValue[argCount];
+
+            for (--argCount; argCount >= 0; --argCount)
+            {
+                args[argCount] = _operationStack.Pop();
+            }
+            return args;
         }
 
         private bool MethodCallImpl(int arg, bool asFunc)
@@ -1011,18 +998,12 @@ namespace ScriptEngine.Machine
             var scope = _scopes[methodRef.ScopeNumber];
             var methodSignature = scope.Methods[methodRef.MemberNumber];
 
-            var isLocalCall = scope.Instance == this.TopScope.Instance;
-            
-            int argCount = (int)_operationStack.Pop().AsNumber();
-            IValue[] argValues = new IValue[argCount];
+            IValue[] argValues = PopArguments();
 
-            // fact args
             var definedParameters = methodSignature.GetParameters();
-            PrepareCallActualArguments(definedParameters, isLocalCall, argValues);
-
             bool needsDiscarding;
 
-            if (isLocalCall)
+            if (scope.Instance == this.TopScope.Instance) // local call
             {
                 var sdo = scope.Instance as ScriptDrivenObject;
                 System.Diagnostics.Debug.Assert(sdo != null);
@@ -1033,62 +1014,14 @@ namespace ScriptEngine.Machine
                     NextInstruction();
 
                     var methodInfo = (MachineMethodInfo)_module.Methods[sdo.GetMethodDescriptorIndex(methodRef.MemberNumber)];
-                    var methDescr = methodInfo.GetRuntimeMethod();
-                    var frame = CreateNewFrame();
-                    frame.Module = _module;
-                    frame.ModuleScope = TopScope;
-                    frame.MethodName = methodSignature.Name;
-                    frame.Locals = new IVariable[methDescr.LocalVariables.Length];
-                    for (int i = 0; i < frame.Locals.Length; i++)
+                    var frame = new ExecutionFrame
                     {
-                        if (i < argValues.Length)
-                        {
-                            var paramDef = definedParameters[i] as BslParameterInfo;
-                            Debug.Assert(paramDef != null);
-                            if (argValues[i] is IVariable valueReference)
-                            {
-                                if (paramDef.ExplicitByVal)
-                                {
-                                    var value = valueReference.Value;
-                                    frame.Locals[i] = Variable.Create(value, methDescr.LocalVariables[i]);
-                                }
-                                else
-                                {
-                                    // TODO: Alias ?
-                                    frame.Locals[i] = Variable.CreateReference(valueReference, methDescr.LocalVariables[i]);
-                                }
-                            }
-                            else if (argValues[i] == null)
-                            {
-                                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.LocalVariables[i]);
-                            }
-                            else
-                            {
-                                frame.Locals[i] = Variable.Create(argValues[i], methDescr.LocalVariables[i]);
-                            }
+                        Module = _module,
+                        ModuleScope = TopScope,
+                        ModuleLoadIndex = _scopes.Count - 1,
+                    };
+                    SetExecutionFrame(frame, methodInfo, argValues);
 
-                        }
-                        else if (i < definedParameters.Length)
-                        {
-                            var paramDef = definedParameters[i] as BslParameterInfo;
-                            Debug.Assert(paramDef != null);
-                            if (!paramDef.HasDefaultValue)
-                            {
-                                frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.LocalVariables[i]);
-                            }
-                            else
-                            {
-                                frame.Locals[i] = Variable.Create(_module.Constants[paramDef.ConstantValueIndex], methDescr.LocalVariables[i]);
-                            }
-                        }
-                        else
-                            frame.Locals[i] = Variable.Create(ValueFactory.Create(), methDescr.LocalVariables[i]);
-
-                    }
-
-                    frame.InstructionPointer = methDescr.EntryPoint;
-                    PushFrame(frame);
-                    
                     needsDiscarding = methodSignature.IsFunction() && !asFunc;
                 }
                 else
@@ -1096,7 +1029,6 @@ namespace ScriptEngine.Machine
                     needsDiscarding = _currentFrame.DiscardReturnValue;
                     CallContext(scope.Instance, methodRef.MemberNumber, definedParameters, argValues, asFunc);
                 }
-
             }
             else
             {
@@ -1110,61 +1042,31 @@ namespace ScriptEngine.Machine
             return needsDiscarding;
         }
 
-        private void PrepareCallActualArguments(ParameterInfo[] parameters, bool isLocalCall, IValue[] argValues)
-        {
-            int argCount = argValues.Length;
-            for (int i = argCount - 1; i >= 0; i--)
-            {
-                var argValue = _operationStack.Pop();
-                if (argValue.IsSkippedArgument())
-                {
-                    if (i < parameters.Length)
-                    {
-                        if (!parameters[i].HasDefaultValue || !isLocalCall)
-                            argValue = null;
-                        else
-                        {
-                            argValue = (BslPrimitiveValue)parameters[i].DefaultValue;
-                        }
-                    }
-                    else
-                    {
-                        argValue = null;
-                    }
-                }
-
-                argValues[i] = argValue;
-            }
-        }
-
         private void CallContext(IRuntimeContextInstance instance, int index, ParameterInfo[] definedParameters, IValue[] argValues, bool asFunc)
         {
             IValue[] realArgs;
-            if (!instance.DynamicMethodSignatures)
-            {
-                realArgs = new IValue[definedParameters.Length];
-                var skippedArg = BslSkippedParameterValue.Instance;
-                for (int i = 0; i < realArgs.Length; i++)
-                {
-                    if (i < argValues.Length)
-                    {
-                        realArgs[i] = argValues[i];
-                    }
-                    else
-                    {
-                        realArgs[i] = skippedArg;
-                    }
-                }
-            }
-            else
+            if (instance.DynamicMethodSignatures)
             {
                 realArgs = argValues;
             }
-
+            else
+            {
+                realArgs = new IValue[definedParameters.Length];
+                var skippedArg = BslSkippedParameterValue.Instance;
+                int i = 0;
+                for (; i < argValues.Length; i++)
+                {
+                    realArgs[i] = argValues[i];
+                }
+                for (; i < realArgs.Length; i++)
+                {
+                    realArgs[i] = skippedArg;
+                }
+            }
+ 
             if (asFunc)
             {
-                IValue retVal;
-                instance.CallAsFunction(index, realArgs, out retVal);
+                instance.CallAsFunction(index, realArgs, out IValue retVal);
                 _operationStack.Push(retVal);
             }
             else
@@ -1197,7 +1099,6 @@ namespace ScriptEngine.Machine
             var propReference = Variable.CreateContextPropertyReference(context, propNum, "stackvar");
             _operationStack.Push(propReference);
             NextInstruction();
-
         }
 
         private void ResolveMethodProc(int arg)
@@ -1209,7 +1110,6 @@ namespace ScriptEngine.Machine
 
             context.CallAsProcedure(methodId, argValues);
             NextInstruction();
-
         }
 
         private void ResolveMethodFunc(int arg)
@@ -1232,15 +1132,10 @@ namespace ScriptEngine.Machine
 
         private void PrepareContextCallArguments(int arg, out IRuntimeContextInstance context, out int methodId, out IValue[] argValues)
         {
-            var argCount = (int)_operationStack.Pop().AsNumber();
-            IValue[] factArgs = new IValue[argCount];
-            for (int i = argCount - 1; i >= 0; i--)
-            {
-                factArgs[i] = _operationStack.Pop();
-            }
-
+            var factArgs = PopArguments();
+            var argCount = factArgs.Length;
+ 
             var objIValue = _operationStack.Pop();
-            
             context = objIValue.AsObject();
             var methodName = _module.Constants[arg].AsString();
             methodId = context.GetMethodNumber(methodName);
@@ -1253,7 +1148,7 @@ namespace ScriptEngine.Machine
                     var argValue = factArgs[i];
                     if (!argValue.IsSkippedArgument())
                     {
-                        argValues[i] = BreakVariableLink(argValue);
+                        argValues[i] = argValue;
                     }
                 }
             }
@@ -1266,28 +1161,29 @@ namespace ScriptEngine.Machine
                     throw RuntimeException.TooManyArgumentsPassed();
 
                 argValues = new IValue[methodParams.Length];
-                for (int i = 0; i < argCount; i++)
+                int i = 0;
+                for (; i < argCount; i++)
                 {
                     var argValue = factArgs[i];
                     if (!argValue.IsSkippedArgument())
                     {
                         if (methodParams[i].IsByRef())
-                            argValues[i] = argValue;
+                        {
+                            argValues[i] = argValue is IVariable? argValue : Variable.Create(argValue, "");
+                        }
                         else
-                            argValues[i] = BreakVariableLink(argValue);
+                            argValues[i] = argValue.GetRawValue();
                     }
                     else if(!methodParams[i].HasDefaultValue)
                         throw RuntimeException.MissedArgument();
                 }
-
-                for (var i = argCount; i < methodParams.Length; i++)
+                for (; i < methodParams.Length; i++)
                 {
                     if (!methodParams[i].HasDefaultValue)
                         throw RuntimeException.TooFewArgumentsPassed();
                 }
             }
         }
-
 
         private void Jmp(int arg)
         {
@@ -1310,7 +1206,7 @@ namespace ScriptEngine.Machine
 
         private void PushIndexed(int arg)
         {
-            var index = BreakVariableLink(_operationStack.Pop());
+            var index = PopRawValue();
             var context = _operationStack.Pop().AsObject();
             if (context == null || !context.IsIndexed)
             {
@@ -1319,7 +1215,6 @@ namespace ScriptEngine.Machine
 
             _operationStack.Push(Variable.CreateIndexedPropertyReference(context, index, "$stackvar"));
             NextInstruction();
-
         }
 
         private void Return(int arg)
@@ -1381,7 +1276,7 @@ namespace ScriptEngine.Machine
             {
                 var argValue = _operationStack.Pop();
                 if(!argValue.IsSkippedArgument())
-                    argValues[i] = BreakVariableLink(argValue);
+                    argValues[i] = argValue.GetRawValue();
             }
 
             var typeName = _operationStack.Pop().AsString();
@@ -1402,7 +1297,6 @@ namespace ScriptEngine.Machine
             var instance = (IValue)factory.Activate(context, argValues);
             _operationStack.Push(instance);
             NextInstruction();
-
         }
 
         private void PushIterator(int arg)
@@ -1491,9 +1385,9 @@ namespace ScriptEngine.Machine
             else
             {
                 var exceptionValue = _operationStack.Pop().GetRawValue();
-                if (exceptionValue is ExceptionTemplate excInfo)
+                if (exceptionValue is ExceptionInfoContext { IsErrorTemplate: true } excInfo)
                 {
-                    throw new ParametrizedRuntimeException(excInfo.Message, excInfo.Parameter);
+                    throw new ParametrizedRuntimeException(excInfo.Description, excInfo.Parameters);
                 }
                 else
                 {
@@ -1532,7 +1426,7 @@ namespace ScriptEngine.Machine
 
         private void MakeRawValue(int arg)
         {
-            var value = BreakVariableLink(_operationStack.Pop());
+            var value = PopRawValue();
             _operationStack.Push(value);
             NextInstruction();
         }
@@ -1564,44 +1458,51 @@ namespace ScriptEngine.Machine
         private void Execute(int arg)
         {
             var code = _operationStack.Pop().AsString();
-            var module = _executeModuleCache.GetOrAdd(code, CompileExecutionBatchModule);
-            PrepareCodeStatisticsData(module);
-            
-            var frame = new ExecutionFrame();
-            var mi = (MachineMethodInfo)module.Methods[0];
-            var method = mi.GetRuntimeMethod();
-            frame.MethodName = mi.Name;
-            frame.Locals = new IVariable[method.LocalVariables.Length];
-            frame.InstructionPointer = 0;
-            frame.Module = module;
-            for (int i = 0; i < frame.Locals.Length; i++)
+            var module = CompileCached(code, CompileExecutionBatchModule);
+            if (module.Methods.Count() == 0)
             {
-                frame.Locals[i] = Variable.Create(ValueFactory.Create(), method.LocalVariables[i]);
+                NextInstruction();
+                return;
             }
 
-            var mlocals = new Scope();
-            mlocals.Instance = new UserScriptContextInstance(module);
-            mlocals.Methods = TopScope.Methods;
-            mlocals.Variables = _currentFrame.Locals;
-            _scopes.Add(mlocals);
-            frame.ModuleScope = mlocals;
-            frame.ModuleLoadIndex = _scopes.Count - 1;
+            var localScope = new Scope
+            {
+                Instance = new UserScriptContextInstance(module),
+                Methods = new BslMethodInfo[0],
+                Variables = _currentFrame.Locals
+            };
+            _scopes.Add(localScope);
 
+            var mi = (MachineMethodInfo)module.Methods[0];
+            var method = mi.GetRuntimeMethod();
+            var frame = new ExecutionFrame
+            {
+                Module = module,
+                MethodName = mi.Name,
+                ModuleScope = localScope,
+                ModuleLoadIndex = _scopes.Count - 1,
+                Locals = new IVariable[method.LocalVariables.Length],
+                InstructionPointer = 0
+            };
+            var locals = frame.Locals;
+            for (int i = 0; i < locals.Length; i++)
+            {
+                locals[i] = Variable.Create(ValueFactory.Create(), method.LocalVariables[i]);
+            }
+
+            PushFrame(frame);
             try
             {
-                PushFrame(frame);
-                MainCommandLoop();
+                ExecuteCode();
+                PopFrame();
             }
             finally
             {
-                PopFrame();
                 _scopes.RemoveAt(_scopes.Count - 1);
             }
 
             NextInstruction();
-
         }
-
 
         private void Eval(int arg)
         {
@@ -1612,11 +1513,13 @@ namespace ScriptEngine.Machine
 
         private void AddHandler(int arg)
         {
-            var handlerMethod = _operationStack.Pop().AsString();
-            var handlerTarget = _operationStack.Pop().AsObject();
-            var eventName = _operationStack.Pop().AsString();
-            var eventSource = _operationStack.Pop().AsObject();
-
+            PrepareHandlerOperationArgs(
+                arg == 0,
+                out var handlerMethod,
+                out var handlerTarget,
+                out var eventName,
+                out var eventSource);
+            
             EventProcessor?.AddHandler(eventSource, eventName, handlerTarget, handlerMethod);
             
             NextInstruction();
@@ -1624,14 +1527,41 @@ namespace ScriptEngine.Machine
         
         private void RemoveHandler(int arg)
         {
-            var handlerMethod = _operationStack.Pop().AsString();
-            var handlerTarget = _operationStack.Pop().AsObject();
-            var eventName = _operationStack.Pop().AsString();
-            var eventSource = _operationStack.Pop().AsObject();
+            PrepareHandlerOperationArgs(
+                arg == 0,
+                out var handlerMethod,
+                out var handlerTarget,
+                out var eventName,
+                out var eventSource);
             
             EventProcessor?.RemoveHandler(eventSource, eventName, handlerTarget, handlerMethod);
             
             NextInstruction();
+        }
+
+        private void PrepareHandlerOperationArgs(bool useExportMode,
+            out string handlerMethod,
+            out IRuntimeContextInstance handlerTarget,
+            out string eventName,
+            out IRuntimeContextInstance eventSource)
+        {
+            if (useExportMode)
+            {
+                handlerMethod = _operationStack.Pop().AsString();
+                handlerTarget = _operationStack.Pop().AsObject();
+                eventName = _operationStack.Pop().AsString();
+                eventSource = _operationStack.Pop().AsObject();
+                
+                // Выбросит исключение, если не найден такой метод
+                handlerTarget.GetMethodNumber(handlerMethod);
+            }
+            else
+            {
+                handlerMethod = _operationStack.Pop().AsString();
+                handlerTarget = TopScope.Instance;
+                eventName = _operationStack.Pop().AsString();
+                eventSource = _operationStack.Pop().AsObject();
+            }
         }
 
         private void ExitTry(int arg)
@@ -1743,7 +1673,6 @@ namespace ScriptEngine.Machine
 
             _operationStack.Push(ValueFactory.Create(""));
             NextInstruction();
-
         }
 
         private void TrimR(int arg)
@@ -1764,7 +1693,6 @@ namespace ScriptEngine.Machine
 
             _operationStack.Push(ValueFactory.Create(""));
             NextInstruction();
-
         }
 
         private void TrimLR(int arg)
@@ -2001,7 +1929,6 @@ namespace ScriptEngine.Machine
             }
 
             _operationStack.Push(ValueFactory.Create(lineCount));
-
             NextInstruction();
         }
 
@@ -2023,7 +1950,6 @@ namespace ScriptEngine.Machine
             }
 
             _operationStack.Push(ValueFactory.Create(entryCount));
-
             NextInstruction();
         }
 
@@ -2294,18 +2220,16 @@ namespace ScriptEngine.Machine
         {
             decimal num;
             int digits;
-            int mode;
+            int mode = 1; // по умолчанию Окр15как20
             if (arg == 1)
             {
                 num = _operationStack.Pop().AsNumber();
                 digits = 0;
-                mode = 0;
             }
             else if (arg == 2)
             {
                 digits = (int)_operationStack.Pop().AsNumber();
                 num = _operationStack.Pop().AsNumber();
-                mode = 0;
             }
             else
             {
@@ -2315,25 +2239,36 @@ namespace ScriptEngine.Machine
                 num = _operationStack.Pop().AsNumber();
             }
 
-            decimal scale = (decimal)Math.Pow(10.0, digits);
-            decimal scaled = Math.Abs(num) * scale;
-
-            var director = (int)((scaled - (long)scaled) * 10 % 10);
-
-            decimal round;
-            if (director == 5)
-                round = Math.Floor(scaled + mode * 0.5m * Math.Sign(digits));
-            else if (director > 5)
-                round = Math.Ceiling(scaled);
-            else
-                round = Math.Floor(scaled);
-            
             decimal result;
-            
-            if(digits >= 0)
-                result = (Math.Sign(num) * round / scale);
+            if (digits >= 0)
+            {
+                result = Math.Round(num, digits, MidpointRounding.AwayFromZero);
+                if (mode == 0)
+                {
+                    int scale = (int)Math.Pow(10, digits);
+                    // для.Net Core 3+, 5+ можно использовать MidpointRounding.ToZero
+                    var diff = (result - num) * scale;
+                    if (diff == 0.5m)
+                        result -= 1m / scale;
+                    else if (diff == -0.5m)
+                        result += 1m / scale;
+                }
+            }
             else
-                result = (Math.Sign(num) * round * scale);
+            {
+                int scale = (int)Math.Pow(10, -digits);
+                num /= scale;
+                result = Math.Round(num, MidpointRounding.AwayFromZero);
+                if (mode == 0)
+                {
+                    var diff = result - num;
+                    if (diff == 0.5m)
+                        result -= 1m;
+                    else if (diff == -0.5m)
+                        result += 1m;
+                }
+                result *= scale;
+            }
 
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
@@ -2346,6 +2281,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void Log10(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
@@ -2353,6 +2289,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void Sin(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
@@ -2360,6 +2297,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void Cos(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
@@ -2367,6 +2305,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void Tan(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
@@ -2374,6 +2313,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void ASin(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
@@ -2381,6 +2321,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void ACos(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
@@ -2388,6 +2329,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(ValueFactory.Create((decimal)result));
             NextInstruction();
         }
+
         private void ATan(int arg)
         {
             var num = _operationStack.Pop().AsNumber();
@@ -2454,7 +2396,7 @@ namespace ScriptEngine.Machine
                     min = current;
             }
 
-            _operationStack.Push(BreakVariableLink(min));
+            _operationStack.Push(min.GetRawValue());
 
             NextInstruction();
         }
@@ -2471,7 +2413,7 @@ namespace ScriptEngine.Machine
                     max = current;
             }
 
-            _operationStack.Push(BreakVariableLink(max));
+            _operationStack.Push(max.GetRawValue());
             NextInstruction();
         }
 
@@ -2480,7 +2422,7 @@ namespace ScriptEngine.Machine
             var formatString = _operationStack.Pop().AsString();
             var valueToFormat = _operationStack.Pop().GetRawValue();
 
-            var formatted = ValueFormatter.Format(valueToFormat, formatString);
+            var formatted = ValueFormatter.Format((BslValue)valueToFormat, formatString);
 
             _operationStack.Push(ValueFactory.Create(formatted));
             NextInstruction();
@@ -2496,8 +2438,7 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                var noDataException = new EmptyExceptionInfo();
-                _operationStack.Push(new ExceptionInfoContext(noDataException));
+                _operationStack.Push(ExceptionInfoContext.EmptyExceptionInfo());
             }
             NextInstruction();
         }
@@ -2518,14 +2459,21 @@ namespace ScriptEngine.Machine
 
         private void ModuleInfo(int arg)
         {
-            var currentScript = this.CurrentScript;
-            if (currentScript != null)
+            if (_debugInfo != null)
             {
-                _operationStack.Push(currentScript);
+                _operationStack.Push(_debugInfo);
             }
             else
             {
-                _operationStack.Push(ValueFactory.Create());
+                var currentScript = this.CurrentScript;
+                if (currentScript != null)
+                {
+                    _operationStack.Push(currentScript);
+                }
+                else
+                {
+                    _operationStack.Push(ValueFactory.Create());
+                }
             }
             NextInstruction();
         }
@@ -2572,16 +2520,16 @@ namespace ScriptEngine.Machine
         private StackRuntimeModule CompileExpressionModule(string expression)
         {
             var ctx = ExtractCompilerContext();
+            var entryId = CurrentCodeEntry().ToString();
 
             var stringSource = SourceCodeBuilder.Create()
                 .FromString(expression)
-                .WithName("<expression>")
+                .WithName($"{entryId}:<eval>")
                 .Build();
-            
+
             var compiler = _mem.Services.Resolve<EvalCompiler>();
             compiler.SharedSymbols = ctx;
             var module = (StackRuntimeModule)compiler.CompileExpression(stringSource);
-            
             return module;
         }
 
@@ -2614,9 +2562,14 @@ namespace ScriptEngine.Machine
                 }
                 foreach (var variable in scope.Variables)
                 {
-                    // TODO тут возможна двуязычность у свойств (приаттаченых, как IVariable)
-                    //  пока костыль в виде одного имени
-                    symbolScope.DefineVariable(new LocalVariableSymbol(variable.Name));
+                    if (variable.SystemType.Alias != null)
+                    {
+                        symbolScope.DefineVariable(new AliasedVariableSymbol(variable.Name, variable.SystemType.Alias));
+                    }
+                    else
+                    {
+                        symbolScope.DefineVariable(new LocalVariableSymbol(variable.Name));
+                    }
                 }
 
                 ctx.PushScope(symbolScope, scope.Instance);
@@ -2637,9 +2590,9 @@ namespace ScriptEngine.Machine
             _currentFrame.InstructionPointer++;
         }
 
-        private IValue BreakVariableLink(IValue value)
+        private IValue PopRawValue()
         {
-            return value.GetRawValue();
+            return _operationStack.Pop().GetRawValue();
         }
 
         public IList<ExecutionFrameInfo> GetExecutionFrames()

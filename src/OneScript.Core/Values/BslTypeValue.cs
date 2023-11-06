@@ -17,7 +17,9 @@ namespace OneScript.Values
         {
             _type = type;
         }
-        
+
+        public static BslTypeValue Create(TypeDescriptor value) => new BslTypeValue(value);
+
         public override TypeDescriptor SystemType => BasicTypes.Type;
 
         public override string ToString()

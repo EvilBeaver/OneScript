@@ -10,8 +10,6 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
-using OneScript.Native.Runtime;
-using OneScript.Values;
 
 namespace OneScript.Native.Compiler
 {
@@ -35,11 +33,6 @@ namespace OneScript.Native.Compiler
 
         private Expression CompileStaticOperation(Expression left, Expression right)
         {
-            if (IsEqualityOperation(_opCode))
-            {
-                return MakeStaticEqualityOperation(left, right);
-            }
-            
             if (left.Type.IsNumeric())
             {
                 return MakeNumericOperation(left, right);
@@ -52,15 +45,7 @@ namespace OneScript.Native.Compiler
             
             if (left.Type == typeof(string))
             {
-                if (_opCode == ExpressionType.Add)
-                    return StringAddition(left, right);
-
-                // Для строк допустимо сравнение со строками на < >
-                if (IsComparisonOperation(_opCode))
-                {
-                    // для простоты сделаем через BslValue.CompareTo
-                    return MakeDynamicComparison(left, right);
-                }
+                return MakeStringOperation(left, right);
             }
             
             if (left.Type == typeof(bool))
@@ -71,9 +56,28 @@ namespace OneScript.Native.Compiler
             throw NativeCompilerException.OperationNotDefined(_opCode, left.Type, right.Type);
         }
 
-        private Expression MakeStaticEqualityOperation(Expression left, Expression right)
+        private Expression MakeStringOperation(Expression left, Expression right)
         {
-            return Expression.MakeBinary(_opCode, left, right);
+            if (_opCode == ExpressionType.Add)
+            {
+                return StringAddition(left, right);
+            }
+
+            // Для строк допустимо сравнение со строками на < >
+            if (IsComparisonOperation(_opCode))
+            {
+                // для простоты сделаем через BslValue.CompareTo
+                return MakeDynamicComparison(left, right);
+            }
+            
+            if (IsEqualityOperation(_opCode))
+            {
+                return right.Type == typeof(string) ?
+                    Expression.MakeBinary(_opCode, left, right) 
+                    : MakeDynamicEquality(left, right);
+            }
+            
+            throw NativeCompilerException.OperationNotDefined(_opCode, left.Type, right.Type);
         }
 
         private Expression MakeNumericOperation(Expression left, Expression right)
@@ -195,7 +199,7 @@ namespace OneScript.Native.Compiler
                 case ExpressionType.OrElse:
                     return MakeLogicalOperation(left, right);
                 default:
-                    throw new NativeCompilerException($"Operation {_opCode} is not defined for IValues");
+                    throw NativeCompilerException.OperationNotDefined(_opCode, left.Type, right.Type);
             }
         }
 

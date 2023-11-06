@@ -8,8 +8,8 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -30,7 +30,7 @@ namespace ScriptEngine.HostedScript
             
             public void Add(ScriptDrivenObject target, string methodName)
             {
-                var exist = _handlers.Exists(x => ReferenceEquals(x.Target, target) && x.MethodName.ToLowerInvariant() == methodName.ToLowerInvariant());
+                var exist = _handlers.Exists(x => ReferenceEquals(x.Target, target) && String.Equals(x.MethodName, methodName, StringComparison.InvariantCultureIgnoreCase));
                 if (!exist)
                 {
                     _handlers.Add(new Handler
@@ -44,7 +44,7 @@ namespace ScriptEngine.HostedScript
 
             public void Remove(ScriptDrivenObject target, string methodName)
             {
-                _handlers.RemoveAll(x => ReferenceEquals(x.Target, target) && x.MethodName.ToLowerInvariant() == methodName.ToLowerInvariant());
+                _handlers.RemoveAll(x => ReferenceEquals(x.Target, target) && String.Equals(x.MethodName, methodName, StringComparison.InvariantCultureIgnoreCase));
             }
 
             public IEnumerator<Handler> GetEnumerator()

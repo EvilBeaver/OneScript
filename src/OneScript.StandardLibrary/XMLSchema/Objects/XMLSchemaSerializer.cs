@@ -7,13 +7,13 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Xml;
 using System.Xml.Schema;
-using OneScript.Commons;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Xml;
 using OneScript.StandardLibrary.XMLSchema.Interfaces;
 
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
-    internal class XMLSchemaSerializer
+    internal static class XMLSchemaSerializer
     {
         internal static IXSComponent CreateInstance(XmlSchemaObject xmlSchemaObject)
         {
@@ -93,7 +93,8 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
             else if (xmlAnnotated is XmlSchemaGroup xmlGroup)
                 return new XSModelGroupDefinition(xmlGroup);
 
-          
+            else if (xmlAnnotated is XmlSchemaXPath xmlPath)
+                return new XSXPathDefinition(xmlPath);
 
             else
                 throw RuntimeException.InvalidArgumentType();

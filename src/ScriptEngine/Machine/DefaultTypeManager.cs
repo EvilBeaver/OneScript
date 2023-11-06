@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Types;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Types;
@@ -140,6 +141,11 @@ namespace ScriptEngine.Machine
         {
             var nameToUpper = typeName.ToUpperInvariant();
             return _knownTypes.Any(x => x.Name.ToUpperInvariant() == nameToUpper);
+        }
+
+        public IReadOnlyList<TypeDescriptor> RegisteredTypes()
+        {
+            return _knownTypes;
         }
 
         public Type NewInstanceHandler 

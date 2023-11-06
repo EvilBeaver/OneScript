@@ -10,6 +10,7 @@ using System.IO;
 using System.Text;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Binary;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -178,7 +179,7 @@ namespace OneScript.StandardLibrary.Text
         /// <param name="monopoly">Открывать файл монопольно</param>
         /// <returns>ЧтениеТекста</returns>
         [ScriptConstructor(Name = "На основании потока или файла")]
-        public static TextReadImpl Constructor(IValue input, IValue encoding = null,
+        public static TextReadImpl ConstructorWithEncoding(IValue input, IValue encoding = null,
             IValue lineDelimiter = null, IValue eolDelimiter = null, IValue monopoly = null)
         {
             var reader = new TextReadImpl();

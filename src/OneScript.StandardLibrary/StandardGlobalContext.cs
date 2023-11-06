@@ -9,8 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -93,7 +93,7 @@ namespace OneScript.StandardLibrary
         [ContextMethod("ПодробноеПредставлениеОшибки", "DetailErrorDescription")]
         public string DetailErrorDescription(ExceptionInfoContext errInfo)
         {
-            return errInfo.DetailedDescription;
+            return errInfo.GetDetailedDescription();
         }
 
         [ContextMethod("ТекущаяУниверсальнаяДата", "CurrentUniversalDate")]

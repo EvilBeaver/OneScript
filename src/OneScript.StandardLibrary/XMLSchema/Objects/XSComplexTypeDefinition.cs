@@ -6,9 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Diagnostics.Contracts;
 using System.Xml;
 using System.Xml.Schema;
-using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Xml;
 using OneScript.StandardLibrary.XMLSchema.Collections;
@@ -20,9 +20,11 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
     [ContextClass("ОпределениеСоставногоТипаXS", "XSComplexTypeDefinition")]
-    public class XSComplexTypeDefinition : AutoContext<XSComplexTypeDefinition>, IXSType, IXSNamedComponent
+    public sealed class XSComplexTypeDefinition : AutoContext<XSComplexTypeDefinition>, IXSType, IXSNamedComponent
     {
         private readonly XmlSchemaComplexType _type;
+        private readonly XSComponentFixedList _components = new XSComponentFixedList();
+        private readonly XSComponentList _attributes = new XSComponentList();
         private XSAnnotation _annotation;
         private XSAnnotation _contentModelAnnotation;
         private XSAnnotation _derivationAnnotation;
@@ -32,17 +34,9 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         private XSDerivationMethod _derivationMethod;
         private XSContentModel _contentModel;
 
-        private XSComplexTypeDefinition()
-        {
-            _type = new XmlSchemaComplexType();
-            Components = new XSComponentFixedList();
-            Attributes = new XSComponentList();
-            Attributes.Inserted += Attributes_Inserted;
-            Attributes.Cleared += Attributes_Cleared;
-        }
+        private XSComplexTypeDefinition() : this(new XmlSchemaComplexType()) { }
 
         internal XSComplexTypeDefinition(XmlSchemaComplexType complexType)
-            : this()
         {
             _type = complexType;
 
@@ -52,86 +46,99 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
                 _annotation.BindToContainer(RootContainer, this);
             }
 
-            if (_type.ContentModel is XmlSchemaSimpleContent simpleContent)
-            {
-                _contentModel = XSContentModel.Simple;
-                if (simpleContent.Content is XmlSchemaSimpleContentExtension contentExtension)
-                {
-                    _derivationMethod = XSDerivationMethod.Extension;
-                    if (contentExtension.BaseTypeName is XmlQualifiedName qualifiedName)
-                        _baseTypeName = XMLSchemaSerializer.CreateXMLExpandedName(qualifiedName);
+            InitContentModel();
 
-                    if (contentExtension.AnyAttribute is XmlSchemaAnyAttribute anyAttribute)
-                        _attributeWildcard = XMLSchemaSerializer.CreateXSWildcard(anyAttribute);
-                }
-                else if (simpleContent.Content is XmlSchemaSimpleContentRestriction contentRestriction)
-                {
-                    _derivationMethod = XSDerivationMethod.Restriction;
-                    if (contentRestriction.BaseTypeName is XmlQualifiedName qualifiedName)
-                        _baseTypeName = XMLSchemaSerializer.CreateXMLExpandedName(qualifiedName);
-
-                    if (contentRestriction.AnyAttribute is XmlSchemaAnyAttribute anyAttribute)
-                        _attributeWildcard = XMLSchemaSerializer.CreateXSWildcard(anyAttribute);
-                }
-                else
-                    _derivationMethod = XSDerivationMethod.EmptyRef;
-
-                if (_type.Particle is XmlSchemaParticle particle)
-                    _content = XMLSchemaSerializer.CreateInstance(particle);
-            }
-            else if (_type.ContentModel is XmlSchemaComplexContent complexContent)
-            {
-                _contentModel = XSContentModel.Complex;
-
-                if (complexContent.Content is XmlSchemaComplexContentExtension contentExtension)
-                {
-                    _derivationMethod = XSDerivationMethod.Extension;
-                    if (contentExtension.BaseTypeName is XmlQualifiedName qualifiedName)
-                        _baseTypeName = XMLSchemaSerializer.CreateXMLExpandedName(qualifiedName);
-
-                    if (contentExtension.Particle is XmlSchemaParticle particle)
-                        _content = XMLSchemaSerializer.CreateInstance(particle);
-
-                    if (contentExtension.AnyAttribute is XmlSchemaAnyAttribute anyAttribute)
-                        _attributeWildcard = XMLSchemaSerializer.CreateXSWildcard(anyAttribute);
-                }
-                else if (complexContent.Content is XmlSchemaComplexContentRestriction contentRestriction)
-                {
-                    _derivationMethod = XSDerivationMethod.Restriction;
-                    if (contentRestriction.BaseTypeName is XmlQualifiedName qualifiedName)
-                        _baseTypeName = XMLSchemaSerializer.CreateXMLExpandedName(qualifiedName);
-
-                    if (contentRestriction.Particle is XmlSchemaParticle particle)
-                        _content = XMLSchemaSerializer.CreateInstance(particle);
-
-                    if (contentRestriction.AnyAttribute is XmlSchemaAnyAttribute anyAttribute)
-                        _attributeWildcard = XMLSchemaSerializer.CreateXSWildcard(anyAttribute);
-                }
-                else
-                {
-                    _derivationMethod = XSDerivationMethod.EmptyRef;
-
-                    if (_type.Particle is XmlSchemaParticle particle)
-                        _content = XMLSchemaSerializer.CreateInstance(particle);
-                }
-            }
-            else
-            {
-                _contentModel = XSContentModel.EmptyRef;
-                
-                if (_type.Particle is XmlSchemaParticle particle)
-                    _content = XMLSchemaSerializer.CreateInstance(particle);
-            }
-            
-            Attributes.Inserted -= Attributes_Inserted;
             foreach (XmlSchemaObject item in _type.Attributes)
             {
                 IXSComponent component = XMLSchemaSerializer.CreateInstance(item);
                 component.BindToContainer(RootContainer, this);
-                Attributes.Add(component);
-                Components.Add(component);
+                _attributes.Add(component);
+                _components.Add(component);
             }
-            Attributes.Inserted += Attributes_Inserted;
+            _attributes.Inserted += Attributes_Inserted;
+            _attributes.Cleared += Attributes_Cleared;
+        }
+
+        private void InitContentModel()
+        {
+            if (_type.ContentModel is XmlSchemaSimpleContent simpleContent)
+                InitSimpleContent(simpleContent);
+
+            else if (_type.ContentModel is XmlSchemaComplexContent complexContent)
+                InitComplexContent(complexContent);
+
+            else
+                InitEmptyContent();
+        }
+
+        private void InitSimpleContent(XmlSchemaSimpleContent simpleContent)
+        {
+            _contentModel = XSContentModel.Simple;
+            if (simpleContent.Content is XmlSchemaSimpleContentExtension contentExtension)
+            {
+                _derivationMethod = XSDerivationMethod.Extension;
+                InitBaseTypeName(contentExtension.BaseTypeName);
+                InitAttributeWildcard(contentExtension.AnyAttribute);
+            }
+            else if (simpleContent.Content is XmlSchemaSimpleContentRestriction contentRestriction)
+            {
+                _derivationMethod = XSDerivationMethod.Restriction;
+                InitBaseTypeName(contentRestriction.BaseTypeName);
+                InitAttributeWildcard(contentRestriction.AnyAttribute);
+            }
+            else
+            {
+                _derivationMethod = XSDerivationMethod.EmptyRef;
+                InitContent(_type.Particle);
+            }
+        }
+
+        private void InitComplexContent(XmlSchemaComplexContent complexContent)
+        {
+            _contentModel = XSContentModel.Complex;
+            if (complexContent.Content is XmlSchemaComplexContentExtension contentExtension)
+            {
+                _derivationMethod = XSDerivationMethod.Extension;
+                InitBaseTypeName(contentExtension.BaseTypeName);
+                InitContent(contentExtension.Particle);
+                InitAttributeWildcard(contentExtension.AnyAttribute);
+            }
+            else if (complexContent.Content is XmlSchemaComplexContentRestriction contentRestriction)
+            {
+                _derivationMethod = XSDerivationMethod.Restriction;
+                InitBaseTypeName(contentRestriction.BaseTypeName);
+                InitContent(contentRestriction.Particle);
+                InitAttributeWildcard(contentRestriction.AnyAttribute);
+            }
+            else
+            {
+                _derivationMethod = XSDerivationMethod.EmptyRef;
+                InitContent(_type.Particle);
+            }
+        }
+
+        private void InitEmptyContent()
+        {
+            _contentModel = XSContentModel.EmptyRef;
+            InitContent(_type.Particle);
+        }
+
+        private void InitBaseTypeName(XmlQualifiedName xmlQualifiedName)
+        {
+            if (xmlQualifiedName is XmlQualifiedName qualifiedName)
+                _baseTypeName = XMLSchemaSerializer.CreateXMLExpandedName(qualifiedName);
+        }
+                
+        private void InitAttributeWildcard(XmlSchemaAnyAttribute xmlAnyAttribute)
+        {
+            if (xmlAnyAttribute is XmlSchemaAnyAttribute anyAttribute)
+                _attributeWildcard = XMLSchemaSerializer.CreateXSWildcard(anyAttribute);
+        }
+
+        private void InitContent(XmlSchemaParticle xmlParticle)
+        {
+            if (xmlParticle is XmlSchemaParticle particle)
+                _content = XMLSchemaSerializer.CreateInstance(particle);
         }
 
         private void OnSetContentModelDerivation()
@@ -293,7 +300,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         [ContextProperty("Компоненты", "Components")]
-        public XSComponentFixedList Components { get; }
+        public XSComponentFixedList Components => _components;
 
         [ContextProperty("Контейнер", "Container")]
         public IXSComponent Container { get; private set; }
@@ -311,7 +318,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public IValue DOMElement => ValueFactory.Create();
 
         [ContextProperty("URIПространстваИмен", "NamespaceURI")]
-        public string URIПространстваИмен => _type.SourceUri;
+        public string NamespaceURI => _type.SourceUri;
 
         [ContextProperty("Имя", "Name")]
         public string Name
@@ -358,7 +365,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         [ContextProperty("Атрибуты", "Attributes")]
-        public XSComponentList Attributes { get; }
+        public XSComponentList Attributes => _attributes;
 
         [ContextProperty("Блокировка", "Block")]
         public XsProhibitedSubstitutionsUnion Block { get; }
@@ -417,7 +424,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         //ОпределениеБазовогоТипа(BaseTypeDefinition)
 
         [ContextProperty("Смешанный", "Mixed")]
-        public bool Mixed => _type.ContentModel is XmlSchemaComplexContent complexContent ? complexContent.IsMixed : false;
+        public bool Mixed => _type.ContentModel is XmlSchemaComplexContent complexContent && complexContent.IsMixed;
 
         [ContextProperty("Содержимое", "Content")]
         public IXSComponent Content
@@ -444,7 +451,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public void UpdateDOMElement() => throw new NotImplementedException();
 
         [ContextMethod("Содержит", "Contains")]
-        public bool Contains(IXSComponent component) => Components.Contains(component);
+        public bool Contains(IXSComponent component) => _components.Contains(component);
 
         [ContextMethod("ЭтоОпределениеЗациклено", "IsCircular")]
         public bool IsCircular() => throw new NotImplementedException();
@@ -481,18 +488,16 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         private void Attributes_Inserted(object sender, XSComponentListEventArgs e)
         {
             IXSComponent component = e.Component;
-            if (!(component is IXSAttribute) && (!(component is XSAttributeGroupDefinition)))
-                throw RuntimeException.InvalidArgumentType();
-
+            Contract.Requires((component is IXSAttribute) || (component is XSAttributeGroupDefinition));
             component.BindToContainer(RootContainer, this);
-            Components.Add(component);
+            _components.Add(component);
 
             _type.Attributes.Add(component.SchemaObject);
         }
 
         private void Attributes_Cleared(object sender, EventArgs e)
         {
-            Components.RemoveAll(x => (x is IXSAttribute));
+            _components.RemoveAll(x => (x is IXSAttribute));
 
             _type.Attributes.Clear();
         }

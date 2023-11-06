@@ -136,6 +136,7 @@ namespace TestApp
             var builder = DefaultEngineBuilder
                 .Create()
                 .SetDefaultOptions()
+                .UseNativeRuntime()
                 .SetupEnvironment(e => e.AddStandardLibrary())
                 .SetupConfiguration(x =>
                 {

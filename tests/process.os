@@ -158,10 +158,7 @@
 	|  -encoding=<encoding-name> set output encoding
 	|  -codestat=<filename> write code statistics
 	|
-	|III. Build standalone executable: oscript.exe -make <script_path> <output_exe>
-	|  Builds a standalone executable module based on script specified
-	|
-	|IV. Run as CGI application: oscript.exe -cgi <script_path> [script arguments..]
+	|III. Run as CGI application: oscript.exe -cgi <script_path> [script arguments..]
 	|  Runs as CGI application under HTTP-server (Apache/Nginx/IIS/etc...)";
 	
 	Возврат НормализоватьПереводыСтрок(Текст);
