@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
@@ -49,10 +50,15 @@ namespace OneScript.Native.Compiler
 
         public static IEnumerable<Attribute> GetAnnotations(IEnumerable<AnnotationNode> annotations)
         {
-            // Возможно будут какие-то маппинги на системные атрибуты, не только на BslAnnotation
-            // поэтому возвращаем Attribute[] а не BslAnnotation[]
+            return annotations.Select<AnnotationNode, Attribute>(a =>
+            {
+                if (BslOverrideAttribute.AcceptsIdentifier(a.Name))
+                {
+                    return new BslOverrideAttribute();
+                }
 
-            return annotations.Select(GetBslAnnotation).ToList();
+                return GetBslAnnotation(a);
+            }).ToList();
         }
         
         public static BslAnnotationAttribute GetBslAnnotation(AnnotationNode node)

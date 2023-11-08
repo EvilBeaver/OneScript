@@ -4,7 +4,11 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
+using System.Linq;
+using System.Reflection;
 using OneScript.Contexts;
+using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Runtime.Binding;
 using OneScript.Values;
 
@@ -39,6 +43,17 @@ namespace OneScript.Compilation.Binding
         public static IFieldSymbol ToSymbol(this BslFieldInfo info)
         {
             return new BslFieldSymbol { Field = info };
+        }
+
+        public static bool IsUniqueMethod(this SymbolTable table, MethodNode astNode)
+        {
+            var isKnown = table.TryFindMethodBinding(astNode.Signature.MethodName, out _);
+            if (!isKnown)
+            {
+                return true;
+            }
+
+            return astNode.Annotations.Any(a => BslOverrideAttribute.AcceptsIdentifier(a.Name));
         }
     }
 }

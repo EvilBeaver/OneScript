@@ -79,7 +79,7 @@ namespace OneScript.Native.Compiler
             foreach (var methodNode in methodsSection.Children.Cast<MethodNode>())
             {
                 var signature = methodNode.Signature;
-                if (Symbols.TryFindMethodBinding(signature.MethodName, out _))
+                if (!Symbols.IsUniqueMethod(methodNode))
                 {
                     AddError(LocalizedErrors.DuplicateMethodDefinition(signature.MethodName), signature.Location);
                     continue;
