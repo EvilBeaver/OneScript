@@ -18,7 +18,7 @@ namespace OneScript.Localization
         
         public static bool ContainsString(this BilingualString bi, string sample, StringComparison comparison)
         {
-            return bi.Russian.Equals(sample, comparison) || bi.Russian.Equals(sample, comparison);
+            return bi.Russian.Equals(sample, comparison) || bi.English.Equals(sample, comparison);
         }
     }
 }
