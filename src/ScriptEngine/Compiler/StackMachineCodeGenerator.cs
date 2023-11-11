@@ -287,16 +287,15 @@ namespace ScriptEngine.Compiler
             methodInfo.SetRuntimeParameters(entryPoint, GetVariableNames(methodCtx));
             
             SymbolBinding binding;
-            if (_ctx.IsUniqueMethod(methodNode))
+            try
             {
                 binding = _ctx.DefineMethod(methodInfo.ToSymbol());
             }
-            else
+            catch (CompilerException)
             {
                 AddError(LocalizedErrors.DuplicateMethodDefinition(signature.MethodName), signature.Location);
                 binding = default;
             }
-
             _module.MethodRefs.Add(binding);
             _module.Methods.Add(methodInfo);
         }
@@ -1103,21 +1102,14 @@ namespace ScriptEngine.Compiler
             AddCommand(OperationCode.PushConst, num);
         }
 
-        private IEnumerable<Attribute> GetAnnotationAttributes(AnnotatableNode node)
+        private IEnumerable<BslAnnotationAttribute> GetAnnotationAttributes(AnnotatableNode node)
         {
-            var mappedAnnotations = new List<Attribute>();
+            var mappedAnnotations = new List<BslAnnotationAttribute>();
             foreach (var annotation in node.Annotations)
             {
-                if (BslOverrideAttribute.AcceptsIdentifier(annotation.Name))
-                {
-                    mappedAnnotations.Add(new BslOverrideAttribute());
-                }
-                else
-                {
-                    var anno = new BslAnnotationAttribute(annotation.Name);
-                    anno.SetParameters(GetAnnotationParameters(annotation));
-                    mappedAnnotations.Add(anno);
-                }
+                var anno = new BslAnnotationAttribute(annotation.Name);
+                anno.SetParameters(GetAnnotationParameters(annotation));
+                mappedAnnotations.Add(anno);
             }
 
             return mappedAnnotations;

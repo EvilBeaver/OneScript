@@ -5,12 +5,11 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
 using System.Globalization;
 
 namespace OneScript.Localization
 {
-    public class BilingualString : IEquatable<BilingualString>
+    public class BilingualString
     {
         private static readonly CultureInfo RussianCulture;
 
@@ -67,26 +66,6 @@ namespace OneScript.Localization
             }
 
             return russian;
-        }
-
-        public bool Equals(BilingualString other)
-        {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Russian == other.Russian && English == other.English;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((BilingualString)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Russian, English);
         }
     }
 }
