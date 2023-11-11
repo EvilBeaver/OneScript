@@ -105,7 +105,7 @@ namespace ScriptEngine.Machine.Contexts
                     var result = DispatchUtility.Invoke(Instance, dispId, null);
                     return CreateIValue(result);
                 }
-                catch (System.Reflection.TargetInvocationException e)
+                catch (TargetInvocationException e)
                 {
                     throw e.InnerException ?? e;
                 }
@@ -149,16 +149,16 @@ namespace ScriptEngine.Machine.Contexts
                     }
                     DispatchUtility.InvokeSetProperty(Instance, dispId, argToPass);
                 }
-                catch (System.Reflection.TargetInvocationException e)
+                catch (TargetInvocationException e)
                 {
                     throw e.InnerException ?? e;
                 }
             }
-            catch (System.MissingMemberException)
+            catch (MissingMemberException)
             {
                 throw PropertyAccessException.PropNotFoundException(prop.Name);
             }
-            catch (System.MemberAccessException)
+            catch (MemberAccessException)
             {
                 throw PropertyAccessException.PropIsNotWritableException(prop.Name);
             }
@@ -203,12 +203,12 @@ namespace ScriptEngine.Machine.Contexts
                     DispatchUtility.Invoke(Instance, dispId, argsData.values, argsData.flags);
                     RemapOutputParams(arguments, argsData.values, argsData.flags[0], initialValues);
                 }
-                catch (System.Reflection.TargetInvocationException e)
+                catch (TargetInvocationException e)
                 {
                     throw e.InnerException ?? e;
                 }
             }
-            catch (System.MissingMemberException)
+            catch (MissingMemberException)
             {
                 throw RuntimeException.MethodNotFoundException(method.Name);
             }
@@ -234,12 +234,12 @@ namespace ScriptEngine.Machine.Contexts
                     RemapOutputParams(arguments, argsData.values, argsData.flags[0], initialValues);
                     retValue = CreateIValue(result);
                 }
-                catch (System.Reflection.TargetInvocationException e)
+                catch (TargetInvocationException e)
                 {
                     throw e.InnerException ?? e;
                 }
             }
-            catch (System.MissingMemberException)
+            catch (MissingMemberException)
             {
                 throw RuntimeException.MethodNotFoundException(method.Name);
             }
@@ -250,7 +250,10 @@ namespace ScriptEngine.Machine.Contexts
         {
             for (int i = 0; i < arguments.Length; i++)
             {
-                if (flags[i] && !initialValues[i].Equals(values[i]))
+                var initialValue = initialValues[i];
+                var valueAfterCall = values[i];
+                
+                if (flags[i] && !Equals(initialValue, valueAfterCall))
                 {
                     var variable = (IVariable)arguments[i];
                     variable.Value = CreateIValue(values[i]);
