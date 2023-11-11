@@ -58,7 +58,7 @@ pipeline {
 
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore && mkdir doctool"
                             bat "chcp $outputEnc > nul\r\n dotnet publish src/OneScriptDocumenter/OneScriptDocumenter.csproj -c Release -o doctool"
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:CleanAll;PrepareDistributionFiles;CreateNuget"
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionFiles;CreateNuget"
                             
                             stash includes: 'tests, built/**', name: 'buildResults'
                         }
@@ -126,7 +126,7 @@ pipeline {
                                 deleteDir()
                             }
                             unstash 'buildResults'
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:Test"
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:Test"
 
                             junit 'tests/*.xml'
                         }
@@ -193,10 +193,10 @@ pipeline {
                     {
                         if (env.BRANCH_NAME == "preview") {
                             echo 'Building preview'
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions /p:Suffix=-pre%BUILD_NUMBER%"
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PackDistributions /p:Suffix=-pre%BUILD_NUMBER%"
                         }
                         else{
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions"
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PackDistributions"
                         }
                     }
                     archiveArtifacts artifacts: 'built/**', fingerprint: true
