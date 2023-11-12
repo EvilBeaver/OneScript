@@ -29,7 +29,7 @@ namespace ScriptEngine.Compiler
         {
             if (_outerCtx.TryGetMethod(method.Name, out _))
             {
-                SystemLogger.Write($"WARNING!!! Symbol already defined {method.Name}. Redeclaring global methods will be restricted in future versions!");
+                throw new CompilerException($"Symbol already defined {method.Name}");
             }
             var sb = _moduleCtx.DefineMethod(method);
             ShiftIndex(ref sb);
