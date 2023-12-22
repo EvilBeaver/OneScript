@@ -21,7 +21,7 @@ namespace OneScript.StandardLibrary.Binary
     [GlobalContext(Category = "Процедуры и функции работы с двоичными данными")]
     public sealed class GlobalBinaryData : GlobalContextBase<GlobalBinaryData>
     {
-        private static byte[] HexStringToByteArray(String hex)
+        private static byte[] HexStringToByteArray(string hex)
         {
             var newHex = System.Text.RegularExpressions.Regex.Replace(hex, @"[^0-9A-Fa-f]", "");
             int numberChars = newHex.Length;
@@ -130,6 +130,17 @@ namespace OneScript.StandardLibrary.Binary
             return enc.GetString(buf, startPos, buf.Length - startPos);
         }
 
+        private static void CheckAndThrowIfNull<T>(AutoContext<T> obj) where T : AutoContext<T>
+        {
+            if (obj == null)
+                throw RuntimeException.InvalidArgumentType();
+        }
+
+        private static void CheckAndThrowIfNull<T>(AutoContext<T> obj, int argNumber, string argName) where T : AutoContext<T>
+        {
+            if (obj == null)
+                throw RuntimeException.InvalidArgumentType(argNumber, argName);
+        }
 
         public static IAttachableContext CreateInstance()
         {
@@ -150,19 +161,19 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("СоединитьДвоичныеДанные")]
         public BinaryDataContext ConcatenateBinaryData(ArrayImpl array)
         {
+            CheckAndThrowIfNull(array);
+
             // Сделано на int т.к. BinaryContext.Size имеет тип int;
+            using var stream = new System.IO.MemoryStream();
 
-            using (var stream = new System.IO.MemoryStream())
+            foreach (var cbd in array)
             {
-
-                foreach (var cbd in array)
-                {
-                    byte[] buffer = ((BinaryDataContext) cbd.AsObject()).Buffer;
-                    stream.Write(buffer, 0, buffer.Length);
-                }
-                stream.Position = 0;
-                return new BinaryDataContext(stream);
+                byte[] buffer = ((BinaryDataContext)cbd.AsObject()).Buffer;
+                stream.Write(buffer, 0, buffer.Length);
             }
+            stream.Position = 0;
+
+            return new BinaryDataContext(stream);
         }
 
         /// <summary>
@@ -174,6 +185,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("РазделитьДвоичныеДанные")]
         public ArrayImpl SplitBinaryData(BinaryDataContext data, long size)
         {
+            CheckAndThrowIfNull(data, 1, nameof(data));
+
             if (size <= 0 || size > Int32.MaxValue)
                 throw RuntimeException.InvalidNthArgumentValue(2);
 
@@ -257,9 +270,10 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьСтрокуИзДвоичныхДанных")]
         public string GetStringFromBinaryData(BinaryDataContext data, IValue encoding = null)
         {
+            CheckAndThrowIfNull(data, 1, nameof(data));
+
             // Получаем кодировку
             // Из синтаксис помощника если кодировка не задана используем UTF8
-
             var enc = (encoding != null) ? TextEncodingEnum.GetEncoding(encoding) : Encoding.UTF8;
 
             return GetStringFromByteBuffer(data.Buffer, enc);
@@ -274,6 +288,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьСтрокуИзБуфераДвоичныхДанных")]
         public string GetStringFromBinaryDataBuffer(BinaryDataBuffer buffer, IValue encoding = null)
         {
+            CheckAndThrowIfNull(buffer, 1, nameof(buffer));
+
             var enc = (encoding != null) ? TextEncodingEnum.GetEncoding(encoding) : Encoding.UTF8;
 
             return GetStringFromByteBuffer(buffer.Bytes, enc);
@@ -325,6 +341,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьBase64СтрокуИзДвоичныхДанных")]
         public string GetBase64StringFromBinaryData(BinaryDataContext data)
         {
+            CheckAndThrowIfNull(data, 1, nameof(data));
+
             return Convert.ToBase64String(data.Buffer, Base64FormattingOptions.InsertLineBreaks);
         }
 
@@ -338,6 +356,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьBase64СтрокуИзБуфераДвоичныхДанных")]
         public string GetBase64StringFromBinaryDataBuffer(BinaryDataBuffer buffer)
         {
+            CheckAndThrowIfNull(buffer);
+
             return Convert.ToBase64String(buffer.Bytes, Base64FormattingOptions.InsertLineBreaks);
         }
 
@@ -349,6 +369,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьДвоичныеДанныеИзBase64ДвоичныхДанных")]
         public BinaryDataContext GetBinaryDataFromBase64BinaryData(BinaryDataContext data)
         {
+            CheckAndThrowIfNull(data);
+
             try
             {
                 var enc = new UTF8Encoding(false,true);
@@ -369,6 +391,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьБуферДвоичныхДанныхИзBase64БуфераДвоичныхДанных")]
         public BinaryDataBuffer GetBinaryDataBufferFromBase64BinaryDataBuffer(BinaryDataBuffer buffer)
         {
+            CheckAndThrowIfNull(buffer);
+
             try
             {
                 var enc = new UTF8Encoding(false, true);
@@ -391,6 +415,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьBase64ДвоичныеДанныеИзДвоичныхДанных")]
         public BinaryDataContext GetBase64BinaryDataFromBinaryData(BinaryDataContext data)
         {
+            CheckAndThrowIfNull(data);
+
             var base64str = Convert.ToBase64String(data.Buffer, Base64FormattingOptions.InsertLineBreaks);
             return new BinaryDataContext(Encoding.ASCII.GetBytes(base64str));
         }
@@ -405,6 +431,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьBase64БуферДвоичныхДанныхИзБуфераДвоичныхДанных")]
         public BinaryDataBuffer GetBase64BinaryDataBufferFromBinaryDataBuffer(BinaryDataBuffer buffer)
         {
+            CheckAndThrowIfNull(buffer);
+
             var base64str = Convert.ToBase64String(buffer.Bytes, Base64FormattingOptions.InsertLineBreaks);
             return new BinaryDataBuffer(Encoding.ASCII.GetBytes(base64str));
         }
@@ -439,6 +467,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьHexСтрокуИзДвоичныхДанных")]
         public string GetHexStringFromBinaryData(BinaryDataContext data)
         {
+            CheckAndThrowIfNull(data);
+
             return BitConverter.ToString(data.Buffer).Replace("-","");
         }
 
@@ -450,6 +480,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьHexСтрокуИзБуфераДвоичныхДанных")]
         public string GetHexStringFromBinaryDataBuffer(BinaryDataBuffer buffer)
         {
+            CheckAndThrowIfNull(buffer); 
+
             return BitConverter.ToString(buffer.Bytes).Replace("-","");
         }
 
@@ -461,6 +493,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьДвоичныеДанныеИзHexДвоичныхДанных")]
         public BinaryDataContext GetBinaryDataFromHexBinaryData(BinaryDataContext data)
         {
+            CheckAndThrowIfNull(data);
+
             return new BinaryDataContext(HexArrayToByteArray(data.Buffer));
         }
 
@@ -472,6 +506,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьБуферДвоичныхДанныхИзHexБуфераДвоичныхДанных")]
         public BinaryDataBuffer GetBinaryDataBufferFromHexBinaryDataBuffer(BinaryDataBuffer buffer)
         {
+            CheckAndThrowIfNull(buffer); 
+
             return new BinaryDataBuffer(HexArrayToByteArray(buffer.Bytes));
         }
 
@@ -507,6 +543,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьБуферДвоичныхДанныхИзДвоичныхДанных")]
         public BinaryDataBuffer GetBinaryDataBufferFromBinaryData(BinaryDataContext data)
         {
+            CheckAndThrowIfNull(data);
+
             return new BinaryDataBuffer(data.Buffer);
         }
 
@@ -518,6 +556,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("ПолучитьДвоичныеДанныеИзБуфераДвоичныхДанных")]
         public BinaryDataContext GetBinaryDataFromBinaryDataBuffer(BinaryDataBuffer buffer)
         {
+            CheckAndThrowIfNull(buffer);
+
             return new BinaryDataContext(buffer.Bytes);
         }
 
