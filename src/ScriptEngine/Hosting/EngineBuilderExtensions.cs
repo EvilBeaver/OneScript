@@ -57,6 +57,7 @@ namespace ScriptEngine.Hosting
             services.RegisterEnumerable<IExecutorProvider, StackMachineExecutor>();
             services.RegisterEnumerable<IDirectiveHandler, ConditionalDirectiveHandler>();
             services.RegisterEnumerable<IDirectiveHandler, RegionDirectiveHandler>();
+            services.RegisterEnumerable<IDirectiveHandler, RegionDirectiveHandler>();
             
             services.Register<ExecutionContext>();
             
