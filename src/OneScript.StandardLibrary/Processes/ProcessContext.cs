@@ -272,12 +272,31 @@ namespace OneScript.StandardLibrary.Processes
             int argsPosition;
             sInfo.UseShellExecute = true;
             sInfo.FileName = ExtractExecutableName(cmdLine, out argsPosition);
-            sInfo.Arguments = argsPosition >= cmdLine.Length ? "" : cmdLine.Substring(argsPosition);
             if (currentDir != null)
                 sInfo.WorkingDirectory = currentDir;
+
+            // Поведение под MacOS и остальные системы различается
+            // Страдает обратная совместимость и неясны до конца синтаксисы.
+            // См. https://github.com/EvilBeaver/OneScript/issues/1299
+            if (Environment.OSVersion.Platform != PlatformID.MacOSX)
+            {
+                sInfo.Arguments = argsPosition >= cmdLine.Length ? "" : cmdLine.Substring(argsPosition);
+            }
+            else
+            {
+                var arguments = argsPosition >= cmdLine.Length 
+                    ? Array.Empty<string>() 
+                    : new ArgumentsParser(cmdLine[argsPosition..]).GetArguments();
+
+                foreach (var argument in arguments)
+                {
+                    sInfo.ArgumentList.Add(argument);
+                }
+            }
+            
             return sInfo;
         }
-
+        
         private static string ExtractExecutableName(string cmdLine, out int argsPosition)
         {
             bool inQuotes = false;
