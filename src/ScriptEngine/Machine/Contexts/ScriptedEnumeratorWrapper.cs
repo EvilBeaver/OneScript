@@ -11,13 +11,12 @@ using System.Collections.Generic;
 using System.Linq;
 using OneScript.Contexts;
 using OneScript.Exceptions;
-using OneScript.Execution;
 using OneScript.Localization;
 using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class ScriptedEnumeratorWrapper : IEnumerator<BslValue>
+    public sealed class ScriptedEnumeratorWrapper : IEnumerator<BslValue>
     {
         private readonly UserScriptContextInstance _userObject;
 
@@ -122,7 +121,7 @@ namespace ScriptEngine.Machine.Contexts
         public static RuntimeException MissingMethod(BilingualString methodName, Exception parent = null)
         {
             var error = new BilingualString(
-                "Обязательный метод "+methodName.Russian+"отсутствует, или не соответствует интерфейсу итератора",
+                "Обязательный метод "+methodName.Russian+" отсутствует, или не соответствует интерфейсу итератора",
                 "Required method "+methodName.English+" is missing or doesn't match iterator interface");
 
             return new RuntimeException(error, parent);

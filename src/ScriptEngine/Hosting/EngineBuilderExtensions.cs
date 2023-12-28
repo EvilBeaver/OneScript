@@ -15,6 +15,7 @@ using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Types;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Hosting
 {
@@ -57,7 +58,9 @@ namespace ScriptEngine.Hosting
             services.RegisterEnumerable<IExecutorProvider, StackMachineExecutor>();
             services.RegisterEnumerable<IDirectiveHandler, ConditionalDirectiveHandler>();
             services.RegisterEnumerable<IDirectiveHandler, RegionDirectiveHandler>();
-            services.RegisterEnumerable<IDirectiveHandler, RegionDirectiveHandler>();
+            services.RegisterEnumerable<IDirectiveHandler, PredefinedAnnotationHandler>();
+            
+            services.RegisterEnumerable<IPredefinedAnnotationProvider, IterableAnnotationProvider>();
             
             services.Register<ExecutionContext>();
             

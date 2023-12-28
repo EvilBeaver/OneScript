@@ -9,7 +9,7 @@ using OneScript.Localization;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class IterableDirectiveProvider : IPredefinedDirectiveProvider
+    public class IterableAnnotationProvider : IPredefinedAnnotationProvider
     {
         public static readonly BilingualString Names = new BilingualString("Обходимое", "Iterable");
         

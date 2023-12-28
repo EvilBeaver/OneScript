@@ -16,12 +16,12 @@ using OneScript.Localization;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class PredefinedDirectiveHandler : ModuleAnnotationDirectiveHandler
+    public class PredefinedAnnotationHandler : ModuleAnnotationDirectiveHandler
     {
         private readonly ILexer _allLineContentLexer;
         private readonly HashSet<string> _knownNames;
         
-        public PredefinedDirectiveHandler(IEnumerable<IPredefinedDirectiveProvider> providers, IErrorSink errorSink) : base(errorSink)
+        public PredefinedAnnotationHandler(IEnumerable<IPredefinedAnnotationProvider> providers, IErrorSink errorSink) : base(errorSink)
         {
             var builder = new LexerBuilder();
             builder.Detect((cs, i) => !char.IsWhiteSpace(cs))
@@ -63,7 +63,7 @@ namespace ScriptEngine.Machine.Contexts
         }
     }
 
-    public interface IPredefinedDirectiveProvider
+    public interface IPredefinedAnnotationProvider
     {
         BilingualString GetNames();
     }

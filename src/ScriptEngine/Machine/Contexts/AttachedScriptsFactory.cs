@@ -215,7 +215,7 @@ namespace ScriptEngine.Machine.Contexts
 
             var type = context.TypeManager.GetTypeByName(context.TypeName);
             UserScriptContextInstance newObj;
-            if (module.ModuleAttributes.Any(a => a.NameMatches(IterableDirectiveProvider.Names)))
+            if (module.ModuleAttributes.Any(a => a.NameMatches(IterableAnnotationProvider.Names)))
             {
                 newObj = new UserIterableContextInstance(module, type, arguments);
             }

@@ -58,8 +58,8 @@ namespace ScriptEngine.Machine.Contexts
             if (_getCountMethod != null)
             {
                 var countError = new BilingualString(
-                    "Метод " + GetIteratorName.Russian + " должен быть функцией без параметров",
-                    "Method " + GetIteratorName.English + "() must be a function without parameters");
+                    "Метод " + GetCountName.Russian + " должен быть функцией без параметров",
+                    "Method " + GetCountName.English + "() must be a function without parameters");
 
                 if (!_getCountMethod.IsFunction() || _getCountMethod.GetBslParameters().Length != 0)
                 {
