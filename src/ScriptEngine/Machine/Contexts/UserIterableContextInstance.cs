@@ -77,14 +77,14 @@ namespace ScriptEngine.Machine.Contexts
                         "Class doesn't support items counting, because method "+GetCountName.English+"() is not defined")
                 );
 
-            var ret = CallScriptMethod(_getCountMethod.DispatchId, Array.Empty<IValue>());
+            CallAsFunction(_getCountMethod.DispatchId, Array.Empty<IValue>(), out var ret);
 
             return (int)ret.AsNumber();
         }
 
         public IEnumerator<BslValue> GetEnumerator()
         {
-            var enumerator = CallScriptMethod(_getIteratorMethod.DispatchId, Array.Empty<IValue>());
+            CallAsFunction(_getIteratorMethod.DispatchId, Array.Empty<IValue>(), out var enumerator);
             if (!(enumerator is UserScriptContextInstance userObject))
             {
                 throw ScriptedEnumeratorWrapper.IncompatibleInterfaceError();
