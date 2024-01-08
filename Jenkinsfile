@@ -187,7 +187,11 @@ pipeline {
                     unstash 'buildResults'
                     unstash 'nativeApiSo'
                     
-                    bat 'xcopy output\\na-proxy\\*64.so built\\linux-64\\bin\\'
+                    bat '''
+                    chcp 65001 > nul
+                    dir output\\na-proxy
+                    xcopy output\\na-proxy\\*64.so built\\linux-64\\bin\\ /F
+                    '''.stripIndent()
                     
                     script
                     {
