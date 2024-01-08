@@ -213,7 +213,7 @@ pipeline {
             agent { label 'master' }
 
             steps {
-                
+                cleanWs()
                 unstash 'dist'
                 unstash 'vsix'
 
