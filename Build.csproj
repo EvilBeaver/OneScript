@@ -295,6 +295,7 @@
             <RuntimeID Include="osx-x64"/>
             <RuntimeID Include="osx-arm64"/>
             <RuntimeID Include="linux-x64"/>
+            <VsixSources Include="$(DebugAdapterDir)/**" Exclude="*.vsix" /> 
         </ItemGroup>
 
         <CreateItem
@@ -312,6 +313,7 @@
         
         <Exec Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/*&quot; &quot;$(ArtifactsRoot)/OneScript-$(ReleaseNumber)-%(RuntimeID.Identity).zip&quot;" UseUtf8Encoding="Always"/>
         <RemoveDir Directories="$(ArtifactsRoot)/%(RuntimeID.Identity)" />
+        <Delete Files="@(VsixSources)" />
     </Target>
     
     <!-- Nuget -->
