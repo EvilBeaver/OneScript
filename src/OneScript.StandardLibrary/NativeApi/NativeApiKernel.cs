@@ -22,7 +22,7 @@ namespace OneScript.StandardLibrary.NativeApi
         }
 
         private const String KernelWin = "kernel32.dll";
-        private const String KernelLin = "libdl.so";
+        private const String KernelLin = "libdl.so.2";
 
         public static IntPtr LoadLibrary(string filename)
         {
