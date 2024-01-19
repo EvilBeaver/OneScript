@@ -56,7 +56,7 @@ namespace OneScript.Localization
             return Localize(Russian, English);
         }
 
-        public bool HasName(string name, StringComparison comparison)
+        public bool HasName(string name, StringComparison comparison = StringComparison.CurrentCultureIgnoreCase)
         {
             return string.Equals(Russian, name, comparison) || string.Equals(English, name, comparison);
         }

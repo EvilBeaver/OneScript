@@ -15,57 +15,22 @@ using OneScript.Execution;
 using OneScript.Localization;
 using OneScript.Types;
 using OneScript.Values;
+using ScriptEngine.Machine.Interfaces;
 
 namespace ScriptEngine.Machine.Contexts
 {
     public class UserIterableContextInstance : UserScriptContextInstance, ICollectionContext<BslValue>
     {
-        private static BilingualString GetIteratorName = new BilingualString("ПолучитьИтератор", "GetIterator");
-        private static BilingualString GetCountName = new BilingualString("Количество", "Count");
-
         private BslScriptMethodInfo _getCountMethod;
         private BslScriptMethodInfo _getIteratorMethod;
-        
+        public static readonly BilingualString GetIteratorTerms = new BilingualString("ПолучитьИтератор", "GetIterator");
+        public static readonly BilingualString GetCountTerms = new BilingualString("Количество", "Count");
+
         public UserIterableContextInstance(IExecutableModule module, TypeDescriptor asObjectOfType, IValue[] args = null) : base(module, asObjectOfType, args)
         {
-            CheckModuleCompatibility(module);
-        }
-
-        private void CheckModuleCompatibility(IExecutableModule module)
-        {
-            var error = new BilingualString(
-                "Модуль объекта Обходимое должен содержать функцию " + GetIteratorName.Russian + "()",
-                "Module of Iterable must contain function " + GetIteratorName.English + "()");
-            
-            try
-            {
-                _getIteratorMethod = (BslScriptMethodInfo)module.Methods.Single(method =>
-                    GetIteratorName.HasName(method.Name, StringComparison.CurrentCultureIgnoreCase));
-            }
-            catch (InvalidOperationException e)
-            {
-                throw new RuntimeException(error, e);
-            }
-
-            if (!_getIteratorMethod.IsFunction() || _getIteratorMethod.GetBslParameters().Length != 0)
-            {
-                throw new RuntimeException(error);
-            }
-            
-            _getCountMethod = (BslScriptMethodInfo)module.Methods.FirstOrDefault(method =>
-                GetCountName.HasName(method.Name, StringComparison.CurrentCultureIgnoreCase));
-
-            if (_getCountMethod != null)
-            {
-                var countError = new BilingualString(
-                    "Метод " + GetCountName.Russian + " должен быть функцией без параметров",
-                    "Method " + GetCountName.English + "() must be a function without parameters");
-
-                if (!_getCountMethod.IsFunction() || _getCountMethod.GetBslParameters().Length != 0)
-                {
-                    throw new RuntimeException(countError);
-                }
-            }
+            var methods = module.GetInterface<IterableBslInterface>();
+            _getIteratorMethod = methods.GetIteratorMethod;
+            _getCountMethod = methods.GetCountMethod;
         }
 
         public int Count()
@@ -73,8 +38,8 @@ namespace ScriptEngine.Machine.Contexts
             if (_getCountMethod == null)
                 throw new RuntimeException(
                     new BilingualString(
-                        "Класс не поддерживает получение количества элементов, т.к. в нем отсутствует метод "+GetCountName.Russian+"()",
-                        "Class doesn't support items counting, because method "+GetCountName.English+"() is not defined")
+                        "Класс не поддерживает получение количества элементов, т.к. в нем отсутствует метод "+GetCountTerms.Russian+"()",
+                        "Class doesn't support items counting, because method "+GetCountTerms.English+"() is not defined")
                 );
 
             CallAsFunction(_getCountMethod.DispatchId, Array.Empty<IValue>(), out var ret);

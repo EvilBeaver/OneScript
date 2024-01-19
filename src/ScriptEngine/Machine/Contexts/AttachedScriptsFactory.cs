@@ -17,6 +17,7 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Types;
+using ScriptEngine.Machine.Interfaces;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -215,7 +216,7 @@ namespace ScriptEngine.Machine.Contexts
 
             var type = context.TypeManager.GetTypeByName(context.TypeName);
             UserScriptContextInstance newObj;
-            if (module.ModuleAttributes.Any(a => a.NameMatches(IterableAnnotationProvider.Names)))
+            if (module.GetInterface<IterableBslInterface>() != null)
             {
                 newObj = new UserIterableContextInstance(module, type, arguments);
             }

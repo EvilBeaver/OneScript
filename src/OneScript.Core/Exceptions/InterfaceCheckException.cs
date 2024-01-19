@@ -5,17 +5,19 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using OneScript.Localization;
 
-namespace ScriptEngine.Machine.Contexts
+namespace OneScript.Exceptions
 {
-    public class IterableAnnotationProvider : IPredefinedAnnotationProvider
+    public class InterfaceCheckException : RuntimeException
     {
-        public static readonly BilingualString Names = new BilingualString("Обходимое", "Iterable");
-        
-        public BilingualString GetNames()
+        public InterfaceCheckException(BilingualString message, Exception innerException) : base(message, innerException)
         {
-            return Names;
+        }
+
+        public InterfaceCheckException(BilingualString message) : base(message)
+        {
         }
     }
 }
