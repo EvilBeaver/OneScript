@@ -18,7 +18,7 @@ namespace ScriptEngine.Machine.Interfaces
 {
     internal class IterableBslInterfaceChecker : IPredefinedInterfaceChecker
     {
-        private static readonly BilingualString IterableAnnotation = new BilingualString("Обходимое", "Iterable"); 
+        public static readonly BilingualString IterableAnnotation = new BilingualString("Обходимое", "Iterable"); 
         
         public IEnumerable<PredefinedInterfaceRegistration> GetRegistrations()
         {

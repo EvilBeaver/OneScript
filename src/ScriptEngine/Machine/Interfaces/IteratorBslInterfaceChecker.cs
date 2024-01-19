@@ -18,7 +18,7 @@ namespace ScriptEngine.Machine.Interfaces
 {
     internal class IteratorBslInterfaceChecker : IPredefinedInterfaceChecker
     {
-        private static readonly BilingualString IterableAnnotation = new BilingualString("Итератор", "Iterator");
+        public static readonly BilingualString IterableAnnotation = new BilingualString("Итератор", "Iterator");
         
         private static readonly BilingualString
             MoveNextMethodName = new BilingualString("ВыбратьСледующий", "MoveNext");

@@ -6,19 +6,21 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Contexts;
+using OneScript.DependencyInjection;
 using OneScript.Execution;
-using ScriptEngine.Hosting;
+using OneScript.Language.SyntaxAnalysis;
 
 namespace ScriptEngine.Machine.Interfaces
 {
     public static class InterfaceRegistrationExtensions
     {
-        public static IEngineBuilder EnablePredefinedIterables(this IEngineBuilder builder)
+        public static IServiceDefinitions EnablePredefinedIterables(this IServiceDefinitions services)
         {
-            builder.Services.RegisterEnumerable<IPredefinedInterfaceChecker, IterableBslInterfaceChecker>();
-            builder.Services.RegisterEnumerable<IPredefinedInterfaceChecker, IteratorBslInterfaceChecker>();
+            services.RegisterEnumerable<IPredefinedInterfaceChecker, IterableBslInterfaceChecker>();
+            services.RegisterEnumerable<IPredefinedInterfaceChecker, IteratorBslInterfaceChecker>();
+            services.RegisterEnumerable<IDirectiveHandler, IterablesModuleAnnotationsHandler>();
 
-            return builder;
+            return services;
         }
 
         public static void AddInterface<T>(this IExecutableModule module, T interfaceData) where T : class
