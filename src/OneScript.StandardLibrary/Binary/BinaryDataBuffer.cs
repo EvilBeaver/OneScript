@@ -11,6 +11,7 @@ using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -29,21 +30,15 @@ namespace OneScript.StandardLibrary.Binary
     [ContextClass("БуферДвоичныхДанных", "BinaryDataBuffer")]
     public class BinaryDataBuffer : AutoCollectionContext<BinaryDataBuffer, IValue>
     {
-        private bool _readOnly;
-        private readonly byte[] _buffer;
-
         public BinaryDataBuffer(byte[] buffer, ByteOrderEnum byteOrder = ByteOrderEnum.LittleEndian)
         {
-            _buffer = buffer;
+            Bytes = buffer;
             ByteOrder = byteOrder;
         }
     
         // для операций с содержимым буфера внутри 1Script
         //
-        public byte[] Bytes
-        {
-            get { return _buffer; }
-        }
+        public byte[] Bytes { get; }
 
         /// <param name="size">
         /// Размер буфера в байтах. </param>
@@ -75,7 +70,7 @@ namespace OneScript.StandardLibrary.Binary
                 throw RuntimeException.InvalidArgumentValue();
 
             var idx = (int)index.AsNumber();
-            _buffer[idx] = (byte) value;
+            Bytes[idx] = (byte) value;
         }
 
         /// <summary>
@@ -92,7 +87,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <value>Число (Number)</value>
         [ContextProperty("Размер", "Size")]
-        public long Size => _buffer.LongLength;
+        public long Size => Bytes.LongLength;
 
         /// <summary>
         /// 
@@ -100,11 +95,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <value>Булево (Boolean)</value>
         [ContextProperty("ТолькоЧтение", "ReadOnly")]
-        public bool ReadOnly
-        {
-            get { return _readOnly; }
-
-        }
+        public bool ReadOnly { get; private set; }
 
         /// <summary>
         /// 
@@ -124,9 +115,9 @@ namespace OneScript.StandardLibrary.Binary
             ThrowIfReadonly();
 
             if (number == 0)
-                Array.Copy(bytes._buffer, 0, _buffer, position, bytes._buffer.Length);
+                Array.Copy(bytes.Bytes, 0, Bytes, position, bytes.Bytes.Length);
             else
-                Array.Copy(bytes._buffer, 0, _buffer, position, number);
+                Array.Copy(bytes.Bytes, 0, Bytes, position, number);
         }
 
         private byte[] GetBytes<T>(T value, Converter<T, byte[]> leConverter, Converter<T, byte[]> beConverter, IValue byteOrder = null)
@@ -158,7 +149,7 @@ namespace OneScript.StandardLibrary.Binary
         {
             for (int i = 0; i < bytes.Length; i++)
             {
-                _buffer[position + i] = bytes[i];
+                Bytes[position + i] = bytes[i];
             }
         }
 
@@ -258,9 +249,9 @@ namespace OneScript.StandardLibrary.Binary
 
             try
             {
-                var bytesToCopy = (number == 0 ? buffer._buffer.Length : number);
+                var bytesToCopy = (number == 0 ? buffer.Bytes.Length : number);
                 for (int i = 0; i < bytesToCopy; i++)
-                    _buffer[i + position] = op(_buffer[i + position], buffer._buffer[i]);
+                    Bytes[i + position] = op(Bytes[i + position], buffer.Bytes[i]);
             }
             catch (IndexOutOfRangeException)
             {
@@ -363,7 +354,7 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("Перевернуть", "Reverse")]
         public BinaryDataBuffer Reverse()
         {
-            var bytes = _buffer.Reverse().ToArray();
+            var bytes = Bytes.Reverse().ToArray();
             return new BinaryDataBuffer(bytes, ByteOrder);
         }
 
@@ -384,7 +375,7 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("Получить", "Get")]
         public int Get(int position)
         {
-            return _buffer[position];
+            return Bytes[position];
         }
 
 
@@ -427,7 +418,7 @@ namespace OneScript.StandardLibrary.Binary
         public BinaryDataBuffer Read(int position, int number)
         {
             var data = new byte[number];
-            Array.Copy(_buffer, position, data, 0, number);
+            Array.Copy(Bytes, position, data, 0, number);
             return new BinaryDataBuffer(data, ByteOrder);
         }
     
@@ -453,7 +444,7 @@ namespace OneScript.StandardLibrary.Binary
             }
 
             var converter = workByteOrder == ByteOrderEnum.BigEndian ? beConverter : leConverter;
-            return converter(_buffer, position);
+            return converter(Bytes, position);
         }
 
         /// <summary>
@@ -540,10 +531,112 @@ namespace OneScript.StandardLibrary.Binary
         /// <returns name="Array"/>
         ///
         [ContextMethod("Разделить", "Split")]
-        public IValue Split(IValue separator)
+        public ArrayImpl Split(IValue separator)
         {
-            throw new NotImplementedException();
+            var buffers = ParseParam(separator);
+
+            // Функция поиска требует, чтобы буферы были в порядке убывания размера
+            buffers.Sort((a, b) => b.Bytes.LongLength.CompareTo(a.Bytes.LongLength));
+            return SplitBuffer(buffers.ToArray());
         }
+
+        private static List<BinaryDataBuffer> ParseParam(IValue separator)
+        {
+            var rawSeparator = separator?.GetRawValue();
+            switch (rawSeparator)
+            {
+                case BinaryDataBuffer buffer:
+                    return new List<BinaryDataBuffer> { CheckedBuffer(buffer) };
+
+                case ArrayImpl array:
+                {
+                    var buffers = new List<BinaryDataBuffer>();
+
+                    foreach (var element in array)
+                    {
+                        buffers.AddRange(ParseParam(element));
+                    }
+
+                    return buffers;
+                }
+
+                default:
+                    throw RuntimeException.InvalidArgumentType();
+            }
+        }
+
+        private static BinaryDataBuffer CheckedBuffer(BinaryDataBuffer buffer)
+        {
+            if (buffer.Size == 0)
+            {
+                throw RuntimeException.InvalidArgumentValue();
+            }
+
+            return buffer;
+        }
+
+        private ArrayImpl SplitBuffer(BinaryDataBuffer[] splitter)
+        {
+            var result = new List<BinaryDataBuffer>();
+            long start = 0;
+            var foundPosition = FindFirst(splitter, start);
+            while (foundPosition.pos != -1)
+            {
+                var length = foundPosition.pos - start;
+                result.Add(new BinaryDataBuffer(Copy(start, length), ByteOrder));
+                start = foundPosition.pos + foundPosition.buffer.Size;
+                foundPosition = FindFirst(splitter, start);
+            }
+
+            // хвостовой элемент
+            result.Add(new BinaryDataBuffer(Copy(start, Bytes.LongLength - start)));
+            return new ArrayImpl(result);
+        }
+
+        /// <summary>
+        /// Ищет ближайшее вхождение любого из буферов. Если на одной позиции находятся два и более буфера, берется бОльший.
+        /// </summary>
+        /// <param name="buffers">Массив искомых буферов</param>
+        /// <param name="start">Начальная позиция поиска</param>
+        /// <returns>Буфер и позиция или null, если нет вхождений</returns>
+        private (BinaryDataBuffer buffer, long pos) FindFirst(BinaryDataBuffer[] buffers, long start)
+        {
+            var maxI = Size - buffers[buffers.Length - 1].Size;
+            for (var i = start; i < maxI; i++)
+            {
+                foreach (var expectedBuffer in buffers)
+                {
+                    if (SubsequenceEquals(Bytes, i, expectedBuffer.Bytes))
+                    {
+                        return (expectedBuffer, i);
+                    }
+                }
+            }
+
+            return (null, -1);
+        }
+
+        private byte[] Copy(long start, long length)
+        {
+            if (length == 0) return Array.Empty<byte>();
+            var partition = new byte[length];
+            Array.Copy(Bytes, start, partition, 0, length);
+            return partition;
+        }
+
+        private static bool SubsequenceEquals(byte[] sequence, long start, byte[] subsequence)
+        {
+            for (long j = 0; j < subsequence.LongLength; j++)
+            {
+                if (subsequence[j] != sequence[start + j])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
 
         /// <summary>
         /// 
@@ -556,8 +649,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("Скопировать", "Copy")]
         public BinaryDataBuffer Copy()
         {
-            byte[] copy = new byte[_buffer.Length];
-            Array.Copy(_buffer, copy, _buffer.Length);
+            byte[] copy = new byte[Bytes.Length];
+            Array.Copy(Bytes, copy, Bytes.Length);
             return new BinaryDataBuffer(copy, ByteOrder);
         }
 
@@ -575,11 +668,11 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("Соединить", "Concat")]
         public BinaryDataBuffer Concat(BinaryDataBuffer buffer)
         {
-            var source = buffer._buffer;
-            var totalLength = _buffer.Length + source.Length;
+            var source = buffer.Bytes;
+            var totalLength = Bytes.Length + source.Length;
             var joinedArray = new byte[totalLength];
-            Array.Copy(_buffer, joinedArray, _buffer.Length);
-            Array.Copy(source, 0, joinedArray, _buffer.Length, source.Length);
+            Array.Copy(Bytes, joinedArray, Bytes.Length);
+            Array.Copy(source, 0, joinedArray, Bytes.Length, source.Length);
 
             return new BinaryDataBuffer(joinedArray, ByteOrder);
         }
@@ -600,7 +693,7 @@ namespace OneScript.StandardLibrary.Binary
         {
             ThrowIfReadonly();
 
-            _buffer[position] = (byte)AsUnsignedLong(value, byte.MaxValue);
+            Bytes[position] = (byte)AsUnsignedLong(value, byte.MaxValue);
         }
 
 
@@ -617,25 +710,25 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("УстановитьТолькоЧтение", "SetReadOnly")]
         public void SetReadOnly()
         {
-            _readOnly = true;
+            ReadOnly = true;
         }
 
         public override int Count()
         {
-            return _buffer.Length;
+            return Bytes.Length;
         }
 
         public override IEnumerator<IValue> GetEnumerator()
         {
-            for (long i = 0; i < _buffer.LongLength; i++)
+            for (long i = 0; i < Bytes.LongLength; i++)
             {
-                yield return ValueFactory.Create(_buffer[i]);
+                yield return ValueFactory.Create(Bytes[i]);
             }
         }
 
         public void ThrowIfReadonly()
         {
-            if (_readOnly)
+            if (ReadOnly)
                 throw new RuntimeException("Буфер находится в режиме \"Только чтение\"");
         }
     }
