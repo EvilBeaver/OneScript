@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
@@ -27,6 +28,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         private readonly List<ValueTableColumn> _columns = new List<ValueTableColumn>();
         private readonly StringComparer _namesComparer = StringComparer.OrdinalIgnoreCase;
         private readonly ValueTable _owner;
+        private int maxColumnId = 0;
 
         private static readonly TypeDescriptor _objectType = typeof(ValueTableColumnCollection).GetTypeFromClassMarkup();
 
@@ -50,7 +52,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             if (FindColumnByName(name) != null)
                 throw new RuntimeException("Неверное имя колонки " + name);
 
-            var column = new ValueTableColumn(this, name, title, type, width);
+            var column = new ValueTableColumn(this, ++maxColumnId, name, title, type, width);
             _columns.Add(column);
 
             return column;
@@ -71,7 +73,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             if (FindColumnByName(name) != null)
                 throw new RuntimeException("Неверное имя колонки " + name);
 
-            ValueTableColumn column = new ValueTableColumn(this, name, title, type, width);
+            ValueTableColumn column = new ValueTableColumn(this, ++maxColumnId, name, title, type, width);
             _columns.Insert(index, column);
 
             return column;
@@ -125,8 +127,24 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         {
             column = column.GetRawValue();
             var vtColumn = GetColumnByIIndex(column);
-            _owner.ForEach(x=>x.OnOwnerColumnRemoval(vtColumn));
+            _owner.ForEach((ValueTableRow x)=>
+            {
+                x.OnOwnerColumnRemoval(vtColumn);
+            });
+            _owner.Indexes.FieldRemoved(column);
             _columns.Remove(vtColumn);
+        }
+
+        /// <summary>
+        /// Удаляет все колонки
+        /// </summary>
+        [ContextMethod("Очистить", "Clear")]
+        public void Clear()
+        {
+            while (_columns.Any())
+            {
+                Delete(_columns[0]);
+            }
         }
 
         public ValueTableColumn FindColumnByName(string name)
