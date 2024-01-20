@@ -255,9 +255,10 @@ namespace ScriptEngine.Machine.Contexts
 
         void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
         {
-            var propVariables = this.GetProperties()
+            var propVariables = this.GetProperties(true)
                 .Where(x => x.Identifier != "ЭтотОбъект")
-                .Select(x => Variable.Create(GetPropValue(x.Index), x.Identifier));
+                .OrderBy(x => x.IsExport? 0:1) // Сначала публичные
+                .Select(x => Variable.Create(GetPropValue(x.Index), x.IsExport? x.Identifier : "$" + x.Identifier));
             
             visitor.ShowCustom(propVariables.ToList());
         }
