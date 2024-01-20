@@ -287,16 +287,15 @@ namespace ScriptEngine.Compiler
             methodInfo.SetRuntimeParameters(entryPoint, GetVariableNames(methodCtx));
             
             SymbolBinding binding;
-            if (!_ctx.TryFindMethodBinding(signature.MethodName, out _))
+            try
             {
                 binding = _ctx.DefineMethod(methodInfo.ToSymbol());
             }
-            else
+            catch (CompilerException)
             {
                 AddError(LocalizedErrors.DuplicateMethodDefinition(signature.MethodName), signature.Location);
                 binding = default;
             }
-
             _module.MethodRefs.Add(binding);
             _module.Methods.Add(methodInfo);
         }

@@ -263,28 +263,28 @@ namespace ScriptEngine.Machine.Contexts
 
         private bool TryFindMethod(string name, out RcwMethodMetadata md)
         {
-            if (_methods.Names.TryGetValue(name, out md))
+            if (_methods.ByName.TryGetValue(name, out md))
                 return true;
 
             if (!DispatchUtility.TryGetDispId(Instance, name, out var dispatchId))
                 return false;
             
             _methods.Add(new RcwMethodMetadata(name, dispatchId, null));
-            md = _methods.DispatchIds[dispatchId];
+            md = _methods.ByDispatchId[dispatchId];
             
             return true;
         }
 
         private bool TryFindProperty(string name, out RcwPropertyMetadata md)
         {
-            if (_props.Names.TryGetValue(name, out md))
+            if (_props.ByName.TryGetValue(name, out md))
                 return true;
 
             if (!DispatchUtility.TryGetDispId(Instance, name, out var dispatchId))
                 return false;
             
             _props.Add(new RcwPropertyMetadata(name, dispatchId));
-            md = _props.DispatchIds[dispatchId];
+            md = _props.ByDispatchId[dispatchId];
             
             return true;
         }

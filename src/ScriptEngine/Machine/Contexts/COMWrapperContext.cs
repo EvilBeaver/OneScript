@@ -316,7 +316,6 @@ namespace ScriptEngine.Machine.Contexts
             {
                 GC.SuppressFinalize(this);
             }
-
         }
 
         public void Dispose()
