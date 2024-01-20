@@ -351,46 +351,26 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Свернуть", "GroupBy")]
         public void GroupBy(string groupColumnNames, string aggregateColumnNames = null)
         {
-            List<ValueTableColumn> GroupColumns = GetProcessingColumnList(groupColumnNames, true);
-            List<ValueTableColumn> AggregateColumns = GetProcessingColumnList(aggregateColumnNames, true);
+            var GroupColumns = GetProcessingColumnList(groupColumnNames, true);
+            var AggregateColumns = GetProcessingColumnList(aggregateColumnNames, true);
 
-            foreach (ValueTableColumn group_column in GroupColumns )
-                if ( AggregateColumns.Find(x => x.Name==group_column.Name)!=null )
-                    throw ColumnsMixedException(group_column.Name);
+            CheckMixedColumns(GroupColumns, AggregateColumns);
 
             var uniqueRows = new Dictionary<ValueTableRow, ValueTableRow>(new RowsByColumnsEqComparer(GroupColumns) );
             int new_idx = 0;
 
-            foreach (ValueTableRow row in _rows)
+            foreach (var row in _rows)
             {
-                if (uniqueRows.ContainsKey(row))
+                if (!uniqueRows.TryGetValue(row, out var destination))
                 {
-                    var old_row = uniqueRows[row];
-
-                    foreach (var Column in AggregateColumns)
-                    {
-                        var current = row.Get(Column);
-                        if (current.SystemType == BasicTypes.Number)
-                        {
-                            var sum = old_row.Get(Column).AsNumber() + current.AsNumber();
-                            old_row.Set(Column, ValueFactory.Create(sum));
-                        }
-                    }
+                    destination = _rows[new_idx++];
+                    CopyRowData(row, destination, GroupColumns);
+                    CopyRowData(row, destination, AggregateColumns);
+                    uniqueRows.Add(destination, destination);
                 }
                 else
                 {
-                    var new_row = _rows[new_idx++];
-
-                    foreach (var Column in GroupColumns)
-                        new_row.Set(Column, row.Get(Column));
-
-                    foreach (var Column in AggregateColumns)
-                        if (row.Get(Column).SystemType != BasicTypes.Number)
-                            new_row.Set(Column, ValueFactory.Create(0));
-                        else
-                            new_row.Set(Column, row.Get(Column));
-
-                    uniqueRows.Add(new_row, new_row);
+                    AppendRowData(row, destination, AggregateColumns);
                 }
             }
 
@@ -399,12 +379,42 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             int i = 0;
             while (i < Columns.Count())
             {
-                ValueTableColumn Column = Columns.FindColumnByIndex(i);
-                if (GroupColumns.IndexOf(Column) == -1 && AggregateColumns.IndexOf(Column) == -1)
-                    Columns.Delete(Column);
+                var column = Columns.FindColumnByIndex(i);
+                if (GroupColumns.IndexOf(column) == -1 && AggregateColumns.IndexOf(column) == -1)
+                    Columns.Delete(column);
                 else
                     ++i;
             }
+        }
+
+        private void CheckMixedColumns(List<ValueTableColumn> groupColumns, List<ValueTableColumn> aggregateColumns)
+        {
+            foreach (var groupColumn in groupColumns )
+                if ( aggregateColumns.Find(x => x.Name==groupColumn.Name)!=null )
+                    throw ColumnsMixedException(groupColumn.Name);
+        }
+
+        private void CopyRowData(ValueTableRow source, ValueTableRow dest, IEnumerable<ValueTableColumn> columns)
+        {
+            foreach (var column in columns)
+                dest.Set(column, source.Get(column));
+        }
+
+        private void AppendRowData(ValueTableRow source, ValueTableRow dest, IEnumerable<ValueTableColumn> columns)
+        {
+            foreach (var column in columns)
+            {
+                var value1 = GetNumeric(source, column);
+                var value2 = GetNumeric(dest, column);
+                dest.Set(column, ValueFactory.Add(value1, value2));
+            }
+        }
+
+        private IValue GetNumeric(ValueTableRow row, ValueTableColumn column)
+        {
+            var value = row.Get(column);
+            if (value.SystemType == BasicTypes.Number) return value;
+            return ValueFactory.Create(0);
         }
 
         private class RowsByColumnsEqComparer : IEqualityComparer<ValueTableRow>
