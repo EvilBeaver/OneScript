@@ -146,7 +146,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                     var field = source.GetField(fieldName.Trim());
                     if (field == null)
                     {
-                        throw RuntimeException.InvalidArgumentValue();
+                        throw new ColumnNotFoundException(fieldName);
                     }
                     fields.Add(field);
                 }
