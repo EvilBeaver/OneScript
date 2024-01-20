@@ -102,7 +102,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         {
             foreach (var index in _indexes)
             {
-                index.Rebuild();
+                index.Clear();
             }
         }
 

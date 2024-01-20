@@ -89,6 +89,11 @@ namespace OneScript.StandardLibrary.Collections.Indexes
             }
         }
 
+        internal void Clear()
+        {
+            _data.Clear();
+        }
+
         internal void Rebuild()
         {
             _data.Clear();
