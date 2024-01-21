@@ -21,7 +21,7 @@ namespace ScriptEngine.Machine.Interfaces
         public static readonly BilingualString IterableAnnotation = new BilingualString("Итератор", "Iterator");
         
         private static readonly BilingualString
-            MoveNextMethodName = new BilingualString("ВыбратьСледующий", "MoveNext");
+            MoveNextMethodName = new BilingualString("Следующий", "Next");
         
         private static readonly BilingualString
             GetCurrentMethodName = new BilingualString("ТекущийЭлемент", "CurrentItem");
