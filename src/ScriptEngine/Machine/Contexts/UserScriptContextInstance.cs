@@ -101,7 +101,7 @@ namespace ScriptEngine.Machine.Contexts
                 _asStringOverride = base.ConvertToString;
             else
             {
-                var signature = GetMethodInfo(methId);
+                var signature = GetMethodInfo(GetOwnMethodCount()+methId);
                 if (signature.GetParameters().Length != 2)
                     throw new RuntimeException("Обработчик получения представления должен иметь 2 параметра");
 
