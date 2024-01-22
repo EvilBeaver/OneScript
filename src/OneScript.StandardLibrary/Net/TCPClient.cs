@@ -163,6 +163,16 @@ namespace OneScript.StandardLibrary.Net
             set { _client.GetStream().ReadTimeout = value; }
         }
 
+        /// <summary>
+        /// Флаг ожидания наполнения буфера при приеме/отправке данных. По умолчанию - Ложь
+        /// </summary>
+        [ContextProperty("НеОткладывать", "NoDelay")]
+        public bool NoDelay
+        {
+            get { return _client.NoDelay; }
+            set { _client.NoDelay = value; }
+        }
+
         private static Encoding GetEncodingByName(string encoding)
         {
             Encoding enc;
