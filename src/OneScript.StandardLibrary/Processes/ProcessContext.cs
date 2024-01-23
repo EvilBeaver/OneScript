@@ -279,7 +279,7 @@ namespace OneScript.StandardLibrary.Processes
             // Поведение под MacOS и остальные системы различается
             // Страдает обратная совместимость и неясны до конца синтаксисы.
             // См. https://github.com/EvilBeaver/OneScript/issues/1299
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 sInfo.Arguments = argsPosition >= cmdLine.Length ? "" : cmdLine.Substring(argsPosition);
             }
