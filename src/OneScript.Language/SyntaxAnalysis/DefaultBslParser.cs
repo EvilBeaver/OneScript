@@ -27,6 +27,7 @@ namespace OneScript.Language.SyntaxAnalysis
         private bool _isMethodsDefined;
         private bool _isStatementsDefined;
         private bool _isInFunctionScope;
+        private bool _isInAsyncMethod;
         private bool _lastDereferenceIsWritable;
 
         private readonly Stack<Token[]> _tokenStack = new Stack<Token[]>();
@@ -286,7 +287,8 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             if (_lastExtractedLexem.Type != LexemType.Annotation 
                 && _lastExtractedLexem.Token != Token.Procedure 
-                && _lastExtractedLexem.Token != Token.Function)
+                && _lastExtractedLexem.Token != Token.Function
+                && _lastExtractedLexem.Token != Token.Async)
             {
                 return;
             }
@@ -301,7 +303,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 while (true)
                 {
                     BuildAnnotations();
-                    if (_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function)
+                    if (IsStartOfMethod(_lastExtractedLexem))
                     {
                         if (!sectionExist)
                         {
@@ -324,14 +326,26 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
+        private static bool IsStartOfMethod(in Lexem lex)
+        {
+            return lex.Token == Token.Async || lex.Token == Token.Procedure || lex.Token == Token.Function;
+        }
+        
         private void BuildMethod()
         {
-            Debug.Assert(_lastExtractedLexem.Token == Token.Procedure || _lastExtractedLexem.Token == Token.Function);
+            Debug.Assert(IsStartOfMethod(_lastExtractedLexem));
 
             var method = _nodeContext.AddChild(new MethodNode());
             
             ApplyAnnotations(method);
             PushContext(method);
+            if (_lastExtractedLexem.Token == Token.Async)
+            {
+                method.IsAsync = true;
+                _isInAsyncMethod = true;
+                NextLexem();
+            }
+            
             try
             {
                 BuildMethodSignature();
@@ -345,6 +359,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 _isInFunctionScope = false;
                 _inMethodScope = false;
                 _isStatementsDefined = false;
+                _isInAsyncMethod = false;
                 PopContext();
             }
         }
@@ -382,9 +397,8 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void BuildMethodSignature()
         {
-            var isFunction = _lastExtractedLexem.Token == Token.Function;
-
             var signature = _nodeContext.AddChild(new MethodSignatureNode(_lastExtractedLexem));
+            var isFunction = _lastExtractedLexem.Token == Token.Function;
             CreateChild(signature, isFunction? NodeKind.Function : NodeKind.Procedure, _lastExtractedLexem);
             _isInFunctionScope = isFunction;
             NextLexem();
@@ -471,7 +485,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 NextLexem();
             }
 
-            if (LanguageDef.IsLiteral(ref _lastExtractedLexem))
+            if (LanguageDef.IsLiteral(_lastExtractedLexem))
             {
                 string literalText = _lastExtractedLexem.Content;
                 if (hasSign)
@@ -607,6 +621,12 @@ namespace OneScript.Language.SyntaxAnalysis
                     continue;
                 }
 
+                if (_lastExtractedLexem.Type == LexemType.Label)
+                {
+                    DefineLabel(_lastExtractedLexem);
+                    continue;
+                }
+                
                 if (_lastExtractedLexem.Type != LexemType.Identifier && _lastExtractedLexem.Token != Token.EndOfText)
                 {
                     AddError(LocalizedErrors.UnexpectedOperation());
@@ -626,6 +646,13 @@ namespace OneScript.Language.SyntaxAnalysis
                 NextLexem();
             }
             PopStructureToken();
+        }
+
+        private void DefineLabel(Lexem label)
+        {
+            var node = new LabelNode(label);
+            _nodeContext.AddChild(node);
+            NextLexem();
         }
 
         #region Statements
@@ -676,11 +703,75 @@ namespace OneScript.Language.SyntaxAnalysis
                 case Token.AddHandler:
                 case Token.RemoveHandler:
                     BuildEventHandlerOperation(_lastExtractedLexem.Token);
-                    break;        
+                    break;
+                case Token.Await:
+                    BuildGlobalCallAwaitOperator();
+                    break;
+                case Token.Goto:
+                    BuildGotoOperator();
+                    break;
                 default:
                     var expected = _tokenStack.Peek();
                     AddError(LocalizedErrors.TokenExpected(expected));
                     break;
+            }
+        }
+
+        private void BuildGlobalCallAwaitOperator()
+        {
+            Debug.Assert(_lastExtractedLexem.Token == Token.Await);
+            
+            _nodeContext.AddChild(TerminalNode());
+        }
+
+
+        private BslSyntaxNode BuildExpressionAwaitOperator(Lexem lexem)
+        {
+            Debug.Assert(_lastExtractedLexem.Token == Token.Await);
+            
+            NextLexem();
+
+            var argument = SelectTerminalNode(_lastExtractedLexem, false);
+            if (argument != default)
+            {
+                CheckAsyncMethod();
+                var awaitOperator = new UnaryOperationNode(lexem);
+                awaitOperator.AddChild(argument);
+                return awaitOperator;
+            }
+            else if (!_isInAsyncMethod)
+            {
+                // это просто переменная Ждать или метод Ждать
+                return CallOrVariable(lexem);
+            }
+            else
+            {
+                AddError(LocalizedErrors.ExpressionSyntax());
+                return new ErrorTerminalNode(_lastExtractedLexem);
+            }
+        }
+
+        private void BuildGotoOperator()
+        {
+            var gotoNode = new NonTerminalNode(NodeKind.Goto, _lastExtractedLexem);
+            NextLexem();
+
+            if (_lastExtractedLexem.Type != LexemType.LabelRef)
+            {
+                AddError(LocalizedErrors.LabelNameExpected());
+            }
+            
+            gotoNode.AddChild(new LabelNode(_lastExtractedLexem));
+            NextLexem();
+
+            _nodeContext.AddChild(gotoNode);
+        }
+        
+        private void CheckAsyncMethod()
+        {
+            if (!_isInAsyncMethod)
+            {
+                AddError(LocalizedErrors.AwaitMustBeInAsyncMethod(), false);
             }
         }
 
@@ -1019,10 +1110,15 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private BslSyntaxNode BuildGlobalCall(Lexem identifier)
         {
-            var target = NodeBuilder.CreateNode(NodeKind.Identifier, identifier);
             NextLexem();
 
-            if (_lastExtractedLexem.Token != Token.OpenPar) 
+            return CallOrVariable(identifier);
+        }
+
+        private BslSyntaxNode CallOrVariable(Lexem identifier)
+        {
+            var target = NodeBuilder.CreateNode(NodeKind.Identifier, identifier);
+            if (_lastExtractedLexem.Token != Token.OpenPar)
             {
                 _lastDereferenceIsWritable = true; // одиночный идентификатор
             }
@@ -1097,7 +1193,6 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void BuildLastDefaultArg(NonTerminalNode argsList)
         {
             NextLexem();
@@ -1253,9 +1348,18 @@ namespace OneScript.Language.SyntaxAnalysis
             else
             {
                 if (_lastExtractedLexem.Token == Token.EndOfText)
+                {
                     AddError(LocalizedErrors.UnexpectedEof());
+                }
                 else
-                    AddError(LocalizedErrors.ExpressionSyntax());
+                {
+                    SkipToNextStatement(new []{stopToken});
+                    AddError(LocalizedErrors.ExpressionSyntax(), false);
+                    if (_lastExtractedLexem.Token == stopToken)
+                    {
+                        NextLexem();
+                    }
+                }
 
                 node = default;
             }
@@ -1276,7 +1380,6 @@ namespace OneScript.Language.SyntaxAnalysis
 
         #region Operators
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static BslSyntaxNode MakeBinaryOperationNode(BslSyntaxNode firstArg, BslSyntaxNode secondArg, in Lexem lexem)
         {
             var node = new BinaryOperationNode(lexem);
@@ -1285,7 +1388,6 @@ namespace OneScript.Language.SyntaxAnalysis
             return node;
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private BslSyntaxNode BuildParenthesis()
         {
             if (_lastExtractedLexem.Token == Token.OpenPar)
@@ -1308,33 +1410,44 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private BslSyntaxNode TerminalNode()
         {
-            BslSyntaxNode node = default;
-            if (LanguageDef.IsLiteral(ref _lastExtractedLexem))
-            {
-                node = NodeBuilder.CreateNode(NodeKind.Constant, _lastExtractedLexem);
-                NextLexem();
-            }
-            else if (LanguageDef.IsUserSymbol(in _lastExtractedLexem))
-            {
-                node = BuildGlobalCall(_lastExtractedLexem);
-            }
-            else if(_lastExtractedLexem.Token == Token.NewObject)
-            {
-                node = BuildNewObjectCreation();
-            }
-            else if (_lastExtractedLexem.Token == Token.Question)
-            {
-                node = BuildQuestionOperator();
-            }
-            else if (LanguageDef.IsBuiltInFunction(_lastExtractedLexem.Token))
-            {
-                node = BuildGlobalCall(_lastExtractedLexem);
-            }
-            else
+            BslSyntaxNode node = SelectTerminalNode(_lastExtractedLexem, true);
+            if (node == default)
             {
                 AddError(LocalizedErrors.ExpressionSyntax());
             }
 
+            return node;
+        }
+        
+        private BslSyntaxNode SelectTerminalNode(in Lexem currentLexem, bool supportAwait)
+        {
+            BslSyntaxNode node = default;
+            if (LanguageDef.IsLiteral(currentLexem))
+            {
+                node = NodeBuilder.CreateNode(NodeKind.Constant, currentLexem);
+                NextLexem();
+            }
+            else if (LanguageDef.IsUserSymbol(currentLexem))
+            {
+                node = BuildGlobalCall(currentLexem);
+            }
+            else if(currentLexem.Token == Token.NewObject)
+            {
+                node = BuildNewObjectCreation();
+            }
+            else if (currentLexem.Token == Token.Question)
+            {
+                node = BuildQuestionOperator();
+            }
+            else if (LanguageDef.IsBuiltInFunction(currentLexem.Token))
+            {
+                node = BuildGlobalCall(currentLexem);
+            }
+            else if (supportAwait && currentLexem.Token == Token.Await)
+            {
+                node = BuildExpressionAwaitOperator(currentLexem);
+            }
+            
             return node;
         }
 
@@ -1486,8 +1599,9 @@ namespace OneScript.Language.SyntaxAnalysis
             }
         }
 
-        #endregion  
-        
+        #endregion
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void NextLexem()
         {
             _lastExtractedLexem = _lexer.NextLexem();

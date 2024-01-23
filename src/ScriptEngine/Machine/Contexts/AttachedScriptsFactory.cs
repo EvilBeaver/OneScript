@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using OneScript.Sources;
 using System.Security.Cryptography;
@@ -16,6 +17,7 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Types;
+using ScriptEngine.Machine.Interfaces;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -212,9 +214,17 @@ namespace ScriptEngine.Machine.Contexts
         {
             var module = _instance._loadedModules[context.TypeName];
 
-            var type = context.TypeManager.GetTypeByName(context.TypeName); 
-            
-            var newObj = new UserScriptContextInstance(module, type, arguments);
+            var type = context.TypeManager.GetTypeByName(context.TypeName);
+            UserScriptContextInstance newObj;
+            if (module.GetInterface<IterableBslInterface>() != null)
+            {
+                newObj = new UserIterableContextInstance(module, type, arguments);
+            }
+            else
+            {
+                newObj = new UserScriptContextInstance(module, type, arguments);
+            }
+
             newObj.InitOwnData();
             newObj.Initialize();
 

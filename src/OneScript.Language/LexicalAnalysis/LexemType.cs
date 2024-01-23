@@ -22,6 +22,8 @@ namespace OneScript.Language.LexicalAnalysis
         PreprocessorDirective,
         Annotation,
         Comment,
+        Label,
+        LabelRef,
         EndOfText
     }
 }

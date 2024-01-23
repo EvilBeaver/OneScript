@@ -84,18 +84,20 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         public void Set(int index, IValue value)
         {
             var C = Owner().Columns.FindColumnByIndex(index);
-            _data[C] = C.ValueType.AdjustValue(value);
+            Set(C, value);
         }
 
         public void Set(IValue index, IValue value)
         {
             var C = Owner().Columns.GetColumnByIIndex(index);
-            _data[C] = C.ValueType.AdjustValue(value);
+            Set(C, value);
         }
 
         public void Set(ValueTableColumn column, IValue value)
         {
+            Owner().Indexes.ElementRemoved(this);
             _data[column] = column.ValueType.AdjustValue(value);
+            Owner().Indexes.ElementAdded(this);
         }
 
         public void OnOwnerColumnRemoval(IValue column)
@@ -105,7 +107,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public IEnumerator<IValue> GetEnumerator()
         {
-            foreach (ValueTableColumn item in Owner().Columns)
+            foreach (var item in Owner().Columns)
             {
                 yield return TryValue(item);
             }
@@ -143,14 +145,14 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public override IValue GetPropValue(int propNum)
         {
-            ValueTableColumn C = Owner().Columns.FindColumnByIndex(propNum);
+            var C = Owner().Columns.FindColumnByIndex(propNum);
             return TryValue(C);
         }
 
 		public override void SetPropValue(int propNum, IValue newVal)
 		{
-			ValueTableColumn C = Owner().Columns.FindColumnByIndex(propNum);
-			_data[C] = C.ValueType.AdjustValue(newVal);
+			var C = Owner().Columns.FindColumnByIndex(propNum);
+            Set(C, newVal);
 		}
 
         private ValueTableColumn GetColumnByIIndex(IValue index)

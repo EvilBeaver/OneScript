@@ -51,7 +51,17 @@ namespace OneScript.Language.SyntaxAnalysis
             _nodeVisitors[(int)NodeKind.RemoveHandler] = VisitHandlerOperation;
             _nodeVisitors[(int)NodeKind.NewObject] = (x) => VisitNewObjectCreation((NewObjectNode)x);
             _nodeVisitors[(int)NodeKind.Preprocessor] = (x) => VisitPreprocessorDirective((PreprocessorDirectiveNode)x);
+            _nodeVisitors[(int)NodeKind.Goto] = (x) => VisitGotoNode((NonTerminalNode)x);
+            _nodeVisitors[(int)NodeKind.Label] = (x) => VisitLabelNode((LabelNode)x);
 
+        }
+
+        protected virtual void VisitGotoNode(NonTerminalNode node)
+        {
+        }
+        
+        protected virtual void VisitLabelNode(LabelNode node)
+        {
         }
 
         protected void SetDefaultVisitorFor(NodeKind kind, Action<BslSyntaxNode> action)
@@ -158,8 +168,18 @@ namespace OneScript.Language.SyntaxAnalysis
                 VisitGlobalProcedureCall(statement as CallNode);
             else if (statement.Kind == NodeKind.DereferenceOperation)
                 VisitProcedureDereference(statement);
+            else if (statement.Kind == NodeKind.UnaryOperation && statement is UnaryOperationNode
+                     {
+                         Operation: Token.Await
+                     } unaryOp)
+                VisitGlobalAwaitCall(unaryOp);
             else
                 DefaultVisit(statement);
+        }
+
+        private void VisitGlobalAwaitCall(UnaryOperationNode awaitStatement)
+        {
+            VisitStatement(awaitStatement.Children[0]);
         }
 
         protected virtual void VisitAssignment(BslSyntaxNode assignment)

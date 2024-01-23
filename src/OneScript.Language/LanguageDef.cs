@@ -17,16 +17,13 @@ namespace OneScript.Language
         static readonly Dictionary<Token, int> _priority = new Dictionary<Token, int>();
         public const int MAX_OPERATION_PRIORITY = 8;
 
-        private static readonly LexemTrie<Token> _stringToToken = new LexemTrie<Token>();
+        private static readonly IdentifiersTrie<Token> _stringToToken = new IdentifiersTrie<Token>();
 
-        private static readonly LexemTrie<bool> _undefined = new LexemTrie<bool>();
-        private static readonly LexemTrie<bool> _booleans = new LexemTrie<bool>();
-        private static readonly LexemTrie<bool> _logicalOp = new LexemTrie<bool>();
+        private static readonly IdentifiersTrie<bool> _undefined = new IdentifiersTrie<bool>();
+        private static readonly IdentifiersTrie<bool> _booleans = new IdentifiersTrie<bool>();
+        private static readonly IdentifiersTrie<bool> _logicalOp = new IdentifiersTrie<bool>();
 
-        private static readonly LexemTrie<bool> _preprocRegion = new LexemTrie<bool>();
-        private static readonly LexemTrie<bool> _preprocEndRegion = new LexemTrie<bool>();
-        
-        private static readonly LexemTrie<bool> _preprocImport = new LexemTrie<bool>();
+        private static readonly IdentifiersTrie<bool> _preprocImport = new IdentifiersTrie<bool>();
 
         const int BUILTINS_INDEX = (int)Token.ByValParam;
 
@@ -110,6 +107,7 @@ namespace OneScript.Language
             AddToken(Token.RemoveHandler, "УдалитьОбработчик", "RemoveHandler");
             AddToken(Token.Async, "Асинх", "Async");
             AddToken(Token.Await, "Ждать", "Await");
+            AddToken(Token.Goto, "Перейти", "Goto");
 
             #endregion
 
@@ -216,11 +214,6 @@ namespace OneScript.Language
 
             #endregion
 
-            _preprocRegion.Add("Область",true);
-            _preprocRegion.Add("Region", true);
-            _preprocEndRegion.Add("КонецОбласти", true);
-            _preprocEndRegion.Add("EndRegion", true);
-
             _preprocImport.Add("Использовать", true);
             _preprocImport.Add("Use", true);
         }
@@ -292,7 +285,7 @@ namespace OneScript.Language
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsLiteral(ref Lexem lex)
+        public static bool IsLiteral(in Lexem lex)
         {
             return lex.Type == LexemType.StringLiteral
                    || lex.Type == LexemType.NumberLiteral
@@ -408,18 +401,6 @@ namespace OneScript.Language
         public static bool IsLogicalOperatorString(string content)
         {
             return _logicalOp.TryGetValue(content, out var nodeIsFilled) && nodeIsFilled;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsPreprocRegion(string value)
-        {
-            return _preprocRegion.TryGetValue(value, out var nodeIsFilled) && nodeIsFilled;
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsPreprocEndRegion(string value)
-        {
-            return _preprocEndRegion.TryGetValue(value, out var nodeIsFilled) && nodeIsFilled;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

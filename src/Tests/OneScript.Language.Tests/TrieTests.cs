@@ -12,9 +12,9 @@ namespace OneScript.Language.Tests
     public class TrieTests
     {
         [Fact]
-        public void LexemTrieAdd()
+        public void IdentifiersTrieAdd()
         {
-            var t = new LexemTrie<int>();
+            var t = new IdentifiersTrie<int>();
             t.Add("Иван", 0);
             t.Add("Иволга", 1);
 
@@ -28,7 +28,7 @@ namespace OneScript.Language.Tests
         [Fact]
         public void Tokens()
         {
-            var t = new LexemTrie<int>();
+            var t = new IdentifiersTrie<int>();
             t.Add("иначе", 1);
             t.Add("иначеесли", 2);
 

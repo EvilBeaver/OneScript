@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
@@ -30,6 +31,13 @@ namespace OneScript.StandardLibrary
     [ContextClass("Рефлектор","Reflector")]
     public class ReflectorContext : AutoContext<ReflectorContext>
     {
+        private readonly ITypeManager _typeManager;
+
+        private ReflectorContext(ITypeManager typeManager)
+        {
+            _typeManager = typeManager;
+        }
+
         /// <summary>
         /// Вызывает метод по его имени.
         /// </summary>
@@ -43,8 +51,12 @@ namespace OneScript.StandardLibrary
             var methodIdx = target.GetMethodNumber(methodName);
             var methInfo = target.GetMethodInfo(methodIdx);
 
-            var argsToPass = GetArgsToPass(arguments, methInfo.GetParameters());
-
+            IValue[] argsToPass;
+            if (target.DynamicMethodSignatures)
+                argsToPass = arguments?.ToArray() ?? Array.Empty<IValue>();
+            else
+                argsToPass = GetArgsToPass(arguments, methInfo.GetParameters());
+ 
             IValue retValue = ValueFactory.Create();
             if (methInfo.IsFunction())
             {
@@ -71,34 +83,39 @@ namespace OneScript.StandardLibrary
 
         private static IValue[] GetArgsToPass(ArrayImpl arguments, ParameterInfo[] parameters)
         {
-            var argsToPass = new List<IValue>();
-            if (arguments != null)
-            {
-                argsToPass.AddRange(arguments);
-            }
-
-            if (parameters.Length < argsToPass.Count)
+            var argValues = arguments?.ToArray() ?? Array.Empty<IValue>();
+            // ArrayImpl не может (не должен!) содержать null или NotAValidValue
+            
+            if (argValues.Length > parameters.Length)
                 throw RuntimeException.TooManyArgumentsPassed();
 
-            for (int i = 0; i < argsToPass.Count; i++)
+            var argsToPass = new IValue[parameters.Length];
+
+            int i = 0;
+            for (; i < argValues.Length; i++)
             {
                 if (parameters[i].IsByRef())
-                    argsToPass[i] = Variable.Create(argsToPass[i], $"reflectorArg{i}");
+                    argsToPass[i] = Variable.Create(argValues[i], "");
+                else
+                    argsToPass[i] = argValues[i];
             }
-            while (argsToPass.Count < parameters.Length)
+            for (; i < parameters.Length; i++)
             {
-                argsToPass.Add(null);
+                if (!parameters[i].HasDefaultValue)
+                    throw RuntimeException.TooFewArgumentsPassed();
+
+                // else keep null as a default value
             }
 
-            return argsToPass.ToArray();
+            return argsToPass;
         }
 
         /// <summary>
-        /// Проверяет существование указанного метода у переданного объекта..
+        /// Проверяет существование указанного метода у переданного объекта.
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу методов.</param>
         /// <param name="methodName">Имя метода для вызова</param>
-        /// <returns>Истину, если метод существует, и Ложь в обратном случае. </returns>
+        /// <returns>Истина, если метод существует, и Ложь в обратном случае. </returns>
         [ContextMethod("МетодСуществует", "MethodExists")]
         public bool MethodExists(IValue target, string methodName)
         {
@@ -198,10 +215,10 @@ namespace OneScript.StandardLibrary
         }
 
         /// <summary>
-        /// Получает таблицу методов для переданного объекта..
+        /// Получает таблицу методов для переданного объекта.
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу методов.</param>
-        /// <returns>Таблица значений колонками: Имя, Количество, ЭтоФункция, Аннотации</returns>
+        /// <returns>Таблица значений с колонками: Имя, Количество, ЭтоФункция, Аннотации, Параметры, Экспорт</returns>
         [ContextMethod("ПолучитьТаблицуМетодов", "GetMethodsTable")]
         public ValueTable GetMethodsTable(IValue target)
         {
@@ -312,7 +329,7 @@ namespace OneScript.StandardLibrary
             var isFunctionColumn = result.Columns.Add("ЭтоФункция", TypeDescription.BooleanType(), "Это функция");
             var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
             var paramsColumn = result.Columns.Add("Параметры", new TypeDescription(), "Параметры");
-            var isExportlColumn = result.Columns.Add("Экспорт", new TypeDescription(), "Экспорт");
+            var isExportlColumn = result.Columns.Add("Экспорт", TypeDescription.BooleanType(), "Экспорт");
 
             foreach (var methInfo in methods)
             {
@@ -331,7 +348,7 @@ namespace OneScript.StandardLibrary
                 var paramNameColumn = paramTable.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
                 var paramByValue = paramTable.Columns.Add("ПоЗначению", TypeDescription.BooleanType(), "По значению");
                 var paramHasDefaultValue = paramTable.Columns.Add("ЕстьЗначениеПоУмолчанию", TypeDescription.BooleanType(), "Есть значение по-умолчанию");
-                var paramDefaultValue = paramTable.Columns.Add("ЗначениеПоУмолчанию", null, "Значение по умолчанию");
+                var paramDefaultValue = paramTable.Columns.Add("ЗначениеПоУмолчанию", new TypeDescription(), "Значение по умолчанию");
                 var paramAnnotationsColumn = paramTable.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
 
                 new_row.Set(paramsColumn, paramTable);
@@ -354,11 +371,11 @@ namespace OneScript.StandardLibrary
         }
 
         /// <summary>
-        /// Получает таблицу свойств для переданного объекта..
+        /// Получает таблицу свойств для переданного объекта.
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу свойств.</param>
         /// <param name="withPrivate">Включить в результат приватные поля</param>
-        /// <returns>Таблица значений с колонками - Имя, Аннотации</returns>
+        /// <returns>Таблица значений с колонками - Имя, Аннотации, Экспорт</returns>
         [ContextMethod("ПолучитьТаблицуСвойств", "GetPropertiesTable")]
         public ValueTable GetPropertiesTable(IValue target, bool withPrivate = false)
         {
@@ -478,10 +495,54 @@ namespace OneScript.StandardLibrary
                    .Build();
         }
 
-        [ScriptConstructor]
-        public static IRuntimeContextInstance CreateNew()
+        /// <summary>
+        /// Возвращает все известные типы
+        /// </summary>
+        /// <param name="filter">Структура - Условия поиска. Ключ - имя колонки, значение - искомое значение </param>
+        /// <returns>
+        ///  ТаблицаЗначений:
+        ///    * Имя - Строка - Имя типа
+        ///    * Значение - Тип - Тип
+        ///    * Примитивный - Булево - Это примитивный тип 
+        ///    * Пользовательский - Булево - Это пользовательский типа
+        ///    * Коллекция - Булево - Это коллекция
+        /// </returns>
+        [ContextMethod("ИзвестныеТипы", "KnownTypes")]
+        public ValueTable KnownTypes(StructureImpl filter = default)
         {
-            return new ReflectorContext();
+            var result = new ValueTable();
+            
+            var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType());
+            var valueColumn = result.Columns.Add("Значение", new TypeDescription(new List<BslTypeValue>() { new BslTypeValue(BasicTypes.Type) }));
+            var primitiveColumn = result.Columns.Add("Примитивный", TypeDescription.BooleanType());
+            var userColumn = result.Columns.Add("Пользовательский", TypeDescription.BooleanType());
+            var collectionColumn = result.Columns.Add("Коллекция", TypeDescription.BooleanType());
+            
+            _typeManager.RegisteredTypes().ForEach(descriptor =>
+            {
+                var row = result.Add();
+                
+                row.Set(nameColumn, ValueFactory.Create(descriptor.ToString()));
+                row.Set(valueColumn, new BslTypeValue(descriptor));
+                row.Set(primitiveColumn, ValueFactory.Create(descriptor.ImplementingClass.IsSubclassOf(typeof(BslPrimitiveValue))));
+                row.Set(userColumn, ValueFactory.Create(descriptor.ImplementingClass == typeof(AttachedScriptsFactory)));
+                row.Set(collectionColumn, ValueFactory.Create(
+                    descriptor.ImplementingClass.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICollectionContext<>))
+                ));
+            });
+
+            if (filter != default)
+            {
+                result = result.Copy(filter);
+            }
+            
+            return result;
+        }
+
+        [ScriptConstructor]
+        public static ReflectorContext CreateNew(TypeActivationContext context)
+        {
+            return new ReflectorContext(context.TypeManager);
         }
     }
 }

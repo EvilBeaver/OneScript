@@ -105,7 +105,7 @@ namespace ScriptEngine.Machine.Contexts
                     var result = DispatchUtility.Invoke(Instance, dispId, null);
                     return CreateIValue(result);
                 }
-                catch (System.Reflection.TargetInvocationException e)
+                catch (TargetInvocationException e)
                 {
                     throw e.InnerException ?? e;
                 }
@@ -149,16 +149,16 @@ namespace ScriptEngine.Machine.Contexts
                     }
                     DispatchUtility.InvokeSetProperty(Instance, dispId, argToPass);
                 }
-                catch (System.Reflection.TargetInvocationException e)
+                catch (TargetInvocationException e)
                 {
                     throw e.InnerException ?? e;
                 }
             }
-            catch (System.MissingMemberException)
+            catch (MissingMemberException)
             {
                 throw PropertyAccessException.PropNotFoundException(prop.Name);
             }
-            catch (System.MemberAccessException)
+            catch (MemberAccessException)
             {
                 throw PropertyAccessException.PropIsNotWritableException(prop.Name);
             }
@@ -174,8 +174,11 @@ namespace ScriptEngine.Machine.Contexts
 
         public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
-            //TODO: Доработать RcwMethodMetadata
-            return BslMethodBuilder.Create().Build();
+            var md = _methods[methodNumber];
+            return BslMethodBuilder.Create()
+                .Name(md.Name)
+                .ReturnType(md.IsFunction ?? true ? typeof(IValue) : typeof(void))
+                .Build();
         }
 
         private MethodSignature GetMethodDescription(int methodNumber)
@@ -200,12 +203,12 @@ namespace ScriptEngine.Machine.Contexts
                     DispatchUtility.Invoke(Instance, dispId, argsData.values, argsData.flags);
                     RemapOutputParams(arguments, argsData.values, argsData.flags[0], initialValues);
                 }
-                catch (System.Reflection.TargetInvocationException e)
+                catch (TargetInvocationException e)
                 {
                     throw e.InnerException ?? e;
                 }
             }
-            catch (System.MissingMemberException)
+            catch (MissingMemberException)
             {
                 throw RuntimeException.MethodNotFoundException(method.Name);
             }
@@ -231,12 +234,12 @@ namespace ScriptEngine.Machine.Contexts
                     RemapOutputParams(arguments, argsData.values, argsData.flags[0], initialValues);
                     retValue = CreateIValue(result);
                 }
-                catch (System.Reflection.TargetInvocationException e)
+                catch (TargetInvocationException e)
                 {
                     throw e.InnerException ?? e;
                 }
             }
-            catch (System.MissingMemberException)
+            catch (MissingMemberException)
             {
                 throw RuntimeException.MethodNotFoundException(method.Name);
             }
@@ -247,7 +250,10 @@ namespace ScriptEngine.Machine.Contexts
         {
             for (int i = 0; i < arguments.Length; i++)
             {
-                if (flags[i] && !initialValues[i].Equals(values[i]))
+                var initialValue = initialValues[i];
+                var valueAfterCall = values[i];
+                
+                if (flags[i] && !Equals(initialValue, valueAfterCall))
                 {
                     var variable = (IVariable)arguments[i];
                     variable.Value = CreateIValue(values[i]);
@@ -257,28 +263,28 @@ namespace ScriptEngine.Machine.Contexts
 
         private bool TryFindMethod(string name, out RcwMethodMetadata md)
         {
-            if (_methods.Names.TryGetValue(name, out md))
+            if (_methods.ByName.TryGetValue(name, out md))
                 return true;
 
             if (!DispatchUtility.TryGetDispId(Instance, name, out var dispatchId))
                 return false;
             
             _methods.Add(new RcwMethodMetadata(name, dispatchId, null));
-            md = _methods.DispatchIds[dispatchId];
+            md = _methods.ByDispatchId[dispatchId];
             
             return true;
         }
 
         private bool TryFindProperty(string name, out RcwPropertyMetadata md)
         {
-            if (_props.Names.TryGetValue(name, out md))
+            if (_props.ByName.TryGetValue(name, out md))
                 return true;
 
             if (!DispatchUtility.TryGetDispId(Instance, name, out var dispatchId))
                 return false;
             
             _props.Add(new RcwPropertyMetadata(name, dispatchId));
-            md = _props.DispatchIds[dispatchId];
+            md = _props.ByDispatchId[dispatchId];
             
             return true;
         }

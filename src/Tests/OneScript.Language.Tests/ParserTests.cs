@@ -1168,6 +1168,206 @@ namespace OneScript.Language.Tests
             });
         }
 
+        [Fact]
+        public void TestAsyncProcedure()
+        {
+            var code = 
+                @"Асинх Процедура Проц1()
+	                Перем Переменная;
+                КонецПроцедуры";
+
+            var node = ParseModuleAndGetValidator(code);
+            node.Is(NodeKind.MethodsSection);
+
+            var methodNode = node.NextChild().Is(NodeKind.Method);
+
+            methodNode.CurrentNode.RealNode.As<MethodNode>().IsAsync.Should().BeTrue();
+        }
+        
+        [Fact]
+        public void TestAsyncFunction()
+        {
+            var code = 
+                @"Асинх Функция Ф1()
+	                Перем Переменная;
+                КонецФункции";
+
+            var node = ParseModuleAndGetValidator(code);
+            node.Is(NodeKind.MethodsSection);
+
+            var methodNode = node.NextChild().Is(NodeKind.Method);
+
+            methodNode.CurrentNode.RealNode.As<MethodNode>().IsAsync.Should().BeTrue();
+        }
+        
+        [Fact]
+        public void TestAwaitPriority()
+        {
+            var code = 
+                @"Асинх Процедура Проц1()
+	                А = Ждать Вызов().Поле;
+                КонецПроцедуры";
+
+            var node = ParseModuleAndGetValidator(code);
+            node.Is(NodeKind.MethodsSection);
+
+            var method = node.NextChild().Is(NodeKind.Method);
+            var expression = method.DownTo(NodeKind.Assignment)
+                .NextChildIs(NodeKind.Identifier)
+                .NextChild();
+
+            expression.CurrentNode.RealNode.As<UnaryOperationNode>().Operation.Should().Be(Token.Await);
+            expression
+                .NextChildIs(NodeKind.DereferenceOperation)
+                .NoMoreChildren();
+        }
+        
+        [Fact]
+        public void TestAwaitMustBeInAsyncOnly()
+        {
+            var code = 
+                @"Процедура Проц1()
+	                Ждать Операция();
+                КонецПроцедуры";
+
+            CatchParsingError(code, errors =>
+            {
+                errors.Single().Description.Should().Contain("Await");
+            });
+        }
+        
+        [Fact]
+        public void AwaitIsNotKeywordInNonAsyncContext_Variable()
+        {
+            var code = 
+                @"Процедура Проц1()
+	                А = Ждать;
+                КонецПроцедуры";
+
+            var validator = ParseModuleAndGetValidator(code)
+                .DownTo(NodeKind.Assignment);
+            
+            validator
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.Identifier);
+        }
+        
+        [Fact]
+        public void AwaitIsNotKeywordInNonAsyncContext_Method()
+        {
+            var code = 
+                @"Процедура Проц1()
+	                А = Ждать();
+                КонецПроцедуры";
+
+            var validator = ParseModuleAndGetValidator(code)
+                .DownTo(NodeKind.Assignment);
+            
+            validator
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.GlobalCall);
+        }
+        
+        [Fact]
+        public void AwaitIsNotKeywordInNonAsyncContext_PropertyName()
+        {
+            var code = 
+                @"Процедура Проц1()
+	                А = П.Ждать;
+                КонецПроцедуры";
+
+            var validator = ParseModuleAndGetValidator(code)
+                .DownTo(NodeKind.DereferenceOperation);
+            
+            validator
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.Identifier);
+        }
+        
+        [Fact]
+        public void AwaitIsNotKeywordInNonAsyncContext_MemberMethodName()
+        {
+            var code = 
+                @"Процедура Проц1()
+	                А = П.Ждать();
+                КонецПроцедуры";
+
+            var validator = ParseModuleAndGetValidator(code)
+                .DownTo(NodeKind.DereferenceOperation);
+            
+            validator
+                .NextChildIs(NodeKind.Identifier)
+                .NextChildIs(NodeKind.MethodCall);
+        }
+        
+        [Fact]
+        public void Await_In_NonAsync_Expression_Fails()
+        {
+            var code = 
+                @"Процедура Проц1()
+	                Если Ждать ВтороеСлово Тогда
+                    КонецЕсли;
+                КонецПроцедуры";
+
+            CatchParsingError(code, err =>
+            {
+                err.Single().ErrorId.Should().Be("AwaitMustBeInAsyncMethod");
+            });
+        }
+        
+        [Fact]
+        public void AwaitRequiresExpression()
+        {
+            var code = 
+                @"Асинх Процедура Проц1()
+	                А = Ждать;
+                КонецПроцедуры";
+
+            CatchParsingError(code, err => err.Single().ErrorId.Should().Be("ExpressionSyntax"));
+        }
+        
+        [Fact]
+        public void DoubleAwaitIsForbidden()
+        {
+            var code = 
+                @"Асинх Процедура Проц1()
+	                А = Ждать Ждать Б;
+                КонецПроцедуры";
+
+            CatchParsingError(code, err => err.Single().ErrorId.Should().Be("ExpressionSyntax"));
+        }
+        
+        [Fact]
+        public void Labels_Can_Appear_In_CodeBlocks()
+        {
+            var code = 
+                @"А = 1;
+                ~Метка:
+                Б = 2;
+                ";
+
+            var validator = ParseBatchAndGetValidator(code);
+
+            validator.NextChildIs(NodeKind.Assignment);
+            validator.NextChildIs(NodeKind.Label);
+            validator.NextChildIs(NodeKind.Assignment);
+        }
+        
+        [Fact]
+        public void Goto_Can_Appear_In_CodeBlocks()
+        {
+            var code = 
+                @"А = 1;
+                Перейти ~Метка;
+                Б = 2;
+                ";
+
+            var validator = ParseBatchAndGetValidator(code);
+
+            validator.NextChildIs(NodeKind.Assignment);
+            validator.NextChildIs(NodeKind.Goto);
+            validator.NextChildIs(NodeKind.Assignment);
+        }
 
         private static void CatchParsingError(string code)
         {

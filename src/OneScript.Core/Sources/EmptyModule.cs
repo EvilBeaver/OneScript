@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using OneScript.Contexts;
 using OneScript.Execution;
 
@@ -14,7 +15,7 @@ namespace OneScript.Sources
 {
     public sealed class EmptyModule : IExecutableModule
     {
-        public static IExecutableModule Instance = new EmptyModule(); 
+        public static readonly IExecutableModule Instance = new EmptyModule(); 
         
         private EmptyModule()
         {
@@ -29,5 +30,7 @@ namespace OneScript.Sources
         public IList<BslMethodInfo> Methods => Array.Empty<BslMethodInfo>();
         public BslMethodInfo ModuleBody { get; }
         public SourceCode Source { get; }
+
+        public IDictionary<Type, object> Interfaces => new ReadOnlyDictionary<Type, object>(new Dictionary<Type, object>());
     }
 }

@@ -1,27 +1,43 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" />
-    
     <PropertyGroup>
-        <ReleaseNumber Condition="'$(ReleaseNumber)' == ''">1.1.0</ReleaseNumber>
+        <VersionPrefix Condition="'$(VersionPrefix)' == ''">2.0.0</VersionPrefix>
+        
+        <ReleaseNumber Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</ReleaseNumber>
+        <ReleaseNumber Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</ReleaseNumber>
+        
         <BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
         <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
 
         <ArtifactsRoot>$(MSBuildProjectDirectory)/built</ArtifactsRoot>
-        <Solution>$(MSBuildProjectDirectory)/src/1Script.sln</Solution>
+        <LibDir>$(ArtifactsRoot)/lib</LibDir>
+        <DebugAdapterDir>$(ArtifactsRoot)\vscode\</DebugAdapterDir>
         <Configuration>Release</Configuration>
+        <Solution>$(MSBuildProjectDirectory)/src/1Script.sln</Solution>
+        
     </PropertyGroup>
     
     <ItemGroup>
         <PlatformItem Include="x86">
             <MSBuildName>x86</MSBuildName>
-            <BinFolder>bin32</BinFolder>
+            <MSBuildNameCpp>Win32</MSBuildNameCpp>
         </PlatformItem>
         <PlatformItem Include="x64">
-            <MSBuildName>Any CPU</MSBuildName>
-            <BinFolder>bin</BinFolder>
+            <MSBuildName>&quot;Any CPU&quot;</MSBuildName>
+            <MSBuildNameCpp>x64</MSBuildNameCpp>
         </PlatformItem>
     </ItemGroup>
-
+    
+    <ItemGroup>
+        <PublishProjects Include="oscript">
+            <ProjectFile>oscript.csproj</ProjectFile>
+            <Framework>net6.0</Framework>
+        </PublishProjects>
+        <PublishProjects Include="TestApp">
+            <ProjectFile>TestApp.csproj</ProjectFile>
+            <Framework>net6.0-windows</Framework>
+        </PublishProjects>
+    </ItemGroup>
+    
     <Target Name="CleanAll">
     
         <ItemGroup>
@@ -29,219 +45,313 @@
         </ItemGroup>
     
         <Delete Files="@(TestsResults)" />
-        <DeleteTree Directories="$(ArtifactsRoot)" Condition="Exists($(ArtifactsRoot))" />
+        <RemoveDir Directories="$(ArtifactsRoot)" Condition="Exists($(ArtifactsRoot))" />
 
-        <MSBuild Projects="$(Solution)" Targets="Clean" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=%(PlatformItem.MSBuildName)"/>
+        <MSBuild Projects="$(Solution)" Targets="Clean"/>
+
+    </Target> 
+    
+    <Target Name="MakeCPP">
+        <MSBuild Projects="src\ScriptEngine.NativeApi\ScriptEngine.NativeApi.vcxproj"
+            Properties="Configuration=$(Configuration);Platform=%(PlatformItem.MSBuildNameCpp)"/>
+
+        <MSBuild Projects="tests\native-api\AddInNative.vcxproj"
+                 Properties="Configuration=$(Configuration);Platform=%(PlatformItem.MSBuildNameCpp)"/>
+    </Target>
+
+    <Target Name="MakeFDD">
         
-    </Target>  
-        <Target Name="Make">
-        <MSBuild Projects="$(Solution)" Targets="restore;Build" Properties="ReleaseNumber=$(ReleaseNumber);Configuration=$(Configuration);Platform=%(PlatformItem.MSBuildName);"/>
-    </Target>
+        <CreateItem
+            Include="@(PublishProjects)"
+            AdditionalMetadata="Platform=%(PlatformItem.MSBuildName);Suffix=%(PlatformItem.Identity)">
+            <Output
+                TaskParameter="Include"
+                ItemName="BuildVariant"/>
+        </CreateItem>
+        
+        <Exec Command="dotnet publish &quot;src/%(BuildVariant.Identity)/%(BuildVariant.ProjectFile)&quot; -f %(BuildVariant.Framework) -c $(Configuration) -p:Platform=%(BuildVariant.Platform) -p:UseAppHost=false -o &quot;$(ArtifactsRoot)/fdd-%(BuildVariant.Suffix)/bin&quot;" UseUtf8Encoding="Always"/>
 
-    <Target Name="CreateDistributions" DependsOnTargets="CreateInstaller;CreateNuget;CreateZip">
-        <ItemGroup>
-            <TempContent Include="$(ArtifactsRoot)/tmp"/>
-            <TempContent Include="$(MDDocFolder)"/>
-        </ItemGroup>
-        <DeleteTree Directories="@(TempContent)"/>
-    </Target>
-
-    <Target Name="PrepareArtifactsRoot">
         <PropertyGroup>
-            <TempFolder>$(ArtifactsRoot)/tmp</TempFolder>
-            <LibFolder>$(TempFolder)/lib</LibFolder>
-            <ToolFolder>$(TempFolder)/bin</ToolFolder>
-            <ExamplesFolder>$(TempFolder)/examples</ExamplesFolder>
-            <DocFolder>$(TempFolder)/doc</DocFolder>
-            <DebugDest>$(ArtifactsRoot)\vscode\</DebugDest>
-            <MDDocFolder>$(ArtifactsRoot)/mddoc</MDDocFolder>
+            <CppBinPrefix>$(MSBuildProjectDirectory)/src/ScriptEngine.NativeApi/bin/$(Configuration)</CppBinPrefix>
         </PropertyGroup>
-        <MakeDir Directories="$(ArtifactsRoot)" />
-        <MakeDir Directories="$(TempFolder)" />
+        
+        <ItemGroup>
+            <CppX86 Include="$(CppBinPrefix)/x86/*.dll"/>
+            <CppX64 Include="$(CppBinPrefix)/x64/*.dll"/>
+        </ItemGroup>
+        
+        <Copy SourceFiles="@(CppX86)" DestinationFolder="$(ArtifactsRoot)/fdd-x86/bin" />
+        <Copy SourceFiles="@(CppX64)" DestinationFolder="$(ArtifactsRoot)/fdd-x64/bin" />
+
+        <ItemGroup>
+            <BatFilesFDD Include="$(MSBuildProjectDirectory)\install\opm.bat"/>
+            <BatFilesFDD Include="$(MSBuildProjectDirectory)\install\oscript.bat"/>
+            <ShFilesFDD Include="$(MSBuildProjectDirectory)\install\opm"/>
+            <ShFilesFDD Include="$(MSBuildProjectDirectory)\install\oscript"/>
+        </ItemGroup>
+        
+        <Copy SourceFiles="@(BatFilesFDD);@(ShFilesFDD)" DestinationFolder="$(ArtifactsRoot)/fdd-x86/bin"/>
+        <Copy SourceFiles="@(BatFilesFDD);@(ShFilesFDD)" DestinationFolder="$(ArtifactsRoot)/fdd-x64/bin"/>
+
     </Target>
     
-    <Target Name="PrepareDistributionContent">
+    <Target Name="MakeSCD">
         
-        <CallTarget Targets="GatherBinaries" />
-        <CallTarget Targets="GatherLibrary" />
-        <CallTarget Targets="GatherExamples" />
-        <CallTarget Targets="GatherDocuments"  Condition=" '$(OneScriptDocumenter)' != '' "/>
+        <ItemGroup>
+            <RuntimeID Include="win-x64"/>
+            <RuntimeID Include="win-x86"/>
+            <RuntimeID Include="linux-x64"/>
+            <RuntimeID Include="osx-x64"/>
+            <RuntimeID Include="osx-arm64"/>
+        </ItemGroup>
+        
+        <Exec Command="dotnet publish &quot;src/oscript/oscript.csproj&quot; -r %(RuntimeID.Identity) --self-contained -c $(Configuration) -o &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/bin&quot;" UseUtf8Encoding="Always"/>
+
+      <PropertyGroup>
+            <CppBinPrefix>$(MSBuildProjectDirectory)/src/ScriptEngine.NativeApi/bin/$(Configuration)</CppBinPrefix>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <CppX86 Include="$(CppBinPrefix)/x86/*.dll"/>
+            <CppX64 Include="$(CppBinPrefix)/x64/*.dll"/>
+        </ItemGroup>
+
+        <Copy SourceFiles="@(CppX86)" DestinationFolder="$(ArtifactsRoot)/win-x86/bin" />
+        <Copy SourceFiles="@(CppX64)" DestinationFolder="$(ArtifactsRoot)/win-x64/bin" />
+
+        <ItemGroup>
+            <BatFilesSCD Include="$(MSBuildProjectDirectory)\install\opm.bat"/>
+            <ShFilesSCD Include="$(MSBuildProjectDirectory)\install\opm"/>
+        </ItemGroup>
+
+        <Copy SourceFiles="@(BatFilesSCD)" DestinationFolder="$(ArtifactsRoot)/win-x86/bin"/>
+        <Copy SourceFiles="@(BatFilesSCD)" DestinationFolder="$(ArtifactsRoot)/win-x64/bin"/>
+        <Copy SourceFiles="@(ShFilesSCD)" DestinationFolder="$(ArtifactsRoot)/linux-x64/bin"/>
+
+    </Target>
+    
+    <Target Name="BuildDebugger">
+        <PropertyGroup>
+            <DebuggerProject>src/VSCode.DebugAdapter/VSCode.DebugAdapter.csproj</DebuggerProject>
+            <LocalResolvedOutput>$(DebugAdapterDir)</LocalResolvedOutput>
+        </PropertyGroup>
+        
+        <MSBuild Projects="$(DebuggerProject)" Properties="OutputPath=$(LocalResolvedOutput);Configuration=Release"/>
+        
+    </Target>
+    
+    <Target Name="BuildAll">
+        <CallTarget Targets="BuildWithCpp" Condition="'$(NoCppCompiler)' == ''"/>
+        <CallTarget Targets="BuildWithoutCpp" Condition="'$(NoCppCompiler)' == 'True'"/>
+    </Target>
+    
+    <Target Name="BuildWithCpp" DependsOnTargets="CleanAll;MakeCPP;MakeFDD;MakeSCD;BuildDebugger">
         <CallTarget Targets="CleanIntermediates"/>
-        
     </Target>
+
+    <Target Name="BuildWithoutCpp" DependsOnTargets="CleanAll;MakeFDD;MakeSCD;BuildDebugger">
+        <CallTarget Targets="CleanIntermediates"/>
+    </Target>
+
+    <!-- Используется для поиска первого собранного oscript.exe -->
+    <UsingTask
+            TaskName="GetFirstItem"
+            TaskFactory="CodeTaskFactory"
+            AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+        <ParameterGroup>
+            <Items ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+            <FirstItem ParameterType="System.String" Output="true" Required="false" />
+        </ParameterGroup>
+        <Task>
+            <Reference Include="System.Xml"/>
+            <Using Namespace="System.Linq"/>
+            <Code Type="Fragment" Language="cs">FirstItem = Items.First().ItemSpec;</Code>
+        </Task>
+    </UsingTask>
     
-    <!-- Собирает отовсюду содержимое папки bin -->
-    <Target Name="GatherBinaries" DependsOnTargets="Make;PrepareArtifactsRoot">
+    <Target Name="GatherLibrary">
+        <MakeDir Directories="$(LibDir)" />
+        
         <ItemGroup>
-            <BuiltProjects Include="oscript" />
-            <BuiltProjects Include="TestApp" />
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/$(TargetFramework)/**">
-                <Dest>$(TempFolder)/bin</Dest>
-            </BinaryFiles>
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/$(TargetFramework)/**">
-                <Dest>$(TempFolder)/bin32</Dest>
-            </BinaryFiles>
+            <Executable Include="$(ArtifactsRoot)/*x64/bin/oscript.dll"/>
         </ItemGroup>
 
-        <ItemGroup>
-            <BuiltProjects Include="ScriptEngine.NativeApi" />
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/$(Configuration)/net452/*.dll">
-                <Dest>$(TempFolder)/bin</Dest>
-            </BinaryFiles>
-            <BinaryFiles Include="$(MSBuildProjectDirectory)/src/%(BuiltProjects.Identity)/bin/x86/$(Configuration)/net452/*.dll">
-                <Dest>$(TempFolder)/bin32</Dest>
-            </BinaryFiles>
-        </ItemGroup>
-           
-        <Copy SourceFiles="@(BinaryFiles)" DestinationFiles="@(BinaryFiles->'%(Dest)/%(Filename)%(Extension)')" />
-        <!-- Копирование скрипта запуска для opm -->
-        <Copy SourceFiles="$(MSBuildProjectDirectory)\install\opm.bat" DestinationFolder="%(BinaryFiles.Dest)"/>
+        <!-- упадет если ничего не нашлось, и это хорошо -->
+        <GetFirstItem Items="@(Executable)">
+            <Output TaskParameter="FirstItem" PropertyName="Runner"/>
+        </GetFirstItem>
+        
+        <Exec Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)/install/unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)/install/opm.ospx&quot; &quot;$(LibDir)/tmp&quot;" UseUtf8Encoding="Always"/>
+        <Exec Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)/install/unicode-zipper.os&quot; unpack &quot;$(LibDir)/tmp/content.zip&quot; &quot;$(LibDir)/opm&quot;" UseUtf8Encoding="Always"/>
 
+        <Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibDir)"/>
+        <RemoveDir Directories="$(LibDir)/tmp"/>
+        
         <PropertyGroup>
-            <DebugSrc>$(MSBuildProjectDirectory)/src/VSCode.DebugAdapter/bin/$(Configuration)/net461</DebugSrc>
+            <OpmEntryPoint>opm\src\cmd\opm.os</OpmEntryPoint>
+            <OpmLaunch>dotnet $(Runner) &quot;$(LibDir)\$(OpmEntryPoint)&quot;</OpmLaunch>
         </PropertyGroup>
-        <ItemGroup>
-            <DbgBinFiles Include="$(DebugSrc)/*.dll"/>
-            <DbgBinFiles Include="$(DebugSrc)/*.exe"/>
-            <DbgBinFiles Include="$(DebugSrc)/*.config"/>
-            <DbgPackageFiles Include="$(DebugSrc)/README.md"/>
-            <DbgPackageFiles Include="$(DebugSrc)/package.json"/>
-            <DbgImageFiles Include="$(DebugSrc)/images/**"/>
-        </ItemGroup>
-
-        <Copy SourceFiles="@(DbgBinFiles)" DestinationFolder="$(DebugDest)/bin"/>
-        <Copy SourceFiles="@(DbgPackageFiles)" DestinationFolder="$(DebugDest)"/>
-        <Copy SourceFiles="@(DbgImageFiles)" DestinationFolder="$(DebugDest)/images"/>
-
-        <Message Text="Writing version $(ReleaseNumber).$(BuildNumber)"/>
-        <WriteLinesToFile File="$(TempFolder)/VERSION" Overwrite="true" Lines="$(ReleaseNumber).$(BuildNumber)"/>
-    </Target>
-
-    <!-- Собирает в целевой папке содержимое папки lib -->
-    <Target Name="GatherLibrary" DependsOnTargets="Make;GatherBinaries">
         
-        <MakeDir Directories="$(LibFolder)" />
-        <CallTarget Targets="InstallStdLib" Condition="'$(StandardLibraryPacks)' != ''"/>
-        <DeleteTree Directories="$(LibFolder)/opm" />
-
-        <Exec Command="&quot;$(ToolFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(MSBuildProjectDirectory)\install\opm.ospx&quot; &quot;$(LibFolder)\tmp&quot;"/>
-        <Exec Command="&quot;$(ToolFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; unpack &quot;$(LibFolder)\tmp\content.zip&quot; &quot;$(LibFolder)/opm&quot;"/>
+        <ItemGroup>
+            <CoreLibraries Include="asserts"/>
+            <CoreLibraries Include="logos"/>
+            <CoreLibraries Include="fs"/>
+            <CoreLibraries Include="tempfiles"/>
+            <CoreLibraries Include="cli"/>
+            <ConfigEnv Include="OSCRIPT_CONFIG=lib.system=$(LibDir)"/>
+        </ItemGroup>
         
-        <Copy SourceFiles="$(MSBuildProjectDirectory)\install\package-loader.os" DestinationFolder="$(LibFolder)"/>
-
-        <DeleteTree Directories="$(LibFolder)\tmp"/>
-
+        <Exec Command="$(OpmLaunch) install -d &quot;$(LibDir)&quot; %(CoreLibraries.Identity)" 
+              IgnoreExitCode="false"
+              EnvironmentVariables="@(ConfigEnv)"
+              Condition="'$(SkipLibraryDownload)' == ''"
+              UseUtf8Encoding="Always"/>
+        
     </Target>
-
-    <!-- Копирует поставляемые файлы stdlib, если они есть на машине сборки -->
-    <Target Name="InstallStdLib">
+    
+    <Target Name="ComposeDistributionFolders">
         <ItemGroup>
-            <LibraryFiles Include="$(StandardLibraryPacks)\**\*" Exclude="package-loader.os"/>
+            <LibraryFiles Include="$(LibDir)/**/*" Exclude="package-loader.os"/>
         </ItemGroup>
-        <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(LibFolder)\%(RecursiveDir)"/>
+        
+        <!--Заставить Copy копировать batching-ом в несколько директорий - не удалось :(-->
+        <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/fdd-x64/lib/%(RecursiveDir)" />
+        <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/fdd-x86/lib/%(RecursiveDir)" />
+        <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/win-x64/lib/%(RecursiveDir)" />
+        <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/win-x86/lib/%(RecursiveDir)" />
+        <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/osx-x64/lib/%(RecursiveDir)" />
+        <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/osx-arm64/lib/%(RecursiveDir)" />
+        <Copy SourceFiles="@(LibraryFiles)" DestinationFolder="$(ArtifactsRoot)/linux-x64/lib/%(RecursiveDir)" />
+        
+        <RemoveDir Directories="$(LibDir)" />
+        
     </Target>
     
-    <!-- Собирает в целевой папке содержимое папки examples -->
-    <Target Name="GatherExamples" DependsOnTargets="PrepareArtifactsRoot">
-        <ItemGroup>
-            <ExampleFiles Include="$(MSBuildProjectDirectory)\install\examples\**\*"/>
-        </ItemGroup>
-        <MakeDir Directories="$(ExamplesFolder)" />
-        <Copy SourceFiles="@(ExampleFiles)" DestinationFolder="$(ExamplesFolder)\%(RecursiveDir)"/> 
-    </Target>
-    
-    <!-- Собирает в целевой папке содержимое папки doc -->
-    <Target Name="GatherDocuments" DependsOnTargets="PrepareArtifactsRoot;GenerateDocs">
-        <MakeDir Directories="$(DocFolder)"/>
-        <Exec Command="$(OneScriptDocumenter) html $(TMP)\tempdoc.xml &quot;$(DocFolder)&quot;"/>
-    </Target>
-    
-    <!-- Генерирует необходимую документацию -->
-    <Target Name="GenerateDocs">
-    
-        <Exec Command="$(OneScriptDocumenter) $(TMP)\tempdoc.xml &quot;$(ToolFolder)\ScriptEngine.dll&quot; &quot;$(ToolFolder)\ScriptEngine.HostedScript.dll&quot; &quot;$(ToolFolder)\oscript.exe&quot;"/>
-        <MakeDir Directories="$(MDDocFolder)"/>
-        <Exec Command="$(OneScriptDocumenter) markdown $(TMP)\tempdoc.xml &quot;$(MDDocFolder)&quot; /syntax/page"/>
-    
-    </Target>
-    
-    <!-- Чистка промежуточных файлов -->
     <Target Name="CleanIntermediates">
         <ItemGroup>
-            <ExcludedArtifacts Include="$(TempFolder)/%(PlatformItem.BinFolder)/*.pdb" />
-            <ExcludedArtifacts Include="$(TempFolder)/%(PlatformItem.BinFolder)/*.xml" />
-            <!-- остается от документера. Надо починить его чтобы писал куда-то в другое место -->
-            <ExcludedArtifacts Include="$(MSBuildProjectDirectory)/map.json"/>
+            <TempFiles Include="$(ArtifactsRoot)/**/bin/*.pdb"/>
+            <TempFiles Include="$(ArtifactsRoot)/**/bin/*.xml"/>
+            <TempFiles Include="$(DebugAdapterDir)/**/*.pdb"/>
         </ItemGroup>
-        <Delete Files="@(ExcludedArtifacts)"/>
+        <Delete Files="@(TempFiles)"/>
     </Target>
-
-    <!-- Инсталлятор -->
-    <Target Name="CreateInstaller" DependsOnTargets="PrepareArtifactsRoot">
-        <Error Text="No installer path is specified" Condition="'$(InnoSetupPath)' == ''"/>
+    
+	<Target Name="PrepareDistributionFiles" DependsOnTargets="CleanAll;BuildAll;GatherLibrary;ComposeDistributionFolders"/>
+    
+    <Target Name="Test">
+        <CallTarget Targets="UnitTests;ScriptedTests" />
+    </Target>
+    
+    <Target Name="UnitTests">
         <PropertyGroup>
-            <InstallerStandardPath>"$(InnoSetupPath)\iscc.exe"</InstallerStandardPath>
-            <DistPath>$(ArtifactsRoot)</DistPath>
+            <TestsRoot>$(MSBuildProjectDirectory)/src/Tests</TestsRoot>
         </PropertyGroup>
-        
-        <Exec Command="$(InstallerStandardPath) /o&quot;$(DistPath)&quot; /DSuffix=%(PlatformItem.Identity) &quot;$(MSBuildProjectDirectory)\install\install.iss&quot;"/>
+        <ItemGroup>
+            <TestAssemblies Include="OneScript.Core.Tests" />
+            <TestAssemblies Include="OneScript.DebugProtocol.Test" />
+            <TestAssemblies Include="OneScript.Dynamic.Tests" />
+            <TestAssemblies Include="OneScript.Language.Tests" />
+        </ItemGroup>
+
+        <Exec 
+                WorkingDirectory="$(TestsRoot)/%(TestAssemblies.Identity)"
+                Command="dotnet test --logger:&quot;junit;LogFilePath=$(MSBuildProjectDirectory)/tests/%(TestAssemblies.Identity).xml&quot;"
+                IgnoreExitCode="true"
+                UseUtf8Encoding="Always"
+        />
         
     </Target>
+    
+    <Target Name="ScriptedTests">
+        <ItemGroup>
+            <Executable Include="$(ArtifactsRoot)/*x64/bin/oscript.dll" />
+            <RemoveXMLTestResult Include="$(MSBuildProjectDirectory)\tests\*.os.xml" />
+        </ItemGroup>
 
+        <Delete Files="@(RemoveXMLTestResult)" />
+        
+        <GetFirstItem Items="@(Executable)">
+            <Output TaskParameter="FirstItem" PropertyName="Runner"/>
+        </GetFirstItem>
+
+        <Exec
+              WorkingDirectory="$(MSBuildProjectDirectory)\tests" 
+              Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)\tests\testrunner.os&quot; -runall . xddReportPath ." 
+              IgnoreExitCode="true"
+              ContinueOnError="true"
+              UseUtf8Encoding="Always">
+            <Output TaskParameter="ExitCode" PropertyName="TestsExitCode"/>
+        </Exec>
+        
+    </Target>
+    
+    <Target Name="PackDistributions">
+        <ItemGroup>
+            <Executable Include="$(ArtifactsRoot)/*x64/bin/oscript.dll" />
+            <RuntimeID Include="fdd-x64"/>
+            <RuntimeID Include="fdd-x86"/>
+            <RuntimeID Include="win-x64"/>
+            <RuntimeID Include="win-x86"/>
+            <RuntimeID Include="osx-x64"/>
+            <RuntimeID Include="osx-arm64"/>
+            <RuntimeID Include="linux-x64"/>
+            <VsixSources Include="$(DebugAdapterDir)/**" Exclude="*.vsix" /> 
+        </ItemGroup>
+
+        <CreateItem
+                Include="@(RuntimeID)"
+                AdditionalMetadata="Path=$(ArtifactsRoot)/%(RuntimeID.Identity)">
+            <Output
+                    TaskParameter="Include"
+                    ItemName="BuildVariant"/>
+        </CreateItem>
+        
+        <!-- упадет если ничего не нашлось, и это хорошо -->
+        <GetFirstItem Items="@(Executable)">
+            <Output TaskParameter="FirstItem" PropertyName="Runner"/>
+        </GetFirstItem>
+        
+        <Exec Command="dotnet &quot;$(Runner)&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/*&quot; &quot;$(ArtifactsRoot)/OneScript-$(ReleaseNumber)-%(RuntimeID.Identity).zip&quot;" UseUtf8Encoding="Always"/>
+        <RemoveDir Directories="$(ArtifactsRoot)/%(RuntimeID.Identity)" />
+        <Delete Files="@(VsixSources)" />
+    </Target>
+    
     <!-- Nuget -->
-    <Target Name="CreateNuget" DependsOnTargets="PrepareArtifactsRoot">
+    <Target Name="CreateNuget">
         <ItemGroup>
             <NugetAbleProject Include="ScriptEngine"/>
             <NugetAbleProject Include="ScriptEngine.HostedScript"/>
+            <NugetAbleProject Include="OneScript.StandardLibrary"/>
+            <NugetAbleProject Include="OneScript.Core"/>
+            <NugetAbleProject Include="OneScript.Native"/>
             <NugetAbleProject Include="OneScript.Language"/>
-			<NugetAbleProject Include="OneScript.DebugServices"/>
-			<NugetAbleProject Include="OneScript.DebugProtocol"/>
+            <NugetAbleProject Include="OneScript.DebugServices"/>
+            <NugetAbleProject Include="OneScript.DebugProtocol"/>
         </ItemGroup>
         
-        <MSBuild Projects="src/%(NugetAbleProject.Identity)/%(NugetAbleProject.Identity).csproj" Targets="pack" Properties="PackageOutputPath=$(ArtifactsRoot);ReleaseNumber=$(ReleaseNumber)"/>
+        <PropertyGroup>
+            <SuffixArg Condition="'$(VersionSuffix)' != ''">--version-suffix $(VersionSuffix)</SuffixArg>
+        </PropertyGroup>
+        
+        <Exec Command="dotnet pack src/%(NugetAbleProject.Identity)/%(NugetAbleProject.Identity).csproj -o &quot;$(ArtifactsRoot)/nuget&quot; $(SuffixArg) -c Release -p:VersionPrefix=$(VersionPrefix)"/>
     
     </Target>
 
-    <!-- ZIP -->
-    <Target Name="CreateZip" DependsOnTargets="PrepareArtifactsRoot">
-        
-        <Exec Command="&quot;$(MSBuildProjectDirectory)\install\prepare-zip.cmd&quot; $(TempFolder) %(PlatformItem.Identity)"/>
-
-        <Exec Command="&quot;$(ToolFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(TempFolder)/zip%(PlatformItem.Identity)/*&quot; &quot;$(ArtifactsRoot)/OneScript-$(ReleaseNumber)-%(PlatformItem.Identity).zip&quot;"/>
-        <Exec Command="&quot;$(ToolFolder)\oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\install\unicode-zipper.os&quot; pack &quot;$(MDDocFolder)/*&quot; &quot;$(ArtifactsRoot)/mddoc-$(ReleaseNumber).zip&quot;"/>
-    </Target>
-
-    <!-- MSI -->
-    <Target Name="CreateMSI">
-        <MSBuild Projects="$(MSBuildProjectDirectory)\src\Installer\Installer.wixproj"
-                    Properties="Configuration=$(Configuration);OutputPath=$(ArtifactsRoot);OutputPathForBuild=$(ArtifactsRoot);Version=$(ReleaseNumber).$(BuildNumber)" />
-    </Target>
-
-
-    <Target Name="xUnitTest" DependsOnTargets="PrepareArtifactsRoot">
-
-        <CreateItem Include="$(MSBuildProjectDirectory)\tests\*.os.xml">
-            <Output TaskParameter="Include" ItemName="RemoveXMLTestResult" />
-        </CreateItem>
-
-        <Delete Files="@(RemoveXMLTestResult)" />
-
-        <Exec WorkingDirectory="$(MSBuildProjectDirectory)\tests" Command="&quot;$(ToolFolder)/oscript.exe&quot; &quot;$(MSBuildProjectDirectory)\tests\testrunner.os&quot; -runall . xddReportPath ." IgnoreExitCode="true"/>
-
-    </Target>
-
-    <Target Name="PublishNuget">
+    <Target Name="PublishNuget" DependsOnTargets="CreateNuget">
         <ItemGroup>
-            <NugetAbleProject Include="OneScript"/>
+            <NugetAbleProject Include="ScriptEngine"/>
+            <NugetAbleProject Include="ScriptEngine.HostedScript"/>
             <NugetAbleProject Include="OneScript.StandardLibrary"/>
+            <NugetAbleProject Include="OneScript.Core"/>
+            <NugetAbleProject Include="OneScript.Native"/>
             <NugetAbleProject Include="OneScript.Language"/>
-			<NugetAbleProject Include="OneScript.DebugServices"/>
-			<NugetAbleProject Include="OneScript.DebugProtocol"/>
+            <NugetAbleProject Include="OneScript.DebugServices"/>
+            <NugetAbleProject Include="OneScript.DebugProtocol"/>
         </ItemGroup>
         
         <Error Text="No nuget token (/p:NugetToken=) specified" Condition="'$(NugetToken)' == ''" />
-        <Exec WorkingDirectory="$(MSBuildProjectDirectory)\built"
-            Command="dotnet nuget push %(NugetAbleProject.Identity).$(ReleaseNumber).nupkg -k $(NugetToken) -s https://api.nuget.org/v3/index.json"/>
+        <Exec WorkingDirectory="$(MSBuildProjectDirectory)\built\nuget"
+            Command="dotnet nuget push %(NugetAbleProject.Identity).$(ReleaseNumber).nupkg -k $(NugetToken) -s https://api.nuget.org/v3/index.json" UseUtf8Encoding="Always"/>
         
     </Target>
     

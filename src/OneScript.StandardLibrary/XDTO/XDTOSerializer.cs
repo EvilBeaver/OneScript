@@ -22,14 +22,12 @@ namespace OneScript.StandardLibrary.XDTO
     [ContextClass("СериализаторXDTO", "XDTOSerializer")]
     public sealed class XDTOSerializer : AutoContext<XDTOSerializer>
     {
-        private readonly ITypeManager _typeManager;
         private readonly XmlGlobalFunctions _xmlGlobalFunctions;
         private readonly XmlNodeTypeEnum _xmlNodeEnum;
 
 
-        private XDTOSerializer(ITypeManager typeManager, IGlobalsManager globalsManager)
+        private XDTOSerializer(IGlobalsManager globalsManager)
         {
-            _typeManager = typeManager;
             _xmlGlobalFunctions = globalsManager.GetInstance<XmlGlobalFunctions>();
             _xmlNodeEnum = globalsManager.GetInstance<XmlNodeTypeEnum>();
         }
@@ -263,7 +261,7 @@ namespace OneScript.StandardLibrary.XDTO
         public static XDTOSerializer CreateInstance(TypeActivationContext context)
         {
             var globalsManager = context.Services.Resolve<IGlobalsManager>();
-            return new XDTOSerializer(context.TypeManager, globalsManager);
+            return new XDTOSerializer(globalsManager);
         }
 
         #endregion

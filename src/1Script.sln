@@ -17,9 +17,8 @@ EndProject
 
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D14BF321-348C-46B8-B96A-43A22BA7AC10}"
 	ProjectSection(SolutionItems) = preProject
-		..\Build.csproj = ..\Build.csproj
 		oscommon.targets = oscommon.targets
-		..\Build_Core.csproj = ..\Build_Core.csproj
+		..\Build.csproj = ..\Build.csproj
 		..\Jenkinsfile = ..\Jenkinsfile
 	EndProjectSection
 EndProject

@@ -5,7 +5,7 @@ pipeline {
 
     environment {
         VersionPrefix = '2.0.0'
-        VersionSuffix = 'rc3'
+        VersionSuffix = 'rc4'
         outputEnc = '65001'
     }
 
@@ -58,7 +58,7 @@ pipeline {
 
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" src/1Script.sln /t:restore && mkdir doctool"
                             bat "chcp $outputEnc > nul\r\n dotnet publish src/OneScriptDocumenter/OneScriptDocumenter.csproj -c Release -o doctool"
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:CleanAll;PrepareDistributionFiles;CreateNuget"
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionFiles;CreateNuget"
                             
                             stash includes: 'tests, built/**', name: 'buildResults'
                         }
@@ -126,7 +126,7 @@ pipeline {
                                 deleteDir()
                             }
                             unstash 'buildResults'
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:Test"
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:Test"
 
                             junit 'tests/*.xml'
                         }
@@ -136,7 +136,7 @@ pipeline {
                 stage('Linux testing') {
                     agent{ 
                         docker {
-                            image 'mcr.microsoft.com/dotnet/sdk:5.0'
+                            image 'mcr.microsoft.com/dotnet/sdk:6.0'
                             label 'linux' 
                         }
                     }
@@ -187,16 +187,20 @@ pipeline {
                     unstash 'buildResults'
                     unstash 'nativeApiSo'
                     
-                    bat 'xcopy output\\na-proxy\\*64.so built\\linux-64\\bin\\'
+                    bat '''
+                    chcp 65001 > nul
+                    dir output\\na-proxy
+                    xcopy output\\na-proxy\\*64.so built\\linux-x64\\bin\\ /F
+                    '''.stripIndent()
                     
                     script
                     {
                         if (env.BRANCH_NAME == "preview") {
                             echo 'Building preview'
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions /p:Suffix=-pre%BUILD_NUMBER%"
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PackDistributions /p:Suffix=-pre%BUILD_NUMBER%"
                         }
                         else{
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build_Core.csproj /t:PackDistributions"
+                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PackDistributions"
                         }
                     }
                     archiveArtifacts artifacts: 'built/**', fingerprint: true
@@ -213,7 +217,7 @@ pipeline {
             agent { label 'master' }
 
             steps {
-                
+                cleanWs()
                 unstash 'dist'
                 unstash 'vsix'
 

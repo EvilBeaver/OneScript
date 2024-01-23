@@ -23,6 +23,7 @@ namespace OneScript.Language.LexicalAnalysis
         private readonly LexerState _commentState = new CommentLexerState();
         private readonly LexerState _annotationState = new AnnotationLexerState();
         private readonly LexerState _directiveState = new PreprocessorDirectiveLexerState();
+        private readonly LexerState _labelState = new LabelLexerState();
         
         private readonly FixedLexerState _fixedState = new FixedLexerState();
 
@@ -118,6 +119,10 @@ namespace OneScript.Language.LexicalAnalysis
             else if (cs == SpecialChars.Annotation)
             {
                 _state = _annotationState;
+            }
+            else if (cs == SpecialChars.Tilde)
+            {
+                _state = _labelState;
             }
             else
             {
