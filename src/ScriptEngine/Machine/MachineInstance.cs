@@ -8,14 +8,11 @@ using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
 using ScriptEngine.Environment;
 using ScriptEngine.Machine.Values;
-using System.Reflection;
-//using System.Runtime.Remoting.Contexts;
 
 namespace ScriptEngine.Machine
 {
@@ -1103,13 +1100,7 @@ namespace ScriptEngine.Machine
 
         private void ResolveProp(int arg)
         {
-            var objIValue = _operationStack.Pop();
-            if (objIValue.DataType != DataType.Object)
-            {
-                throw RuntimeException.ValueIsNotObjectException();
-            }
-
-            var context = objIValue.AsObject();
+            var context = _operationStack.Pop().AsObject();
             var propName = _module.Constants[arg].AsString();
             var propNum = context.FindProperty(propName);
 
@@ -1150,15 +1141,8 @@ namespace ScriptEngine.Machine
         private void PrepareContextCallArguments(int arg, out IRuntimeContextInstance context, out int methodId, out IValue[] argValues)
         {
             var factArgs = PopArguments();
-            var argCount = factArgs.Length;
 
-            var objIValue = _operationStack.Pop();
-            if (objIValue.DataType != DataType.Object)
-            {
-                throw RuntimeException.ValueIsNotObjectException();
-            }
-
-            context = objIValue.AsObject();
+            context = _operationStack.Pop().AsObject();
             var methodName = _module.Constants[arg].AsString();
             methodId = context.FindMethod(methodName);
     
@@ -1168,20 +1152,23 @@ namespace ScriptEngine.Machine
             }
             else
             {
+                var factArgCount = factArgs.Length;
+
                 var methodInfo = context.GetMethodInfo(methodId);
+                var methArgCount = methodInfo.ArgCount;
                 var methodParams = methodInfo.Params;
 
-                if (argCount > methodParams.Length)
+                if (factArgCount > methArgCount)
                     throw RuntimeException.TooManyArgumentsPassed();
 
-                argValues = new IValue[methodParams.Length];
+                argValues = new IValue[methArgCount];
                 int i = 0;
-                for (; i < argCount; i++)
+                for (; i < factArgCount; i++)
                 {
                     argValues[i] = PrepareArg(factArgs[i], methodParams[i], i);
                 }
 
-                for (; i < methodParams.Length; i++)
+                for (; i < methArgCount; i++)
                 {
                     if (!methodParams[i].HasDefaultValue)
                         throw RuntimeException.TooFewArgumentsPassed();
@@ -1301,23 +1288,15 @@ namespace ScriptEngine.Machine
 
         private void PushIterator(int arg)
         {
-            var collection = _operationStack.Pop();
-            if (collection.DataType == DataType.Object)
+            var objValue = _operationStack.Pop().AsObject();
+            if (!(objValue is ICollectionContext collection))
             {
-                var context = collection.AsObject() as ICollectionContext;
-                if (context == null)
-                {
-                    throw RuntimeException.IteratorIsNotDefined();
-                }
+                throw RuntimeException.IteratorIsNotDefined();
+            }
 
-                var iterator = context.GetManagedIterator();
-                _currentFrame.LocalFrameStack.Push(iterator);
-                NextInstruction();
-            }
-            else
-            {
-                throw RuntimeException.ValueIsNotObjectException();
-            }
+            var iterator = collection.GetManagedIterator();
+            _currentFrame.LocalFrameStack.Push(iterator);
+            NextInstruction();
         }
 
         private void IteratorNext(int arg)

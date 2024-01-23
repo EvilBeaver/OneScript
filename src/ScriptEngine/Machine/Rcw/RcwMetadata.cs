@@ -128,7 +128,7 @@ namespace ScriptEngine.Machine.Rcw
 
         private RcwPropertyMetadata GetOrAddProperty(string propName, int dispId)
         {
-            if (Properties.Names.TryGetValue(propName, out var md)) return md;
+            if (Properties.ByName.TryGetValue(propName, out var md)) return md;
 
             md = new RcwPropertyMetadata(propName, dispId);
             Properties.Add(md);
