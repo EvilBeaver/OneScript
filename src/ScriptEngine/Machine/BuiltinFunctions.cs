@@ -112,7 +112,7 @@ namespace ScriptEngine.Machine
             AddFunc(OperationCode.Exp,     MANDATORY_BYVAL);
             AddFunc(OperationCode.Pow,     MANDATORY_BYVAL, MANDATORY_BYVAL);
             AddFunc(OperationCode.Sqrt,    MANDATORY_BYVAL);
-            AddFunc(OperationCode.Format,  MANDATORY_BYVAL, MANDATORY_BYVAL);
+            AddFunc(OperationCode.Format,  MANDATORY_BYVAL, OPTIONAL_BYVAL);
             
             // special
             AddFunc(OperationCode.ExceptionInfo);

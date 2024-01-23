@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.DebugProtocol;
+using OneScript.DebugProtocol.TcpServer;
 using OneScript.Language;
 using ScriptEngine.Machine;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
@@ -21,7 +22,7 @@ namespace OneScript.DebugServices
     {
         private readonly IBreakpointManager _breakpointManager;
         private readonly IVariableVisualizer _visualizer;
-        private ThreadManager _threadManager { get; }
+        private readonly ThreadManager _threadManager;
 
         public DefaultDebugService(IBreakpointManager breakpointManager, ThreadManager threads, IVariableVisualizer visualizer)
         {
@@ -49,7 +50,7 @@ namespace OneScript.DebugServices
             }
         }
 
-        public virtual Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)
+        public Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)
         {
             var confirmedBreakpoints = new List<Breakpoint>();
 
@@ -71,7 +72,6 @@ namespace OneScript.DebugServices
                         Source = item.Key
                     });
                 }
-
             }
 
             // Уведомить все потоки о новых точках остановки
@@ -83,7 +83,7 @@ namespace OneScript.DebugServices
             return confirmedBreakpoints.ToArray();
         }
 
-        public virtual StackFrame[] GetStackFrames(int threadId)
+        public StackFrame[] GetStackFrames(int threadId)
         {
             var machine = _threadManager.GetTokenForThread(threadId).Machine;
             var frames = machine.GetExecutionFrames();
@@ -91,13 +91,14 @@ namespace OneScript.DebugServices
             int index = 0;
             foreach (var frameInfo in frames)
             {
-                var frame = new StackFrame();
-                frame.LineNumber = frameInfo.LineNumber;
-                frame.Index = index++;
-                frame.MethodName = frameInfo.MethodName;
-                frame.Source = frameInfo.Source;
+                var frame = new StackFrame
+                {
+                    LineNumber = frameInfo.LineNumber,
+                    Index = index++,
+                    MethodName = frameInfo.MethodName,
+                    Source = frameInfo.Source
+                };
                 result[frame.Index] = frame;
-
             }
             return result;
         }
@@ -107,7 +108,7 @@ namespace OneScript.DebugServices
             return _threadManager.GetTokenForThread(threadId).Machine;
         }
 
-        public virtual Variable[] GetVariables(int threadId, int frameIndex, int[] path)
+        public Variable[] GetVariables(int threadId, int frameIndex, int[] path)
         {
             var machine = _threadManager.GetTokenForThread(threadId).Machine;
             var locals = machine.GetFrameLocals(frameIndex);
@@ -121,13 +122,13 @@ namespace OneScript.DebugServices
             return GetDebugVariables(locals);
         }
 
-        public virtual Variable[] GetEvaluatedVariables(string expression, int threadId, int frameIndex, int[] path)
+        public Variable[] GetEvaluatedVariables(string expression, int threadId, int frameIndex, int[] path)
         {
             IValue value;
 
             try
             {
-                value = GetMachine(threadId).Evaluate(expression, true);
+                value = GetMachine(threadId).EvaluateInFrame(expression, frameIndex);
             }
             catch (Exception e)
             {
@@ -145,12 +146,12 @@ namespace OneScript.DebugServices
             return GetDebugVariables(locals);
         }
 
-        public virtual Variable Evaluate(int threadId, int contextFrame, string expression)
+        public Variable Evaluate(int threadId, int contextFrame, string expression)
         {
             try
             {
                 var value = GetMachine(threadId)
-                    .Evaluate(expression, true)
+                    .EvaluateInFrame(expression, contextFrame)
                     .GetRawValue();
                 
                 var variable = _visualizer.GetVariable(MachineVariable.Create(value, "$evalResult"));
@@ -163,28 +164,36 @@ namespace OneScript.DebugServices
             }
         }
 
-        public virtual void Next(int threadId)
+        public void Next(int threadId)
         {
             var t = _threadManager.GetTokenForThread(threadId);
             t.Machine.StepOver();
             t.Set();
         }
 
-        public virtual void StepIn(int threadId)
+        public void StepIn(int threadId)
         {
             var t = _threadManager.GetTokenForThread(threadId);
             t.Machine.StepIn();
             t.Set();
         }
 
-        public virtual void StepOut(int threadId)
+        public void StepOut(int threadId)
         {
             var t = _threadManager.GetTokenForThread(threadId);
             t.Machine.StepOut();
             t.Set();
         }
 
-        public virtual int[] GetThreads()
+        public void Disconnect(bool terminate)
+        {
+            _breakpointManager.Clear();
+            _threadManager.ReleaseAllThreads();
+
+            throw new StopServiceException();
+        }
+
+        public int[] GetThreads()
         {
             return _threadManager.GetAllThreadIds();
         }

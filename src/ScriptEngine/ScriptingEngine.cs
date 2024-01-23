@@ -187,6 +187,7 @@ namespace ScriptEngine
 
         public void Dispose()
         {
+            DebugController?.Dispose();
             AttachedScriptsFactory.SetInstance(null);
             GlobalsManager.Reset();
         }

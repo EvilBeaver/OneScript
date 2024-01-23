@@ -180,10 +180,9 @@ namespace ScriptEngine.Machine.Reflection
                 reflectedParam.SetPosition(i);
                 if (currentParam.HasDefaultValue)
                 {
-
+                    reflectedParam.SetDefaultValue(currentParam.DefaultValue);
                 }
 
-                reflectedParam.SetDefaultValue(unknownVal);
                 if (currentParam.Annotations != null)
                 {
                     foreach (var annotation in currentParam.Annotations)

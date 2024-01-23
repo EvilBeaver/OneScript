@@ -114,7 +114,7 @@ namespace ScriptEngine.HostedScript.Library.Net
         /// </summary>
         /// <param name="data">ДвоичныеДанные которые нужно отправить.</param>
         [ContextMethod("ОтправитьДвоичныеДанные", "SendBinaryData")]
-        public void SendString(BinaryDataContext data)
+        public void SendBinaryData(BinaryDataContext data)
         {
             if (data.Size() == 0)
                 return;

@@ -121,40 +121,48 @@ namespace ScriptEngine.Compiler
             {
                 result.Name = _lastExtractedLexem.Content;
                 NextToken();
-                if (_lastExtractedLexem.Token != Token.Equal)
+                if (_lastExtractedLexem.Token == Token.Equal)
+                {
+                    result.ValueIndex = BuildDefaultParameterValue();
+                }
+                else
                 {
                     result.ValueIndex = AnnotationParameter.UNDEFINED_VALUE_INDEX;
+                    NextToken();
                     return result;
                 }
-                NextToken();
             }
-            
-            var cDef = CreateConstDefinition(ref _lastExtractedLexem);
-            result.ValueIndex = GetConstNumber(ref cDef);
-            
-            NextToken();
-            
+            else
+            {
+                result.ValueIndex = BuildLiteralConstant();
+            }
+
             return result;
         }
 
         private IList<AnnotationParameter> BuildAnnotationParameters()
         {
             var parameters = new List<AnnotationParameter>();
-            while (_lastExtractedLexem.Token != Token.EndOfText)
+            if (_lastExtractedLexem.Token == Token.OpenPar)
             {
-                parameters.Add(BuildAnnotationParameter());
-                if (_lastExtractedLexem.Token == Token.Comma)
+                NextToken();
+                
+                while (_lastExtractedLexem.Token != Token.EndOfText)
                 {
-                    NextToken();
-                    continue;
+                    if (_lastExtractedLexem.Token == Token.ClosePar)
+                    {
+                        NextToken();
+                        break;
+                    }
+                
+                    parameters.Add(BuildAnnotationParameter());
+                    if (_lastExtractedLexem.Token == Token.Comma)
+                    {
+                        NextToken();
+                    }
                 }
-                if (_lastExtractedLexem.Token == Token.ClosePar)
-                {
-                    NextToken();
-                    break;
-                }
-                throw CompilerException.UnexpectedOperation();
             }
+            
             return parameters;
         }
 
@@ -165,12 +173,7 @@ namespace ScriptEngine.Compiler
                 var annotation = new AnnotationDefinition() {Name = _lastExtractedLexem.Content};
 
                 NextToken();
-                if (_lastExtractedLexem.Token == Token.OpenPar)
-                {
-                    NextToken();
-                    annotation.Parameters = BuildAnnotationParameters().ToArray();
-                }
-                
+                annotation.Parameters = BuildAnnotationParameters().ToArray();
                 _annotations.Add(annotation);
             }
         }
@@ -325,11 +328,17 @@ namespace ScriptEngine.Compiler
                         var symbolicName = _lastExtractedLexem.Content;
                         var annotations = ExtractAnnotations();
                         var definition = _ctx.DefineVariable(symbolicName);
+                        NextToken();
                         if (_inMethodScope)
                         {
                             if (_isStatementsDefined)
                             {
                                 throw CompilerException.LateVarDefinition();
+                            }
+
+                            if(_lastExtractedLexem.Token == Token.Export)
+                            {
+                                throw CompilerException.LocalExportVar();
                             }
                         }
                         else
@@ -346,10 +355,10 @@ namespace ScriptEngine.Compiler
                                 Annotations = annotations,
                                 CanGet = true,
                                 CanSet = true,
-                                Index = definition.CodeIndex
+                                Index = definition.CodeIndex,
+                                IsExport = _lastExtractedLexem.Token == Token.Export
                             });
                         }
-                        NextToken();
                         if (_lastExtractedLexem.Token == Token.Export)
                         {
                             _module.ExportedProperties.Add(new ExportedSymbol()
@@ -632,6 +641,11 @@ namespace ScriptEngine.Compiler
         {
             NextToken();
 
+            return BuildLiteralConstant();
+        }
+
+        private int BuildLiteralConstant()
+        {
             bool hasSign = false;
             bool signIsMinus = _lastExtractedLexem.Token == Token.Minus;
             if (signIsMinus || _lastExtractedLexem.Token == Token.Plus)
@@ -650,7 +664,7 @@ namespace ScriptEngine.Compiler
                         cd.Presentation = '-' + cd.Presentation;
                     }
                     else if (_lastExtractedLexem.Type == LexemType.StringLiteral
-                          || _lastExtractedLexem.Type == LexemType.DateLiteral)
+                             || _lastExtractedLexem.Type == LexemType.DateLiteral)
                     {
                         throw CompilerException.NumberExpected();
                     }
@@ -1155,23 +1169,63 @@ namespace ScriptEngine.Compiler
             };
             
             NextToken();
-            BuildExpression(Token.Semicolon);
-
-            lastCommand = _module.Code[_module.Code.Count - 1]; 
-            if (lastCommand.Code != OperationCode.ResolveProp)
+            
+            // Возможно, это вариант с именем метода
+            var isUserSymbol = LanguageDef.IsUserSymbol(ref _lastExtractedLexem);
+            var methodName = isUserSymbol ? _lastExtractedLexem.Content : default;
+            try
             {
-                throw new CompilerException(Locale.NStr("ru = 'Ожидается имя обработчика события'; en = 'Event handler name expected'"));
+                BuildExpression(Token.Semicolon);
+
+                lastCommand = _module.Code[_module.Code.Count - 1];
+
+                switch (lastCommand.Code)
+                {
+                    case OperationCode.PushLoc:
+                    case OperationCode.PushVar:
+                    case OperationCode.PushRef:
+                        _module.Code.RemoveAt(_module.Code.Count - 1);
+                        PushLocalMethodNumber(methodName);
+                        AddCommand(TokenToOperationCode(token), 1);
+                        break;
+                    case OperationCode.ResolveProp:
+                        _module.Code[_module.Code.Count - 1] = new Command
+                        {
+                            Code = OperationCode.PushConst,
+                            Argument = lastCommand.Argument
+                        };
+                
+                        AddCommand(TokenToOperationCode(token));
+                        break;
+                    default:
+                        throw new CompilerException(
+                            Locale.NStr("ru = 'Ожидается имя обработчика события'; en = 'Event handler name expected'"));
+                }
             }
-
-            _module.Code[_module.Code.Count - 1] = new Command
+            catch (SymbolNotFoundException e)
             {
-                Code = OperationCode.PushConst,
-                Argument = lastCommand.Argument
-            };
+                if (!isUserSymbol || e.Symbol != methodName)
+                {
+                    throw;
+                }
 
-            AddCommand(TokenToOperationCode(token));
+                PushLocalMethodNumber(methodName);
+                AddCommand(TokenToOperationCode(token), 1);
+            }
         }
-        
+
+        private void PushLocalMethodNumber(string methodName)
+        {
+            _ctx.GetMethod(methodName);
+
+            var def = new ConstDefinition
+            {
+                Presentation = methodName,
+                Type = DataType.String
+            };
+            AddCommand(OperationCode.PushConst, GetConstNumber(ref def));
+        }
+
         private void CorrectCommandArgument(int index, int newArgument)
         {
             var cmd = _module.Code[index];
@@ -1540,7 +1594,7 @@ namespace ScriptEngine.Compiler
         {
             NextToken();
             BuildPrimaryNode();
-            BuildOperation(GetBinaryPriority(Token.Not));
+            BuildOperation(LanguageDef.GetPriority(Token.Not));
             AddCommand(OperationCode.Not);
         }
 
@@ -1792,11 +1846,7 @@ namespace ScriptEngine.Compiler
 
         private void CheckFactArguments(MethodInfo methInfo, bool[] argsPassed)
         {
-            CheckFactArguments(methInfo.Params, argsPassed);
-        }
-
-        private void CheckFactArguments(ParameterDefinition[] parameters, bool[] argsPassed)
-        {
+            var parameters = methInfo.Params;
             if (argsPassed.Length > parameters.Length)
             {
                 throw CompilerException.TooManyArgumentsPassed();
@@ -1805,6 +1855,26 @@ namespace ScriptEngine.Compiler
             if (parameters.Skip(argsPassed.Length).Any(param => !param.HasDefaultValue))
             {
                 throw CompilerException.TooFewArgumentsPassed();
+            }
+        }
+
+        private void FullCheckFactArguments(ParameterDefinition[] parameters, bool[] argsPassed)
+        {
+            if (argsPassed.Length > parameters.Length)
+            {
+                throw CompilerException.TooManyArgumentsPassed();
+            }
+
+            int i = 0;
+            for (; i < argsPassed.Length; i++)
+            {
+                if (!parameters[i].HasDefaultValue && !argsPassed[i])
+                    throw CompilerException.MissedArgument();
+            }
+            for (; i < parameters.Length; i++)
+            {
+                if (!parameters[i].HasDefaultValue)
+                    throw CompilerException.TooFewArgumentsPassed();
             }
         }
 
@@ -1907,7 +1977,7 @@ namespace ScriptEngine.Compiler
             else
             {
                 var parameters = BuiltinFunctions.ParametersInfo(funcId);
-                CheckFactArguments(parameters, passedArgs);
+                FullCheckFactArguments(parameters, passedArgs);
             }
 
             AddCommand(funcId, passedArgs.Length);

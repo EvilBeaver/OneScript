@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using ScriptEngine.Machine.Rcw;
 
 namespace ScriptEngine.Machine.Contexts
@@ -191,7 +192,11 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    DispatchUtility.Invoke(Instance, dispId, MarshalArguments(arguments));
+                    var argsData = MarshalArguments(arguments);
+                    var initialValues = new object[argsData.values.Length]; 
+                    Array.Copy(argsData.values, initialValues, initialValues.Length);
+                    DispatchUtility.Invoke(Instance, dispId, argsData.values, argsData.flags);
+                    RemapOutputParams(arguments, argsData.values, argsData.flags[0], initialValues);
                 }
                 catch (System.Reflection.TargetInvocationException e)
                 {
@@ -217,7 +222,11 @@ namespace ScriptEngine.Machine.Contexts
             {
                 try
                 {
-                    var result = DispatchUtility.Invoke(Instance, dispId, MarshalArguments(arguments));
+                    var argsData = MarshalArguments(arguments);
+                    var initialValues = new object[argsData.values.Length]; 
+                    Array.Copy(argsData.values, initialValues, initialValues.Length);
+                    var result = DispatchUtility.Invoke(Instance, dispId, argsData.values, argsData.flags);
+                    RemapOutputParams(arguments, argsData.values, argsData.flags[0], initialValues);
                     retValue = CreateIValue(result);
                 }
                 catch (System.Reflection.TargetInvocationException e)
@@ -228,6 +237,19 @@ namespace ScriptEngine.Machine.Contexts
             catch (System.MissingMemberException)
             {
                 throw RuntimeException.MethodNotFoundException(method.Name);
+            }
+        }
+        
+        private void RemapOutputParams(IValue[] arguments, object[] values, ParameterModifier flags,
+            object[] initialValues)
+        {
+            for (int i = 0; i < arguments.Length; i++)
+            {
+                if (flags[i] && !initialValues[i].Equals(values[i]))
+                {
+                    var variable = (IVariable)arguments[i];
+                    variable.Value = CreateIValue(values[i]);
+                }
             }
         }
 

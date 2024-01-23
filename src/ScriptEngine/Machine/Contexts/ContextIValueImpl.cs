@@ -94,23 +94,9 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IComparable<IValue> Members
 
-        public int CompareTo(IValue other)
-        {
-            if (other.SystemType.Equals(this.SystemType))
-            {
-                if (this.Equals(other))
-                {
-                    return 0;
-                }
-                else
-                {
-                    throw RuntimeException.ComparisonNotSupportedException();
-                }
-            }
-            else
-            {
-                return this.SystemType.ToString().CompareTo(other.SystemType.ToString());
-            }
+        public virtual int CompareTo(IValue other)
+        { 
+            throw RuntimeException.ComparisonNotSupportedException();
         }
 
         #endregion

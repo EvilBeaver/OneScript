@@ -181,13 +181,16 @@ namespace ScriptEngine.Machine.Contexts
                 var paramDefs = new ParameterDefinition[argNum];
                 for (int i = 0; i < argNum; i++)
                 {
+                    var param = parameters[i];
+
                     var pd = new ParameterDefinition();
-                    if (parameters[i].GetCustomAttributes(typeof(ByRefAttribute), false).Length != 0)
+                    pd.RealType = param.ParameterType;
+
+                    if (param.GetCustomAttributes(typeof(ByRefAttribute), false).Length != 0)
                     {
-                        if (parameters[i].ParameterType != typeof(IVariable))
-                        {
+                        if (param.ParameterType != typeof(IVariable))
                             throw new InvalidOperationException("Attribute ByRef can be applied only on IVariable parameters");
-                        }
+
                         pd.IsByValue = false;
                     }
                     else
@@ -195,27 +198,26 @@ namespace ScriptEngine.Machine.Contexts
                         pd.IsByValue = true;
                     }
 
-                    if (parameters[i].IsOptional)
+                    if (param.HasDefaultValue)
                     {
                         pd.HasDefaultValue = true;
+                        pd.DefaultValue = ContextValuesMarshaller.ConvertParameterDefaultValue(param);
                         pd.DefaultValueIndex = ParameterDefinition.UNDEFINED_VALUE_INDEX;
                     }
 
                     paramDefs[i] = pd;
-
                 }
 
-                var scriptMethInfo = new ScriptEngine.Machine.MethodInfo();
-                scriptMethInfo.IsFunction = isFunc;
-                scriptMethInfo.IsExport = true;
-                scriptMethInfo.IsDeprecated = binding.IsDeprecated;
-                scriptMethInfo.ThrowOnUseDeprecated = binding.ThrowOnUse;
-                scriptMethInfo.Name = binding.GetName();
-                scriptMethInfo.Alias = binding.GetAlias(target.Name);
-
-                scriptMethInfo.Params = paramDefs;
-
-                return scriptMethInfo;
+                return new MethodInfo
+                {
+                    IsFunction = isFunc,
+                    IsExport = true,
+                    IsDeprecated = binding.IsDeprecated,
+                    ThrowOnUseDeprecated = binding.ThrowOnUse,
+                    Name = binding.GetName(),
+                    Alias = binding.GetAlias(target.Name),
+                    Params = paramDefs
+                };
             }
 
             private static ContextCallableDelegate<TInstance> CreateFunction(System.Reflection.MethodInfo target)

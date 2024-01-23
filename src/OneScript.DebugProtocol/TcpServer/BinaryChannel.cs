@@ -5,7 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
@@ -14,7 +13,10 @@ using OneScript.DebugProtocol.Abstractions;
 
 namespace OneScript.DebugProtocol
 {
-    public class BinaryChannel : ICommunicationChannel, IDisposable
+    /// <summary>
+    /// TCP-канал, использующий стандартную Binary-сериализацию .NET
+    /// </summary>
+    public class BinaryChannel : ICommunicationChannel
     {
         private readonly TcpClient _client;
         private readonly NetworkStream _clientStream;

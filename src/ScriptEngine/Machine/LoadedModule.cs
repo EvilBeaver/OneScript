@@ -32,6 +32,25 @@ namespace ScriptEngine.Machine
             }
 
             ResolveAnnotationConstants();
+            ResolveDefaultParametersValues();
+        }
+
+        private void ResolveDefaultParametersValues()
+        {
+            foreach(var method in Methods)
+            {
+                if (method.Signature.Params == null) 
+                    continue;
+
+                for (int i = 0; i < method.Signature.Params.Length; i++)
+                {
+                    if (method.Signature.Params[i].HasDefaultValue)
+                    {
+                        method.Signature.Params[i].DefaultValue = Constants[method.Signature.Params[i].DefaultValueIndex];
+                    }
+
+                }
+            }  
         }
 
         private void ResolveAnnotationConstants()

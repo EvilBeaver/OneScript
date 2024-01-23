@@ -51,6 +51,12 @@ namespace ScriptEngine.Compiler
                                                     + "en='Variable declarations must be placed at beginning of module, procedure, or function'"));
         }
 
+        internal static CompilerException LocalExportVar()
+        {
+            return new CompilerException(Locale.NStr("ru='В теле процедуры или функции не может быть объявлена экспортная переменная';"
+                                                    + "en='An export variable cannot be declared in the body of a procedure or function'"));
+        }
+
         internal static CompilerException TokenExpected(params Token[] expected)
         {
             var names = expected.Select(x => Enum.GetName(typeof(Token), x));
@@ -80,6 +86,11 @@ namespace ScriptEngine.Compiler
         internal static CompilerException TooManyArgumentsPassed()
         {
             return new CompilerException(Locale.NStr("ru='Слишком много фактических параметров'; en='Too many actual parameters'"));
+        }
+
+        internal static CompilerException MissedArgument()
+        {
+            return new CompilerException(Locale.NStr("ru='Пропущен обязательный параметр';en='Missing mandatory parameter'"));
         }
 
         internal static CompilerException InternalCompilerError(string reason)

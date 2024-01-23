@@ -214,6 +214,11 @@ namespace ScriptEngine.Machine
         public string Name;
         public bool IsByValue;
         public bool HasDefaultValue;
+        
+        [NonSerialized]
+        public IValue DefaultValue;
+        public Type RealType;
+
         public int DefaultValueIndex;
         public AnnotationDefinition[] Annotations;
 
@@ -310,6 +315,7 @@ namespace ScriptEngine.Machine
         public string Identifier;
         public string Alias;
         public SymbolType Type;
+        public bool IsExport;
         
         public bool CanGet;
         public bool CanSet;

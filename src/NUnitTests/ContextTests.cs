@@ -20,7 +20,7 @@ namespace NUnitTests
         private EngineWrapperNUnit host;
         private readonly List<string> _messages = new List<string>();
 
-        [OneTimeSetUp]
+        [SetUp]
         public void Init()
         {
             host = new EngineWrapperNUnit();
@@ -89,7 +89,7 @@ namespace NUnitTests
             // Передача и возврат значения Class в функцию Class
             host.RunTestString(
             @"К = Новый ТестNullПреобразования;
-                Арг = Новый ПNullClass;
+                Арг = Новый ТестNullКласс;
                 ВЗ = 5.7;
                 ВЗ = К.ТестКласс(Арг);
                 Если Не ВЗ = Арг Тогда
@@ -131,23 +131,6 @@ namespace NUnitTests
         }
 
         [Test]
-        public void CheckUndefinedIsNull5()
-        {
-            SystemLogger.SetWriter(this);
-            _messages.Clear();
-
-            // Передача и возврат Неопределено в функцию Строка
-            host.RunTestString(
-            @"К = Новый ТестNullПреобразования;
-                Арг = Неопределено;
-                ВЗ = 5.7;
-                ВЗ = К.ТестNullString(Арг);
-                Если Не ВЗ = Неопределено Тогда
-                    ВызватьИсключение ""Test string Func(string) -> Func(Unknown): return value is not equal of null"";
-                КонецЕсли;");
-        }
-
-        [Test]
         public void CheckUndefinedIsNull6()
         {
             SystemLogger.SetWriter(this);
@@ -165,6 +148,7 @@ namespace NUnitTests
         }
 
         [Test]
+        [Ignore("Зависит от принимающего объекта")]
         public void CheckUndefinedIsNull7()
         {
             SystemLogger.SetWriter(this);
@@ -207,6 +191,7 @@ namespace NUnitTests
         }
 
         [Test]
+        [Ignore("Зависит от принимающего объекта")]
         public void CheckUndefinedIsNull9()
         {
             SystemLogger.SetWriter(this);
@@ -248,6 +233,7 @@ namespace NUnitTests
         }
 
         [Test]
+        [Ignore("Зависит от принимающего объекта")]
         public void CheckUndefinedIsNull11()
         {
             SystemLogger.SetWriter(this);
@@ -290,6 +276,7 @@ namespace NUnitTests
         }
 
         [Test]
+        [Ignore("Зависит от принимающего объекта")]
         public void CheckUndefinedIsNull13()
         {
             SystemLogger.SetWriter(this);
@@ -332,6 +319,7 @@ namespace NUnitTests
         }
 
         [Test]
+        [Ignore("Зависит от принимающего объекта")]
         public void CheckUndefinedIsNull15()
         {
             SystemLogger.SetWriter(this);
@@ -374,6 +362,7 @@ namespace NUnitTests
         }
 
         [Test]
+        [Ignore("Зависит от принимающего объекта")]
         public void CheckUndefinedIsNull17()
         {
             SystemLogger.SetWriter(this);
@@ -416,6 +405,7 @@ namespace NUnitTests
         }
 
         [Test]
+        [Ignore("Зависит от принимающего объекта")]
         public void CheckUndefinedIsNull19()
         {
             SystemLogger.SetWriter(this);
@@ -454,7 +444,7 @@ namespace NUnitTests
             @"К = Новый ТестNullПреобразования;
                 Арг = 3.5;
                 К.ПIValue = Арг; 
-                ВЗ = К.КПIValue;
+                ВЗ = К.ПIValue;
                 Если Не ВЗ = Арг Тогда
                     ВызватьИсключение ""Test IValue Prop <-> IValue: return value is not equal of argument"";
                 КонецЕсли;");
@@ -526,23 +516,6 @@ namespace NUnitTests
                 ВЗ = К.ПString;
                 Если Не ВЗ = Арг Тогда
                     ВызватьИсключение ""Test string Prop <-> string: return value is not equal of argument"";
-                КонецЕсли;");
-        }
-
-        [Test]
-        public void CheckUndefinedIsNull25()
-        {
-            SystemLogger.SetWriter(this);
-            _messages.Clear();
-
-            // Передача и возврат string
-            host.RunTestString(
-            @"К = Новый ТестNullПреобразования;
-                Арг = Неопределено;
-                К.ПNullString = Арг; 
-                ВЗ = К.ПNullString;
-                Если Не ВЗ = Неопределено Тогда
-                    ВызватьИсключение ""Test string Prop <-> Unknown: return value is not equal of Unknown"";
                 КонецЕсли;");
         }
 

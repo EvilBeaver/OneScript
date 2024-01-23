@@ -10,6 +10,9 @@ using System.ServiceModel;
 
 namespace OneScript.DebugProtocol
 {
+    /// <summary>
+    /// Интерфейс слушателя событий отладки (сообщений, инициируемых со стороны BSL)       
+    /// </summary>
     public interface IDebugEventListener
     {
 #if NETFRAMEWORK

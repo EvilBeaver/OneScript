@@ -143,14 +143,15 @@ namespace ScriptEngine.HostedScript.Library
                 {
                     annotationRow.Set(annotationNameColumn, ValueFactory.Create(annotation.Name));
                 }
+
+                var parametersTable = new ValueTable.ValueTable();
+                var parameterNameColumn = parametersTable.Columns.Add("Имя");
+                var parameterValueColumn = parametersTable.Columns.Add("Значение");
+
+                annotationRow.Set(annotationParamsColumn, parametersTable);
+
                 if (annotation.ParamCount != 0)
                 {
-                    var parametersTable = new ValueTable.ValueTable();
-                    var parameterNameColumn = parametersTable.Columns.Add("Имя");
-                    var parameterValueColumn = parametersTable.Columns.Add("Значение");
-
-                    annotationRow.Set(annotationParamsColumn, parametersTable);
-
                     foreach (var annotationParameter in annotation.Parameters)
                     {
                         var parameterRow = parametersTable.Add();
@@ -252,6 +253,7 @@ namespace ScriptEngine.HostedScript.Library
                     osParam.IsByValue = parameterInfo.GetCustomAttribute<ByRefAttribute>() != null;
                     osParam.HasDefaultValue = parameterInfo.HasDefaultValue;
                     osParam.DefaultValueIndex = -1;
+                    osParam.DefaultValue = parameterInfo.DefaultValue as IValue;
 
                     // On Mono 5.20 we can't use GetCustomAttributes<T> because it fails with InvalidCast.
                     // Here's a workaround with home-made attribute Type filter.
@@ -272,7 +274,7 @@ namespace ScriptEngine.HostedScript.Library
             return attributes.Select(x => x.Annotation).ToArray();
         }
 
-        private static void FillPropertiesTableForType(TypeTypeValue type, ValueTable.ValueTable result)
+        private static void FillPropertiesTableForType(TypeTypeValue type, ValueTable.ValueTable result, bool withPrivate = false)
         {
             var clrType = GetReflectableClrType(type);
             var nativeProps = clrType.GetProperties()
@@ -297,14 +299,19 @@ namespace ScriptEngine.HostedScript.Library
 
             if (clrType.BaseType == typeof(ScriptDrivenObject))
             {
-                var nativeFields = clrType.GetFields();
-                foreach(var field in nativeFields)
+                var flags = BindingFlags.Public;
+                if (withPrivate)
+                    flags |= BindingFlags.NonPublic;
+
+                var nativeFields = clrType.GetFields(flags);
+                foreach (var field in nativeFields)
                 {
                     var info = new VariableInfo();
                     info.Type = SymbolType.ContextProperty;
                     info.Index = indices++;
                     info.Identifier = field.Name;
                     info.Annotations = GetAnnotations(field.GetCustomAttributes<UserAnnotationAttribute>());
+                    info.IsExport = field.IsPublic;
                     infos.Add(info);
                 }
             }
@@ -337,6 +344,7 @@ namespace ScriptEngine.HostedScript.Library
                 var paramNameColumn = paramTable.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
                 var paramByValue = paramTable.Columns.Add("ПоЗначению", TypeDescription.BooleanType(), "По значению");
                 var paramHasDefaultValue = paramTable.Columns.Add("ЕстьЗначениеПоУмолчанию", TypeDescription.BooleanType(), "Есть значение по-умолчанию");
+                var paramDefaultValue = paramTable.Columns.Add("ЗначениеПоУмолчанию", null, "Значение по умолчанию");
                 var paramAnnotationsColumn = paramTable.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
                 
                 new_row.Set(paramsColumn, paramTable);
@@ -351,6 +359,7 @@ namespace ScriptEngine.HostedScript.Library
                         paramRow.Set(paramNameColumn, ValueFactory.Create(name));
                         paramRow.Set(paramByValue, ValueFactory.Create(param.IsByValue));
                         paramRow.Set(paramHasDefaultValue, ValueFactory.Create(param.HasDefaultValue));
+                        paramRow.Set(paramDefaultValue, param.DefaultValue); 
                         paramRow.Set(paramAnnotationsColumn, param.AnnotationsCount != 0 ? CreateAnnotationTable(param.Annotations) : EmptyAnnotationsTable());
                     }
                 }
@@ -361,18 +370,19 @@ namespace ScriptEngine.HostedScript.Library
         /// Получает таблицу свойств для переданного объекта..
         /// </summary>
         /// <param name="target">Объект, из которого получаем таблицу свойств.</param>
+        /// <param name="withPrivate">Включая приватные</param>
         /// <returns>Таблица значений с колонками - Имя, Аннотации</returns>
         [ContextMethod("ПолучитьТаблицуСвойств", "GetPropertiesTable")]
-        public ValueTable.ValueTable GetPropertiesTable(IValue target)
+        public ValueTable.ValueTable GetPropertiesTable(IValue target, bool withPrivate = false)
         {
             ValueTable.ValueTable result = new ValueTable.ValueTable();
 
             if(target.DataType == DataType.Object)
-                FillPropertiesTable(result, target.AsObject().GetProperties());
+                FillPropertiesTable(result, target.AsObject().GetProperties(withPrivate));
             else if (target.DataType == DataType.Type)
             {
                 var type = target.GetRawValue() as TypeTypeValue;
-                FillPropertiesTableForType(type, result);
+                FillPropertiesTableForType(type, result, withPrivate);
             }
             else
                 throw RuntimeException.InvalidArgumentType();
@@ -418,6 +428,7 @@ namespace ScriptEngine.HostedScript.Library
         {
             var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
             var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
+            var exportColumn = result.Columns.Add("Экспорт", TypeDescription.BooleanType(), "Экспорт");
             var systemVarNames = new string[] { "этотобъект", "thisobject" };
 
             foreach (var propInfo in properties)
@@ -426,8 +437,9 @@ namespace ScriptEngine.HostedScript.Library
 
                 ValueTableRow new_row = result.Add();
                 new_row.Set(nameColumn, ValueFactory.Create(propInfo.Identifier));
-
+                
                 new_row.Set(annotationsColumn, propInfo.AnnotationsCount != 0 ? CreateAnnotationTable(propInfo.Annotations) : EmptyAnnotationsTable());
+                new_row.Set(exportColumn, ValueFactory.Create(propInfo.IsExport));
             }
         }
 

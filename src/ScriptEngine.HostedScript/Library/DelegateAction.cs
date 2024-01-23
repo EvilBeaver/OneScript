@@ -50,8 +50,9 @@ namespace ScriptEngine.HostedScript.Library
             {
                 Name = MethodName_Ru,
                 Alias = MethodName_En,
-                Annotations = new AnnotationDefinition[0],
-                Params = new ParameterDefinition[0]
+                Annotations = Array.Empty<AnnotationDefinition>(),
+                Params = Array.Empty<ParameterDefinition>(),
+                IsFunction = true
             };
         }
 
