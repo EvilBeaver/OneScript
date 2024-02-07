@@ -15,6 +15,8 @@ using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Types;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Interfaces;
 
 namespace ScriptEngine.Hosting
 {
@@ -59,7 +61,7 @@ namespace ScriptEngine.Hosting
             services.RegisterEnumerable<IDirectiveHandler, RegionDirectiveHandler>();
             
             services.Register<ExecutionContext>();
-            
+            services.EnablePredefinedIterables();
             services.Register<PreprocessorHandlers>(sp =>
             {
                 var providers = sp.ResolveEnumerable<IDirectiveHandler>();

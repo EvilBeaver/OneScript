@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Globalization;
 
 namespace OneScript.Localization
@@ -53,6 +54,11 @@ namespace OneScript.Localization
         public override string ToString()
         {
             return Localize(Russian, English);
+        }
+
+        public bool HasName(string name, StringComparison comparison = StringComparison.CurrentCultureIgnoreCase)
+        {
+            return string.Equals(Russian, name, comparison) || string.Equals(English, name, comparison);
         }
 
         public static bool UseRussianLocale => CultureInfo.CurrentCulture.Parent.Equals(RussianCulture);

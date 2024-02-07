@@ -136,7 +136,7 @@ pipeline {
                 stage('Linux testing') {
                     agent{ 
                         docker {
-                            image 'mcr.microsoft.com/dotnet/sdk:5.0'
+                            image 'mcr.microsoft.com/dotnet/sdk:6.0'
                             label 'linux' 
                         }
                     }
@@ -187,7 +187,11 @@ pipeline {
                     unstash 'buildResults'
                     unstash 'nativeApiSo'
                     
-                    bat 'xcopy output\\na-proxy\\*64.so built\\linux-64\\bin\\'
+                    bat '''
+                    chcp 65001 > nul
+                    dir output\\na-proxy
+                    xcopy output\\na-proxy\\*64.so built\\linux-x64\\bin\\ /F
+                    '''.stripIndent()
                     
                     script
                     {
@@ -213,7 +217,7 @@ pipeline {
             agent { label 'master' }
 
             steps {
-                
+                cleanWs()
                 unstash 'dist'
                 unstash 'vsix'
 

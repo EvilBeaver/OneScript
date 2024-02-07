@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using OneScript.Contexts.Internal;
+using OneScript.Localization;
 
 namespace OneScript.Contexts
 {
@@ -117,5 +118,12 @@ namespace OneScript.Contexts
         }
 
         public override ICustomAttributeProvider ReturnTypeCustomAttributes => throw new NotImplementedException();
+        
+        public bool HasBslAnnotation(BilingualString name)
+        {
+            return Annotations.GetCustomAttributes(typeof(BslAnnotationAttribute), false)
+                .Cast<BslAnnotationAttribute>()
+                .Any(anno => name.HasName(anno.Name));
+        }
     }
 }

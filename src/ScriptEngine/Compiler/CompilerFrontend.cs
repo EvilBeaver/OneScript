@@ -5,13 +5,18 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using OneScript.Commons;
 using OneScript.Compilation;
 using OneScript.Compilation.Binding;
+using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
+using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Compiler
@@ -19,15 +24,20 @@ namespace ScriptEngine.Compiler
     public class CompilerFrontend : CompilerFrontendBase
     {
         private readonly IDependencyResolver _dependencyResolver;
+        private readonly PredefinedInterfaceResolver _interfaceResolver;
         private readonly CompilerBackendSelector _backendSelector;
 
         public CompilerFrontend(
             PreprocessorHandlers handlers,
             IErrorSink errorSink,
             IServiceContainer services,
-            IDependencyResolver dependencyResolver) : base(handlers, errorSink, services)
+            IDependencyResolver dependencyResolver,
+            PredefinedInterfaceResolver interfaceResolver,
+            IEnumerable<IPredefinedInterfaceChecker> checkers) : base(handlers, errorSink, services)
         {
             _dependencyResolver = dependencyResolver;
+            _interfaceResolver = interfaceResolver;
+
             _backendSelector = services.Resolve<CompilerBackendSelector>();
 
             _backendSelector.NativeBackendInitializer = NativeInitializer;
@@ -61,7 +71,12 @@ namespace ScriptEngine.Compiler
         {
             var backend = _backendSelector.Select(parsedModule);
             backend.Symbols = symbols;
-            return backend.Compile(parsedModule, classType);
+            
+            var module = backend.Compile(parsedModule, classType);
+
+            _interfaceResolver.Resolve(module);
+
+            return module;
         }
 
         protected override IExecutableModule CompileExpressionInternal(SymbolTable symbols, ModuleNode parsedModule)

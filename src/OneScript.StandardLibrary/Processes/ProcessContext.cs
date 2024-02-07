@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Collections;
@@ -278,7 +279,7 @@ namespace OneScript.StandardLibrary.Processes
             // Поведение под MacOS и остальные системы различается
             // Страдает обратная совместимость и неясны до конца синтаксисы.
             // См. https://github.com/EvilBeaver/OneScript/issues/1299
-            if (Environment.OSVersion.Platform != PlatformID.MacOSX)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 sInfo.Arguments = argsPosition >= cmdLine.Length ? "" : cmdLine.Substring(argsPosition);
             }
