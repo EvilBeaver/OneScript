@@ -811,6 +811,36 @@ namespace OneScript.Language.Tests
         }
         
         [Fact]
+        public void CheckHandler_Expression_And_EventName_As_Indexer()
+        {
+            var code = "ДобавитьОбработчик ЧтоТо[Индекс][\"ИмяСобытия\"+1], ЧтоТо().ИмяОбработчика";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.AddHandler);
+            node.NextChildIs(NodeKind.IndexAccess)
+                .NextChildIs(NodeKind.DereferenceOperation)
+                .NoMoreChildren();
+        }
+        
+        [Fact]
+        public void CheckHandler_Expression_And_HandlerName_As_Indexer()
+        {
+            var code = "ДобавитьОбработчик ЧтоТо[Индекс].ИмяСобытия, ЧтоТо()[ИмяОбработчика]";
+            
+            var batch = ParseBatchAndGetValidator(code);
+            batch.Is(NodeKind.CodeBatch);
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.AddHandler);
+            node.NextChildIs(NodeKind.DereferenceOperation)
+                .NextChildIs(NodeKind.IndexAccess)
+                .NoMoreChildren();
+        }
+        
+        [Fact]
         public void CheckHandler_Expression_And_ProcedureName()
         {
             var code = "ДобавитьОбработчик ЧтоТо[Индекс].ИмяСобытия, ИмяОбработчика";
