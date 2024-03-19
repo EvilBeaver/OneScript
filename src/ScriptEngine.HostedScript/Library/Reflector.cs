@@ -40,7 +40,10 @@ namespace ScriptEngine.HostedScript.Library
             var methodIdx = target.FindMethod(methodName);
             var methInfo = target.GetMethodInfo(methodIdx);
 
-            var argsToPass = GetArgsToPass(arguments, methInfo);
+            var argValues = arguments?.ToArray() ?? Array.Empty<IValue>();
+            // ArrayImpl не может (не должен!) содержать null или NotAValidValue
+
+            var argsToPass = target.DynamicMethodSignatures ? argValues : GetArgsToPass(argValues, methInfo);
 
             IValue retValue = ValueFactory.Create();
             if (methInfo.IsFunction)
@@ -66,11 +69,8 @@ namespace ScriptEngine.HostedScript.Library
             return retValue;
         }
 
-        private static IValue[] GetArgsToPass(ArrayImpl arguments, MethodInfo methInfo)
+        private static IValue[] GetArgsToPass(IValue[] argValues, MethodInfo methInfo)
         {
-            var argValues = arguments?.ToArray() ?? Array.Empty<IValue>();
-            // ArrayImpl не может (не должен!) содержать null или NotAValidValue
-
             var methArgCount = methInfo.ArgCount;
             if (argValues.Length > methArgCount)
                 throw RuntimeException.TooManyArgumentsPassed();
