@@ -59,7 +59,6 @@ namespace ScriptEngine.HostedScript.Library.Json
                 else
                     return ValueFactory.Create(); // Неопределено 
             }
-
         }
 
 
@@ -81,7 +80,6 @@ namespace ScriptEngine.HostedScript.Library.Json
                 else
                     return ValueFactory.Create(); // Неопределено
             }
-
         }
 
 
@@ -219,7 +217,6 @@ namespace ScriptEngine.HostedScript.Library.Json
                 else
                     throw NotOpenException();
             }
-
         }
 
         /// <summary>
@@ -232,7 +229,6 @@ namespace ScriptEngine.HostedScript.Library.Json
         [ContextMethod("Закрыть", "Close")]
         public void Close()
         {
-
             if (_reader != null)
             {
                 _reader.Close();
@@ -271,8 +267,10 @@ namespace ScriptEngine.HostedScript.Library.Json
                 throw new RuntimeException(e.Message, e);
             }
 
-            _reader = new JsonTextReader(_fileReader);
-
+            _reader = new JsonTextReader(_fileReader)
+            {
+                SupportMultipleContent = true
+            };
         }
 
 
@@ -309,7 +307,6 @@ namespace ScriptEngine.HostedScript.Library.Json
             }
             else
                 throw NotOpenException();
-
         }
 
 
@@ -321,7 +318,6 @@ namespace ScriptEngine.HostedScript.Library.Json
         public bool Read()
         {
             return _reader.Read();
-            
         }
 
 
@@ -340,7 +336,10 @@ namespace ScriptEngine.HostedScript.Library.Json
             if (IsOpen())
                 Close();
 
-            _reader = new JsonTextReader(new StringReader(JSONString));
+            _reader = new JsonTextReader(new StringReader(JSONString))
+            {
+                SupportMultipleContent = true
+            };
         }
 
         RuntimeException NotOpenException()
@@ -354,6 +353,5 @@ namespace ScriptEngine.HostedScript.Library.Json
             return new RuntimeException(Locale.NStr
                 ("ru='Текущее значение JSON не может быть получено';en='Cannot get current JSON value'"));
         }
-
     }
 }
