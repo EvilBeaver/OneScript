@@ -123,7 +123,8 @@ namespace ScriptEngine.Compiler
                 NextToken();
                 if (_lastExtractedLexem.Token == Token.Equal)
                 {
-                    result.ValueIndex = BuildDefaultParameterValue();
+                    NextToken();
+                    result.ValueIndex = BuildAnnotationParameterValue();
                 }
                 else
                 {
@@ -134,10 +135,21 @@ namespace ScriptEngine.Compiler
             }
             else
             {
-                result.ValueIndex = BuildLiteralConstant();
+                result.ValueIndex = BuildAnnotationParameterValue();
             }
 
             return result;
+        }
+
+        private int BuildAnnotationParameterValue()
+        {
+            if (_lastExtractedLexem.Type == LexemType.Annotation)
+            {
+                var annotation = BuildAnnotationDefinition();
+                var constDefinition = CreateAnnotationConstDefinition(annotation);
+                return GetConstNumber(ref constDefinition);
+            }
+            return BuildLiteralConstant();
         }
 
         private IList<AnnotationParameter> BuildAnnotationParameters()
@@ -166,15 +178,20 @@ namespace ScriptEngine.Compiler
             return parameters;
         }
 
+        private AnnotationDefinition BuildAnnotationDefinition()
+        {
+            var annotation = new AnnotationDefinition() {Name = _lastExtractedLexem.Content};
+
+            NextToken();
+            annotation.Parameters = BuildAnnotationParameters().ToArray();
+            return annotation;
+        }
+
         private void BuildAnnotations()
         {
             while (_lastExtractedLexem.Type == LexemType.Annotation)
             {
-                var annotation = new AnnotationDefinition() {Name = _lastExtractedLexem.Content};
-
-                NextToken();
-                annotation.Parameters = BuildAnnotationParameters().ToArray();
-                _annotations.Add(annotation);
+                _annotations.Add(BuildAnnotationDefinition());
             }
         }
 
@@ -1998,6 +2015,16 @@ namespace ScriptEngine.Compiler
         private static OperationCode BuiltInFunctionCode(Token token)
         {
             return _tokenToOpCode[token];
+        }
+
+        private static ConstDefinition CreateAnnotationConstDefinition(AnnotationDefinition annotation)
+        {
+            var definition = new ConstDefinition()
+            {
+                Type = DataType.Object,
+                Presentation = annotation.ToConstValue()
+            };
+            return definition;
         }
 
         private static ConstDefinition CreateConstDefinition(ref Lexem lex)
