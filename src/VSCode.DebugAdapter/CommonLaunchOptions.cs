@@ -20,5 +20,7 @@ namespace VSCode.DebugAdapter
         public string Protocol { get; set; }
 
         public Dictionary<string, string> Env { get; set; }
+        
+        public string OutputEncoding { get; set; }
     }
 }

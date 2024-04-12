@@ -1,7 +1,7 @@
 {
   "name": "oscript-debug",
   "displayName": "OneScript Debug (BSL)",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "publisher": "EvilBeaver",
   "description": "Visual Studio Code debugger extension for OneScript (BSL)",
   "icon": "images/logo-dbg.png",
@@ -98,6 +98,11 @@
                 "type": "number",
                 "description": "Порт для запуска отладчика. Одновременные сеансы отладки должны быть разделены по портам",
                 "default": 2801
+              },
+              "outputEncoding": {
+                "type": "string",
+                "description": "Кодировка вывода отлаживаемого приложения. Отладчик будет интерпретировать вывод приложения в указанной кодировке",
+                "default": ""
               }
             }
           },
@@ -107,6 +112,11 @@
                 "type": "number",
                 "description": "Присоединиться к работающему процессу",
                 "default": 2801
+              },
+              "outputEncoding": {
+                "type": "string",
+                "description": "Кодировка вывода отлаживаемого приложения. Отладчик будет интерпретировать вывод приложения в указанной кодировке",
+                "default": ""
               }
             }
           }
@@ -172,6 +182,11 @@
                 "type": "boolean",
                 "description": "Ожидать подключения отладчика при старте приложения (не выполнять bsl до его подключения)",
                 "default": false
+              },
+              "outputEncoding": {
+                "type": "string",
+                "description": "Кодировка вывода отлаживаемого приложения. Отладчик будет интерпретировать вывод приложения в указанной кодировке",
+                "default": ""
               }
             }
           },
@@ -181,6 +196,11 @@
                 "type": "number",
                 "description": "Присоединиться к работающему процессу",
                 "default": 2801
+              },
+              "outputEncoding": {
+                "type": "string",
+                "description": "Кодировка вывода отлаживаемого приложения. Отладчик будет интерпретировать вывод приложения в указанной кодировке",
+                "default": ""
               }
             }
           }
