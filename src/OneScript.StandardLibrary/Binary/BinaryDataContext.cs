@@ -110,12 +110,19 @@ namespace OneScript.StandardLibrary.Binary
             }
         }
 
+        /// <summary>
+        /// Размер двоичных данных в байтах.
+        /// </summary>
         [ContextMethod("Размер", "Size")]
         public long Size()
         {
             return _backingFile?.Length ?? _buffer?.Length ??  0;
         }
 
+        /// <summary>
+        /// Сохранить содержимое двоичных данных в файл или другой поток
+        /// </summary>
+        /// <param name="filenameOrStream">путь к файлу или Поток</param>
         [ContextMethod("Записать", "Write")]
         public void Write(IValue filenameOrStream)
         {
