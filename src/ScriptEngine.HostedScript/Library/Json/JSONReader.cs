@@ -12,6 +12,13 @@ using Newtonsoft.Json;
 
 namespace ScriptEngine.HostedScript.Library.Json
 {
+    internal class JsonReaderInternal: JsonTextReader  // из библиотеки Newtonsoft
+    {
+        public JsonReaderInternal(TextReader reader) : base(reader) { }
+
+        public override bool Read() => base.Read() && TokenType != JsonToken.Undefined;
+    }
+
     /// <summary>
     /// 
     /// Предназначен для последовательного чтения JSON-данных из файла или строки.
@@ -20,16 +27,13 @@ namespace ScriptEngine.HostedScript.Library.Json
     public class JSONReader : AutoContext<JSONReader>
     {
 
-        private JsonTextReader _reader; // Объект из библиотеки Newtonsoft для работы с форматом JSON 
+        private JsonReaderInternal _reader;
 
         /// <summary>
         /// 
         /// Возвращает true если для объекта чтения json был задан текст для парсинга.
         /// </summary>
-        private bool IsOpen()
-        {
-            return _reader != null;
-        }
+        private bool IsOpen() => _reader != null;
 
         public JSONReader()
         {
@@ -267,7 +271,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                 throw new RuntimeException(e.Message, e);
             }
 
-            _reader = new JsonTextReader(_fileReader)
+            _reader = new JsonReaderInternal(_fileReader)
             {
                 SupportMultipleContent = true
             };
@@ -336,7 +340,7 @@ namespace ScriptEngine.HostedScript.Library.Json
             if (IsOpen())
                 Close();
 
-            _reader = new JsonTextReader(new StringReader(JSONString))
+            _reader = new JsonReaderInternal(new StringReader(JSONString))
             {
                 SupportMultipleContent = true
             };
