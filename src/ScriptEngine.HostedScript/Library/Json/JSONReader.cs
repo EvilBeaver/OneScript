@@ -35,6 +35,11 @@ namespace ScriptEngine.HostedScript.Library.Json
         /// </summary>
         private bool IsOpen() => _reader != null;
 
+        private void CheckIfOpen()
+        {
+            if (_reader == null) throw JSONReaderException.NotOpenException();
+        }
+
         public JSONReader()
         {
         }
@@ -113,35 +118,32 @@ namespace ScriptEngine.HostedScript.Library.Json
         {
             get
             {
-                if (IsOpen())
+                CheckIfOpen();
+
+                switch (_reader.TokenType)
                 {
-                    switch (_reader.TokenType)
-                    {
-                        case JsonToken.String:
-                        case JsonToken.Comment:
-                        case JsonToken.PropertyName:
-                            return ValueFactory.Create((string)_reader.Value);
+                    case JsonToken.String:
+                    case JsonToken.Comment:
+                    case JsonToken.PropertyName:
+                        return ValueFactory.Create((string)_reader.Value);
 
-                        case JsonToken.Integer:
-                        case JsonToken.Float:
-                            return ValueFactory.Create(Convert.ToDecimal(_reader.Value));
+                    case JsonToken.Integer:
+                    case JsonToken.Float:
+                        return ValueFactory.Create(Convert.ToDecimal(_reader.Value));
 
-                        case JsonToken.Boolean:
-                            return ValueFactory.Create((bool)_reader.Value);
+                    case JsonToken.Boolean:
+                        return ValueFactory.Create((bool)_reader.Value);
 
-                        case JsonToken.Date:
-                            return ValueFactory.Create((DateTime)_reader.Value);
+                    case JsonToken.Date:
+                        return ValueFactory.Create((DateTime)_reader.Value);
 
-                        case JsonToken.Null:
-                        case JsonToken.Undefined:
-                            return ValueFactory.Create();
+                    case JsonToken.Null:
+                    case JsonToken.Undefined:
+                        return ValueFactory.Create();
 
-                        default:
-                            throw CannotGetValueException();
-                    }
+                    default:
+                        throw JSONReaderException.CannotGetValueException();;
                 }
-                else
-                    throw NotOpenException();
             }
         }
 
@@ -155,12 +157,8 @@ namespace ScriptEngine.HostedScript.Library.Json
         {
             get
             {
-                if (IsOpen())
-                {
-                    return _reader.TokenType;
-                }
-                else
-                    throw NotOpenException();
+                CheckIfOpen();
+                return _reader.TokenType;
             }
         }
 
@@ -176,50 +174,47 @@ namespace ScriptEngine.HostedScript.Library.Json
         {
             get
             {
-                if (IsOpen())
+                CheckIfOpen();
+
+                string JSONValueType = "None";
+
+                switch (_reader.TokenType)
                 {
-                    string JSONValueType = "None";
-
-                    switch (_reader.TokenType)
-                    {
-                        case JsonToken.Null:
-                        case JsonToken.Undefined:
-                            JSONValueType = "Null";
-                            break;
-                        case JsonToken.StartObject:
-                            JSONValueType = "ObjectStart";
-                            break;
-                        case JsonToken.StartArray:
-                            JSONValueType = "ArrayStart";
-                            break;
-                        case JsonToken.PropertyName:
-                            JSONValueType = "PropertyName";
-                            break;
-                        case JsonToken.Comment:
-                            JSONValueType = "Comment";
-                            break;
-                        case JsonToken.Integer:
-                        case JsonToken.Float:
-                            JSONValueType = "Number";
-                            break;
-                        case JsonToken.String:
-                            JSONValueType = "String";
-                            break;
-                        case JsonToken.Boolean:
-                            JSONValueType = "Boolean";
-                            break;
-                        case JsonToken.EndObject:
-                            JSONValueType = "ObjectEnd";
-                            break;
-                        case JsonToken.EndArray:
-                            JSONValueType = "ArrayEnd";
-                            break;
-                    }
-                    return GlobalsManager.GetEnum<JSONValueTypeEnum>()[JSONValueType];
-
+                    case JsonToken.Null:
+                    case JsonToken.Undefined:
+                        JSONValueType = "Null";
+                        break;
+                    case JsonToken.StartObject:
+                        JSONValueType = "ObjectStart";
+                        break;
+                    case JsonToken.StartArray:
+                        JSONValueType = "ArrayStart";
+                        break;
+                    case JsonToken.PropertyName:
+                        JSONValueType = "PropertyName";
+                        break;
+                    case JsonToken.Comment:
+                        JSONValueType = "Comment";
+                        break;
+                    case JsonToken.Integer:
+                    case JsonToken.Float:
+                        JSONValueType = "Number";
+                        break;
+                    case JsonToken.String:
+                        JSONValueType = "String";
+                        break;
+                    case JsonToken.Boolean:
+                        JSONValueType = "Boolean";
+                        break;
+                    case JsonToken.EndObject:
+                        JSONValueType = "ObjectEnd";
+                        break;
+                    case JsonToken.EndArray:
+                        JSONValueType = "ArrayEnd";
+                        break;
                 }
-                else
-                    throw NotOpenException();
+
+                return GlobalsManager.GetEnum<JSONValueTypeEnum>()[JSONValueType];
             }
         }
 
@@ -227,8 +222,6 @@ namespace ScriptEngine.HostedScript.Library.Json
         /// 
         /// Завершает чтение текста JSON из файла или строки.
         /// </summary>
-        ///
-        ///
         ///
         [ContextMethod("Закрыть", "Close")]
         public void Close()
@@ -253,7 +246,6 @@ namespace ScriptEngine.HostedScript.Library.Json
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string JSONFileName, IValue encoding = null)
         {
-   
             if (IsOpen())
                 Close();
 
@@ -286,31 +278,26 @@ namespace ScriptEngine.HostedScript.Library.Json
         [ContextMethod("Пропустить", "Skip")]
         public bool Skip()
         {
+            CheckIfOpen();
 
-            if (IsOpen())
+            if (_reader.TokenType == JsonToken.StartArray || _reader.TokenType == JsonToken.StartObject)
             {
-                if (_reader.TokenType == JsonToken.StartArray || _reader.TokenType == JsonToken.StartObject)
+                while (_reader.Read())
                 {
-                    while (_reader.Read())
+                    if (_reader.TokenType == JsonToken.EndArray || _reader.TokenType == JsonToken.EndObject)
                     {
-                        if (_reader.TokenType == JsonToken.EndArray || _reader.TokenType == JsonToken.EndObject)
-                        {
-                            return _reader.Read();
-                        }
-                    }
-                    return true;
-                }
-                else
-                {
-                    if (_reader.Read())
                         return _reader.Read();
-                    else
-                        return false;
+                    }
                 }
-
+                return true;
             }
             else
-                throw NotOpenException();
+            {
+                if (_reader.Read())
+                    return _reader.Read();
+                else
+                    return false;
+            }
         }
 
 
@@ -321,6 +308,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         [ContextMethod("Прочитать", "Read")]
         public bool Read()
         {
+            CheckIfOpen();
             return _reader.Read();
         }
 
@@ -345,16 +333,23 @@ namespace ScriptEngine.HostedScript.Library.Json
                 SupportMultipleContent = true
             };
         }
+    }
 
-        RuntimeException NotOpenException()
+    public class JSONReaderException : RuntimeException
+    {
+        public JSONReaderException(string message) : base(message)
         {
-            return new RuntimeException(Locale.NStr
+        }
+
+        public static JSONReaderException NotOpenException()
+        {
+            return new JSONReaderException(Locale.NStr
                 ("ru='Источник данных JSON не открыт'; en='JSON data source is not opened'"));
         }
 
-        RuntimeException CannotGetValueException()
+        public static JSONReaderException CannotGetValueException()
         {
-            return new RuntimeException(Locale.NStr
+            return new JSONReaderException(Locale.NStr
                 ("ru='Текущее значение JSON не может быть получено';en='Cannot get current JSON value'"));
         }
     }

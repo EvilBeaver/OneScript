@@ -103,6 +103,10 @@ namespace ScriptEngine.HostedScript.Library.Json
                     if (ReadJsonValue(out var value))
                         return value;
                 }
+                catch (JSONReaderException)
+                {
+                    throw;
+                }
                 catch (Exception exc)
                 {
                     throw InvalidJsonException(exc.Message);
