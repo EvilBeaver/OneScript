@@ -112,7 +112,8 @@ namespace ScriptEngine.HostedScript.Library.Json
                     throw InvalidJsonException(exc.Message);
                 }
 
-                throw InvalidJsonException();
+                throw InvalidJsonException(Locale.NStr
+                    ("ru='Непредвиденный символ при чтении JSON'; en='Unexpected symbol during JSON reading'"));
             }
 
             private JsonToken ReadJsonToken()
@@ -206,7 +207,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         [ContextMethod("ПрочитатьДатуJSON", "ReadJSONDate")]
         public IValue ReadJSONDate(string String, IValue Format)
         {
-         
+
             var format = Format.GetRawValue() as SelfAwareEnumValue<JSONDateFormatEnum>;
             var JSONDateFormatEnum = GlobalsManager.GetEnum<JSONDateFormatEnum>();
             DateFormatHandling dateFormatHandling = new DateFormatHandling();
@@ -218,14 +219,22 @@ namespace ScriptEngine.HostedScript.Library.Json
             else
                 throw new RuntimeException(Locale.NStr("ru='Формат даты JavaScript не поддерживается.'; en='JavaScript date format is not supported'"));
 
-            string json = @"{""Date"":""" + String +  @"""}";
+            string json = @"{""Date"":""" + String + @"""}";
 
             var settings = new JsonSerializerSettings
             {
                 DateFormatHandling = dateFormatHandling
-        };
-            var result = JsonConvert.DeserializeObject<ConvertedDate>(json, settings);
-            return ValueFactory.Create((DateTime)result.Date);
+            };
+
+            try
+            {
+                var result = JsonConvert.DeserializeObject<ConvertedDate>(json, settings);
+                return ValueFactory.Create((DateTime)result.Date);
+            }
+            catch (JsonException)
+            {
+                throw new RuntimeException(Locale.NStr("ru='Представление даты имеет неверный формат.'; en='Invalid date presentation format'"));
+            }
         }
 
         /// <summary>
