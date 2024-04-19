@@ -112,8 +112,7 @@ namespace ScriptEngine.HostedScript.Library.Json
                     throw InvalidJsonException(exc.Message);
                 }
 
-                throw InvalidJsonException(Locale.NStr
-                    ("ru='Непредвиденный символ при чтении JSON'; en='Unexpected symbol during JSON reading'"));
+                throw InvalidJsonException();
             }
 
             private JsonToken ReadJsonToken()

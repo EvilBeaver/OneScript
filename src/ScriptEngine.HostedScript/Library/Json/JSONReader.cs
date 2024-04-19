@@ -16,7 +16,16 @@ namespace ScriptEngine.HostedScript.Library.Json
     {
         public JsonReaderInternal(TextReader reader) : base(reader) { }
 
-        public override bool Read() => base.Read() && TokenType != JsonToken.Undefined;
+        public override bool Read()
+        {
+            if (!base.Read())
+                return false;
+
+            if (TokenType != JsonToken.Undefined)
+                return true;
+
+            throw JSONReaderException.UnexpectedSymbol();
+        }
     }
 
     /// <summary>
@@ -37,7 +46,7 @@ namespace ScriptEngine.HostedScript.Library.Json
 
         private void CheckIfOpen()
         {
-            if (_reader == null) throw JSONReaderException.NotOpenException();
+            if (_reader == null) throw JSONReaderException.NotOpen();
         }
 
         public JSONReader()
@@ -138,11 +147,10 @@ namespace ScriptEngine.HostedScript.Library.Json
                         return ValueFactory.Create((DateTime)_reader.Value);
 
                     case JsonToken.Null:
-                    case JsonToken.Undefined:
                         return ValueFactory.Create();
 
                     default:
-                        throw JSONReaderException.CannotGetValueException();;
+                        throw JSONReaderException.CannotGetValue();;
                 }
             }
         }
@@ -181,7 +189,6 @@ namespace ScriptEngine.HostedScript.Library.Json
                 switch (_reader.TokenType)
                 {
                     case JsonToken.Null:
-                    case JsonToken.Undefined:
                         JSONValueType = "Null";
                         break;
                     case JsonToken.StartObject:
@@ -341,16 +348,22 @@ namespace ScriptEngine.HostedScript.Library.Json
         {
         }
 
-        public static JSONReaderException NotOpenException()
+        public static JSONReaderException NotOpen()
         {
             return new JSONReaderException(Locale.NStr
                 ("ru='Источник данных JSON не открыт'; en='JSON data source is not opened'"));
         }
 
-        public static JSONReaderException CannotGetValueException()
+        public static JSONReaderException CannotGetValue()
         {
             return new JSONReaderException(Locale.NStr
                 ("ru='Текущее значение JSON не может быть получено';en='Cannot get current JSON value'"));
+        }
+
+        public static JSONReaderException UnexpectedSymbol()
+        {
+            return new JSONReaderException(Locale.NStr
+                ("ru='Непредвиденный символ при чтении JSON';en='Unexpected symbol during JSON reading'"));
         }
     }
 }
