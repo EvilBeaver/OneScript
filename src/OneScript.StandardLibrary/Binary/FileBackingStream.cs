@@ -16,28 +16,24 @@ namespace OneScript.StandardLibrary.Binary
     /// </summary>
     public class FileBackingStream : Stream
     {
-        public const int DEFAULT_MEMORY_LIMIT = 1024 * 1024 * 50; // 50 Mb
-        
-        private const int SYSTEM_IN_MEMORY_LIMIT = Int32.MaxValue;
-
         private readonly int _inMemoryLimit;
         private Stream _backingStream;
 
         private string _backingFileName;
         
-        public FileBackingStream() : this(DEFAULT_MEMORY_LIMIT)
+        public FileBackingStream() : this(FileBackingConstants.DEFAULT_MEMORY_LIMIT)
         {
         }
 
         public FileBackingStream(int inMemoryLimit, int capacity = 0)
         {
-            if (inMemoryLimit == SYSTEM_IN_MEMORY_LIMIT)
+            if (inMemoryLimit == FileBackingConstants.SYSTEM_IN_MEMORY_LIMIT)
                 throw new ArgumentException("Use MemoryStream instead");
             
             _inMemoryLimit = inMemoryLimit;
             _backingStream = new MemoryStream(capacity);
         }
-
+        
         public override void Flush()
         {
             _backingStream.Flush();
@@ -85,12 +81,6 @@ namespace OneScript.StandardLibrary.Binary
         {
             get => _backingStream.Position;
             set => _backingStream.Position = value;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            _backingStream.Dispose();
-            DeleteBackingFile();
         }
 
         public bool HasBackingFile => _backingFileName != null;
@@ -141,6 +131,12 @@ namespace OneScript.StandardLibrary.Binary
             }
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            _backingStream.Dispose();
+            DeleteBackingFile();
+        }
+        
         private void Grow(int amount)
         {
             if (HasBackingFile)
