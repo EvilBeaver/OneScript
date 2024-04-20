@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections;
+using System.IO;
 using System.Text;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
@@ -62,22 +63,23 @@ namespace oscript.Web
 			var len = int.Parse(contentLen);
 			if (len == 0)
 				return;
-
-			_postRaw = new byte[len];
-			using (var stdin = Console.OpenStandardInput())
-			{
-				stdin.Read(_postRaw, 0, len);
-			}
-
+			
 			var type = Environment.GetEnvironmentVariable("CONTENT_TYPE");
+			
+			using var stdin = Console.OpenStandardInput();
+			using var dest = new FileBackingStream(FileBackingConstants.DEFAULT_MEMORY_LIMIT, len);
+			stdin.CopyTo(dest);
+			dest.Position = 0;
+			
 			if (type != null && type.StartsWith("multipart/"))
 			{
 				var boundary = type.Substring(type.IndexOf('=') + 1);
-				_post = new PostRequestData(_postRaw, boundary);
+				_post = new PostRequestData(dest, boundary);
 			}
 			else
 			{
-				_post = new PostRequestData(Encoding.UTF8.GetString(_postRaw));
+				using var reader = new StreamReader(dest, Encoding.UTF8);
+				_post = new PostRequestData(reader.ReadToEnd());
 			}
 		}
 
