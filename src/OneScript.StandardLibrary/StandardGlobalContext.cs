@@ -268,8 +268,8 @@ namespace OneScript.StandardLibrary
             }
             else if (pathName == null)
             {
-#if NETSTANDARD2_0 || NETSTANDARD2_1
-                throw new NotSupportedException("Getting object by classname not supported on netstandard2");
+#if NET6_0_OR_GREATER
+                throw new NotSupportedException("Getting object by classname not supported on net6+");
 #else
                 return Marshal.GetActiveObject(className);
 #endif
@@ -280,8 +280,8 @@ namespace OneScript.StandardLibrary
             }
             else
             {
-#if NETSTANDARD2_0 || NETSTANDARD2_1
-                throw new NotSupportedException("Getting object by classname not supported on netstandard2");
+#if NET6_0_OR_GREATER
+                throw new NotSupportedException("Getting object by classname not supported on net6+");
 #else
                 var persistFile = (IPersistFile)Marshal.GetActiveObject(className);
                 persistFile.Load(pathName, 0);
