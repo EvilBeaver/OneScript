@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
@@ -20,11 +21,11 @@ using ScriptEngine.Machine.Contexts;
 namespace oscript.Web
 {
 	[ContextClass("ВебЗапрос", "WebRequest")]
-	public class WebRequestContext : AutoContext<WebRequestContext>
+	public class WebRequestContext : AutoContext<WebRequestContext>, IDisposable, IAsyncDisposable
 	{
 		private PostRequestData _post;
 
-		private byte[] _postRaw;
+		private FileBackingStream _postBody;
 
 		public WebRequestContext()
 		{
@@ -67,7 +68,7 @@ namespace oscript.Web
 			var type = Environment.GetEnvironmentVariable("CONTENT_TYPE");
 			
 			using var stdin = Console.OpenStandardInput();
-			using var dest = new FileBackingStream(FileBackingConstants.DEFAULT_MEMORY_LIMIT, len);
+			var dest = new FileBackingStream(FileBackingConstants.DEFAULT_MEMORY_LIMIT, len);
 			stdin.CopyTo(dest);
 			dest.Position = 0;
 			
@@ -78,9 +79,12 @@ namespace oscript.Web
 			}
 			else
 			{
-				using var reader = new StreamReader(dest, Encoding.UTF8);
+				using var reader = new StreamReader(dest, Encoding.UTF8, leaveOpen: true);
 				_post = new PostRequestData(reader.ReadToEnd());
 			}
+
+			dest.Position = 0;
+			_postBody = dest;
 		}
 
 		private void FillEnvironmentVars()
@@ -102,7 +106,8 @@ namespace oscript.Web
 		[ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
 		public BinaryDataContext GetBodyAsBinaryData()
 		{
-			return new BinaryDataContext(_postRaw);
+			_postBody.Position = 0;
+			return new BinaryDataContext(_postBody);
 		}
 
 		[ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
@@ -112,7 +117,19 @@ namespace oscript.Web
 				? new UTF8Encoding(false)
 				: TextEncodingEnum.GetEncoding(encoding);
 
-			return enc.GetString(_postRaw);
+			_postBody.Position = 0;
+			using var streamReader = new StreamReader(_postBody, enc);
+			return streamReader.ReadToEnd();
+		}
+
+		public void Dispose()
+		{
+			_postBody?.Dispose();
+		}
+
+		public async ValueTask DisposeAsync()
+		{
+			if (_postBody != null) await _postBody.DisposeAsync();
 		}
 	}
 }

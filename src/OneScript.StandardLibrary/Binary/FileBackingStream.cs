@@ -102,9 +102,9 @@ namespace OneScript.StandardLibrary.Binary
             _backingStream.CopyTo(memStream);
             memStream.Position = currentPosition;
             _backingStream.Close();
-            
-            DeleteBackingFile();
+
             _backingStream = memStream;
+            _backingFileName = null;
         }
         
         public void SwitchToFile()
@@ -114,7 +114,14 @@ namespace OneScript.StandardLibrary.Binary
             
             var currentPosition = _backingStream.Position;
             _backingFileName = Path.GetTempFileName();
-            var fileStream = new FileStream(_backingFileName, FileMode.Create);
+            var options = new FileStreamOptions
+            {
+                Options = FileOptions.DeleteOnClose,
+                Access = FileAccess.ReadWrite,
+                Mode = FileMode.Create
+            };
+            
+            var fileStream = new FileStream(_backingFileName, options);
             try
             {
                 _backingStream.Position = 0;
@@ -126,15 +133,16 @@ namespace OneScript.StandardLibrary.Binary
             catch
             {
                 fileStream.Dispose();
-                DeleteBackingFile();
                 throw;
             }
         }
 
         protected override void Dispose(bool disposing)
         {
-            _backingStream.Dispose();
-            DeleteBackingFile();
+            if (disposing)
+            {
+                _backingStream.Dispose();
+            }
         }
         
         private void Grow(int amount)
@@ -147,29 +155,6 @@ namespace OneScript.StandardLibrary.Binary
             {
                 SwitchToFile();
             }
-        }
-
-        private void DeleteBackingFile()
-        {
-            if (!HasBackingFile) return;
-            
-            if (File.Exists(_backingFileName))
-            {
-                try
-                {
-                    File.Delete(_backingFileName);
-                }
-                catch
-                {
-                    SystemLogger.Write($"WARNING! Can't delete temporary file {_backingFileName}");
-                }
-            }
-            _backingFileName = null;
-        }
-        
-        ~FileBackingStream()
-        {
-            Dispose(false);
         }
     }
 }
