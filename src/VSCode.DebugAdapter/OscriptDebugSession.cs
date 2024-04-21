@@ -22,8 +22,6 @@ namespace VSCode.DebugAdapter
         private bool _startupPerformed = false;
         private readonly Handles<OneScript.DebugProtocol.StackFrame> _framesHandles;
         private readonly Handles<IVariableLocator> _variableHandles;
-        
-        private static readonly ILogger Log = Serilog.Log.ForContext<OscriptDebugSession>();
 
         public OscriptDebugSession() : base(true, false)
         {
@@ -58,6 +56,7 @@ namespace VSCode.DebugAdapter
             LogCommandReceived();
             try
             {
+                Log.Debug("Initializing process settings");
                 _process.Init(args);
             }
             catch (InvalidDebugeeOptionsException e)
@@ -81,6 +80,7 @@ namespace VSCode.DebugAdapter
             
             try
             {
+                Log.Verbose("Starting debuggee");
                 _process.Start();
                 Log.Information("Debuggee started");
             }
@@ -93,12 +93,10 @@ namespace VSCode.DebugAdapter
             
             try
             {
-                IDebuggerService service;
                 var tcpConnector = new TcpDebugServerClient(_process.DebugPort, this);
                 tcpConnector.Connect();
-                service = tcpConnector;
 
-                    _process.SetConnection(service);
+                _process.SetConnection(tcpConnector);
             }
             catch (Exception e)
             {
@@ -110,7 +108,6 @@ namespace VSCode.DebugAdapter
             }
 
             SendResponse(response);
-
         }
 
         public override void Attach(Response response, dynamic arguments)
@@ -125,13 +122,11 @@ namespace VSCode.DebugAdapter
             
             try
             {
-                IDebuggerService service;
                 var tcpConnector = new TcpDebugServerClient(_process.DebugPort, this);
                 tcpConnector.Connect();
                 Log.Debug("Connected to debuggee on port {Port}", _process.DebugPort);
-                service = tcpConnector;
                 
-                _process.SetConnection(service);
+                _process.SetConnection(tcpConnector);
                 _process.InitAttached();
             }
             catch (Exception e)
