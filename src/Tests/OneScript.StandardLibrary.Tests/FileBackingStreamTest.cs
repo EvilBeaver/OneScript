@@ -158,6 +158,19 @@ public class FileBackingStreamTest
         stream.HasBackingFile.Should().BeTrue();
     }
 
+    [Fact]
+    public void TempFileGetsDeletedOnClose()
+    {
+        using var stream = new FileBackingStream(5);
+        stream.Write(new byte[]{1,2,3,4,5,6,7,8,9,10});
+        stream.HasBackingFile.Should().BeTrue();
+        var tempFile = stream.FileName;
+        
+        stream.SetLength(4);
+        stream.HasBackingFile.Should().BeFalse();
+        File.Exists(tempFile).Should().BeFalse();
+    }
+
     private void EnsureContent(Stream stream, IEnumerable<byte> expected)
     {
         stream.Position = 0;

@@ -85,6 +85,8 @@ namespace OneScript.StandardLibrary.Binary
 
         public bool HasBackingFile => _backingFileName != null;
 
+        public string FileName => _backingFileName;
+
         public void SwitchToMemory()
         {
             if (!HasBackingFile)
