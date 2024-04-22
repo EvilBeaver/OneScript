@@ -63,6 +63,9 @@ namespace VSCode.DebugAdapter
             {
                 workingDirectory = Path.GetDirectoryName(options.Program);
             }
+            
+            // Кодировка DAP
+            SetEncoding(options.OutputEncoding);
 
             WorkingDirectory = workingDirectory;
 
@@ -113,7 +116,7 @@ namespace VSCode.DebugAdapter
             var psi = process.StartInfo;
             psi.FileName = RuntimeExecutable;
             psi.UseShellExecute = false;
-            psi.Arguments = $"-debug {debugArguments} {RuntimeArguments} \"{StartupScript}\" {ScriptArguments}";
+            psi.Arguments = $"{RuntimeArguments} -debug {debugArguments} \"{StartupScript}\" {ScriptArguments}";
             psi.WorkingDirectory = WorkingDirectory;
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;

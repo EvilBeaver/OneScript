@@ -21,8 +21,6 @@ namespace oscript
 
         public override int Execute()
         {
-            Output.ConsoleOutputEncoding = DebuggerSettings.DebugModeEncoding;
-
             var tcpDebugServer = new BinaryTcpDebugServer(_port);
                     
             DebugController = tcpDebugServer.CreateDebugController();

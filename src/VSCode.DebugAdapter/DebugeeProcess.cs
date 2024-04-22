@@ -9,6 +9,8 @@ using System.Diagnostics;
 using OneScript.DebugProtocol;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using Newtonsoft.Json.Linq;
 using Serilog;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
@@ -23,6 +25,8 @@ namespace VSCode.DebugAdapter
         private bool _stdoutEOF;
         private bool _stderrEOF;
         private bool _attachMode;
+        
+        private Encoding _dapEncoding;
 
         private IDebuggerService _debugger;
 
@@ -38,7 +42,6 @@ namespace VSCode.DebugAdapter
         public bool HasExited => _process?.HasExited ?? true;
         public int ExitCode => _process.ExitCode;
 
-        private IDebuggerService DebugChannel { get; set; }
         public int DebugPort { get; set; }
 
         public void Start()
@@ -48,8 +51,12 @@ namespace VSCode.DebugAdapter
             
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;
-            psi.StandardErrorEncoding = DebuggerSettings.DebugModeEncoding;
-            psi.StandardOutputEncoding = DebuggerSettings.DebugModeEncoding;
+
+            if (_dapEncoding != null)
+            {
+                psi.StandardErrorEncoding = _dapEncoding;
+                psi.StandardOutputEncoding = _dapEncoding;
+            }
 
             _process.EnableRaisingEvents = true;
             _process.OutputDataReceived += Process_OutputDataReceived;
@@ -94,6 +101,22 @@ namespace VSCode.DebugAdapter
             {
                 psi.EnvironmentVariables[pair.Key] = pair.Value;
             }
+        }
+
+        protected void SetEncoding(string encodingFromOptions)
+        {
+            if (string.IsNullOrWhiteSpace(encodingFromOptions))
+            {
+                _dapEncoding = DefaultEncoding();
+                return;
+            }
+
+            _dapEncoding = Utilities.GetEncodingFromOptions(encodingFromOptions);
+        }
+
+        private Encoding DefaultEncoding()
+        {
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? null : Encoding.UTF8;
         }
 
         public void SetConnection(IDebuggerService service)
