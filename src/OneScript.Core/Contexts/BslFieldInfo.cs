@@ -29,7 +29,7 @@ namespace OneScript.Contexts
         
         protected virtual AnnotationHolder RetrieveAnnotations()
         {
-            return new AnnotationHolder(new object[0]);
+            return new AnnotationHolder(Array.Empty<object>());
         }
 
         protected void SetAnnotations(AnnotationHolder holder)

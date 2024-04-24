@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
@@ -21,8 +20,8 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class UserIterableContextInstance : UserScriptContextInstance, ICollectionContext<BslValue>
     {
-        private BslScriptMethodInfo _getCountMethod;
-        private BslScriptMethodInfo _getIteratorMethod;
+        private readonly BslScriptMethodInfo _getCountMethod;
+        private readonly BslScriptMethodInfo _getIteratorMethod;
         public static readonly BilingualString GetIteratorTerms = new BilingualString("ПолучитьИтератор", "GetIterator");
         public static readonly BilingualString GetCountTerms = new BilingualString("Количество", "Count");
 

@@ -53,6 +53,11 @@ namespace OneScript.Contexts
         {
             return _realMethod.GetCustomAttributes(inherit);
         }
+        
+        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
+        {
+            return _realMethod.GetCustomAttributes(attributeType, inherit);
+        }
 
         public override bool IsDefined(Type attributeType, bool inherit)
         {
@@ -93,10 +98,6 @@ namespace OneScript.Contexts
 
         public override MethodAttributes Attributes => _realMethod.Attributes;
 
-        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
-        {
-            return _realMethod.GetCustomAttributes(attributeType, inherit);
-        }
 
         public object UnderlyingObject => _realMethod;
 

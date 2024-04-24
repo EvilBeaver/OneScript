@@ -71,7 +71,7 @@ namespace OneScript.Contexts
 
         public override ParameterInfo[] GetIndexParameters()
         {
-            return new ParameterInfo[0];
+            return Array.Empty<ParameterInfo>();
         }
 
         public override MethodInfo GetSetMethod(bool nonPublic)

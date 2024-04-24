@@ -10,7 +10,7 @@ using ScriptEngine.Machine;
 
 namespace OneScript.Contexts
 {
-    public class Variable : IVariable
+    public sealed class Variable : IVariable
     {
         public string Name { get; private set; }
 
@@ -84,7 +84,7 @@ namespace OneScript.Contexts
 
         #region Reference
 
-        private class VariableReference : IVariable
+        private sealed class VariableReference : IVariable
         {
             private readonly IValueReference _reference;
 

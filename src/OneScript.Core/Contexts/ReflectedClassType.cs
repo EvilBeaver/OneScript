@@ -88,9 +88,8 @@ namespace OneScript.Contexts
         public override string AssemblyQualifiedName => Assembly.CreateQualifiedName(Assembly.FullName, Name);
         public override Type UnderlyingSystemType => _underlyingType;
         public override Type BaseType => _underlyingType.BaseType;
-        public override IEnumerable<CustomAttributeData> CustomAttributes => null;
         public override string Namespace => GetType().Namespace + ".dyn";
-
+        
         public override FieldInfo[] GetFields(BindingFlags bindingAttr)
         {
             IEnumerable<FieldInfo> result;
@@ -114,16 +113,21 @@ namespace OneScript.Contexts
             return _fields.FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Compare(x.Name, name) == 0);
         }
 
-        protected override System.Reflection.MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
+        protected override MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
         {
             return _methods.FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Compare(x.Name, name) == 0);
         }
 
-        public override System.Reflection.MethodInfo[] GetMethods(BindingFlags bindingAttr)
+        public override MethodInfo[] GetMethods(BindingFlags bindingAttr)
         {
             bool showPrivate = bindingAttr.HasFlag(BindingFlags.NonPublic);
             bool showPublic = bindingAttr.HasFlag(BindingFlags.Public);
             return _methods.Where(x=>x.IsPublic && showPublic || x.IsPrivate && showPrivate).ToArray();
+        }
+
+        public override IList<CustomAttributeData> GetCustomAttributesData()
+        {
+            return Array.Empty<CustomAttributeData>();
         }
 
         public override PropertyInfo[] GetProperties(BindingFlags bindingAttr)
@@ -160,7 +164,7 @@ namespace OneScript.Contexts
         public override MemberInfo[] GetMember(string name, MemberTypes type, BindingFlags bindingAttr)
         {
             if(name == null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(name));
 
             switch (type)
             {
@@ -171,7 +175,7 @@ namespace OneScript.Contexts
                 case MemberTypes.Property:
                     return new MemberInfo[] { GetProperty(name, bindingAttr) };
                 default:
-                    return new MemberInfo[0];
+                    return Array.Empty<MemberInfo>();
             }
         }
 

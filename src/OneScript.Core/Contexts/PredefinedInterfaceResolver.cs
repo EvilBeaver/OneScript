@@ -68,7 +68,7 @@ namespace OneScript.Contexts
             }
         }
         
-        private ISet<CheckerData> MapCheckers(IEnumerable<IPredefinedInterfaceChecker> checkers)
+        private static ISet<CheckerData> MapCheckers(IEnumerable<IPredefinedInterfaceChecker> checkers)
         {
             var result = new HashSet<CheckerData>();
 

@@ -245,7 +245,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
         
-        private void RemapOutputParams(IValue[] arguments, object[] values, ParameterModifier flags,
+        private static void RemapOutputParams(IValue[] arguments, object[] values, ParameterModifier flags,
             object[] initialValues)
         {
             for (int i = 0; i < arguments.Length; i++)

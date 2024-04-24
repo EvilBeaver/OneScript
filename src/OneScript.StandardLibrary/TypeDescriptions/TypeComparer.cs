@@ -37,7 +37,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
             return x.TypeValue.Id.CompareTo(y.TypeValue.Id);
         }
 
-        private int PrimitiveIndex(BslTypeValue type)
+        private static int PrimitiveIndex(BslTypeValue type)
         {
             if (StringComparer.CurrentCultureIgnoreCase.Equals(type.TypeValue.Name, TYPE_BINARYDATA_NAME))
             {

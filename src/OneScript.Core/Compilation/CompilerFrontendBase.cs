@@ -43,10 +43,10 @@ namespace OneScript.Compilation
         
         public SymbolTable SharedSymbols { get; set; }
 
-        public SymbolScope FillSymbols(Type type)
+        public SymbolScope FillSymbols(Type targetType)
         {
             var symbolsProvider = Services.Resolve<CompileTimeSymbolsProvider>();
-            var typeSymbols = symbolsProvider.Get(type);
+            var typeSymbols = symbolsProvider.Get(targetType);
             ModuleSymbols = new SymbolScope();
             typeSymbols.FillSymbols(ModuleSymbols);
 

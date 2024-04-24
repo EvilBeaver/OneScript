@@ -387,14 +387,14 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             }
         }
 
-        private void CheckMixedColumns(List<ValueTableColumn> groupColumns, List<ValueTableColumn> aggregateColumns)
+        private static void CheckMixedColumns(List<ValueTableColumn> groupColumns, List<ValueTableColumn> aggregateColumns)
         {
             foreach (var groupColumn in groupColumns )
                 if ( aggregateColumns.Find(x => x.Name==groupColumn.Name)!=null )
                     throw ColumnsMixedException(groupColumn.Name);
         }
 
-        private void CopyRowData(ValueTableRow source, ValueTableRow dest, IEnumerable<ValueTableColumn> columns)
+        private static void CopyRowData(ValueTableRow source, ValueTableRow dest, IEnumerable<ValueTableColumn> columns)
         {
             foreach (var column in columns)
                 dest.Set(column, source.Get(column));
@@ -410,7 +410,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             }
         }
 
-        private IValue GetNumeric(ValueTableRow row, ValueTableColumn column)
+        private static IValue GetNumeric(ValueTableRow row, ValueTableColumn column)
         {
             var value = row.Get(column);
             if (value.SystemType == BasicTypes.Number) return value;

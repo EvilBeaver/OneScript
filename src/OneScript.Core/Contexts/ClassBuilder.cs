@@ -104,14 +104,14 @@ namespace OneScript.Contexts
             return this;
         }
 
-        private bool MarkedAsContextMethod(MemberInfo member, bool includeDeprecations)
+        private static bool MarkedAsContextMethod(MemberInfo member, bool includeDeprecations)
         {
             return member
                   .GetCustomAttributes(typeof(ContextMethodAttribute), false)
                   .Any(x => includeDeprecations || (x as ContextMethodAttribute)?.IsDeprecated == false);
         }
 
-        private bool MarkedAsContextProperty(MemberInfo member, bool includeDeprecations = false)
+        private static bool MarkedAsContextProperty(MemberInfo member, bool includeDeprecations = false)
         {
             return member.GetCustomAttributes(typeof(ContextPropertyAttribute), false).Any();
         }
@@ -166,7 +166,7 @@ namespace OneScript.Contexts
 
         public ClassBuilder ExportScriptConstructors()
         {
-            var statics = _classType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
+            var statics = _classType.GetMethods(BindingFlags.Static | BindingFlags.Public)
                                    .Where(x => x.GetCustomAttributes(false).Any(y => y is ScriptConstructorAttribute));
 
             foreach (var staticConstructor in statics)
