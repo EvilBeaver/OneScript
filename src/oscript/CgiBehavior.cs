@@ -91,6 +91,8 @@ namespace oscript
 			if (!_isContentEchoed)
 				Echo("");
 
+			request.Dispose();
+			
 			return exitCode;
 		}
 

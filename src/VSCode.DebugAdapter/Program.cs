@@ -30,6 +30,7 @@ namespace VSCode.DebugAdapter
             
             try
             {
+                Log.Logger.Information("Starting debug adapter");
                 session.Start(input, output);
             }
             catch (Exception e)
@@ -40,6 +41,8 @@ namespace VSCode.DebugAdapter
             {
                 Log.CloseAndFlush();
             }
+            
+            Log.Logger.Information("Session completed");
         }
     }
 }

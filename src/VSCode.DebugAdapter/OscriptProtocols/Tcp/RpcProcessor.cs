@@ -21,8 +21,6 @@ namespace VSCode.DebugAdapter
         private readonly Dictionary<string, ChannelRecord> _dispatchers = new Dictionary<string, ChannelRecord>();
         private readonly Queue<RpcCallResult> _responses = new Queue<RpcCallResult>();
         private readonly AutoResetEvent _responseAvailable = new AutoResetEvent(false);
-
-        private static readonly ILogger Log = Serilog.Log.ForContext<RpcProcessor>();
         
         private struct ChannelRecord
         {

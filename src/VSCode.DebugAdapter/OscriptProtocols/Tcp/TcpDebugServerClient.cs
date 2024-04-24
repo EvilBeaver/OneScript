@@ -23,8 +23,6 @@ namespace VSCode.DebugAdapter
         private BinaryChannel _commandsChannel;
         private RpcProcessor _processor;
         
-        private static readonly ILogger Log = Serilog.Log.ForContext<TcpDebugServerClient>();
-
         public TcpDebugServerClient(int port, IDebugEventListener eventBackChannel)
         {
             _port = port;
@@ -42,6 +40,12 @@ namespace VSCode.DebugAdapter
             Log.Debug("Connected to {Host}:{Port}", debuggerUri.Host, debuggerUri.Port);
 
             RunEventsListener(_commandsChannel);
+        }
+
+        public void Disconnect()
+        {
+            _processor.Stop();
+            _commandsChannel.Dispose();
         }
 
         private static Uri GetDebuggerUri(int port)

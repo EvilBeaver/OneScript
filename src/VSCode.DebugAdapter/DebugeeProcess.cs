@@ -28,7 +28,7 @@ namespace VSCode.DebugAdapter
         
         private Encoding _dapEncoding;
 
-        private IDebuggerService _debugger;
+        private TcpDebugServerClient _debugger;
 
         private readonly PathHandlingStrategy _strategy;
 
@@ -108,10 +108,13 @@ namespace VSCode.DebugAdapter
             if (string.IsNullOrWhiteSpace(encodingFromOptions))
             {
                 _dapEncoding = DefaultEncoding();
-                return;
             }
-
-            _dapEncoding = Utilities.GetEncodingFromOptions(encodingFromOptions);
+            else
+            {
+                _dapEncoding = Utilities.GetEncodingFromOptions(encodingFromOptions);
+            }
+            
+            Log.Information("Encoding for debuggee output is {Encoding}", _dapEncoding);
         }
 
         private Encoding DefaultEncoding()
@@ -119,7 +122,7 @@ namespace VSCode.DebugAdapter
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? null : Encoding.UTF8;
         }
 
-        public void SetConnection(IDebuggerService service)
+        public void SetConnection(TcpDebugServerClient service)
         {
             _debugger = service;
         }
@@ -129,6 +132,7 @@ namespace VSCode.DebugAdapter
         
         private void Process_Exited(object sender, EventArgs e)
         {
+            _debugger?.Disconnect();
             Terminate();
             ProcessExited?.Invoke(this, new EventArgs());
         }
