@@ -18,7 +18,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.Binary
 {
     [ContextClass("ДвоичныеДанные", "BinaryData")]
-    public class BinaryDataContext : AutoContext<BinaryDataContext>, IDisposable
+    public sealed class BinaryDataContext : AutoContext<BinaryDataContext>, IDisposable
     {
         private byte[] _buffer;
         private BackingTemporaryFile _backingFile;
@@ -31,7 +31,7 @@ namespace OneScript.StandardLibrary.Binary
 
         public BinaryDataContext(byte[] buffer)
         {
-            _buffer = buffer ?? throw new ArgumentNullException();
+            _buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
         }
 
         public BinaryDataContext(Stream stream)

@@ -21,7 +21,7 @@ using ScriptEngine.Machine.Contexts;
 namespace oscript.Web
 {
 	[ContextClass("ВебЗапрос", "WebRequest")]
-	public class WebRequestContext : AutoContext<WebRequestContext>, IDisposable, IAsyncDisposable
+	public sealed class WebRequestContext : AutoContext<WebRequestContext>, IDisposable, IAsyncDisposable
 	{
 		private PostRequestData _post;
 

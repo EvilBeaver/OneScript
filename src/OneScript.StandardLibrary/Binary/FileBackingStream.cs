@@ -14,7 +14,7 @@ namespace OneScript.StandardLibrary.Binary
     /// <summary>
     /// Поток, который хранит данные в памяти до определенного лимита, потом во временном файле
     /// </summary>
-    public class FileBackingStream : Stream
+    public sealed class FileBackingStream : Stream
     {
         private readonly int _inMemoryLimit;
         private Stream _backingStream;
