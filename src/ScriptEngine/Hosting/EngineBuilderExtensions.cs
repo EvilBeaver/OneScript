@@ -90,5 +90,11 @@ namespace ScriptEngine.Hosting
             b.Services.RegisterSingleton(debugger);
             return b;
         }
+
+        public static IEngineBuilder SetupServices(this IEngineBuilder b, Action<IServiceDefinitions> setup)
+        {
+            setup(b.Services);
+            return b;
+        }
     }
 }
