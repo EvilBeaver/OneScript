@@ -158,10 +158,7 @@ namespace ScriptEngine.Machine
         Number,
         Date,
         Boolean,
-        Type,
-        Object,
-        NotAValidValue, // default argument value
-        GenericValue
+        Null
     }
 
     [Serializable]
