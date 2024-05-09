@@ -25,7 +25,7 @@ namespace ScriptEngine
         //private SymbolScope _globalScope;
         private readonly PropertyBag _injectedProperties;
 
-        private readonly List<AttachedContext> _contexts = new List<AttachedContext>();
+        private readonly List<IAttachableContext> _contexts = new List<IAttachableContext>();
 
         private readonly List<ExternalLibraryDef> _externalLibs = new List<ExternalLibraryDef>();
 //***
@@ -43,22 +43,13 @@ namespace ScriptEngine
             lock (_injectedProperties)
             {
                 _scopeOfGlobalProperties ??= _symbols.PushContext(_injectedProperties);
-                _contexts.Add(AttachedContext.Create(_injectedProperties));
+                _contexts.Add(_injectedProperties);
             }
         }
 
         public void InjectObject(IAttachableContext context)
         {
-            // по факту DynamicScope нигде не пригодился, надо спилить
-            InjectObject(context, false);
-        }
-
-        private void InjectObject(IAttachableContext context, bool asDynamicScope)
-        {
-            var injectedContext =
-                asDynamicScope ? AttachedContext.CreateDynamic(context) : AttachedContext.Create(context);
-            
-            RegisterObject(injectedContext);
+            RegisterObject(context);
         }
 
         public void InjectGlobalProperty(IValue value, string identifier, string alias, bool readOnly)
@@ -89,9 +80,9 @@ namespace ScriptEngine
             InjectGlobalProperty(value, identifier, default, readOnly);
         }
 
-        private void RegisterObject(AttachedContext context)
+        private void RegisterObject(IAttachableContext context)
         {
-            _symbols.PushContext(context.Instance);
+            _symbols.PushContext(context);
             _contexts.Add(context);
         }
         
@@ -100,7 +91,7 @@ namespace ScriptEngine
             _symbols.FindVariable(propertyName, out var binding);
 
             var context = _contexts[binding.ScopeNumber];
-            context.Instance.SetPropValue(binding.MemberNumber, value);
+            context.SetPropValue(binding.MemberNumber, value);
         }
 
         public IValue GetGlobalProperty(string propertyName)
@@ -108,12 +99,12 @@ namespace ScriptEngine
             _symbols.FindVariable(propertyName, out var binding);
 
             var context = _contexts[binding.ScopeNumber];
-            return context.Instance.GetPropValue(binding.MemberNumber);
+            return context.GetPropValue(binding.MemberNumber);
         }
 
         internal SymbolTable Symbols => _symbols;
 
-        internal IList<AttachedContext> AttachedContexts => _contexts;
+        internal IList<IAttachableContext> AttachedContexts => _contexts;
 
         public IEnumerable<ExternalLibraryDef> GetLibraries()
         { 

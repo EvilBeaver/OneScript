@@ -70,7 +70,7 @@ namespace ScriptEngine
             var newCount = globalEnvironment.AttachedContexts.Count();
             while (lastCount < newCount)
             {
-                MachineInstance.Current.AttachContext(globalEnvironment.AttachedContexts[lastCount].Instance);
+                MachineInstance.Current.AttachContext(globalEnvironment.AttachedContexts[lastCount]);
                 ++lastCount;
             }
         }

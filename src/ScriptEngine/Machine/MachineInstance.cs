@@ -89,7 +89,7 @@ namespace ScriptEngine.Machine
         public void SetMemory(ExecutionContext memory)
         {
             Cleanup();
-            foreach (var item in memory.GlobalNamespace.AttachedContexts.Select(x=>x.Instance))
+            foreach (var item in memory.GlobalNamespace.AttachedContexts)
             {
                 AttachContext(item);
             }
