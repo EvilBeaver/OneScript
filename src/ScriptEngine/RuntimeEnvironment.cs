@@ -19,16 +19,12 @@ namespace ScriptEngine
     {
         private readonly SymbolTable _symbols = new SymbolTable();
         private SymbolScope _scopeOfGlobalProperties;
-
-//***        
-        //private readonly ICompilerContext _symbolScopes = new CompilerContext();
-        //private SymbolScope _globalScope;
+        
         private readonly PropertyBag _injectedProperties;
 
         private readonly List<IAttachableContext> _contexts = new List<IAttachableContext>();
 
         private readonly List<ExternalLibraryDef> _externalLibs = new List<ExternalLibraryDef>();
-//***
 
         public RuntimeEnvironment()
         {
