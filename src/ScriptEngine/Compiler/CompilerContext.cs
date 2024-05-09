@@ -92,15 +92,9 @@ namespace ScriptEngine.Compiler
             return false;
         }
 
-        public VariableBinding GetVariable(string name)
+        public SymbolBinding GetVariable(string name)
         {
-            var sb = GetSymbol(name, ExtractVariableIndex);
-            var varSymbol = _scopeStack[sb.ScopeNumber].Variables[sb.MemberNumber];
-            return new VariableBinding
-            {
-                type = varSymbol is IPropertySymbol? SymbolType.ContextProperty : SymbolType.Variable,
-                binding = sb
-            };
+            return GetSymbol(name, ExtractVariableIndex);
         }
 
         public SymbolBinding GetMethod(string name)
@@ -113,22 +107,9 @@ namespace ScriptEngine.Compiler
             return TryGetSymbol(name, ExtractMethodIndex, out result);
         }
 
-        public bool TryGetVariable(string name, out VariableBinding vb)
+        public bool TryGetVariable(string name, out SymbolBinding result)
         {
-            var hasSymbol = TryGetSymbol(name, ExtractVariableIndex, out var sb);
-            if (!hasSymbol)
-            {
-                vb = default;
-                return false;
-            }
-
-            var varSymbol = _scopeStack[sb.ScopeNumber].Variables[sb.MemberNumber];
-            vb = new VariableBinding()
-            {
-                type = varSymbol is IPropertySymbol? SymbolType.ContextProperty : SymbolType.Variable,
-                binding = sb
-            };
-            return true;
+            return TryGetSymbol(name, ExtractVariableIndex, out result);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

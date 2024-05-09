@@ -19,8 +19,8 @@ namespace ScriptEngine.Compiler
         SymbolBinding DefineVariable(string name, string alias = null);
         SymbolBinding GetMethod(string name);
         SymbolScope GetScope(int scopeIndex);
-        VariableBinding GetVariable(string name);
-        bool TryGetVariable(string name, out VariableBinding binding);
+        SymbolBinding GetVariable(string name);
+        bool TryGetVariable(string name, out SymbolBinding binding);
         bool TryGetMethod(string name, out SymbolBinding binding);
         SymbolScope PopScope();
         void PushScope(SymbolScope scope);

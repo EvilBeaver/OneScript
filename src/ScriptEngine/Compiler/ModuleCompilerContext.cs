@@ -83,22 +83,22 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        public VariableBinding GetVariable(string name)
+        public SymbolBinding GetVariable(string name)
         {
-            if (!_moduleCtx.TryGetVariable(name, out var vb))
+            if (!_moduleCtx.TryGetVariable(name, out var sb))
                 return _outerCtx.GetVariable(name);
 
-            ShiftIndex(ref vb.binding);
-            return vb;
+            ShiftIndex(ref sb);
+            return sb;
 
         }
 
-        public bool TryGetVariable(string name, out VariableBinding binding)
+        public bool TryGetVariable(string name, out SymbolBinding binding)
         {
             if (!_moduleCtx.TryGetVariable(name, out binding))
                 return _outerCtx.TryGetVariable(name, out binding);
 
-            ShiftIndex(ref binding.binding);
+            ShiftIndex(ref binding);
             return true;
 
         }
