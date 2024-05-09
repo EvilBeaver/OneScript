@@ -181,12 +181,6 @@ namespace ScriptEngine.Machine.Contexts
                 .Build();
         }
 
-        private MethodSignature GetMethodDescription(int methodNumber)
-        {
-            //TODO: Доработать RcwMethodMetadata
-            return new MethodSignature();
-        }
-
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
             var method = _methods[methodNumber];

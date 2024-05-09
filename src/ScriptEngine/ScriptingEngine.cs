@@ -154,12 +154,6 @@ namespace ScriptEngine
             return scriptContext;
         }
 
-        public StackRuntimeModule LoadModuleImage(ModuleImage moduleImage)
-        {
-            throw new NotImplementedException("Deserialization of module not implemented");
-            //return new LoadedModule(moduleImage);
-        }
-
         public void InitializeSDO(ScriptDrivenObject sdo)
         {
             sdo.Initialize();
