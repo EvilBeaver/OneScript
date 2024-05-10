@@ -15,18 +15,18 @@ namespace OneScript.Compilation.Binding
         private struct BindingRecord
         {
             public SymbolScope scope;
-            public IRuntimeContextInstance target;
+            public IAttachableContext target;
         }
         
         private readonly List<BindingRecord> _bindings = new List<BindingRecord>();
         
         public SymbolScope GetScope(int index) => _bindings[index].scope;
 
-        public IRuntimeContextInstance GetBinding(int scopeIndex) => _bindings[scopeIndex].target;
+        public IAttachableContext GetBinding(int scopeIndex) => _bindings[scopeIndex].target;
         
         public int ScopeCount => _bindings.Count;
         
-        public int PushScope(SymbolScope scope, IRuntimeContextInstance target)
+        public int PushScope(SymbolScope scope, IAttachableContext target)
         {
             var idx = _bindings.Count;
             _bindings.Add(new BindingRecord
