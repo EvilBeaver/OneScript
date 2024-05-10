@@ -271,6 +271,12 @@ namespace OneScript.StandardLibrary
                 
                 var properties = scriptObject.GetProperties()
                     .Where(prop => !fieldNames.Contains(prop.Name));
+
+                if (!withPrivate)
+                {
+                    properties = properties.OfType<BslScriptPropertyInfo>()
+                        .Where(p => p.IsExported);
+                }
                 
                 FillPropertiesTable(result, properties.Concat(fields));
             }

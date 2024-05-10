@@ -305,9 +305,9 @@ namespace ScriptEngine.Machine.Contexts
 
         void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
         {
-            var instanceProps = Module
-                .Properties
+            var instanceProps = this.GetProperties()
                 .OfType<BslScriptPropertyInfo>()
+                .Where(p => p.DispatchId != THISOBJ_VARIABLE_INDEX)
                 .OrderBy(x => x.DispatchId)
                 .ToDictionary(x => x.Name, x => x.DispatchId);
 
