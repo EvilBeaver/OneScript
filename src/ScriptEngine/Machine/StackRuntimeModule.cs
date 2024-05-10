@@ -30,9 +30,9 @@ namespace ScriptEngine.Machine
 
         public List<BslPrimitiveValue> Constants { get; } = new List<BslPrimitiveValue>();
         
-        public IList<SymbolBinding> VariableRefs { get; } = new List<SymbolBinding>();
+        internal IList<SymbolBinding> VariableRefs { get; } = new List<SymbolBinding>();
         
-        public IList<SymbolBinding> MethodRefs { get; } = new List<SymbolBinding>();
+        internal IList<SymbolBinding> MethodRefs { get; } = new List<SymbolBinding>();
 
         #region IExecutableModule members
 
