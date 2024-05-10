@@ -15,11 +15,11 @@ namespace OneScript.Compilation.Binding
         public static SymbolScope PushObject(this SymbolTable table, BslObjectValue target)
         {
             var scope = SymbolScope.FromObject(target);
-            table.PushScope(scope, (IRuntimeContextInstance)target);
+            table.PushScope(scope, (IAttachableContext)target);
             return scope;
         }
         
-        public static SymbolScope PushContext(this SymbolTable table, IRuntimeContextInstance target)
+        public static SymbolScope PushContext(this SymbolTable table, IAttachableContext target)
         {
             var scope = SymbolScope.FromContext(target);
             table.PushScope(scope, target);

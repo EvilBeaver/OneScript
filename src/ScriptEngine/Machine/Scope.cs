@@ -13,7 +13,7 @@ namespace ScriptEngine.Machine
     {
         public IVariable[] Variables;
         public BslMethodInfo[] Methods;
-        public IRuntimeContextInstance Instance;
+        public IAttachableContext Instance;
     }
 
 }
