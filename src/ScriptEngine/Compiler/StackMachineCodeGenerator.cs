@@ -171,6 +171,13 @@ namespace ScriptEngine.Compiler
             _module.Fields.Add(field);
             var binding = _ctx.DefineVariable(field.ToSymbol());
             _module.VariableRefs.Add(binding);
+            var target = _ctx.GetBinding(binding.ScopeNumber);
+
+            _module.VariableRefs2.Add(new RuntimeSymbol
+            {
+                Target = target,
+                Index = binding.MemberNumber
+            });
         }
 
         protected override void VisitModuleBody(BslSyntaxNode child)
@@ -216,6 +223,12 @@ namespace ScriptEngine.Compiler
                 _module.Methods.Add(methodInfo);
                 _module.MethodRefs.Add(bodyBinding);
                 _module.EntryMethodIndex = entryRefNumber;
+                
+                _module.MethodRefs2.Add(new RuntimeSymbol
+                {
+                    Target = _ctx.GetBinding(bodyBinding.ScopeNumber),
+                    Index = bodyBinding.MemberNumber
+                });
             }
         }
 
@@ -298,6 +311,12 @@ namespace ScriptEngine.Compiler
             }
             _module.MethodRefs.Add(binding);
             _module.Methods.Add(methodInfo);
+            
+            _module.MethodRefs2.Add(new RuntimeSymbol
+            {
+                Target = _ctx.GetBinding(binding.ScopeNumber),
+                Index = binding.MemberNumber
+            });
         }
 
         protected override void VisitMethodBody(MethodNode methodNode)
