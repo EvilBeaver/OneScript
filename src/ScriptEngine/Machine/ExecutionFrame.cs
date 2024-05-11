@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Language;
@@ -22,11 +23,9 @@ namespace ScriptEngine.Machine
         public StackRuntimeModule Module;
         public bool IsReentrantCall;
         
-        public Stack<IValue> LocalFrameStack = new Stack<IValue>();
+        public readonly Stack<IValue> LocalFrameStack = new Stack<IValue>();
 
-
-        public Scope ModuleScope { get; set; }
-        public int ModuleLoadIndex { get; set; }
+        public AttachedContext ThisScope { get; set; }
 
         public override string ToString()
         {

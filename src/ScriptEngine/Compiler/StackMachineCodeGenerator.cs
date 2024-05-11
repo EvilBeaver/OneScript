@@ -137,7 +137,7 @@ namespace ScriptEngine.Compiler
                     }
 
                     CheckFactArguments(methInfo.GetParameters(), item.factArguments);
-                    CorrectCommandArgument(item.commandIndex, GetMethodRefNumber(ref methN));
+                    CorrectCommandArgument(item.commandIndex, GetMethodRefNumber(methN));
                 }
             }
         }
@@ -171,12 +171,11 @@ namespace ScriptEngine.Compiler
             _module.Fields.Add(field);
             var binding = _ctx.DefineVariable(field.ToSymbol());
             _module.VariableRefs.Add(binding);
-            var target = _ctx.GetBinding(binding.ScopeNumber);
 
             _module.VariableRefs2.Add(new RuntimeSymbol
             {
-                Target = target,
-                Index = binding.MemberNumber
+                Target = _ctx.GetAttachedBinding(binding.ScopeNumber),
+                MemberNumber = binding.MemberNumber
             });
         }
 
@@ -226,8 +225,8 @@ namespace ScriptEngine.Compiler
                 
                 _module.MethodRefs2.Add(new RuntimeSymbol
                 {
-                    Target = _ctx.GetBinding(bodyBinding.ScopeNumber),
-                    Index = bodyBinding.MemberNumber
+                    Target = _ctx.GetAttachedBinding(bodyBinding.ScopeNumber),
+                    MemberNumber = bodyBinding.MemberNumber
                 });
             }
         }
@@ -314,8 +313,8 @@ namespace ScriptEngine.Compiler
             
             _module.MethodRefs2.Add(new RuntimeSymbol
             {
-                Target = _ctx.GetBinding(binding.ScopeNumber),
-                Index = binding.MemberNumber
+                Target = _ctx.GetAttachedBinding(binding.ScopeNumber),
+                MemberNumber = binding.MemberNumber
             });
         }
 
@@ -797,9 +796,9 @@ namespace ScriptEngine.Compiler
                 CheckFactArguments(methInfo, argList);
 
                 if (asFunction)
-                    AddCommand(OperationCode.CallFunc, GetMethodRefNumber(ref methBinding));
+                    AddCommand(OperationCode.CallFunc, GetMethodRefNumber(methBinding));
                 else
-                    AddCommand(OperationCode.CallProc, GetMethodRefNumber(ref methBinding)); 
+                    AddCommand(OperationCode.CallProc, GetMethodRefNumber(methBinding)); 
             }
             else
             {
@@ -1233,13 +1232,18 @@ namespace ScriptEngine.Compiler
             return idx;
         }
 
-        private int GetMethodRefNumber(ref SymbolBinding methodBinding)
+        private int GetMethodRefNumber(in SymbolBinding methodBinding)
         {
             var idx = _module.MethodRefs.IndexOf(methodBinding);
             if (idx < 0)
             {
                 idx = _module.MethodRefs.Count;
                 _module.MethodRefs.Add(methodBinding);
+                _module.MethodRefs2.Add(new RuntimeSymbol
+                {
+                    Target = _ctx.GetAttachedBinding(methodBinding.ScopeNumber),
+                    MemberNumber = methodBinding.MemberNumber
+                });
             }
             return idx;
         }
@@ -1251,6 +1255,11 @@ namespace ScriptEngine.Compiler
             {
                 idx = _module.VariableRefs.Count;
                 _module.VariableRefs.Add(binding);
+                _module.VariableRefs2.Add(new RuntimeSymbol
+                {
+                    Target = _ctx.GetAttachedBinding(binding.ScopeNumber),
+                    MemberNumber = binding.MemberNumber
+                });
             }
 
             return idx;

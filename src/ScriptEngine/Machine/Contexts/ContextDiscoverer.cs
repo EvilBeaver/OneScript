@@ -66,7 +66,7 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         public void DiscoverGlobalContexts(
-            RuntimeEnvironment environment, 
+            IRuntimeEnvironment environment, 
             Assembly assembly,
             Predicate<Type> filter = null)
         {
@@ -106,7 +106,7 @@ namespace ScriptEngine.Machine.Contexts
             Types.RegisterClass(stdClass);
         }
 
-        private void RegisterSystemEnum(Type enumType, RuntimeEnvironment environment)
+        private void RegisterSystemEnum(Type enumType, IRuntimeEnvironment environment)
         {
             var method = enumType.GetMethod(INSTANCE_RETRIEVER_NAME, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
             
@@ -124,7 +124,7 @@ namespace ScriptEngine.Machine.Contexts
             environment.InjectGlobalProperty(instance, enumMetadata.Name, enumMetadata.Alias, true);
         }
         
-        private void RegisterSimpleEnum(Type enumType, RuntimeEnvironment environment)
+        private void RegisterSimpleEnum(Type enumType, IRuntimeEnvironment environment)
         {
             var enumTypeAttribute = (EnumerationTypeAttribute)enumType.GetCustomAttributes (typeof (EnumerationTypeAttribute), false)[0];
 
@@ -155,7 +155,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        private void RegisterGlobalContext(Type contextType, RuntimeEnvironment environment)
+        private void RegisterGlobalContext(Type contextType, IRuntimeEnvironment environment)
         {
             var attribData = (GlobalContextAttribute)contextType.GetCustomAttributes(typeof(GlobalContextAttribute), false)[0];
             if (attribData.ManualRegistration)

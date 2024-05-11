@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Compilation.Binding;
 using ScriptEngine.Machine;
 
 namespace OneScript.Contexts
@@ -51,5 +52,10 @@ namespace OneScript.Contexts
         /// <param name="propertyName">Имя свойства</param>
         /// <returns></returns>
         IValue GetGlobalProperty(string propertyName);
+
+        /// <summary>
+        /// Получить таблицу символов для видимого контекста
+        /// </summary>
+        SymbolTable GetSymbolTable();
     }
 }
