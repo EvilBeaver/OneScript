@@ -11,8 +11,8 @@ namespace ScriptEngine.Machine
 {
     internal struct RuntimeSymbol
     {
-        public IAttachableContext Target;
+        public AttachedContext Target;
 
-        public int Index;
+        public int MemberNumber;
     }
 }

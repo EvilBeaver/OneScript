@@ -23,7 +23,7 @@ namespace ScriptEngine.HostedScript
     {
         private readonly ScriptingEngine _engine;
         private SystemGlobalContext _globalCtx;
-        private readonly RuntimeEnvironment _env;
+        private readonly IRuntimeEnvironment _env;
         private bool _isInitialized;
 
         private readonly OneScriptLibraryOptions _workingConfig;

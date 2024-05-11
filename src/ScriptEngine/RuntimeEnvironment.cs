@@ -15,7 +15,8 @@ using SymbolScope = OneScript.Compilation.Binding.SymbolScope;
 
 namespace ScriptEngine
 {
-    public class RuntimeEnvironment : IRuntimeEnvironment
+    [Obsolete("Use interface IRuntimeEnvironment")]
+    public class RuntimeEnvironment : IRuntimeEnvironment, ILibraryManager
     {
         private readonly SymbolTable _symbols = new SymbolTable();
         private SymbolScope _scopeOfGlobalProperties;
@@ -98,7 +99,7 @@ namespace ScriptEngine
             return context.GetPropValue(binding.MemberNumber);
         }
 
-        internal SymbolTable Symbols => _symbols;
+        public SymbolTable GetSymbolTable() => _symbols;
 
         internal IList<IAttachableContext> AttachedContexts => _contexts;
 
