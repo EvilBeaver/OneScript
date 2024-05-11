@@ -15,7 +15,7 @@ using SymbolScope = OneScript.Compilation.Binding.SymbolScope;
 
 namespace ScriptEngine
 {
-    public class RuntimeEnvironment
+    public class RuntimeEnvironment : IRuntimeEnvironment
     {
         private readonly SymbolTable _symbols = new SymbolTable();
         private SymbolScope _scopeOfGlobalProperties;
