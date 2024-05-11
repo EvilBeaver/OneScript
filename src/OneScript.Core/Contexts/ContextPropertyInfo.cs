@@ -13,6 +13,9 @@ using OneScript.Commons;
 
 namespace OneScript.Contexts
 {
+    /// <summary>
+    /// Свойство, объявленое в CLR-классе через атрибут ContextProperty
+    /// </summary>
     public class ContextPropertyInfo : BslPropertyInfo, IObjectWrapper
     {
         private readonly PropertyInfo _realProperty;
