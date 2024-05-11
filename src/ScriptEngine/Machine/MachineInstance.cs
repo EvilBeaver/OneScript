@@ -1426,15 +1426,9 @@ namespace ScriptEngine.Machine
             }
 
             PushFrame(frame);
-            try
-            {
-                ExecuteCode();
-            }
-            finally
-            {
-                PopFrame();
-            }
-
+            ExecuteCode();
+            PopFrame();
+            
             NextInstruction();
         }
 
