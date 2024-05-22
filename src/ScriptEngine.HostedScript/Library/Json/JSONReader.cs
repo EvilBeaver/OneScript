@@ -14,18 +14,26 @@ namespace ScriptEngine.HostedScript.Library.Json
 {
     internal class JsonReaderInternal: JsonTextReader  // из библиотеки Newtonsoft
     {
-        public JsonReaderInternal(TextReader reader) : base(reader) { }
+        public JsonReaderInternal(TextReader reader) : base(reader)
+        {
+            Finished = false;
+        }
 
         public override bool Read()
         {
             if (!base.Read())
+            {
+                Finished = true;
                 return false;
+            }
 
             if (TokenType != JsonToken.Undefined)
                 return true;
 
             throw JSONReaderException.UnexpectedSymbol();
         }
+
+        public bool Finished { get; private set; }
     }
 
     /// <summary>
@@ -129,6 +137,9 @@ namespace ScriptEngine.HostedScript.Library.Json
             {
                 CheckIfOpen();
 
+                if (_reader.Finished)
+                    throw JSONReaderException.CannotGetValue();
+
                 switch (_reader.TokenType)
                 {
                     case JsonToken.String:
@@ -166,6 +177,7 @@ namespace ScriptEngine.HostedScript.Library.Json
             get
             {
                 CheckIfOpen();
+
                 return _reader.TokenType;
             }
         }
@@ -186,6 +198,7 @@ namespace ScriptEngine.HostedScript.Library.Json
 
                 string JSONValueType = "None";
 
+                if (!_reader.Finished)
                 switch (_reader.TokenType)
                 {
                     case JsonToken.Null:
@@ -289,22 +302,10 @@ namespace ScriptEngine.HostedScript.Library.Json
 
             if (_reader.TokenType == JsonToken.StartArray || _reader.TokenType == JsonToken.StartObject)
             {
-                while (_reader.Read())
-                {
-                    if (_reader.TokenType == JsonToken.EndArray || _reader.TokenType == JsonToken.EndObject)
-                    {
-                        return _reader.Read();
-                    }
-                }
-                return true;
+                _reader.Skip();
             }
-            else
-            {
-                if (_reader.Read())
-                    return _reader.Read();
-                else
-                    return false;
-            }
+
+            return  _reader.Read();
         }
 
 
