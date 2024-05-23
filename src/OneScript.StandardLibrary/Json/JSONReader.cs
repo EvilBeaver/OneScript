@@ -12,11 +12,34 @@ using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Text;
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Json
 {
+    internal class JsonReaderInternal: JsonTextReader  // из библиотеки Newtonsoft
+    {
+        public JsonReaderInternal(TextReader reader) : base(reader)
+        {
+            Finished = false;
+        }
+
+        public override bool Read()
+        {
+            if (!base.Read())
+            {
+                Finished = true;
+                return false;
+            }
+            if (TokenType != JsonToken.Undefined)
+                return true;
+
+            throw JSONReaderException.UnexpectedSymbol();
+        }
+        public bool Finished { get; private set; }
+    }
+
     /// <summary>
     /// 
     /// Предназначен для последовательного чтения JSON-данных из файла или строки.
@@ -25,15 +48,17 @@ namespace OneScript.StandardLibrary.Json
     public class JSONReader : AutoContext<JSONReader>
     {
 
-        private JsonTextReader _reader; // Объект из библиотеки Newtonsoft для работы с форматом JSON 
+        private JsonReaderInternal _reader;
 
         /// <summary>
         /// 
         /// Возвращает true если для объекта чтения json был задан текст для парсинга.
         /// </summary>
-        private bool IsOpen()
+        private bool IsOpen() => _reader != null;
+
+        private void CheckIfOpen()
         {
-            return _reader != null;
+            if (_reader == null) throw JSONReaderException.NotOpen();
         }
 
         public JSONReader()
@@ -61,12 +86,10 @@ namespace OneScript.StandardLibrary.Json
                 {
                     return ValueFactory.Create(_reader.LinePosition);
                 }
-                else
-                    return ValueFactory.Create(); // Неопределено 
+
+                return ValueFactory.Create(); // Неопределено 
             }
-
         }
-
 
         /// <summary>
         /// 
@@ -83,27 +106,23 @@ namespace OneScript.StandardLibrary.Json
                 {
                     return ValueFactory.Create(_reader.LineNumber);
                 }
-                else
-                    return ValueFactory.Create(); // Неопределено
+
+                return ValueFactory.Create(); // Неопределено
             }
-
         }
-
 
         /// <summary>
         /// 
         /// Содержит текущее значение:
         /// 
         ///  - Число - если ТипТекущегоЗначения имеет значение Число;
-        ///  - Строка - если ТипТекущегоЗначения имеет значение:
-        /// 
-        ///  - Комментарий,
-        ///  - ИмяСвойства,
-        ///  - Строка;
+        ///  - Строка - если ТипТекущегоЗначения имеет одно из следующих значений:
+        ///    - Комментарий,
+        ///    - ИмяСвойства,
+        ///    - Строка;
         ///  - Булево - если ТипТекущегоЗначения имеет значение Булево,
         ///  - Неопределено - если ТипТекущегоЗначения имеет значение Null.
         /// Исключение генерируется в случае, если ТипТекущегоЗначения имеет одно из следующих значений:
-        /// 
         ///  - НачалоМассива,
         ///  - КонецМассива,
         ///  - НачалоОбъекта,
@@ -116,35 +135,34 @@ namespace OneScript.StandardLibrary.Json
         {
             get
             {
-                if (IsOpen())
+                CheckIfOpen();
+                if (_reader.Finished)
+                    throw JSONReaderException.CannotGetValue();
+
+                switch (_reader.TokenType)
                 {
-                    switch (_reader.TokenType)
-                    {
-                        case JsonToken.String:
-                        case JsonToken.Comment:
-                        case JsonToken.PropertyName:
-                            return ValueFactory.Create((string)_reader.Value);
+                    case JsonToken.String:
+                    case JsonToken.Comment:
+                    case JsonToken.PropertyName:
+                        return ValueFactory.Create((string)_reader.Value);
 
-                        case JsonToken.Integer:
-                        case JsonToken.Float:
-                            return ValueFactory.Create(Convert.ToDecimal(_reader.Value));
+                    case JsonToken.Integer:
+                    case JsonToken.Float:
+                        return ValueFactory.Create(Convert.ToDecimal(_reader.Value));
 
-                        case JsonToken.Boolean:
-                            return ValueFactory.Create((bool)_reader.Value);
+                    case JsonToken.Boolean:
+                        return ValueFactory.Create((bool)_reader.Value);
 
-                        case JsonToken.Date:
-                            return ValueFactory.Create((DateTime)_reader.Value);
+                    case JsonToken.Date:
+                        return ValueFactory.Create((DateTime)_reader.Value);
 
-                        case JsonToken.Null:
-                        case JsonToken.Undefined:
-                            return ValueFactory.Create();
+                    case JsonToken.Null:
+                        return ValueFactory.Create();
 
-                        default:
-                            throw CannotGetValueException();
-                    }
+                    default:
+                        throw JSONReaderException.CannotGetValue();
+                        ;
                 }
-                else
-                    throw NotOpenException();
             }
         }
 
@@ -158,15 +176,10 @@ namespace OneScript.StandardLibrary.Json
         {
             get
             {
-                if (IsOpen())
-                {
-                    return _reader.TokenType;
-                }
-                else
-                    throw NotOpenException();
+                CheckIfOpen();
+                return _reader.TokenType;
             }
         }
-
 
         /// <summary>
         /// 
@@ -179,29 +192,27 @@ namespace OneScript.StandardLibrary.Json
         {
             get
             {
-                if (IsOpen())
-                {
-                    return _reader.TokenType switch
-                    {
-                        JsonToken.Null => JSONValueTypeEnum.Null,
-                        JsonToken.Undefined => JSONValueTypeEnum.Null,
-                        JsonToken.StartObject => JSONValueTypeEnum.ObjectStart,
-                        JsonToken.StartArray => JSONValueTypeEnum.ArrayStart,
-                        JsonToken.PropertyName => JSONValueTypeEnum.PropertyName,
-                        JsonToken.Comment => JSONValueTypeEnum.Comment,
-                        JsonToken.Integer => JSONValueTypeEnum.Number,
-                        JsonToken.Float => JSONValueTypeEnum.Number,
-                        JsonToken.String => JSONValueTypeEnum.String,
-                        JsonToken.Boolean => JSONValueTypeEnum.Boolean,
-                        JsonToken.EndObject => JSONValueTypeEnum.ObjectEnd,
-                        JsonToken.EndArray => JSONValueTypeEnum.ArrayEnd,
-                        _ => JSONValueTypeEnum.None
-                    };
-                }
-                else
-                    throw NotOpenException();
-            }
+                CheckIfOpen();
 
+                if (_reader.Finished)
+                    return JSONValueTypeEnum.None;
+
+                return _reader.TokenType switch
+                {
+                    JsonToken.Null => JSONValueTypeEnum.Null,
+                    JsonToken.StartObject => JSONValueTypeEnum.ObjectStart,
+                    JsonToken.StartArray => JSONValueTypeEnum.ArrayStart,
+                    JsonToken.PropertyName => JSONValueTypeEnum.PropertyName,
+                    JsonToken.Comment => JSONValueTypeEnum.Comment,
+                    JsonToken.Integer => JSONValueTypeEnum.Number,
+                    JsonToken.Float => JSONValueTypeEnum.Number,
+                    JsonToken.String => JSONValueTypeEnum.String,
+                    JsonToken.Boolean => JSONValueTypeEnum.Boolean,
+                    JsonToken.EndObject => JSONValueTypeEnum.ObjectEnd,
+                    JsonToken.EndArray => JSONValueTypeEnum.ArrayEnd,
+                    _ => JSONValueTypeEnum.None
+                };
+            }
         }
 
         /// <summary>
@@ -209,19 +220,15 @@ namespace OneScript.StandardLibrary.Json
         /// Завершает чтение текста JSON из файла или строки.
         /// </summary>
         ///
-        ///
-        ///
         [ContextMethod("Закрыть", "Close")]
         public void Close()
         {
-
             if (_reader != null)
             {
                 _reader.Close();
                 _reader = null;
             }
         }
-
 
         /// <summary>
         /// 
@@ -235,7 +242,6 @@ namespace OneScript.StandardLibrary.Json
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string JSONFileName, IValue encoding = null)
         {
-   
             if (IsOpen())
                 Close();
 
@@ -253,10 +259,11 @@ namespace OneScript.StandardLibrary.Json
                 throw new RuntimeException(e.Message, e);
             }
 
-            _reader = new JsonTextReader(_fileReader);
-
+            _reader = new JsonReaderInternal(_fileReader)
+            {
+                SupportMultipleContent = true
+            };
         }
-
 
         /// <summary>
         /// Если текущее значение – начало массива или объекта, то пропускает его содержимое и конец.
@@ -266,34 +273,15 @@ namespace OneScript.StandardLibrary.Json
         [ContextMethod("Пропустить", "Skip")]
         public bool Skip()
         {
+            CheckIfOpen();
 
-            if (IsOpen())
+            if (_reader.TokenType == JsonToken.StartArray || _reader.TokenType == JsonToken.StartObject)
             {
-                if (_reader.TokenType == JsonToken.StartArray || _reader.TokenType == JsonToken.StartObject)
-                {
-                    while (_reader.Read())
-                    {
-                        if (_reader.TokenType == JsonToken.EndArray || _reader.TokenType == JsonToken.EndObject)
-                        {
-                            return _reader.Read();
-                        }
-                    }
-                    return true;
-                }
-                else
-                {
-                    if (_reader.Read())
-                        return _reader.Read();
-                    else
-                        return false;
-                }
-
+                _reader.Skip();
             }
-            else
-                throw NotOpenException();
 
+            return _reader.Read();
         }
-
 
         /// <summary>
         /// Выполняет чтение значения JSON.
@@ -302,10 +290,10 @@ namespace OneScript.StandardLibrary.Json
         [ContextMethod("Прочитать", "Read")]
         public bool Read()
         {
+            CheckIfOpen();
             return _reader.Read();
-            
-        }
 
+        }
 
         /// <summary>
         /// 
@@ -322,20 +310,36 @@ namespace OneScript.StandardLibrary.Json
             if (IsOpen())
                 Close();
 
-            _reader = new JsonTextReader(new StringReader(JSONString));
+            _reader = new JsonReaderInternal(new StringReader(JSONString))
+            {
+                SupportMultipleContent = true
+            };
         }
 
-        RuntimeException NotOpenException()
+    }
+
+    public class JSONReaderException : RuntimeException
+    {
+        public JSONReaderException(string message) : base(message)
         {
-            return new RuntimeException(Locale.NStr
+        }
+
+        public static JSONReaderException NotOpen()
+        {
+            return new JSONReaderException(Locale.NStr
                 ("ru='Источник данных JSON не открыт'; en='JSON data source is not opened'"));
         }
 
-        RuntimeException CannotGetValueException()
+        public static JSONReaderException CannotGetValue()
         {
-            return new RuntimeException(Locale.NStr
+            return new JSONReaderException(Locale.NStr
                 ("ru='Текущее значение JSON не может быть получено';en='Cannot get current JSON value'"));
         }
 
+        public static JSONReaderException UnexpectedSymbol()
+        {
+            return new JSONReaderException(Locale.NStr
+                ("ru='Непредвиденный символ при чтении JSON';en='Unexpected symbol during JSON reading'"));
+        }
     }
 }
