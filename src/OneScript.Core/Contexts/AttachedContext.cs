@@ -23,12 +23,12 @@ namespace OneScript.Contexts
             source.OnAttach(out _variables, out _methods);
             Instance = source;
         }
-        
-        public AttachedContext(IAttachableContext source, IVariable[] variables)
+
+        public AttachedContext(IAttachableContext target, IVariable[] vars)
         {
-            Instance = source;
+            Instance = target;
+            _variables = vars;
             _methods = Array.Empty<BslMethodInfo>();
-            _variables = variables;
         }
 
         public IReadOnlyList<IVariable> Variables => _variables;

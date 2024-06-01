@@ -67,6 +67,7 @@ namespace ScriptEngine.Compiler
             CheckForwardedDeclarations();
             
             _module.LoadAddress = _ctx.ScopeCount - 1;
+            _module.ThisScope = _ctx.GetScope(_ctx.ScopeCount - 1);
             _module.Source = _sourceCode;
             
             return _module;
@@ -171,12 +172,6 @@ namespace ScriptEngine.Compiler
             _module.Fields.Add(field);
             var binding = _ctx.DefineVariable(field.ToSymbol());
             _module.VariableRefs.Add(binding);
-
-            _module.VariableRefs2.Add(new RuntimeSymbol
-            {
-                Target = _ctx.GetAttachedBinding(binding.ScopeNumber),
-                MemberNumber = binding.MemberNumber
-            });
         }
 
         protected override void VisitModuleBody(BslSyntaxNode child)
@@ -222,12 +217,6 @@ namespace ScriptEngine.Compiler
                 _module.Methods.Add(methodInfo);
                 _module.MethodRefs.Add(bodyBinding);
                 _module.EntryMethodIndex = entryRefNumber;
-                
-                _module.MethodRefs2.Add(new RuntimeSymbol
-                {
-                    Target = _ctx.GetAttachedBinding(bodyBinding.ScopeNumber),
-                    MemberNumber = bodyBinding.MemberNumber
-                });
             }
         }
 
@@ -310,12 +299,6 @@ namespace ScriptEngine.Compiler
             }
             _module.MethodRefs.Add(binding);
             _module.Methods.Add(methodInfo);
-            
-            _module.MethodRefs2.Add(new RuntimeSymbol
-            {
-                Target = _ctx.GetAttachedBinding(binding.ScopeNumber),
-                MemberNumber = binding.MemberNumber
-            });
         }
 
         protected override void VisitMethodBody(MethodNode methodNode)
@@ -1239,11 +1222,6 @@ namespace ScriptEngine.Compiler
             {
                 idx = _module.MethodRefs.Count;
                 _module.MethodRefs.Add(methodBinding);
-                _module.MethodRefs2.Add(new RuntimeSymbol
-                {
-                    Target = _ctx.GetAttachedBinding(methodBinding.ScopeNumber),
-                    MemberNumber = methodBinding.MemberNumber
-                });
             }
             return idx;
         }
@@ -1255,11 +1233,6 @@ namespace ScriptEngine.Compiler
             {
                 idx = _module.VariableRefs.Count;
                 _module.VariableRefs.Add(binding);
-                _module.VariableRefs2.Add(new RuntimeSymbol
-                {
-                    Target = _ctx.GetAttachedBinding(binding.ScopeNumber),
-                    MemberNumber = binding.MemberNumber
-                });
             }
 
             return idx;

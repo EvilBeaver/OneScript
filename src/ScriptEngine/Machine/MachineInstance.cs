@@ -39,6 +39,7 @@ namespace ScriptEngine.Machine
         private MachineStopManager _stopManager;
         
         private ExecutionContext _mem;
+        private AttachedContext[] _globalContexts;
 
         // для отладчика.
         // актуален в момент останова машины
@@ -53,17 +54,6 @@ namespace ScriptEngine.Machine
 
         public event EventHandler<MachineStoppedEventArgs> MachineStopped;
 
-        public void AttachContext(IAttachableContext context)
-        {
-            //_scopes.Add(CreateModuleScope(context));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private AttachedContext CreateModuleScope(IAttachableContext context)
-        {
-            return new AttachedContext(context);
-        }
-
         public ExecutionContext Memory => _mem;
 
         public ITypeManager TypeManager => _mem?.TypeManager;
@@ -76,82 +66,35 @@ namespace ScriptEngine.Machine
 
             _mem = memory;
             _codeStatCollector = _mem.Services.TryResolve<ICodeStatCollector>();
-        }
-        
-        internal MachineStoredState SaveState()
-        {
-            return new MachineStoredState()
-            {
-                ExceptionsStack = _exceptionsStack,
-                CallStack = _callStack,
-                OperationStack = _operationStack,
-                StopManager = _stopManager,
-                Memory = _mem
-            };
-        }
-
-        internal void RestoreState(MachineStoredState state)
-        {
-            Reset();
-            _operationStack = state.OperationStack;
-            _callStack = state.CallStack;
-            _exceptionsStack = state.ExceptionsStack;
-            _stopManager = state.StopManager;
-            _mem = state.Memory; 
-            
-            SetFrame(_callStack.Peek());
-        } 
-
-        internal Task<IValue> ExecuteMethodAsync(IRunnable sdo, int methodIndex, IValue[] arguments)
-        {
-            var state = SaveState();
-            Func<IValue> callAction = () =>
-            {
-                var m = MachineInstance.Current;
-                m.Reset();
-                m._mem = state.Memory;
-                return m.ExecuteMethod(sdo, methodIndex, arguments);
-            };
-
-            _currentFrame = new ExecutionFrame()
-            {
-                InstructionPointer = -1
-            };
-
-            var asyncTask = Task.Run(callAction);
-                
-            asyncTask.ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                {
-                    throw t.Exception.Flatten();
-                }
-
-                var m = MachineInstance.Current;
-                m.RestoreState(state);
-                m.ExecuteCode();
-            });
-
-            return asyncTask;
+            _globalContexts = _mem.GlobalNamespace.AttachedContexts.Select(x => new AttachedContext(x))
+                .ToArray();
         }
         
         public bool IsRunning => _callStack.Count != 0;
 
-        [Obsolete]
-        internal IValue ExecuteMethod(IRunnable sdo, int methodIndex, IValue[] arguments)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private AttachedContext[] CreateFrameScopes(AttachedContext[] outerScopes, AttachedContext thisScope)
         {
-            var methodInfo = (MachineMethodInfo)sdo.Module.Methods[methodIndex];
-            return ExecuteMethod(sdo, methodInfo, arguments);
+            var scopes = new AttachedContext[outerScopes.Length + 1];
+            Array.Copy(outerScopes, scopes, outerScopes.Length);
+            scopes[^1] = thisScope;
+
+            return scopes;
         }
         
         internal IValue ExecuteMethod(IRunnable sdo, MachineMethodInfo methodInfo, IValue[] arguments)
         {
             var module = sdo.Module as StackRuntimeModule;
             Debug.Assert(module != null);
+
+            var thisScope = new AttachedContext(sdo);
+            var scopes = CreateFrameScopes(_globalContexts, thisScope);
+            
             var frame = new ExecutionFrame
             {
                 Module = module,
-                ThisScope = CreateModuleScope(sdo),
+                ThisScope = thisScope,
+                Scopes = scopes,
                 IsReentrantCall = true,
             };
             SetExecutionFrame(frame, methodInfo, arguments);
@@ -285,6 +228,7 @@ namespace ScriptEngine.Machine
                 MethodName = code.Source.Name,
                 Module = code,
                 ThisScope = localScope,
+                Scopes = CreateFrameScopes(_currentFrame.Scopes, localScope),
                 Locals = Array.Empty<IVariable>(),
                 InstructionPointer = 0,
             };
@@ -411,6 +355,7 @@ namespace ScriptEngine.Machine
             _module = null;
             _currentFrame = null;
             _mem = null;
+            _globalContexts = null;
         }
 
         private void PrepareCodeStatisticsData(StackRuntimeModule _module)
@@ -722,10 +667,9 @@ namespace ScriptEngine.Machine
         #region Simple operations
         private void PushVar(int arg)
         {
-            var runtimeSymbol = _module.VariableRefs2[arg];
-            var scope = runtimeSymbol.Target ?? _currentFrame.ThisScope;
-            
-            _operationStack.Push(scope.Variables[runtimeSymbol.MemberNumber]);
+            var binding = _module.VariableRefs[arg];
+            var scope = _currentFrame.Scopes[binding.ScopeNumber];
+            _operationStack.Push(scope.Variables[binding.MemberNumber]);
             NextInstruction();
         }
 
@@ -743,18 +687,18 @@ namespace ScriptEngine.Machine
 
         private void PushRef(int arg)
         {
-            var runtimeSymbol = _module.VariableRefs2[arg];
-            var scope = runtimeSymbol.Target ?? _currentFrame.ThisScope;
-            var reference = Variable.CreateContextPropertyReference(scope.Instance, runtimeSymbol.MemberNumber, "$stackvar");
+            var binding = _module.VariableRefs[arg];
+            var scope = _currentFrame.Scopes[binding.ScopeNumber];
+            var reference = Variable.CreateContextPropertyReference(scope.Instance, binding.MemberNumber, "$stackvar");
             _operationStack.Push(reference);
             NextInstruction();
         }
 
         private void LoadVar(int arg)
         {
-            var runtimeSymbol = _module.VariableRefs2[arg];
-            var scope = runtimeSymbol.Target ?? _currentFrame.ThisScope;
-            scope.Variables[runtimeSymbol.MemberNumber].Value = PopRawValue();
+            var binding = _module.VariableRefs[arg];
+            var scope = _currentFrame.Scopes[binding.ScopeNumber];
+            scope.Variables[binding.MemberNumber].Value = PopRawValue();
             NextInstruction();
         }
 
@@ -937,9 +881,9 @@ namespace ScriptEngine.Machine
 
         private bool MethodCallImpl(int arg, bool asFunc)
         {
-            var runtimeSymbol = _module.MethodRefs2[arg];
-            var scope = runtimeSymbol.Target ?? _currentFrame.ThisScope;
-            var methodSignature = scope.Methods[runtimeSymbol.MemberNumber];
+            var methodRef = _module.MethodRefs[arg];
+            var scope = _currentFrame.Scopes[methodRef.ScopeNumber];
+            var methodSignature = scope.Methods[methodRef.MemberNumber];
 
             IValue[] argValues = PopArguments();
 
@@ -951,16 +895,17 @@ namespace ScriptEngine.Machine
                 var sdo = scope.Instance as ScriptDrivenObject;
                 System.Diagnostics.Debug.Assert(sdo != null);
 
-                if (sdo.MethodDefinedInScript(runtimeSymbol.MemberNumber))
+                if (sdo.MethodDefinedInScript(methodRef.MemberNumber))
                 {
                     // заранее переведем указатель на адрес возврата. В опкоде Return инкремента нет.
                     NextInstruction();
 
-                    var methodInfo = (MachineMethodInfo)_module.Methods[sdo.GetMethodDescriptorIndex(runtimeSymbol.MemberNumber)];
+                    var methodInfo = (MachineMethodInfo)_module.Methods[sdo.GetMethodDescriptorIndex(methodRef.MemberNumber)];
                     var frame = new ExecutionFrame
                     {
                         Module = _module,
                         ThisScope = scope,
+                        Scopes = _currentFrame.Scopes
                     };
                     SetExecutionFrame(frame, methodInfo, argValues);
 
@@ -969,7 +914,7 @@ namespace ScriptEngine.Machine
                 else
                 {
                     needsDiscarding = _currentFrame.DiscardReturnValue;
-                    CallContext(scope.Instance, runtimeSymbol.MemberNumber, definedParameters, argValues, asFunc);
+                    CallContext(scope.Instance, methodRef.MemberNumber, definedParameters, argValues, asFunc);
                 }
             }
             else
@@ -978,7 +923,7 @@ namespace ScriptEngine.Machine
                 // статус вызова текущего frames не должен изменяться.
                 //
                 needsDiscarding = _currentFrame.DiscardReturnValue;
-                CallContext(scope.Instance, runtimeSymbol.MemberNumber, definedParameters, argValues, asFunc);
+                CallContext(scope.Instance, methodRef.MemberNumber, definedParameters, argValues, asFunc);
             }
 
             return needsDiscarding;
@@ -1401,14 +1346,15 @@ namespace ScriptEngine.Machine
         {
             var code = _operationStack.Pop().AsString();
             var module = CompileCached(code, CompileExecutionBatchModule);
-            if (module.Methods.Count() == 0)
+            if (!module.Methods.Any())
             {
                 NextInstruction();
                 return;
             }
-
+            
             var localScope = new AttachedContext(new UserScriptContextInstance(module), _currentFrame.Locals);
-
+            var scopes = CreateFrameScopes(_currentFrame.Scopes, localScope);
+            
             var mi = (MachineMethodInfo)module.Methods[0];
             var method = mi.GetRuntimeMethod();
             var frame = new ExecutionFrame
@@ -1416,6 +1362,7 @@ namespace ScriptEngine.Machine
                 Module = module,
                 MethodName = mi.Name,
                 ThisScope = localScope,
+                Scopes = scopes,
                 Locals = new IVariable[method.LocalVariables.Length],
                 InstructionPointer = 0
             };
@@ -2447,7 +2394,6 @@ namespace ScriptEngine.Machine
 
         private StackRuntimeModule CompileExpressionModule(string expression)
         {
-            var ctx = ExtractCompilerContext();
             var entryId = CurrentCodeEntry().ToString();
 
             var stringSource = SourceCodeBuilder.Create()
@@ -2456,14 +2402,13 @@ namespace ScriptEngine.Machine
                 .Build();
 
             var compiler = _mem.Services.Resolve<EvalCompiler>();
-            compiler.SharedSymbols = ctx;
+            compiler.SharedSymbols = ExtractCompilerContext();
             var module = (StackRuntimeModule)compiler.CompileExpression(stringSource);
             return module;
         }
 
         private StackRuntimeModule CompileExecutionBatchModule(string execBatch)
         {
-            var ctx = ExtractCompilerContext();
             var entryId = CurrentCodeEntry().ToString();
 
             var stringSource = SourceCodeBuilder.Create()
@@ -2472,7 +2417,7 @@ namespace ScriptEngine.Machine
                 .Build();
             
             var compiler = _mem.Services.Resolve<EvalCompiler>();
-            compiler.SharedSymbols = ctx;
+            compiler.SharedSymbols = ExtractCompilerContext();
             var module = (StackRuntimeModule)compiler.CompileBatch(stringSource);
             
             return module;
@@ -2488,6 +2433,9 @@ namespace ScriptEngine.Machine
                 var symbolScope = visibleTable.GetScope(i);
                 ctx.PushScope(symbolScope, visibleTable.GetBinding(i));
             }
+            
+            // Переменные и методы уровня нашего модуля
+            ctx.PushScope(_module.ThisScope, _currentFrame.ThisScope.Instance);
 
             var locals = new SymbolScope();
             foreach (var variable in _currentFrame.Locals)
@@ -2495,7 +2443,9 @@ namespace ScriptEngine.Machine
                 locals.DefineVariable(new LocalVariableSymbol(variable.Name));
             }
 
+            // Локальные переменные, которые будут видны в скомпилированном фрагменте
             ctx.PushScope(locals, _currentFrame.ThisScope.Instance);
+            
             return ctx;
         }
 

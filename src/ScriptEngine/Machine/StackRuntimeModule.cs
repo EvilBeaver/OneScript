@@ -24,21 +24,18 @@ namespace ScriptEngine.Machine
 
         public Type ClassType { get; }
 
+        [Obsolete]
         public int LoadAddress { get; set; } = -1;
 
         public int EntryMethodIndex { get; set; } = -1;
 
         public List<BslPrimitiveValue> Constants { get; } = new List<BslPrimitiveValue>();
         
-        [Obsolete]
         internal IList<SymbolBinding> VariableRefs { get; } = new List<SymbolBinding>();
         
-        [Obsolete]
         internal IList<SymbolBinding> MethodRefs { get; } = new List<SymbolBinding>();
         
-        internal IList<RuntimeSymbol> VariableRefs2 { get; } = new List<RuntimeSymbol>();
-        
-        internal IList<RuntimeSymbol> MethodRefs2 { get; } = new List<RuntimeSymbol>();
+        internal SymbolScope ThisScope { get; set; }
 
         #region IExecutableModule members
 
