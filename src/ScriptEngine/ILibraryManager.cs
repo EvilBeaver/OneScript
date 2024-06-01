@@ -8,6 +8,9 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace ScriptEngine
 {
+    /// <summary>
+    /// Временный класс для откусывания ответственностей от RuntimeEnvironment
+    /// </summary>
     public interface ILibraryManager
     {
         IEnumerable<ExternalLibraryDef> GetLibraries();

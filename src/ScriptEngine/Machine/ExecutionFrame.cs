@@ -12,7 +12,7 @@ using OneScript.Language;
 
 namespace ScriptEngine.Machine
 {
-    class ExecutionFrame
+    internal class ExecutionFrame
     {
         public IVariable[] Locals;
         public int InstructionPointer;
@@ -26,6 +26,8 @@ namespace ScriptEngine.Machine
         public readonly Stack<IValue> LocalFrameStack = new Stack<IValue>();
 
         public AttachedContext ThisScope { get; set; }
+        
+        public AttachedContext[] Scopes { get; set; }
 
         public override string ToString()
         {

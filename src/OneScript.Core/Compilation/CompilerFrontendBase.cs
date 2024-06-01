@@ -102,7 +102,8 @@ namespace OneScript.Compilation
                 }
             }
 
-            actualTable.PushScope(ModuleSymbols ?? new SymbolScope(), null);
+            ModuleSymbols ??= new SymbolScope();
+            actualTable.PushScope(ModuleSymbols, null);
 
             return actualTable;
         }

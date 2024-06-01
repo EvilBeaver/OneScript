@@ -17,7 +17,6 @@ namespace OneScript.Compilation.Binding
         {
             public SymbolScope scope;
             public IAttachableContext target;
-            public AttachedContext attachedContext; 
         }
         
         private readonly List<BindingRecord> _bindings = new List<BindingRecord>();
@@ -26,23 +25,6 @@ namespace OneScript.Compilation.Binding
 
         public IAttachableContext GetBinding(int scopeIndex) => _bindings[scopeIndex].target;
 
-        public AttachedContext GetAttachedBinding(int scopeIndex)
-        {
-            var record = _bindings[scopeIndex];
-            if (record.target == null)
-                return null;
-
-            if (record.attachedContext != null) 
-                return record.attachedContext;
-            
-            lock (record)
-            {
-                record.attachedContext ??= new AttachedContext(record.target);
-            }
-
-            return record.attachedContext;
-        }
-        
         public int ScopeCount => _bindings.Count;
         
         public int PushScope(SymbolScope scope, IAttachableContext target)
