@@ -159,5 +159,10 @@ namespace OneScript.Contexts
         {
             return ReferenceEquals(this, other);
         }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

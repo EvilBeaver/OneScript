@@ -2426,16 +2426,29 @@ namespace ScriptEngine.Machine
         private SymbolTable ExtractCompilerContext()
         {
             var ctx = new SymbolTable();
-            var visibleTable = _mem.GlobalNamespace.GetSymbolTable();
             
-            for (var i = 0; i < visibleTable.ScopeCount; i++)
+            var scopes = _currentFrame.Scopes;
+            foreach (var scope in scopes)
             {
-                var symbolScope = visibleTable.GetScope(i);
-                ctx.PushScope(symbolScope, visibleTable.GetBinding(i));
+                var symbolScope = new SymbolScope();
+                foreach (var methodInfo in scope.Methods)
+                {
+                    symbolScope.DefineMethod(methodInfo.ToSymbol());
+                }
+                foreach (var variable in scope.Variables)
+                {
+                    if (variable.SystemType.Alias != null)
+                    {
+                        symbolScope.DefineVariable(new AliasedVariableSymbol(variable.Name, variable.SystemType.Alias));
+                    }
+                    else
+                    {
+                        symbolScope.DefineVariable(new LocalVariableSymbol(variable.Name));
+                    }
+                }
+
+                ctx.PushScope(symbolScope, scope.Instance);
             }
-            
-            // Переменные и методы уровня нашего модуля
-            ctx.PushScope(_module.ThisScope, _currentFrame.ThisScope.Instance);
 
             var locals = new SymbolScope();
             foreach (var variable in _currentFrame.Locals)
@@ -2443,9 +2456,7 @@ namespace ScriptEngine.Machine
                 locals.DefineVariable(new LocalVariableSymbol(variable.Name));
             }
 
-            // Локальные переменные, которые будут видны в скомпилированном фрагменте
             ctx.PushScope(locals, _currentFrame.ThisScope.Instance);
-            
             return ctx;
         }
 

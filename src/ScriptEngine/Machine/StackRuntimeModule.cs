@@ -35,8 +35,6 @@ namespace ScriptEngine.Machine
         
         internal IList<SymbolBinding> MethodRefs { get; } = new List<SymbolBinding>();
         
-        internal SymbolScope ThisScope { get; set; }
-
         #region IExecutableModule members
 
         public BslMethodInfo ModuleBody
