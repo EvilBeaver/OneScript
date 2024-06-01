@@ -564,7 +564,7 @@ namespace ScriptEngine.Compiler
                 }
                 else
                 {
-                    var num = GetVariableRefNumber(ref varBinding);
+                    var num = GetVariableRefNumber(varBinding);
                     AddCommand(OperationCode.LoadVar, num);
                 }
             }
@@ -740,14 +740,14 @@ namespace ScriptEngine.Compiler
             }
             else
             {
-                var idx = GetVariableRefNumber(ref binding);
+                var idx = GetVariableRefNumber(binding);
                 return AddCommand(OperationCode.PushVar, idx);
             }
         }
 
         private int PushPropertyReference(SymbolBinding binding)
         {
-            var idx = GetVariableRefNumber(ref binding);
+            var idx = GetVariableRefNumber(binding);
 
             return AddCommand(OperationCode.PushRef, idx);
         }
@@ -1225,7 +1225,7 @@ namespace ScriptEngine.Compiler
             return idx;
         }
 
-        private int GetVariableRefNumber(ref SymbolBinding binding)
+        private int GetVariableRefNumber(in SymbolBinding binding)
         {
             var idx = _module.VariableRefs.IndexOf(binding);
             if (idx < 0)
