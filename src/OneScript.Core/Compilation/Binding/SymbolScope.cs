@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Collections.Generic;
 using System.Reflection;
 using OneScript.Contexts;
 using OneScript.Runtime.Binding;
@@ -109,6 +110,23 @@ namespace OneScript.Compilation.Binding
                 };
 
                 scope.Variables.Add(symbol);
+            }
+
+            return scope;
+        }
+
+        public static SymbolScope FromMethodsAndProperties(IEnumerable<BslMethodInfo> methods,
+            IEnumerable<BslPropertyInfo> properties)
+        {
+            var scope = new SymbolScope();
+            foreach (var methodInfo in methods)
+            {
+                scope.Methods.Add(methodInfo.ToSymbol());
+            }
+
+            foreach (var propertyInfo in properties)
+            {
+                scope.Variables.Add(propertyInfo.ToSymbol());
             }
 
             return scope;

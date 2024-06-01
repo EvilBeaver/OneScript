@@ -169,6 +169,12 @@ namespace ScriptEngine.Machine.Contexts
             return _properties[index];
         }
 
+        public IEnumerable<BslPropertyInfo> GetProperties()
+        {
+            Init();
+            return _properties.Select(p => p.PropertyInfo);
+        }
+
         public int Count
         {
             get
