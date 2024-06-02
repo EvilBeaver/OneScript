@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Types;
 
@@ -14,7 +15,7 @@ namespace ScriptEngine.Machine
     {
         public ExecutionContext(
             ITypeManager typeManager,
-            RuntimeEnvironment globalNamespace,
+            IRuntimeEnvironment globalNamespace,
             IGlobalsManager globalInstances,
             IServiceContainer services)
         {
@@ -26,7 +27,7 @@ namespace ScriptEngine.Machine
         
         public ITypeManager TypeManager { get; }
         
-        public RuntimeEnvironment GlobalNamespace { get; }
+        public IRuntimeEnvironment GlobalNamespace { get; }
         
         public IGlobalsManager GlobalInstances { get; }
         

@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Diagnostics.CodeAnalysis;
 using OneScript.Compilation;
+using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Exceptions;
 using OneScript.Execution;
@@ -49,6 +50,7 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<ITypeManager, DefaultTypeManager>();
             services.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
             services.RegisterSingleton<RuntimeEnvironment>();
+            services.RegisterSingleton<IRuntimeEnvironment>(sp => sp.Resolve<RuntimeEnvironment>());
             services.RegisterSingleton<CompileTimeSymbolsProvider>();
             services.RegisterSingleton<IErrorSink>(svc => new ThrowingErrorSink(CompilerException.FromCodeError));
             services.RegisterSingleton<IExceptionInfoFactory, ExceptionInfoFactory>();

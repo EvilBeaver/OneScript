@@ -22,7 +22,9 @@ namespace ScriptEngine
     {
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IDebugController _debugController;
-        private RuntimeEnvironment _runtimeEnvironment;
+        private IRuntimeEnvironment _runtimeEnvironment;
+        
+        private readonly ILibraryManager _libraryManager;
 
         public ScriptingEngine(ITypeManager types,
             IGlobalsManager globals,
@@ -35,6 +37,7 @@ namespace ScriptEngine
             
             GlobalsManager = globals;
             _runtimeEnvironment = env;
+            _libraryManager = env;
             
             Loader = new ScriptSourceFactory();
             Services = services;
@@ -49,7 +52,7 @@ namespace ScriptEngine
 
         public IRuntimeEnvironment Environment => _runtimeEnvironment;
 
-        public ILibraryManager LibraryManager => _runtimeEnvironment;
+        public ILibraryManager LibraryManager => _libraryManager;
 
         public ITypeManager TypeManager { get; }
         

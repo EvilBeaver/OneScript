@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Collections.Generic;
 using OneScript.Compilation.Binding;
 using ScriptEngine.Machine;
 
@@ -57,5 +58,10 @@ namespace OneScript.Contexts
         /// Получить таблицу символов для видимого контекста
         /// </summary>
         SymbolTable GetSymbolTable();
+        
+        /// <summary>
+        /// Список подключенных внешних контекстов (слоев), доступных всегда в рамках данного окружения
+        /// </summary>
+        IReadOnlyCollection<IAttachableContext> AttachedContexts { get; }
     }
 }

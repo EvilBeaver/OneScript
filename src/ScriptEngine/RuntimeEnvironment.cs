@@ -101,7 +101,7 @@ namespace ScriptEngine
 
         public SymbolTable GetSymbolTable() => _symbols;
 
-        internal IList<IAttachableContext> AttachedContexts => _contexts;
+        public IReadOnlyCollection<IAttachableContext> AttachedContexts => _contexts;
 
         public IEnumerable<ExternalLibraryDef> GetLibraries()
         { 
