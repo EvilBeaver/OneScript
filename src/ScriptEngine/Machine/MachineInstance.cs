@@ -73,13 +73,9 @@ namespace ScriptEngine.Machine
         public bool IsRunning => _callStack.Count != 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private AttachedContext[] CreateFrameScopes(AttachedContext[] outerScopes, AttachedContext thisScope)
+        private IReadOnlyList<AttachedContext> CreateFrameScopes(IReadOnlyList<AttachedContext> outerScopes, AttachedContext thisScope)
         {
-            var scopes = new AttachedContext[outerScopes.Length + 1];
-            Array.Copy(outerScopes, scopes, outerScopes.Length);
-            scopes[^1] = thisScope;
-
-            return scopes;
+            return new RuntimeScopes(outerScopes, thisScope);
         }
         
         internal IValue ExecuteMethod(IRunnable sdo, MachineMethodInfo methodInfo, IValue[] arguments)

@@ -5,7 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
 using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Language;
@@ -27,7 +26,7 @@ namespace ScriptEngine.Machine
 
         public AttachedContext ThisScope { get; set; }
         
-        public AttachedContext[] Scopes { get; set; }
+        public IReadOnlyList<AttachedContext> Scopes { get; set; }
 
         public override string ToString()
         {
