@@ -10,22 +10,22 @@ pipeline {
     }
 
     stages {
-        stage('Prepare Linux Environment') {
-            agent{ label 'master'}
-            steps{
-                dir('install'){
-                    sh 'chmod +x make-dockers.sh && ./make-dockers.sh'
-                }
-                withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'dockerpassword', usernameVariable: 'dockeruser')]) {
-                    sh """
-                    docker login -p $dockerpassword -u $dockeruser
-                    docker push oscript/onescript-builder:deb
-                    docker push oscript/onescript-builder:rpm
-                    docker push oscript/onescript-builder:gcc
-                    """.stripIndent()
-                }
-            }
-        }
+        //stage('Prepare Linux Environment') {
+        //    agent{ label 'master'}
+        //    steps{
+        //        dir('install'){
+        //            sh 'chmod +x make-dockers.sh && ./make-dockers.sh'
+        //        }
+        //        withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'dockerpassword', usernameVariable: 'dockeruser')]) {
+        //            sh """
+        //            docker login -p $dockerpassword -u $dockeruser
+        //            docker push oscript/onescript-builder:deb
+        //            docker push oscript/onescript-builder:rpm
+        //            docker push oscript/onescript-builder:gcc
+        //            """.stripIndent()
+        //        }
+        //    }
+        //}
         stage('Build'){
             parallel {
                 stage('Windows Build') {
