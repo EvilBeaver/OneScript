@@ -24,9 +24,6 @@ namespace ScriptEngine.Machine
 
         public Type ClassType { get; }
 
-        [Obsolete]
-        public int LoadAddress { get; set; } = -1;
-
         public int EntryMethodIndex { get; set; } = -1;
 
         public List<BslPrimitiveValue> Constants { get; } = new List<BslPrimitiveValue>();

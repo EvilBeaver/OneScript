@@ -66,7 +66,6 @@ namespace ScriptEngine.Compiler
             VisitModule(moduleNode);
             CheckForwardedDeclarations();
             
-            _module.LoadAddress = _ctx.ScopeCount - 1;
             _module.Source = _sourceCode;
             
             return _module;
