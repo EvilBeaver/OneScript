@@ -150,21 +150,14 @@ namespace ScriptEngine.Machine.Contexts
         public static object MarshalIValue(IValue val)
         {
             object retValue;
-            if (val != null && val is BslDateValue dateVal)
+            if (val is BslDateValue dateVal)
             {
                 var date = (DateTime)dateVal;
-                if (date <= MIN_OLE_DATE)
-                {
-                    retValue = MIN_OLE_DATE;
-                }
-                else
-                {
-                    retValue = date;
-                }
+                retValue = date < MIN_OLE_DATE ? MIN_OLE_DATE : date;
             }
             else
             {
-                retValue = ContextValuesMarshaller.ConvertToClrObject(val);
+                retValue = ContextValuesMarshaller.ConvertToClrObject(val) ?? Missing.Value;;
             }
 
             return retValue;
