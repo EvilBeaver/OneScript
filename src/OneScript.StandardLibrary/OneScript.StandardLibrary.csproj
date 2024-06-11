@@ -31,5 +31,9 @@
     <ItemGroup>
       <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
     </ItemGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
     
 </Project>
