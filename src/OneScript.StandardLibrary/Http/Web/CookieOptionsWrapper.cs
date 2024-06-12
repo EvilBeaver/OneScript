@@ -18,9 +18,9 @@ namespace OneScript.StandardLibrary.Http.Web
             get
             {
                 if (_cookieOptions.Domain == null)
-                    return BslStringValue.Create(_cookieOptions.Domain);
-                else
                     return BslNullValue.Instance;
+                else
+                    return BslStringValue.Create(_cookieOptions.Domain);
             }
             set
             {
@@ -37,9 +37,9 @@ namespace OneScript.StandardLibrary.Http.Web
             get
             {
                 if (_cookieOptions.Path == null)
-                    return BslStringValue.Create(_cookieOptions.Path);
-                else
                     return BslNullValue.Instance;
+                else
+                    return BslStringValue.Create(_cookieOptions.Path);
             }
             set
             {
