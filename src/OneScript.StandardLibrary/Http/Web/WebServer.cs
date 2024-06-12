@@ -1,25 +1,15 @@
-﻿using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OneScript.Commons;
 using OneScript.Contexts;
-using OneScript.StandardLibrary.Collections;
-using OneScript.StandardLibrary.Http;
-using OneScript.StandardLibrary.Tasks;
-using OneScript.Values;
+using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using ExecutionContext = ScriptEngine.Machine.ExecutionContext;
 
 namespace OneScript.StandardLibrary.Http.Web
@@ -38,15 +28,15 @@ namespace OneScript.StandardLibrary.Http.Web
         [ContextProperty("Порт", "Port", CanWrite = false)]
         public int Port { get; private set; }
 
-        public WebServer() 
+        public WebServer(ExecutionContext executionContext) 
         {
-            _executionContext = MachineInstance.Current.Memory;
+            _executionContext = executionContext;
         }
 
         [ScriptConstructor(Name = "С портом по умолчанию - 8080")]
-        public static WebServer Constructor()
+        public static WebServer Constructor(TypeActivationContext typeActivationContext)
         {
-            var server = new WebServer
+            var server = new WebServer(typeActivationContext.Services.Resolve<ExecutionContext>())
             {
                 Port = 8080
             };
@@ -55,9 +45,9 @@ namespace OneScript.StandardLibrary.Http.Web
         }
 
         [ScriptConstructor(Name = "С указанием порта прослушивателя")]
-        public static WebServer Constructor(IValue port)
+        public static WebServer Constructor(TypeActivationContext typeActivationContext, IValue port)
         {
-            var server = new WebServer
+            var server = new WebServer(typeActivationContext.Services.Resolve<ExecutionContext>())
             {
                 Port = (int)port.AsNumber()
             };
@@ -94,8 +84,6 @@ namespace OneScript.StandardLibrary.Http.Web
                     };
 
                     var methodNumber = middleware.Target.GetMethodNumber(middleware.MethodName);
-
-                    MachineInstance.Current.SetMemory(_executionContext);
 
                     var debugController = _executionContext.Services.TryResolve<IDebugController>();
                     debugController?.AttachToThread();
