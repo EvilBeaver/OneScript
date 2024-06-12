@@ -25,7 +25,7 @@ namespace OneScript.StandardLibrary.Http.Web
         }
 
         [ContextMethod("Удалить", "Delete")]
-        public void Append(IValue key, CookieOptionsWrapper cookieOptions = null)
+        public void Delete(IValue key, CookieOptionsWrapper cookieOptions = null)
         {
             if (cookieOptions is null)
                 _items.Delete(key.AsString());

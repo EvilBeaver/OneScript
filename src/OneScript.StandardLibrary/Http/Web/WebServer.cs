@@ -20,19 +20,28 @@ using OneScript.StandardLibrary.Tasks;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ExecutionContext = ScriptEngine.Machine.ExecutionContext;
 
 namespace OneScript.StandardLibrary.Http.Web
 {
     [ContextClass("ВебСервер", "WebServer")]
     public class WebServer: AutoContext<WebServer>, IDisposable
     {
+        private readonly ExecutionContext _executionContext;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private WebApplication _app;
-        private List<(IRuntimeContextInstance Target, string MethodName)> _middlewares = new List<(IRuntimeContextInstance Target, string MethodName)>();
+        private readonly List<(IRuntimeContextInstance Target, string MethodName)> _middlewares = new List<(IRuntimeContextInstance Target, string MethodName)>();
+        private string _contentRoot = null;
+        private bool _useStaticFiles = false;
         private bool disposedValue;
 
         [ContextProperty("Порт", "Port", CanWrite = false)]
         public int Port { get; private set; }
+
+        public WebServer() 
+        {
+            _executionContext = MachineInstance.Current.Memory;
+        }
 
         [ScriptConstructor(Name = "С портом по умолчанию - 8080")]
         public static WebServer Constructor()
@@ -65,35 +74,42 @@ namespace OneScript.StandardLibrary.Http.Web
                 options.AllowSynchronousIO = true;
                 options.ListenAnyIP(Port);
             });
+            
+            if (_contentRoot != null)
+                builder.WebHost.UseContentRoot(_contentRoot);
 
             _app = builder.Build();
 
-            var tasksManager = new BackgroundTasksManager(MachineInstance.Current.Memory);
+            if (_useStaticFiles)
+                _app.UseStaticFiles();
 
             _middlewares.ForEach(middleware =>
             {
                 _app.Use((context, next) =>
                 {
-                    var args = new ArrayImpl
+                    var args = new IValue[]
                     {
                         new HttpContextWrapper(context),
                         new RequestDelegateWrapper(next)
                     };
 
-                    var task = tasksManager.Execute(middleware.Target, middleware.MethodName, args);
+                    var methodNumber = middleware.Target.GetMethodNumber(middleware.MethodName);
 
-                    return task.WorkerTask.ContinueWith(t =>
+                    MachineInstance.Current.SetMemory(_executionContext);
+
+                    var debugController = _executionContext.Services.TryResolve<IDebugController>();
+                    debugController?.AttachToThread();
+
+                    try
                     {
-                        if (task.State == TaskStateEnum.CompletedWithErrors)
-                        {
-                            context.Response.StatusCode = 500;
+                        middleware.Target.CallAsProcedure(methodNumber, args);
+                    }
+                    catch
+                    {
+                        debugController?.DetachFromThread();
+                    }
 
-                            var content = Encoding.UTF8.GetBytes(task.ExceptionInfo.MessageWithoutCodeFragment);
-                            context.Response.Headers.ContentType = "text/plain;charset=utf-8";
-                            context.Response.Headers.ContentLength = content.Length;
-                            context.Response.Body.Write(content);
-                        }
-                    });
+                    return Task.CompletedTask;
                 });
             });
 
@@ -114,6 +130,18 @@ namespace OneScript.StandardLibrary.Http.Web
         public void Stop()
         {
             _app?.StopAsync(_cancellationTokenSource.Token);
+        }
+
+        [ContextMethod("УстановитьКорневойПутьСодержимого", "SetContentRoot")]
+        public void SetContentRoot(IValue path)
+        {
+            _contentRoot = path.AsString();
+        }
+
+        [ContextMethod("ИспользоватьСтатическиеФайлы", "UseStaticFiles")]
+        public void UseStaticFiles()
+        {
+            _useStaticFiles = true;
         }
 
         protected virtual void Dispose(bool disposing)

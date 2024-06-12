@@ -17,7 +17,7 @@ namespace OneScript.StandardLibrary.Http.Web
         [ContextMethod("Вызвать", "Invoke")]
         public void Invoke(HttpContextWrapper httpContext)
         {
-            _delegate.Invoke(httpContext._context);
+            _delegate.Invoke(httpContext.GetContext());
         }
     }
 }
