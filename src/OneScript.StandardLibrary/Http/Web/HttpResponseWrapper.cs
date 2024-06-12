@@ -77,7 +77,6 @@ namespace OneScript.StandardLibrary.Http.Web
         {
             var enc = encoding == null ? Encoding.UTF8 : TextEncodingEnum.GetEncoding(encoding);
 
-            _response.ContentType = $"text/plain;charset={enc.WebName}";
             _response.WriteAsync(strData.AsString(), enc).Wait();
         }
 
