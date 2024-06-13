@@ -5,7 +5,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Net;
 
-namespace OneScript.StandardLibrary.Http.Web
+namespace OneScript.Web.Server
 {
     [ContextClass("ИнформацияОСоединении", "ConnectionInfo")]
     public class ConnectionInfoWrapper: AutoContext<ConnectionInfoWrapper>

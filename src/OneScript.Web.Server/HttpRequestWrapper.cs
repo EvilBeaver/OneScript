@@ -3,7 +3,7 @@ using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Binary;
-using OneScript.StandardLibrary.Collections;
+using OneScript.Web.Server;
 using OneScript.StandardLibrary.Http;
 using OneScript.StandardLibrary.Processes;
 using OneScript.StandardLibrary.Text;
@@ -13,8 +13,9 @@ using ScriptEngine.Machine.Contexts;
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using OneScript.StandardLibrary.Collections;
 
-namespace OneScript.StandardLibrary.Http.Web
+namespace OneScript.Web.Server
 {
     [ContextClass("HTTPСервисЗапрос", "HTTPServiceRequest")]
     public class HttpRequestWrapper : AutoContext<HttpRequestWrapper>

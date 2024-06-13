@@ -13,7 +13,7 @@
         <PackageAuthors>OneScript OpenSource Community</PackageAuthors>
         <PackageOwners>EvilBeaver &lt;ovsiankin.aa@gmail.com&gt;</PackageOwners>
         <PackageProjectUrl>http://oscript.io</PackageProjectUrl>
-        <PackageDescription>Clases for 1Script processes hosting</PackageDescription>
+        <PackageDescription>Classes for 1Script processes hosting</PackageDescription>
         <PackageCopyright>OneScript OpenSource Community 2015</PackageCopyright>
         <PackageTags>BSL 1C 1Script OneScript</PackageTags>
     </PropertyGroup>
@@ -31,9 +31,5 @@
     <ItemGroup>
       <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
     </ItemGroup>
-
-	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
     
 </Project>

@@ -1,6 +1,6 @@
 ﻿using OneScript.Contexts.Enums;
 
-namespace OneScript.StandardLibrary.Http.Web
+namespace OneScript.Web.Server
 {
     [EnumerationType("РежимSameSite", "SameSiteMode",
         TypeUUID = "C3D11188-2520-46CE-99A1-58CEFAE4CFE9",

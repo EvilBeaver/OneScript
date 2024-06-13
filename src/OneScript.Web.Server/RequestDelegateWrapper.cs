@@ -2,7 +2,7 @@
 using OneScript.Contexts;
 using ScriptEngine.Machine.Contexts;
 
-namespace OneScript.StandardLibrary.Http.Web
+namespace OneScript.Web.Server
 {
     [ContextClass("ДелегатЗапроса", "RequestDelegate")]
     public class RequestDelegateWrapper : AutoContext<RequestDelegateWrapper>

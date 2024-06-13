@@ -5,7 +5,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 
-namespace OneScript.StandardLibrary.Http.Web
+namespace OneScript.Web.Server
 {
     [ContextClass("ПараметрыCookie", "CookieOptions")]
     public class CookieOptionsWrapper: AutoContext<CookieOptionsWrapper>

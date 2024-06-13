@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OneScript.Contexts;
@@ -8,11 +9,15 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 using ExecutionContext = ScriptEngine.Machine.ExecutionContext;
 
-namespace OneScript.StandardLibrary.Http.Web
+namespace OneScript.Web.Server
 {
     [ContextClass("ВебСервер", "WebServer")]
     public class WebServer: AutoContext<WebServer>, IDisposable
@@ -23,6 +28,7 @@ namespace OneScript.StandardLibrary.Http.Web
         private readonly List<(IRuntimeContextInstance Target, string MethodName)> _middlewares = new List<(IRuntimeContextInstance Target, string MethodName)>();
         private string _contentRoot = null;
         private bool _useStaticFiles = false;
+        private (IRuntimeContextInstance Target, string MethodName)? _exceptionHandler = null;
         private bool disposedValue;
 
         [ContextProperty("Порт", "Port", CanWrite = false)]
@@ -64,7 +70,7 @@ namespace OneScript.StandardLibrary.Http.Web
                 options.AllowSynchronousIO = true;
                 options.ListenAnyIP(Port);
             });
-            
+
             if (_contentRoot != null)
                 builder.WebHost.UseContentRoot(_contentRoot);
 
@@ -72,6 +78,38 @@ namespace OneScript.StandardLibrary.Http.Web
 
             if (_useStaticFiles)
                 _app.UseStaticFiles();
+
+            if (_exceptionHandler != null)
+                _app.UseExceptionHandler(handler =>
+                {
+                    handler.Run(context =>
+                    {
+                        var args = new IValue[]
+                        {
+                            new HttpContextWrapper(context),
+                        };
+
+                        var methodNumber = _exceptionHandler?.Target.GetMethodNumber(_exceptionHandler?.MethodName);
+
+                        var debugController = _executionContext.Services.TryResolve<IDebugController>();
+                        debugController?.AttachToThread();
+
+                        try
+                        {
+                            _exceptionHandler?.Target.CallAsProcedure((int)methodNumber, args);
+                        }
+                        catch (Exception ex)
+                        {
+                            WriteExceptionToResponse(context, ex);
+                        }
+                        finally
+                        {
+                            debugController?.DetachFromThread();
+                        }
+
+                        return Task.CompletedTask;
+                    });
+                });
 
             _middlewares.ForEach(middleware =>
             {
@@ -90,9 +128,16 @@ namespace OneScript.StandardLibrary.Http.Web
 
                     try
                     {
-                        middleware.Target.CallAsProcedure(methodNumber, args);
+                        middleware.Target.CallAsProcedure(methodNumber, args);          
                     }
-                    catch
+                    catch (Exception ex)
+                    {
+                        if (_exceptionHandler == null)
+                            WriteExceptionToResponse(context, ex);
+                        else
+                            throw;
+                    }
+                    finally
                     {
                         debugController?.DetachFromThread();
                     }
@@ -104,9 +149,20 @@ namespace OneScript.StandardLibrary.Http.Web
             _app.RunAsync(_cancellationTokenSource.Token);
         }
 
+        private static void WriteExceptionToResponse(HttpContext httpContext, Exception ex)
+        {
+            httpContext.Response.StatusCode = 500;
+            httpContext.Response.ContentType = "text/plain;charset=utf-8";
+            httpContext.Response.WriteAsync(ex.Message).Wait();
+        }
+
         [ContextMethod("ДобавитьОбработчикЗапросов", "AddRequestsHandler")]
         public void SetRequestsHandler(IRuntimeContextInstance target, string methodName)
             => _middlewares.Add((target, methodName));
+
+        [ContextMethod("ДобавитьОбработчикИсключений", "AddExceptionsHandler")]
+        public void SetExceptionsHandler(IRuntimeContextInstance target, string methodName)
+            => _exceptionHandler = (target, methodName);
 
         [ContextMethod("ЖдатьОстановки", "WaitForShutdown")]
         public void WaitForShutdown()

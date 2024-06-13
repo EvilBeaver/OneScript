@@ -3,7 +3,7 @@ using OneScript.Contexts;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace OneScript.StandardLibrary.Http.Web
+namespace OneScript.Web.Server
 {
     [ContextClass("КукиОтвета", "ResponseCookies")]
     public class ResponseCookiesWrapper : AutoContext<ResponseCookiesWrapper>

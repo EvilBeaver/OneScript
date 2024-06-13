@@ -3,7 +3,7 @@ using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
-using OneScript.StandardLibrary.Collections;
+using OneScript.Web.Server;
 using OneScript.StandardLibrary.Json;
 using OneScript.StandardLibrary.Text;
 using OneScript.Values;
@@ -11,7 +11,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Text;
 
-namespace OneScript.StandardLibrary.Http.Web
+namespace OneScript.Web.Server
 {
 
     [ContextClass("HTTPСервисОтвет", "HTTPServiceResponse")]

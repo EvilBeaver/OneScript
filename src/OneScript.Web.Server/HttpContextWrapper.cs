@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OneScript.StandardLibrary.Http.Web
+namespace OneScript.Web.Server
 {
     [ContextClass("HTTPКонтекст", "HTTPContext")]
     public class HttpContextWrapper : AutoContext<HttpContextWrapper>
