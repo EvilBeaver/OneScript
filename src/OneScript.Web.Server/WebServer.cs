@@ -26,16 +26,14 @@ using ExecutionContext = ScriptEngine.Machine.ExecutionContext;
 namespace OneScript.Web.Server
 {
     [ContextClass("ВебСервер", "WebServer")]
-    public class WebServer: AutoContext<WebServer>, IDisposable
+    public class WebServer: AutoContext<WebServer>
     {
         private readonly ExecutionContext _executionContext;
-        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private WebApplication _app;
         private readonly List<(IRuntimeContextInstance Target, string MethodName)> _middlewares = new List<(IRuntimeContextInstance Target, string MethodName)>();
         private string _contentRoot = null;
         private bool _useStaticFiles = false;
         private (IRuntimeContextInstance Target, string MethodName)? _exceptionHandler = null;
-        private bool disposedValue;
 
         [ContextProperty("Порт", "Port", CanWrite = false)]
         public int Port { get; private set; }
@@ -152,7 +150,7 @@ namespace OneScript.Web.Server
                 });
             });
 
-            _app.RunAsync(_cancellationTokenSource.Token);
+            _app.Run();
         }
 
         private static void WriteExceptionToResponse(HttpContext httpContext, Exception ex)
@@ -170,18 +168,6 @@ namespace OneScript.Web.Server
         public void SetExceptionsHandler(IRuntimeContextInstance target, string methodName)
             => _exceptionHandler = (target, methodName);
 
-        [ContextMethod("ЖдатьОстановки", "WaitForShutdown")]
-        public void WaitForShutdown()
-        {
-            _app?.WaitForShutdown();
-        }
-
-        [ContextMethod("Остановить", "Stop")]
-        public void Stop()
-        {
-            _app?.StopAsync(_cancellationTokenSource.Token);
-        }
-
         [ContextMethod("УстановитьКорневойПутьСодержимого", "SetContentRoot")]
         public void SetContentRoot(IValue path)
         {
@@ -192,25 +178,6 @@ namespace OneScript.Web.Server
         public void UseStaticFiles()
         {
             _useStaticFiles = true;
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    Stop();
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }
