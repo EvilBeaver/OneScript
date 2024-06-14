@@ -6,13 +6,14 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using Microsoft.AspNetCore.Http;
 using OneScript.Contexts;
+using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Text;
 using OneScript.Values;
+using OneScript.Web.Server.WebSockets;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,6 +44,12 @@ namespace OneScript.Web.Server
 
         [ContextProperty("ЗапросПрерван", "RequestAborted", CanWrite = false)]
         public IValue RequestAborted => BslBooleanValue.Create(_context.RequestAborted.IsCancellationRequested);
+
+        [ContextProperty("Элементы", "Items", CanWrite = false)]
+        public MapImpl Items { get; } = new MapImpl();
+
+        [ContextProperty("ВебСокеты", "WebSockets", CanWrite = false)]
+        public WebSocketsManagerWrapper WebSockets => new WebSocketsManagerWrapper(_context.WebSockets);
 
         [ContextMethod("Прервать", "Abort")]
         public void Abort() => _context.Abort();

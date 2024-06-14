@@ -13,6 +13,9 @@ using System.Net;
 
 namespace OneScript.Web.Server
 {
+    /// <summary>
+    /// Сетвевая информация и контексте подключения
+    /// </summary>
     [ContextClass("ИнформацияОСоединении", "ConnectionInfo")]
     public class ConnectionInfoWrapper: AutoContext<ConnectionInfoWrapper>
     {
@@ -23,6 +26,9 @@ namespace OneScript.Web.Server
             _connectionInfo = connectionInfo;
         }
 
+        /// <summary>
+        /// Идентификатор подключения
+        /// </summary>
         [ContextProperty("Идентификатор", "Id")]
         public IValue Id
         {
@@ -33,6 +39,9 @@ namespace OneScript.Web.Server
             }
         }
 
+        /// <summary>
+        /// IP адрес клиента
+        /// </summary>
         [ContextProperty("УдаленныйIpАдрес", "RemoteIpAddress")]
         public IValue RemoteIpAddress
         {
@@ -43,6 +52,9 @@ namespace OneScript.Web.Server
             }
         }
 
+        /// <summary>
+        /// Порт клиента
+        /// </summary>
         [ContextProperty("УдаленныйПорт", "RemotePort")]
         public IValue RemotePort
         {
@@ -53,6 +65,9 @@ namespace OneScript.Web.Server
             }
         }
 
+        /// <summary>
+        /// IP адрес сервера
+        /// </summary>
         [ContextProperty("ЛокальныйIpАдрес", "LocalIpAddress")]
         public IValue LocalIpAddress
         {
@@ -63,6 +78,9 @@ namespace OneScript.Web.Server
             }
         }
 
+        /// <summary>
+        /// Порт сервера
+        /// </summary>
         [ContextProperty("ЛокальныйПорт", "LocalPort")]
         public IValue LocalPort
         {
