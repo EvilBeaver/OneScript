@@ -29,7 +29,6 @@ namespace OneScript.Web.Server
     [ContextClass("ВебСервер", "WebServer")]
     public class WebServer: AutoContext<WebServer>
     {
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly ExecutionContext _executionContext;
         private WebApplication _app;
         private readonly List<(IRuntimeContextInstance Target, string MethodName)> _middlewares = new List<(IRuntimeContextInstance Target, string MethodName)>();
@@ -74,22 +73,6 @@ namespace OneScript.Web.Server
             ConfigureApp();
 
             _app.Run();
-        }
-
-        [ContextMethod("ЗапуститьАсинхронно", "RunAsync")]
-        public void RunAsync()
-        {
-            ConfigureApp();
-
-            _app.RunAsync(_cts.Token);
-        }
-
-        [ContextMethod("Остановить", "Stop")]
-        public void Stop()
-        {
-            _cts.Cancel();
-
-            _app.StopAsync(_cts.Token);
         }
 
         private void ConfigureApp()

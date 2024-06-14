@@ -34,7 +34,7 @@ namespace OneScript.Web.Server.WebSockets
         /// Возвращает значение, указывающее, является ли запрос запросом на создание WebSocket
         /// </summary>
         [ContextProperty("ЭтоВебСокетЗапрос", "IsWebSocketRequest", CanWrite = false)]
-        public IValue RequestAborted => BslBooleanValue.Create(_manager.IsWebSocketRequest);
+        public IValue IsWebSocketRequest => BslBooleanValue.Create(_manager.IsWebSocketRequest);
 
         /// <summary>
         /// Возвращает список запрошенных подпротоколов WebSocket

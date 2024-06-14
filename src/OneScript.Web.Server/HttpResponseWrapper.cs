@@ -79,16 +79,19 @@ namespace OneScript.Web.Server
         public ResponseCookiesWrapper Cookies => new ResponseCookiesWrapper(_response.Cookies);
 
         [ContextMethod("Записать", "Write")]
-        public void Write(IValue strData, IValue encoding = null)
+        public void Write(string strData, IValue encoding = null)
         {
             var enc = encoding == null ? Encoding.UTF8 : TextEncodingEnum.GetEncoding(encoding);
 
-            _response.WriteAsync(strData.AsString(), enc).Wait();
+            _response.ContentLength = enc.GetByteCount(strData);
+            _response.WriteAsync(strData, enc).Wait();
         }
 
         [ContextMethod("ЗаписатьКакJson", "WriteAsJson")]
-        public void WriteJson(IValue obj)
+        public void WriteJson(IValue obj, IValue encoding = null)
         {
+            var enc = encoding == null ? Encoding.UTF8 : TextEncodingEnum.GetEncoding(encoding);
+
             var writer = new JSONWriter();
             writer.SetString();
 
@@ -97,8 +100,9 @@ namespace OneScript.Web.Server
 
             var data = writer.Close();
 
-            _response.ContentType = $"application/json;charset={Encoding.UTF8.WebName}";
-            _response.WriteAsync(data, Encoding.UTF8).Wait();
+            _response.ContentType = $"application/json;charset={enc.WebName}";
+            _response.ContentLength = enc.GetByteCount(data);
+            _response.WriteAsync(data, enc).Wait();
         }
     }
 }

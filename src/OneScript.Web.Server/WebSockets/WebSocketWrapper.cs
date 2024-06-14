@@ -6,7 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
-using OneScript.StandardLibrary.Json;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -61,12 +60,7 @@ namespace OneScript.Web.Server.WebSockets
         /// </summary>
         [ContextProperty("Протокол", "Protocol", CanWrite = false)]
         public IValue Protocol
-        {
-            get
-            {
-                return _webSocket.SubProtocol == null ? BslNullValue.Instance : (IValue)BslStringValue.Create(_webSocket.SubProtocol);
-            }
-        }
+            => _webSocket.SubProtocol == null ? BslNullValue.Instance : (IValue)BslStringValue.Create(_webSocket.SubProtocol);
 
         /// <summary>
         /// Отменяет соединение WebSocket и отменяет все ожидающие операции ввода-вывода
@@ -121,7 +115,7 @@ namespace OneScript.Web.Server.WebSockets
         public BslStringValue ReceiveString()
         {
             var buffer = new byte[1024];
-            var stream = new MemoryStream();
+            using var stream = new MemoryStream();
 
             WebSocketReceiveResult result;
             do
@@ -131,7 +125,32 @@ namespace OneScript.Web.Server.WebSockets
             }
             while (!result.EndOfMessage);
 
-            return BslStringValue.Create(Encoding.UTF8.GetString(stream.GetBuffer()));
+            var data = stream.GetBuffer();
+
+            return BslStringValue.Create(Encoding.UTF8.GetString(data));
+        }
+
+        /// <summary>
+        /// Получает двоичные данные через WebSocket соединение
+        /// </summary>
+        /// <returns></returns>
+        [ContextMethod("ПолучитьДвоичныеДанные", "ReceiveBinary")]
+        public byte[] ReceiveBinary()
+        {
+            var buffer = new byte[1024];
+            using var stream = new MemoryStream();
+
+            WebSocketReceiveResult result;
+            do
+            {
+                result = _webSocket.ReceiveAsync(buffer, default).Result;
+                stream.Write(buffer);
+            }
+            while (!result.EndOfMessage);
+
+            var data = stream.GetBuffer();
+
+            return data;
         }
 
         /// <summary>
@@ -154,6 +173,16 @@ namespace OneScript.Web.Server.WebSockets
         public void SendString(IValue value)
         {
             _webSocket.SendAsync(Encoding.UTF8.GetBytes(value.AsString()), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, default).AsTask().Wait();
+        }
+
+        /// <summary>
+        /// Отправляет двоичные данные в подключение WebSocket
+        /// </summary>
+        /// <param name="value">ДвоичныеДанные - отправляемые данные</param>
+        [ContextMethod("ОтправитьДвоичныеДанные", "SendBinary")]
+        public void SendBinary(byte[] value)
+        {
+            _webSocket.SendAsync(value, WebSocketMessageType.Binary, WebSocketMessageFlags.EndOfMessage, default).AsTask().Wait();
         }
     }
 }
