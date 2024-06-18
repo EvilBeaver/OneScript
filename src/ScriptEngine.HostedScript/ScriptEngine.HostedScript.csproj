@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\OneScript.StandardLibrary\OneScript.StandardLibrary.csproj" />
+	  <ProjectReference Include="..\OneScript.Web.Server\OneScript.Web.Server.csproj" />
     <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
   </ItemGroup>
   <PropertyGroup>
