@@ -12,6 +12,7 @@
 		<PackageId>OneScript.Web.Server</PackageId>
 		<Title>OneScript web server implementation</Title>
 		<PackageAuthors>Akpaev E.A.</PackageAuthors>
+		<LangVersion>10.0</LangVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'LinuxDebug' ">
