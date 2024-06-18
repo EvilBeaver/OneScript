@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using Microsoft.AspNetCore.Http;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -45,10 +46,13 @@ namespace OneScript.Web.Server
         [ContextProperty("УдаленныйIpАдрес", "RemoteIpAddress")]
         public IValue RemoteIpAddress
         {
-            get => BslStringValue.Create(_connectionInfo.RemoteIpAddress.ToString());
+            get => BslStringValue.Create(_connectionInfo.RemoteIpAddress?.ToString() ?? "");
             set
             {
-                _connectionInfo.RemoteIpAddress = IPAddress.Parse(value.AsString());
+                if (IPAddress.TryParse(value.AsString(), out var ip))
+                    _connectionInfo.RemoteIpAddress = ip;
+                else
+                    throw new RuntimeException(Localization.BilingualString.Localize($"Ошибка разбора IP адреса: {value}", $"Failed to parse IP address: {value}"));
             }
         }
 
@@ -71,10 +75,13 @@ namespace OneScript.Web.Server
         [ContextProperty("ЛокальныйIpАдрес", "LocalIpAddress")]
         public IValue LocalIpAddress
         {
-            get => BslStringValue.Create(_connectionInfo.LocalIpAddress.ToString());
+            get => BslStringValue.Create(_connectionInfo.LocalIpAddress?.ToString() ?? "");
             set
             {
-                _connectionInfo.LocalIpAddress = IPAddress.Parse(value.AsString());
+                if (IPAddress.TryParse(value.AsString(), out var ip))
+                    _connectionInfo.LocalIpAddress = ip;
+                else
+                    throw new RuntimeException(Localization.BilingualString.Localize($"Ошибка разбора IP адреса: {value}", $"Failed to parse IP address: {value}"));
             }
         }
 

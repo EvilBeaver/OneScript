@@ -40,13 +40,7 @@ namespace OneScript.Web.Server
         [ContextProperty("Путь", "Path")]
         public IValue Path
         {
-            get
-            {
-                if (_cookieOptions.Path == null)
-                    return BslNullValue.Instance;
-                else
-                    return BslStringValue.Create(_cookieOptions.Path);
-            }
+            get => _cookieOptions.Path == null ? BslNullValue.Instance : BslStringValue.Create(_cookieOptions.Path);
             set
             {
                 if (value is BslNullValue)
