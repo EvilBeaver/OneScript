@@ -132,6 +132,17 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
+                var rawValue = value.GetRawValue();
+                if (rawValue is IObjectWrapper wrapped)
+                {
+                    if (!type.IsInstanceOfType(wrapped.UnderlyingObject))
+                        throw new InvalidCastException();    ;
+                }
+                else if (!type.IsInstanceOfType(rawValue))
+                {
+                    throw new InvalidCastException();
+                }
+
                 valueObj = CastToClrObject(value);
             }
 
