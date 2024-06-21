@@ -40,7 +40,7 @@ namespace OneScript.StandardLibrary.Text
             }
             set
             {
-                Console.CursorLeft = Math.Min(value, Console.WindowWidth-1);
+                    Console.CursorLeft = Math.Min(value, Console.WindowWidth-1);
             }
         }
 
@@ -54,8 +54,8 @@ namespace OneScript.StandardLibrary.Text
             set
             {
                 Console.CursorTop = Math.Min(value, Console.WindowHeight-1);
+                }
             }
-        }
 
         [ContextMethod("ПрочитатьСтроку", "ReadLine")]
         public string ReadLine()
@@ -134,6 +134,8 @@ namespace OneScript.StandardLibrary.Text
                 {
                     Console.ForegroundColor = typed.UnderlyingValue;
                 }
+                else
+                    throw new TypeConversionException();
             }
         }
 
@@ -144,7 +146,7 @@ namespace OneScript.StandardLibrary.Text
             {
                 try
                 {
-                    return (ClrEnumValueWrapper<ConsoleColor>)GlobalsHelper.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.BackgroundColor);
+                    return GlobalsHelper.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.BackgroundColor);
                 }
                 catch (InvalidOperationException)
                 {
@@ -157,6 +159,8 @@ namespace OneScript.StandardLibrary.Text
                 {
                     Console.BackgroundColor = typed.UnderlyingValue;
                 }
+                else
+                    throw new TypeConversionException();
             }
         }
 
