@@ -136,7 +136,7 @@ namespace ScriptEngine.Machine.Contexts
                 if (rawValue is IObjectWrapper wrapped)
                 {
                     if (!type.IsInstanceOfType(wrapped.UnderlyingObject))
-                        throw new InvalidCastException();    ;
+                        throw new InvalidCastException();
                 }
                 else if (!type.IsInstanceOfType(rawValue))
                 {
