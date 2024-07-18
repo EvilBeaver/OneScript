@@ -215,6 +215,8 @@ namespace ScriptEngine.Machine.Contexts
                 return _ownProperties.Count;
         }
 
+        public int GetOwnPropCount() => GetOwnVariableCount();
+
         protected override void UpdateState()
         {
         }
@@ -241,6 +243,18 @@ namespace ScriptEngine.Machine.Contexts
                 throw new ArgumentException("Unknown property index");
 
             return _ownPropertyIndexes.Where(x => x.Value == index).First().Key;
+        }
+
+        public VariableInfo GetOwnVariableInfo(int index)
+        {
+            return new VariableInfo();/* { 
+                    Identifier = variable.Identifier,
+                    Type = variable.Type,
+                    Index = variable.Index,
+                    Annotations = HackGetAnnotations(context, variable.Index),
+                    IsExport = variable.IsExport
+            };*/
+            
         }
         
         public override int GetMethodsCount()
