@@ -1458,6 +1458,7 @@ namespace ScriptEngine.Machine
                 ModuleLoadIndex = _scopes.Count - 1,
                 Locals = new IVariable[method.Variables.Count],
                 InstructionPointer = 0,
+                IsReentrantCall = true
             };
             PushFrame(frame);
             CreateCurrentFrameLocals(method.Variables);
