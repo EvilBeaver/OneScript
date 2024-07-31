@@ -565,6 +565,29 @@ namespace NUnitTests
             Assert.IsTrue(exceptionThrown, "Безнадёжно устаревший метод должен вызвать исключение");
         }
 
+        [Test]
+        public void TestICallExecuteWithException()
+        {
+            SystemLogger.SetWriter(this);
+            _messages.Clear();
+            var exceptionThrown = false;
+
+            try
+            {
+                host.RunTestString(
+                    @"Попытка
+	                    Выполнить(""Г=1/0"");
+                    Исключение
+                    КонецПопытки;");
+            }
+            catch
+            {
+                exceptionThrown = true;
+            }
+
+            Assert.IsFalse(exceptionThrown, "Перехваченное в Выполнить исключение не должно вызывать внешнее");
+        }
+
         public void Write(string text)
         {
             _messages.Add(text);
