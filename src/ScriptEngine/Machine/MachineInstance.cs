@@ -2497,7 +2497,7 @@ namespace ScriptEngine.Machine
         [ThreadStatic]
         private static MachineInstance _currentThreadWorker;
 
-        public static void SetCurrentMachineInstance(MachineInstance current)
+        private static void SetCurrentMachineInstance(MachineInstance current)
             => _currentThreadWorker = current;
 
         public static MachineInstance Current
