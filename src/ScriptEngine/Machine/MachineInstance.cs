@@ -274,6 +274,7 @@ namespace ScriptEngine.Machine
                     Module = code,
                     ThisScope = localScope,
                     Locals = Array.Empty<IVariable>(),
+                    Scopes = CreateFrameScopes(selectedFrame.Scopes, localScope),
                     InstructionPointer = 0,
                 };
             }
@@ -2496,10 +2497,8 @@ namespace ScriptEngine.Machine
         [ThreadStatic]
         private static MachineInstance _currentThreadWorker;
 
-        private static void SetCurrentMachineInstance(MachineInstance inst)
-        {
-            _currentThreadWorker = inst;
-        }
+        private static void SetCurrentMachineInstance(MachineInstance current)
+            => _currentThreadWorker = current;
 
         public static MachineInstance Current
         {
