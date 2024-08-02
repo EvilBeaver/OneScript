@@ -242,14 +242,8 @@ namespace ScriptEngine.Machine
             return _operationStack.Pop();
         }
 
-        public IValue EvaluateInFrame(string expression, int frameId)
+        internal IValue EvaluateInFrame(string expression, ExecutionFrame selectedFrame)
         {
-            System.Diagnostics.Debug.Assert(_fullCallstackCache != null);
-            if (frameId < 0 || frameId >= _fullCallstackCache.Count)
-                throw new ScriptException("Wrong stackframe");
-
-            ExecutionFrame selectedFrame = _fullCallstackCache[frameId].FrameObject;
-
             MachineInstance currentMachine;
             MachineInstance runner = new MachineInstance
             {
@@ -267,7 +261,7 @@ namespace ScriptEngine.Machine
                 var code = runner.CompileExpressionModule(expression);
 
                 var localScope = new AttachedContext(new UserScriptContextInstance(code), selectedFrame.Locals);
-                
+
                 frame = new ExecutionFrame
                 {
                     MethodName = code.Source.Name,
@@ -295,6 +289,17 @@ namespace ScriptEngine.Machine
             }
 
             return runner._operationStack.Pop().GetRawValue();
+        }
+
+        public IValue EvaluateInFrame(string expression, int frameId)
+        {
+            System.Diagnostics.Debug.Assert(_fullCallstackCache != null);
+            if (frameId < 0 || frameId >= _fullCallstackCache.Count)
+                throw new ScriptException("Wrong stackframe");
+
+            ExecutionFrame selectedFrame = _fullCallstackCache[frameId].FrameObject;
+
+            return EvaluateInFrame(expression, selectedFrame);
         }
 
         private StackRuntimeModule CompileCached(string code, Func<string, StackRuntimeModule> compile)

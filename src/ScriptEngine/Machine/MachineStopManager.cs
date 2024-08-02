@@ -71,24 +71,42 @@ namespace ScriptEngine.Machine
 
             if (mustStop)
             {
-                // здесь мы уже останавливались
-                if (_lastStopPoint.frame != currentFrame || _lastStopPoint.line != currentFrame.LineNumber)
+                // Проверим существование условия остановки
+                var condition = Breakpoints.GetCondition(module, currentFrame.LineNumber);
+                if (!string.IsNullOrEmpty(condition))
                 {
-                    if (_currentState == DebugState.Running)
-                        LastStopReason = MachineStopReason.Breakpoint;
-                    else
-                        LastStopReason = MachineStopReason.Step;
-
-                    _lastStopPoint = new StopPoint()
+                    try
                     {
-                        frame = currentFrame,
-                        line = currentFrame.LineNumber
-                    };
-                    _currentState = DebugState.Running;
+                        mustStop = _machine.EvaluateInFrame(condition, currentFrame).AsBoolean();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Просто пропустим такую точку
+                        mustStop = false;
+                    }
                 }
-                else
+
+                if (mustStop)
                 {
-                    mustStop = false;
+                    // здесь мы уже останавливались
+                    if (_lastStopPoint.frame != currentFrame || _lastStopPoint.line != currentFrame.LineNumber)
+                    {
+                        if (_currentState == DebugState.Running)
+                            LastStopReason = MachineStopReason.Breakpoint;
+                        else
+                            LastStopReason = MachineStopReason.Step;
+
+                        _lastStopPoint = new StopPoint()
+                        {
+                            frame = currentFrame,
+                            line = currentFrame.LineNumber
+                        };
+                        _currentState = DebugState.Running;
+                    }
+                    else
+                    {
+                        mustStop = false;
+                    }
                 }
             }
 

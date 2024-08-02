@@ -16,12 +16,12 @@ namespace OneScript.DebugServices
         private readonly List<BreakpointDescriptor> _breakpoints = new List<BreakpointDescriptor>();
         private int _idsGenerator;
 
-        public void SetLineStops(string module, int[] lines)
+        public void SetBreakpoints(string module, (int Line, string Condition)[] breakpoints)
         {
             var cleaned = _breakpoints.Where(x => x.Module != module)
                 .ToList();
 
-            var range = lines.Select(x => new BreakpointDescriptor(_idsGenerator++) { LineNumber = x, Module = module });
+            var range = breakpoints.Select(x => new BreakpointDescriptor(_idsGenerator++) { LineNumber = x.Line, Module = module, Condition = x.Condition });
             cleaned.AddRange(range);
             _breakpoints.Clear();
             _breakpoints.AddRange(cleaned);
@@ -29,9 +29,11 @@ namespace OneScript.DebugServices
 
         public bool Find(string module, int line)
         {
-            var found = _breakpoints.Find(x => x.Module.Equals(module) && x.LineNumber == line);
-            return found != null;
+            return _breakpoints.Find(x => x.Module.Equals(module) && x.LineNumber == line) != null;
         }
+
+        public string GetCondition(string module, int line)
+            => _breakpoints.Find(x => x.Module.Equals(module) && x.LineNumber == line).Condition;
 
         public void Clear()
         {
