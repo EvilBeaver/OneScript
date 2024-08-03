@@ -221,7 +221,7 @@ namespace VSCode.DebugAdapter
             _variableHandles.Reset();
 
             if (!string.IsNullOrEmpty(errorMessage))
-                SendOutput("console", errorMessage);
+                SendOutput("stderr", errorMessage);
 
             SendEvent(new StoppedEvent(threadId, reason.ToString()));
         }
