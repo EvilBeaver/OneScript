@@ -202,8 +202,7 @@ namespace VSCode.DebugAdapter
                 confirmedBreaksVSCode.Add(new VSCodeDebug.Breakpoint(true, confirmedBreaks[i].Line));
             }
             
-            SendResponse(response, new SetBreakpointsResponseBody(confirmedBreaksVSCode));
-            
+            SendResponse(response, new SetBreakpointsResponseBody(confirmedBreaksVSCode));  
         }
 
         private string NormalizeDriveLetter(string path)
@@ -215,11 +214,15 @@ namespace VSCode.DebugAdapter
 
         }
 
-        public void ThreadStopped(int threadId, ThreadStopReason reason)
+        public void ThreadStopped(int threadId, ThreadStopReason reason, string errorMessage)
         {
             LogEventOccured();
             _framesHandles.Reset();
             _variableHandles.Reset();
+
+            if (!string.IsNullOrEmpty(errorMessage))
+                SendOutput("console", errorMessage);
+
             SendEvent(new StoppedEvent(threadId, reason.ToString()));
         }
         

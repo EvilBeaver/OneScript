@@ -17,6 +17,7 @@
     "vscode": "^1.9.0"
   },
   "dependencies": {
+    "@vscode/vsce": "^2.31.1"
   },
   "repository": {
     "type": "git",
@@ -50,15 +51,17 @@
             "program": "${file}",
             "args": [],
             "cwd": "${workspaceRoot}",
-            "env" : {},
+            "env": {},
             "runtimeExecutable": null,
-            "runtimeArgs" : [],
+            "runtimeArgs": [],
             "debugPort": 2801
           }
         ],
         "configurationAttributes": {
           "launch": {
-            "required": [ "program" ],
+            "required": [
+              "program"
+            ],
             "properties": {
               "program": {
                 "type": "string",
@@ -67,7 +70,9 @@
               "args": {
                 "type": "array",
                 "description": "Аргументы, передаваемые в сценарий",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "default": []
               },
               "cwd": {
@@ -79,19 +84,26 @@
                 "type": "object",
                 "description": "Переменные окружения для отлаживаемого процесса",
                 "patternProperties": {
-                  "[a-zA-Z_][0-9a-zA-Z_]+": { "type": "string" }
+                  "[a-zA-Z_][0-9a-zA-Z_]+": {
+                    "type": "string"
+                  }
                 },
                 "default": null
               },
               "runtimeExecutable": {
-                "type": [ "string", "null" ],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "Путь к исполняемому файлу oscript.exe / OneScript.WebHost.exe",
                 "default": "oscript"
               },
               "runtimeArgs": {
                 "type": "array",
                 "description": "Аргументы движка 1Script (encoding, codestat, etc...)",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "default": []
               },
               "debugPort": {
@@ -108,7 +120,7 @@
           },
           "attach": {
             "properties": {
-            "debugPort": {
+              "debugPort": {
                 "type": "number",
                 "description": "Присоединиться к работающему процессу",
                 "default": 2801
@@ -140,14 +152,17 @@
             "appDir": "${workspaceRoot}",
             "env": {},
             "runtimeExecutable": null,
-            "runtimeArgs" : [],
+            "runtimeArgs": [],
             "debugPort": 2801,
             "waitOnStart": false
           }
         ],
         "configurationAttributes": {
           "launch": {
-            "required": [ "appDir", "runtimeExecutable" ],
+            "required": [
+              "appDir",
+              "runtimeExecutable"
+            ],
             "properties": {
               "appDir": {
                 "type": "string",
@@ -158,19 +173,26 @@
                 "type": "object",
                 "description": "Переменные окружения для отлаживаемого процесса",
                 "patternProperties": {
-                  "[a-zA-Z_][0-9a-zA-Z_]+": { "type": "string" }
+                  "[a-zA-Z_][0-9a-zA-Z_]+": {
+                    "type": "string"
+                  }
                 },
                 "default": null
               },
               "runtimeExecutable": {
-                "type": [ "string", "null" ],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "Путь к исполняемому файлу oscript.exe / OneScript.WebHost.exe",
                 "default": "oscript"
               },
               "runtimeArgs": {
                 "type": "array",
                 "description": "Аргументы, передаваемые в строке запуска",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "default": []
               },
               "debugPort": {

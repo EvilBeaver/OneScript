@@ -55,14 +55,12 @@ namespace OneScript.DebugServices
         {
             var token = _threadManager.GetTokenForThread(e.ThreadId);
             token.Reset();
-            _callbackService.ThreadStopped(e.ThreadId, ConvertStopReason(e.StopReason));
+            _callbackService.ThreadStopped(e.ThreadId, ConvertStopReason(e.StopReason), e.ErrorMessage);
             token.Wait();
         }
 
         public void Wait()
-        {
-            _threadManager.GetTokenForCurrentThread().Wait();
-        }
+            => _threadManager.GetTokenForCurrentThread().Wait();
 
         public void NotifyProcessExit(int exitCode)
         {
@@ -79,25 +77,17 @@ namespace OneScript.DebugServices
         }
         
         public void DetachFromThread()
-        {
-            _threadManager.DetachFromCurrentThread(); 
-        }
+            => _threadManager.DetachFromCurrentThread();
 
         public IBreakpointManager BreakpointManager { get; }
 
-        private ThreadStopReason ConvertStopReason(MachineStopReason reason)
+        private static ThreadStopReason ConvertStopReason(MachineStopReason reason) => reason switch
         {
-            switch(reason)
-            {
-                case MachineStopReason.Breakpoint:
-                    return ThreadStopReason.Breakpoint;
-                case MachineStopReason.Step:
-                    return ThreadStopReason.Step;
-                case MachineStopReason.Exception:
-                    return ThreadStopReason.Exception;
-                default:
-                    throw new NotImplementedException();
-            }
-        }
+            MachineStopReason.Breakpoint => ThreadStopReason.Breakpoint,
+            MachineStopReason.BreakpointConditionError => ThreadStopReason.Breakpoint,
+            MachineStopReason.Step => ThreadStopReason.Step,
+            MachineStopReason.Exception => ThreadStopReason.Exception,
+            _ => throw new NotImplementedException(),
+        };
     }
 }

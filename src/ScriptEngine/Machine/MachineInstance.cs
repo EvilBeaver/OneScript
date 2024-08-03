@@ -73,11 +73,9 @@ namespace ScriptEngine.Machine
         public bool IsRunning => _callStack.Count != 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IReadOnlyList<AttachedContext> CreateFrameScopes(IReadOnlyList<AttachedContext> outerScopes, AttachedContext thisScope)
-        {
-            return new RuntimeScopes(outerScopes, thisScope);
-        }
-        
+        private static IReadOnlyList<AttachedContext> CreateFrameScopes(IReadOnlyList<AttachedContext> outerScopes, AttachedContext thisScope)
+            => new RuntimeScopes(outerScopes, thisScope);
+
         internal IValue ExecuteMethod(IRunnable sdo, MachineMethodInfo methodInfo, IValue[] arguments)
         {
             var module = sdo.Module as StackRuntimeModule;
@@ -1303,7 +1301,8 @@ namespace ScriptEngine.Machine
             if (MachineStopped != null && _stopManager != null && _stopManager.ShouldStopAtThisLine(_module.Source.Location, _currentFrame))
             {
                 CreateFullCallstack();
-                MachineStopped?.Invoke(this, new MachineStoppedEventArgs(_stopManager.LastStopReason));
+                var args = new MachineStoppedEventArgs(_stopManager.LastStopReason, Environment.CurrentManagedThreadId, _stopManager.LastStopErrorMessage);
+                MachineStopped?.Invoke(this, args);
             }
         }
 
