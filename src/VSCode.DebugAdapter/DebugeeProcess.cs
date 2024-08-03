@@ -201,6 +201,11 @@ namespace VSCode.DebugAdapter
             _process.WaitForExit(1500);
         }
 
+        public void SetExceptionsBreakpoints(string[] filters)
+        {
+            _debugger.SetMachineExceptionBreakpoints(filters);
+        }
+
         public Breakpoint[] SetBreakpoints(IEnumerable<Breakpoint> breakpoints)
         {
             var confirmedBreaks = _debugger.SetMachineBreakpoints(breakpoints.ToArray());

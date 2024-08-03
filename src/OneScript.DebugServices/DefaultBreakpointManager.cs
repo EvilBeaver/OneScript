@@ -13,8 +13,15 @@ namespace OneScript.DebugServices
 {
     public class DefaultBreakpointManager : IBreakpointManager
     {
+        private readonly List<string> _exceptionBreakpointsFilters = new List<string>();
         private readonly List<BreakpointDescriptor> _breakpoints = new List<BreakpointDescriptor>();
         private int _idsGenerator;
+
+        public void SetExceptionBreakpoints(string[] filters)
+        {
+            _exceptionBreakpointsFilters.Clear();
+            _exceptionBreakpointsFilters.AddRange(filters);
+        }
 
         public void SetBreakpoints(string module, (int Line, string Condition)[] breakpoints)
         {
@@ -27,7 +34,7 @@ namespace OneScript.DebugServices
             _breakpoints.AddRange(cleaned);
         }
 
-        public bool Find(string module, int line)
+        public bool FindBreakpoint(string module, int line)
         {
             return _breakpoints.Find(x => x.Module.Equals(module) && x.LineNumber == line) != null;
         }
@@ -39,5 +46,11 @@ namespace OneScript.DebugServices
         {
             _breakpoints.Clear();
         }
+
+        public bool StopInAnyException()
+            => _exceptionBreakpointsFilters.Contains("all");
+
+        public bool StopInUncaughtException()
+            => _exceptionBreakpointsFilters.Contains("uncaught");
     }
 }

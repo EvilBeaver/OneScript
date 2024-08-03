@@ -43,7 +43,21 @@ namespace VSCode.DebugAdapter
                 supportsConditionalBreakpoints = true,
                 supportsFunctionBreakpoints = false,
                 supportsConfigurationDoneRequest = true,
-                exceptionBreakpointFilters = new dynamic[0],
+                exceptionBreakpointFilters = new dynamic[]
+                {
+                    new
+                    {
+                        filter = "uncaught",
+                        label = "Uncaught exceptions",
+                        description = "Stops when any uncaught exception occurs"
+                    },
+                    new
+                    {
+                        filter = "all",
+                        label = "All exceptions",
+                        description = "Stops when any exception occurs"
+                    }
+                },
                 supportsEvaluateForHovers = true,
                 supportTerminateDebuggee = true
             });
@@ -146,6 +160,25 @@ namespace VSCode.DebugAdapter
             
             _process.HandleDisconnect(terminateDebuggee);
             SendResponse(response);
+        }
+
+        public override void SetExceptionBreakpoints(Response response, dynamic arguments)
+        {
+            LogCommandReceived(arguments);
+            Log.Debug("Exception breakpoints: {Data}", JsonConvert.SerializeObject(arguments));
+
+            var acceptedFilters = new List<VSCodeDebug.Breakpoint>();
+            var filters = new List<string>();
+
+            foreach (var filter in arguments.filters)
+            {
+                filters.Add((string)filter);
+                acceptedFilters.Add(new VSCodeDebug.Breakpoint(true));
+            }
+
+            _process.SetExceptionsBreakpoints(filters.ToArray());
+
+            SendResponse(response, new SetExceptionBreakpointsResponseBody(acceptedFilters));
         }
 
         public override void SetBreakpoints(Response response, dynamic arguments)

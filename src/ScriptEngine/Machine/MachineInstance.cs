@@ -408,7 +408,13 @@ namespace ScriptEngine.Machine
                 {
                     SetScriptExceptionSource(exc);
 
-                    if (ShouldRethrowException(exc))
+                    var needStop = _stopManager.Breakpoints.StopInAnyException();
+                    var shouldRethrow = ShouldRethrowException(exc);
+
+                    if (needStop || shouldRethrow && _stopManager.Breakpoints.StopInUncaughtException())
+                        EmitStopByException();
+
+                    if (shouldRethrow)
                         throw;
                 }
             }
@@ -1294,6 +1300,16 @@ namespace ScriptEngine.Machine
             EmitStopEventIfNecessary();
 
             NextInstruction();
+        }
+
+        private void EmitStopByException()
+        {
+            if (MachineStopped != null && _stopManager != null)
+            {
+                CreateFullCallstack();
+                var args = new MachineStoppedEventArgs(MachineStopReason.Exception, Environment.CurrentManagedThreadId, "");
+                MachineStopped?.Invoke(this, args);
+            }
         }
 
         private void EmitStopEventIfNecessary()

@@ -17,7 +17,13 @@ namespace OneScript.DebugProtocol
         /// Все точки останова уже установлены, все настройки сделаны
         /// </summary>
         void Execute(int threadId);
-        
+
+        /// <summary>
+        /// Добавление фильтров точек останова для исплючений
+        /// </summary>
+        /// <param name="filters">Идентификаторы фильтров</param>
+        void SetMachineExceptionBreakpoints(string[] filters);
+
         /// <summary>
         /// Установка точек остановки
         /// </summary>

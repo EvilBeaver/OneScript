@@ -118,7 +118,13 @@ namespace VSCodeDebug
 		public bool verified { get; }
 		public int line { get; }
 
-		public Breakpoint(bool verified, int line) {
+        public Breakpoint(bool verified)
+        {
+            this.verified = verified;
+			line = 0;
+        }
+
+        public Breakpoint(bool verified, int line) {
 			this.verified = verified;
 			this.line = line;
 		}
@@ -262,15 +268,28 @@ namespace VSCodeDebug
 
 		public SetBreakpointsResponseBody(List<Breakpoint> bpts = null) {
 			if (bpts == null)
-				breakpoints = new Breakpoint[0];
-			else
+				breakpoints = Array.Empty<Breakpoint>();
+            else
 				breakpoints = bpts.ToArray<Breakpoint>();
 		}
 	}
 
-	// ---- The Session --------------------------------------------------------
+    public class SetExceptionBreakpointsResponseBody : ResponseBody
+    {
+        public Breakpoint[] breakpoints { get; }
 
-	public abstract class DebugSession : ProtocolServer
+        public SetExceptionBreakpointsResponseBody(List<Breakpoint> bpts = null)
+        {
+            if (bpts == null)
+                breakpoints = Array.Empty<Breakpoint>();
+            else
+                breakpoints = bpts.ToArray<Breakpoint>();
+        }
+    }
+
+    // ---- The Session --------------------------------------------------------
+
+    public abstract class DebugSession : ProtocolServer
 	{
 		private bool _clientLinesStartAt1 = true;
 		private bool _clientPathsAreUri = true;
