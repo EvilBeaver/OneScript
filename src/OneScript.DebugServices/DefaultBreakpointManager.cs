@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ScriptEngine.Machine;
@@ -19,8 +20,10 @@ namespace OneScript.DebugServices
 
         public void SetExceptionBreakpoints(string[] filters)
         {
-            _exceptionBreakpointsFilters.Clear();
-            _exceptionBreakpointsFilters.AddRange(filters);
+            _exceptionBreakpointsFilters?.Clear();
+
+            if (filters != null)
+                _exceptionBreakpointsFilters.AddRange(filters);
         }
 
         public void SetBreakpoints(string module, (int Line, string Condition)[] breakpoints)
@@ -47,10 +50,10 @@ namespace OneScript.DebugServices
             _breakpoints.Clear();
         }
 
-        public bool StopInAnyException()
-            => _exceptionBreakpointsFilters.Contains("all");
+        public bool StopOnAnyException()
+            => _exceptionBreakpointsFilters?.Contains("all") ?? false;
 
-        public bool StopInUncaughtException()
-            => _exceptionBreakpointsFilters.Contains("uncaught");
+        public bool StopOnUncaughtException()
+            => _exceptionBreakpointsFilters?.Contains("uncaught") ?? false;
     }
 }

@@ -408,11 +408,11 @@ namespace ScriptEngine.Machine
                 {
                     SetScriptExceptionSource(exc);
 
-                    var needStop = _stopManager.Breakpoints.StopInAnyException();
                     var shouldRethrow = ShouldRethrowException(exc);
 
-                    if (needStop || shouldRethrow && _stopManager.Breakpoints.StopInUncaughtException())
-                        EmitStopByException();
+                    if (MachineStopped != null && _stopManager != null)
+                        if (_stopManager.Breakpoints.StopOnAnyException() || shouldRethrow && _stopManager.Breakpoints.StopOnUncaughtException())
+                            EmitStopOnException();
 
                     if (shouldRethrow)
                         throw;
@@ -1302,7 +1302,7 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
-        private void EmitStopByException()
+        private void EmitStopOnException()
         {
             if (MachineStopped != null && _stopManager != null)
             {

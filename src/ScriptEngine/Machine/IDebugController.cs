@@ -28,9 +28,9 @@ namespace ScriptEngine.Machine
 
         void SetBreakpoints(string module, (int Line, string Condition)[] breakpoints);
 
-        bool StopInAnyException();
+        bool StopOnAnyException();
 
-        bool StopInUncaughtException();
+        bool StopOnUncaughtException();
         
         bool FindBreakpoint(string module, int line);
 
