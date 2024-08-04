@@ -16,9 +16,7 @@
   "engines": {
     "vscode": "^1.9.0"
   },
-  "dependencies": {
-    "@vscode/vsce": "^2.31.1"
-  },
+  "dependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/EvilBeaver/OneScript.git"
