@@ -48,14 +48,14 @@ namespace VSCode.DebugAdapter
                     new
                     {
                         filter = "uncaught",
-                        label = "Uncaught exceptions",
-                        description = "Stops when any uncaught exception occurs"
+                        label = "Необработанные исключения",
+                        description = "Остановка при возникновении необработанного исключения"
                     },
                     new
                     {
                         filter = "all",
-                        label = "All exceptions",
-                        description = "Stops when any exception occurs"
+                        label = "Все исключения",
+                        description = "Остановка при возникновении исключения"
                     }
                 },
                 supportsEvaluateForHovers = true,
