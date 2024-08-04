@@ -246,6 +246,7 @@ namespace ScriptEngine.Machine
             MachineInstance runner = new MachineInstance
             {
                 _mem = this._mem,
+                _globalContexts = this._globalContexts,
                 _debugInfo = CurrentScript
             };
             currentMachine = Current;
