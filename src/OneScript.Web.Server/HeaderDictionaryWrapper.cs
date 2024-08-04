@@ -306,7 +306,7 @@ namespace OneScript.Web.Server
 
         public override IValue GetIndexedValue(IValue index)
         {
-            if (!_items.TryGetValue(index.AsString(), out var result))
+            if (_items.TryGetValue(index.AsString(), out var result))
                 return ValueFactory.Create(result); 
             else
                 return ValueFactory.Create();
@@ -316,16 +316,6 @@ namespace OneScript.Web.Server
         {
             if (index.SystemType != BasicTypes.Undefined)
                 _items[index.AsString()] = val.AsString();
-        }
-
-        public override bool IsPropReadable(int propNum)
-        {
-            return false;
-        }
-
-        public override bool IsPropWritable(int propNum)
-        {
-            return false;
         }
 
         internal bool ContainsKey(IValue key)
