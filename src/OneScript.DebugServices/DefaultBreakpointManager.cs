@@ -43,7 +43,10 @@ namespace OneScript.DebugServices
             => _breakpoints.Find(x => x.Module.Equals(module) && x.LineNumber == line).Condition;
 
         public void Clear()
-            => _breakpoints.Clear();
+        {
+            _breakpoints.Clear();
+            _exceptionBreakpointsFilters.Clear();
+        }
 
         public bool StopOnAnyException(string message)
             => NeedStopOnException("all", message);
