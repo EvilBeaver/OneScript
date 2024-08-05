@@ -51,6 +51,15 @@ namespace OneScript.DebugServices
             }
         }
 
+        public void SetMachineExceptionBreakpoints((string Id, string Condition)[] filters)
+        {
+            _breakpointManager.SetExceptionBreakpoints(filters);
+
+            // Уведомить все потоки о новых фильтрах
+            foreach (var machine in _threadManager.GetAllTokens().Select(x => x.Machine))
+                machine.SetDebugMode(_breakpointManager);
+        }
+
         public Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)
         {
             var confirmedBreakpoints = new List<Breakpoint>();

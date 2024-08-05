@@ -19,8 +19,6 @@ namespace ScriptEngine.Machine
         SteppingOut
     }
 
-    
-
     internal class MachineStopManager
     {
         private struct StopPoint
@@ -119,7 +117,7 @@ namespace ScriptEngine.Machine
         
         private bool HitBreakpointOnLine(string module, ExecutionFrame currentFrame)
         {
-            return _breakpoints.Find(module, currentFrame.LineNumber);
+            return _breakpoints.FindBreakpoint(module, currentFrame.LineNumber);
         }
 
         private bool FrameIsInStopList(ExecutionFrame currentFrame)

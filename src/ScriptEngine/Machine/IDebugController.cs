@@ -24,9 +24,15 @@ namespace ScriptEngine.Machine
 
     public interface IBreakpointManager
     {
+        void SetExceptionBreakpoints((string Id, string Condition)[] filters);
+
         void SetBreakpoints(string module, (int Line, string Condition)[] breakpoints);
+
+        bool StopOnAnyException(string message);
+
+        bool StopOnUncaughtException(string message);
         
-        bool Find(string module, int line);
+        bool FindBreakpoint(string module, int line);
 
         string GetCondition(string module, int line);
 
