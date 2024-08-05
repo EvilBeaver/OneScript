@@ -269,6 +269,7 @@ namespace ScriptEngine.Machine
                     Locals = Array.Empty<IVariable>(),
                     Scopes = CreateFrameScopes(selectedFrame.Scopes, localScope),
                     InstructionPointer = 0,
+                    LineNumber = 1
                 };
             }
             catch
