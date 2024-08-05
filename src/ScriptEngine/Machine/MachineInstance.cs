@@ -246,6 +246,7 @@ namespace ScriptEngine.Machine
             MachineInstance runner = new MachineInstance
             {
                 _mem = this._mem,
+                _globalContexts = this._globalContexts,
                 _debugInfo = CurrentScript
             };
             currentMachine = Current;
@@ -1382,7 +1383,8 @@ namespace ScriptEngine.Machine
                 ThisScope = localScope,
                 Scopes = scopes,
                 Locals = new IVariable[method.LocalVariables.Length],
-                InstructionPointer = 0
+                InstructionPointer = 0,
+                IsReentrantCall = true
             };
             var locals = frame.Locals;
             for (int i = 0; i < locals.Length; i++)
