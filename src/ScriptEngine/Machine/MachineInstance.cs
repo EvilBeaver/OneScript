@@ -73,11 +73,9 @@ namespace ScriptEngine.Machine
         public bool IsRunning => _callStack.Count != 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IReadOnlyList<AttachedContext> CreateFrameScopes(IReadOnlyList<AttachedContext> outerScopes, AttachedContext thisScope)
-        {
-            return new RuntimeScopes(outerScopes, thisScope);
-        }
-        
+        private static IReadOnlyList<AttachedContext> CreateFrameScopes(IReadOnlyList<AttachedContext> outerScopes, AttachedContext thisScope)
+            => new RuntimeScopes(outerScopes, thisScope);
+
         internal IValue ExecuteMethod(IRunnable sdo, MachineMethodInfo methodInfo, IValue[] arguments)
         {
             var module = sdo.Module as StackRuntimeModule;
@@ -242,18 +240,13 @@ namespace ScriptEngine.Machine
             return _operationStack.Pop();
         }
 
-        public IValue EvaluateInFrame(string expression, int frameId)
+        internal IValue EvaluateInFrame(string expression, ExecutionFrame selectedFrame)
         {
-            System.Diagnostics.Debug.Assert(_fullCallstackCache != null);
-            if (frameId < 0 || frameId >= _fullCallstackCache.Count)
-                throw new ScriptException("Wrong stackframe");
-
-            ExecutionFrame selectedFrame = _fullCallstackCache[frameId].FrameObject;
-
             MachineInstance currentMachine;
             MachineInstance runner = new MachineInstance
             {
                 _mem = this._mem,
+                _globalContexts = this._globalContexts,
                 _debugInfo = CurrentScript
             };
             currentMachine = Current;
@@ -267,7 +260,7 @@ namespace ScriptEngine.Machine
                 var code = runner.CompileExpressionModule(expression);
 
                 var localScope = new AttachedContext(new UserScriptContextInstance(code), selectedFrame.Locals);
-                
+
                 frame = new ExecutionFrame
                 {
                     MethodName = code.Source.Name,
@@ -295,6 +288,17 @@ namespace ScriptEngine.Machine
             }
 
             return runner._operationStack.Pop().GetRawValue();
+        }
+
+        public IValue EvaluateInFrame(string expression, int frameId)
+        {
+            System.Diagnostics.Debug.Assert(_fullCallstackCache != null);
+            if (frameId < 0 || frameId >= _fullCallstackCache.Count)
+                throw new ScriptException("Wrong stackframe");
+
+            ExecutionFrame selectedFrame = _fullCallstackCache[frameId].FrameObject;
+
+            return EvaluateInFrame(expression, selectedFrame);
         }
 
         private StackRuntimeModule CompileCached(string code, Func<string, StackRuntimeModule> compile)
@@ -1298,7 +1302,8 @@ namespace ScriptEngine.Machine
             if (MachineStopped != null && _stopManager != null && _stopManager.ShouldStopAtThisLine(_module.Source.Location, _currentFrame))
             {
                 CreateFullCallstack();
-                MachineStopped?.Invoke(this, new MachineStoppedEventArgs(_stopManager.LastStopReason));
+                var args = new MachineStoppedEventArgs(_stopManager.LastStopReason, Environment.CurrentManagedThreadId, _stopManager.LastStopErrorMessage);
+                MachineStopped?.Invoke(this, args);
             }
         }
 

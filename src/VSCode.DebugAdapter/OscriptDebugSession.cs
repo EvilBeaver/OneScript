@@ -40,7 +40,7 @@ namespace VSCode.DebugAdapter
             
             SendResponse(response, new Capabilities
             {
-                supportsConditionalBreakpoints = false,
+                supportsConditionalBreakpoints = true,
                 supportsFunctionBreakpoints = false,
                 supportsConfigurationDoneRequest = true,
                 exceptionBreakpointFilters = new dynamic[0],
@@ -176,17 +176,22 @@ namespace VSCode.DebugAdapter
 
             foreach (var srcBreakpoint in arguments.breakpoints)
             {
-                var bpt = new OneScript.DebugProtocol.Breakpoint();
-                bpt.Line = (int) srcBreakpoint.line;
-                bpt.Source = path;
+                var bpt = new OneScript.DebugProtocol.Breakpoint
+                {
+                    Line = (int)srcBreakpoint.line,
+                    Source = path,
+                    Condition = srcBreakpoint.condition ?? string.Empty
+                };
                 breaks.Add(bpt);
             }
 
             if(breaks.Count == 0) // в целях сохранения интерфейса WCF придется сделать костыль на перех. период
             {
-                var bpt = new OneScript.DebugProtocol.Breakpoint();
-                bpt.Line = 0;
-                bpt.Source = path;
+                var bpt = new OneScript.DebugProtocol.Breakpoint
+                {
+                    Line = 0,
+                    Source = path
+                };
                 breaks.Add(bpt);
             }
             
@@ -197,8 +202,7 @@ namespace VSCode.DebugAdapter
                 confirmedBreaksVSCode.Add(new VSCodeDebug.Breakpoint(true, confirmedBreaks[i].Line));
             }
             
-            SendResponse(response, new SetBreakpointsResponseBody(confirmedBreaksVSCode));
-            
+            SendResponse(response, new SetBreakpointsResponseBody(confirmedBreaksVSCode));  
         }
 
         private string NormalizeDriveLetter(string path)
@@ -210,11 +214,15 @@ namespace VSCode.DebugAdapter
 
         }
 
-        public void ThreadStopped(int threadId, ThreadStopReason reason)
+        public void ThreadStopped(int threadId, ThreadStopReason reason, string errorMessage)
         {
             LogEventOccured();
             _framesHandles.Reset();
             _variableHandles.Reset();
+
+            if (!string.IsNullOrEmpty(errorMessage))
+                SendOutput("stderr", errorMessage);
+
             SendEvent(new StoppedEvent(threadId, reason.ToString()));
         }
         
