@@ -411,7 +411,8 @@ namespace ScriptEngine.Machine
                     var shouldRethrow = ShouldRethrowException(exc);
 
                     if (MachineStopped != null && _stopManager != null)
-                        if (_stopManager.Breakpoints.StopOnAnyException() || shouldRethrow && _stopManager.Breakpoints.StopOnUncaughtException())
+                        if (_stopManager.Breakpoints.StopOnAnyException(exc.MessageWithoutCodeFragment) || 
+                            shouldRethrow && _stopManager.Breakpoints.StopOnUncaughtException(exc.MessageWithoutCodeFragment))
                             EmitStopOnException();
 
                     if (shouldRethrow)

@@ -51,7 +51,7 @@ namespace OneScript.DebugServices
             }
         }
 
-        public void SetMachineExceptionBreakpoints(string[] filters)
+        public void SetMachineExceptionBreakpoints((string Id, string Condition)[] filters)
         {
             _breakpointManager.SetExceptionBreakpoints(filters);
 

@@ -21,8 +21,8 @@ namespace OneScript.DebugProtocol
         /// <summary>
         /// Добавление фильтров точек останова для исплючений
         /// </summary>
-        /// <param name="filters">Идентификаторы фильтров</param>
-        void SetMachineExceptionBreakpoints(string[] filters);
+        /// <param name="filters"></param>
+        void SetMachineExceptionBreakpoints((string Id, string Condition)[] filters);
 
         /// <summary>
         /// Установка точек остановки
