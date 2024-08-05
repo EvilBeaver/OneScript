@@ -10,11 +10,13 @@
     <Platforms>x86;AnyCPU</Platforms>
     <Configurations>Debug;Release;LinuxDebug</Configurations>
     <RollForward>Major</RollForward>
+	<GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
   </PropertyGroup>
 
   <PropertyGroup>
     <AssemblyTitle>1Script console host</AssemblyTitle>
   </PropertyGroup>
+	
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <DocumentationFile>bin\x86\Debug\net452\oscript.xml</DocumentationFile>
