@@ -48,6 +48,7 @@ namespace ScriptEngine.Machine
         public bool ShouldStopAtThisLine(string module, ExecutionFrame currentFrame)
         {
             bool mustStop = false;
+
             switch (_currentState)
             {
                 case DebugState.Running:
@@ -70,45 +71,32 @@ namespace ScriptEngine.Machine
 
             if (mustStop)
             {
-                // Проверим, что здесь еще не останавливались
-                if (_lastStopPoint.frame != currentFrame || _lastStopPoint.line != currentFrame.LineNumber)
+                if (_currentState == DebugState.Running)
                 {
-                    if (_currentState == DebugState.Running)
+                    LastStopReason = MachineStopReason.Breakpoint;
+
+                    // Проверим существование условия остановки
+                    var condition = Breakpoints.GetCondition(module, currentFrame.LineNumber);
+
+                    if (!string.IsNullOrEmpty(condition))
                     {
-                        LastStopReason = MachineStopReason.Breakpoint;
-
-                        // Проверим существование условия остановки
-                        var condition = Breakpoints.GetCondition(module, currentFrame.LineNumber);
-
-                        if (!string.IsNullOrEmpty(condition))
+                        try
                         {
-                            try
-                            {
-                                mustStop = _machine.EvaluateInFrame(condition, currentFrame).AsBoolean();
-                            }
-                            catch (Exception ex)
-                            {
-                                // Остановим и сообщим, что остановка произошла не по условию, а в результате ошибки вычисления
-                                mustStop = true;
-                                LastStopReason = MachineStopReason.BreakpointConditionError;
-                                LastStopErrorMessage = $"Не удалось выполнить условие точки останова: {ex.Message}";
-                            }
+                            mustStop = _machine.EvaluateInFrame(condition, currentFrame).AsBoolean();
+                        }
+                        catch (Exception ex)
+                        {
+                            // Остановим и сообщим, что остановка произошла не по условию, а в результате ошибки вычисления
+                            mustStop = true;
+                            LastStopReason = MachineStopReason.BreakpointConditionError;
+                            LastStopErrorMessage = $"Не удалось выполнить условие точки останова: {ex.Message}";
                         }
                     }
-                    else
-                        LastStopReason = MachineStopReason.Step;
-
-                    _lastStopPoint = new StopPoint()
-                    {
-                        frame = currentFrame,
-                        line = currentFrame.LineNumber
-                    };
-                    _currentState = DebugState.Running;
                 }
                 else
-                {
-                    mustStop = false;
-                }
+                    LastStopReason = MachineStopReason.Step;
+
+                _currentState = DebugState.Running;
             }
 
             return mustStop;
@@ -141,11 +129,6 @@ namespace ScriptEngine.Machine
         {
             _currentState = DebugState.SteppingOut;
             _stopFrames = _machine.GetExecutionFrames().Select(x => x.FrameObject).Skip(1).ToArray();
-        }
-
-        internal void Continue()
-        {
-            _lastStopPoint = default;
         }
     }
 }

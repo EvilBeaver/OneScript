@@ -173,9 +173,6 @@ namespace ScriptEngine.Machine
         
         public void UnsetDebugMode()
         {
-            if (_stopManager != null)
-                PrepareDebugContinuation();
-
             _stopManager = null;
         }
 
@@ -201,14 +198,6 @@ namespace ScriptEngine.Machine
                 throw new InvalidOperationException("Machine is not in debug mode");
 
             _stopManager.StepOut(_currentFrame);
-        }
-
-        public void PrepareDebugContinuation()
-        {
-            if (_stopManager == null)
-                throw new InvalidOperationException("Machine is not in debug mode");
-
-            _stopManager.Continue();
         }
 
         public IValue Evaluate(string expression)
