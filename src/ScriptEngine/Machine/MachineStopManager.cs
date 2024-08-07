@@ -31,8 +31,6 @@ namespace ScriptEngine.Machine
         private readonly IBreakpointManager _breakpoints;
         private readonly MachineInstance _machine;
         private ExecutionFrame[] _stopFrames;
-
-        private StopPoint _lastStopPoint;
         
         public MachineStopManager(MachineInstance runner, IBreakpointManager breakpoints)
         {
@@ -113,7 +111,7 @@ namespace ScriptEngine.Machine
             return _stopFrames != null && _stopFrames.Contains(currentFrame);
         }
 
-        public void StepOver(ExecutionFrame currentFrame)
+        public void StepOver()
         {
             _currentState = DebugState.SteppingOver;
             _stopFrames = _machine.GetExecutionFrames().Select(x => x.FrameObject).ToArray();
@@ -125,7 +123,7 @@ namespace ScriptEngine.Machine
             _currentState = DebugState.SteppingIn;
         }
 
-        internal void StepOut(ExecutionFrame currentFrame)
+        internal void StepOut()
         {
             _currentState = DebugState.SteppingOut;
             _stopFrames = _machine.GetExecutionFrames().Select(x => x.FrameObject).Skip(1).ToArray();
