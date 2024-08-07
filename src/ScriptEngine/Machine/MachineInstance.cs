@@ -1321,6 +1321,7 @@ namespace ScriptEngine.Machine
             {
                 CreateFullCallstack();
                 var args = new MachineStoppedEventArgs(_stopManager.LastStopReason, Environment.CurrentManagedThreadId, _stopManager.LastStopErrorMessage);
+                _stopManager.LastStopErrorMessage = string.Empty;
                 MachineStopped?.Invoke(this, args);
             }
         }
