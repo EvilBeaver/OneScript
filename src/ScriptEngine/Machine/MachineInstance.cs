@@ -1554,40 +1554,15 @@ namespace ScriptEngine.Machine
 
         private void TrimL(int arg)
         {
-            var str = _operationStack.Pop().AsString();
-
-            for (int i = 0; i < str.Length; i++)
-            {
-                if(!Char.IsWhiteSpace(str[i]))
-                {
-                    var trimmed = str.Substring(i);
-                    _operationStack.Push(ValueFactory.Create(trimmed));
-                    NextInstruction();
-                    return;
-                }
-            }
-
-            _operationStack.Push(ValueFactory.Create(""));
+            var str = _operationStack.Pop().AsString().TrimStart();
+            _operationStack.Push(ValueFactory.Create(str));
             NextInstruction();
         }
 
         private void TrimR(int arg)
         {
-            var str = _operationStack.Pop().AsString();
-
-            int lastIdx = str.Length-1;
-            for (int i = lastIdx; i >= 0; i--)
-            {
-                if (!Char.IsWhiteSpace(str[i]))
-                {
-                    var trimmed = str.Substring(0, i+1);
-                    _operationStack.Push(ValueFactory.Create(trimmed));
-                    NextInstruction();
-                    return;
-                }
-            }
-
-            _operationStack.Push(ValueFactory.Create(""));
+            var str = _operationStack.Pop().AsString().TrimEnd();
+            _operationStack.Push(ValueFactory.Create(str));
             NextInstruction();
         }
 
