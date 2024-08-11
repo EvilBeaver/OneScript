@@ -73,11 +73,9 @@ namespace ScriptEngine.Machine
         public bool IsRunning => _callStack.Count != 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IReadOnlyList<AttachedContext> CreateFrameScopes(IReadOnlyList<AttachedContext> outerScopes, AttachedContext thisScope)
-        {
-            return new RuntimeScopes(outerScopes, thisScope);
-        }
-        
+        private static IReadOnlyList<AttachedContext> CreateFrameScopes(IReadOnlyList<AttachedContext> outerScopes, AttachedContext thisScope)
+            => new RuntimeScopes(outerScopes, thisScope);
+
         internal IValue ExecuteMethod(IRunnable sdo, MachineMethodInfo methodInfo, IValue[] arguments)
         {
             var module = sdo.Module as StackRuntimeModule;
@@ -242,18 +240,13 @@ namespace ScriptEngine.Machine
             return _operationStack.Pop();
         }
 
-        public IValue EvaluateInFrame(string expression, int frameId)
+        internal IValue EvaluateInFrame(string expression, ExecutionFrame selectedFrame)
         {
-            System.Diagnostics.Debug.Assert(_fullCallstackCache != null);
-            if (frameId < 0 || frameId >= _fullCallstackCache.Count)
-                throw new ScriptException("Wrong stackframe");
-
-            ExecutionFrame selectedFrame = _fullCallstackCache[frameId].FrameObject;
-
             MachineInstance currentMachine;
             MachineInstance runner = new MachineInstance
             {
                 _mem = this._mem,
+                _globalContexts = this._globalContexts,
                 _debugInfo = CurrentScript
             };
             currentMachine = Current;
@@ -267,14 +260,16 @@ namespace ScriptEngine.Machine
                 var code = runner.CompileExpressionModule(expression);
 
                 var localScope = new AttachedContext(new UserScriptContextInstance(code), selectedFrame.Locals);
-                
+
                 frame = new ExecutionFrame
                 {
                     MethodName = code.Source.Name,
                     Module = code,
                     ThisScope = localScope,
                     Locals = Array.Empty<IVariable>(),
+                    Scopes = CreateFrameScopes(selectedFrame.Scopes, localScope),
                     InstructionPointer = 0,
+                    LineNumber = 1
                 };
             }
             catch
@@ -294,6 +289,17 @@ namespace ScriptEngine.Machine
             }
 
             return runner._operationStack.Pop().GetRawValue();
+        }
+
+        public IValue EvaluateInFrame(string expression, int frameId)
+        {
+            System.Diagnostics.Debug.Assert(_fullCallstackCache != null);
+            if (frameId < 0 || frameId >= _fullCallstackCache.Count)
+                throw new ScriptException("Wrong stackframe");
+
+            ExecutionFrame selectedFrame = _fullCallstackCache[frameId].FrameObject;
+
+            return EvaluateInFrame(expression, selectedFrame);
         }
 
         private StackRuntimeModule CompileCached(string code, Func<string, StackRuntimeModule> compile)
@@ -404,7 +410,14 @@ namespace ScriptEngine.Machine
                 {
                     SetScriptExceptionSource(exc);
 
-                    if (ShouldRethrowException(exc))
+                    var shouldRethrow = ShouldRethrowException(exc);
+
+                    if (MachineStopped != null && _stopManager != null)
+                        if (_stopManager.Breakpoints.StopOnAnyException(exc.MessageWithoutCodeFragment) || 
+                            shouldRethrow && _stopManager.Breakpoints.StopOnUncaughtException(exc.MessageWithoutCodeFragment))
+                            EmitStopOnException();
+
+                    if (shouldRethrow)
                         throw;
                 }
             }
@@ -1292,12 +1305,23 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
+        private void EmitStopOnException()
+        {
+            if (MachineStopped != null && _stopManager != null)
+            {
+                CreateFullCallstack();
+                var args = new MachineStoppedEventArgs(MachineStopReason.Exception, Environment.CurrentManagedThreadId, "");
+                MachineStopped?.Invoke(this, args);
+            }
+        }
+
         private void EmitStopEventIfNecessary()
         {
             if (MachineStopped != null && _stopManager != null && _stopManager.ShouldStopAtThisLine(_module.Source.Location, _currentFrame))
             {
                 CreateFullCallstack();
-                MachineStopped?.Invoke(this, new MachineStoppedEventArgs(_stopManager.LastStopReason));
+                var args = new MachineStoppedEventArgs(_stopManager.LastStopReason, Environment.CurrentManagedThreadId, _stopManager.LastStopErrorMessage);
+                MachineStopped?.Invoke(this, args);
             }
         }
 
@@ -1360,7 +1384,8 @@ namespace ScriptEngine.Machine
                 ThisScope = localScope,
                 Scopes = scopes,
                 Locals = new IVariable[method.LocalVariables.Length],
-                InstructionPointer = 0
+                InstructionPointer = 0,
+                IsReentrantCall = true
             };
             var locals = frame.Locals;
             for (int i = 0; i < locals.Length; i++)
@@ -1529,40 +1554,15 @@ namespace ScriptEngine.Machine
 
         private void TrimL(int arg)
         {
-            var str = _operationStack.Pop().AsString();
-
-            for (int i = 0; i < str.Length; i++)
-            {
-                if(!Char.IsWhiteSpace(str[i]))
-                {
-                    var trimmed = str.Substring(i);
-                    _operationStack.Push(ValueFactory.Create(trimmed));
-                    NextInstruction();
-                    return;
-                }
-            }
-
-            _operationStack.Push(ValueFactory.Create(""));
+            var str = _operationStack.Pop().AsString().TrimStart();
+            _operationStack.Push(ValueFactory.Create(str));
             NextInstruction();
         }
 
         private void TrimR(int arg)
         {
-            var str = _operationStack.Pop().AsString();
-
-            int lastIdx = str.Length-1;
-            for (int i = lastIdx; i >= 0; i--)
-            {
-                if (!Char.IsWhiteSpace(str[i]))
-                {
-                    var trimmed = str.Substring(0, i+1);
-                    _operationStack.Push(ValueFactory.Create(trimmed));
-                    NextInstruction();
-                    return;
-                }
-            }
-
-            _operationStack.Push(ValueFactory.Create(""));
+            var str = _operationStack.Pop().AsString().TrimEnd();
+            _operationStack.Push(ValueFactory.Create(str));
             NextInstruction();
         }
 
@@ -2496,10 +2496,8 @@ namespace ScriptEngine.Machine
         [ThreadStatic]
         private static MachineInstance _currentThreadWorker;
 
-        private static void SetCurrentMachineInstance(MachineInstance inst)
-        {
-            _currentThreadWorker = inst;
-        }
+        private static void SetCurrentMachineInstance(MachineInstance current)
+            => _currentThreadWorker = current;
 
         public static MachineInstance Current
         {

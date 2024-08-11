@@ -9,6 +9,7 @@ using OneScript.StandardLibrary;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Hosting;
 using ScriptEngine.HostedScript.Extensions;
+using OneScript.Web.Server;
 
 namespace oscript
 {
@@ -26,9 +27,10 @@ namespace oscript
 
             BuildUpWithIoC(builder);
             
-            builder.SetupEnvironment(e =>
+            builder.SetupEnvironment(env =>
                 {
-                    e.AddStandardLibrary()
+                    env.AddStandardLibrary()
+                     .AddWebServer()
                      .UseTemplateFactory(new DefaultTemplatesFactory());
                 });
 

@@ -31,6 +31,8 @@ pipeline {
                 stage('Windows Build') {
                     agent { label 'windows' }
 
+                    options { skipDefaultCheckout() }
+
                     // пути к инструментам доступны только когда
                     // нода уже определена
                     environment {
@@ -116,12 +118,16 @@ pipeline {
             parallel{
                 stage('Windows testing') {
                     agent { label 'windows' }
+                    options { skipDefaultCheckout() }
                     environment {
                         OSCRIPT_CONFIG = 'systemlanguage=ru'
                     }
                     steps {
                         ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                         {
+                            step([$class: 'WsCleanup'])
+                            checkout scm
+                            
                             dir('install/build'){
                                 deleteDir()
                             }
@@ -177,9 +183,14 @@ pipeline {
         stage('Packaging') {
             agent { label 'windows' }
 
+            options { skipDefaultCheckout() }
+
             steps {
                 ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                 {
+                    step([$class: 'WsCleanup'])
+                    checkout scm
+                    
                     dir('built'){
                         deleteDir()
                     }

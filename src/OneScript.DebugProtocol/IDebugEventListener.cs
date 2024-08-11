@@ -12,7 +12,7 @@ namespace OneScript.DebugProtocol
     /// </summary>
     public interface IDebugEventListener
     {
-        void ThreadStopped(int threadId, ThreadStopReason reason);
+        void ThreadStopped(int threadId, ThreadStopReason reason, string errorMessage);
 
         void ProcessExited(int exitCode);
     }

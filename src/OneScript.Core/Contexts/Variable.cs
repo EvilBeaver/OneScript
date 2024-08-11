@@ -32,6 +32,15 @@ namespace OneScript.Contexts
 
         public static IVariable CreateReference(IVariable variable, string refName)
         {
+            if (variable is VariableReference vref)
+            {
+                if (vref._reference is IndexedValueReference iv)
+                {
+                    _ = iv.Value;
+                }
+
+                return variable;
+            }
             return new VariableReference(variable, refName);
         }
 
@@ -86,7 +95,7 @@ namespace OneScript.Contexts
 
         private sealed class VariableReference : IVariable
         {
-            private readonly IValueReference _reference;
+            public readonly IValueReference _reference;
 
             public string Name { get; }
 

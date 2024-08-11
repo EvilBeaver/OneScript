@@ -19,8 +19,6 @@ namespace ScriptEngine.Machine
         SteppingOut
     }
 
-    
-
     internal class MachineStopManager
     {
         private struct StopPoint
@@ -44,6 +42,7 @@ namespace ScriptEngine.Machine
         
         public IBreakpointManager Breakpoints => _breakpoints;
         public MachineStopReason LastStopReason { get; internal set; }
+        public string LastStopErrorMessage { get; internal set; }
         public DebugState CurrentState => _currentState;
 
         public bool ShouldStopAtThisLine(string module, ExecutionFrame currentFrame)
@@ -71,11 +70,31 @@ namespace ScriptEngine.Machine
 
             if (mustStop)
             {
-                // здесь мы уже останавливались
+                // Проверим, что здесь еще не останавливались
                 if (_lastStopPoint.frame != currentFrame || _lastStopPoint.line != currentFrame.LineNumber)
                 {
                     if (_currentState == DebugState.Running)
+                    {
                         LastStopReason = MachineStopReason.Breakpoint;
+
+                        // Проверим существование условия остановки
+                        var condition = Breakpoints.GetCondition(module, currentFrame.LineNumber);
+
+                        if (!string.IsNullOrEmpty(condition))
+                        {
+                            try
+                            {
+                                mustStop = _machine.EvaluateInFrame(condition, currentFrame).AsBoolean();
+                            }
+                            catch (Exception ex)
+                            {
+                                // Остановим и сообщим, что остановка произошла не по условию, а в результате ошибки вычисления
+                                mustStop = true;
+                                LastStopReason = MachineStopReason.BreakpointConditionError;
+                                LastStopErrorMessage = $"Не удалось выполнить условие точки останова: {ex.Message}";
+                            }
+                        }
+                    }
                     else
                         LastStopReason = MachineStopReason.Step;
 
@@ -98,7 +117,7 @@ namespace ScriptEngine.Machine
         
         private bool HitBreakpointOnLine(string module, ExecutionFrame currentFrame)
         {
-            return _breakpoints.Find(module, currentFrame.LineNumber);
+            return _breakpoints.FindBreakpoint(module, currentFrame.LineNumber);
         }
 
         private bool FrameIsInStopList(ExecutionFrame currentFrame)
@@ -126,7 +145,7 @@ namespace ScriptEngine.Machine
 
         internal void Continue()
         {
-            _lastStopPoint = default(StopPoint);
+            _lastStopPoint = default;
         }
     }
 }

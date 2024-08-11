@@ -133,6 +133,11 @@ namespace VSCode.DebugAdapter
             WriteCommand(threadId);
         }
 
+        public void SetMachineExceptionBreakpoints((string Id, string Condition)[] filters)
+        {
+            WriteCommand(filters);
+        }
+
         public Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)
         {
             WriteCommand(breaksToSet);
