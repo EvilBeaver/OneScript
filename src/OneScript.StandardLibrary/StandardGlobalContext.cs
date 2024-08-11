@@ -33,7 +33,7 @@ namespace OneScript.StandardLibrary
         /// Содержит набор системных символов.
         /// </summary>
         /// <value>Набор системных символов.</value>
-        [ContextProperty("Символы", "Chars")]
+        [ContextProperty("Символы", "Chars", CanWrite = false)]
         public SymbolsContext Chars { get; set; }
         
         /// <summary>
