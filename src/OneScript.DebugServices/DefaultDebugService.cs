@@ -37,17 +37,14 @@ namespace OneScript.DebugServices
             if (threadId > 0)
             {
                 var token = _threadManager.GetTokenForThread(threadId);
-                token.Machine.PrepareDebugContinuation();
                 token.Set();        
             }
             else
             {
                 var tokens = _threadManager.GetAllTokens();
+
                 foreach (var token in tokens)
-                {
-                    token.Machine.PrepareDebugContinuation();
                     token.Set();
-                }
             }
         }
 
