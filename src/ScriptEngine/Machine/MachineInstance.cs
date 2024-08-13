@@ -1150,7 +1150,7 @@ namespace ScriptEngine.Machine
             var typeName = _operationStack.Pop().AsString();
             if (!TypeManager.TryGetType(typeName, out var type))
             {
-                throw RuntimeException.ConstructorNotFound(typeName);
+                throw RuntimeException.TypeIsNotDefined(typeName);
             }
             
             // TODO убрать cast после рефакторинга ITypeFactory
@@ -2345,7 +2345,7 @@ namespace ScriptEngine.Machine
             var typeName = _operationStack.Pop().AsString();
             if (!TypeManager.TryGetType(typeName, out var type))
             {
-                throw RuntimeException.ConstructorNotFound(typeName);
+                throw RuntimeException.TypeIsNotDefined(typeName);
             }
             
             // TODO убрать cast после рефакторинга ITypeFactory

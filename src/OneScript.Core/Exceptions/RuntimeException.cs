@@ -119,8 +119,16 @@ namespace OneScript.Exceptions
 
         public static RuntimeException ConstructorNotFound(string typeName)
         {
-            return new RuntimeException(new BilingualString($"ru = 'Конструктор не найден ({typeName})';",
-                $"en = 'Constructor not found ({typeName})'"));
+            return new RuntimeException(new BilingualString(
+                $"Конструктор не найден ({typeName})",
+                $"Constructor not found ({typeName})"));
+        }
+        
+        public static RuntimeException TypeIsNotDefined(string typeName)
+        {
+            return new RuntimeException(new BilingualString(
+                $"Тип не определен. Конструктор не найден ({typeName})",
+                $"Type is not defined ({typeName})"));
         }
         
         public static RuntimeException InvalidEncoding(string encoding)
