@@ -138,6 +138,7 @@ namespace TestApp
                 .Create()
                 .SetDefaultOptions()
                 .UseNativeRuntime()
+                .UseImports()
                 .SetupEnvironment(e =>
                 {
                     e.AddStandardLibrary();
