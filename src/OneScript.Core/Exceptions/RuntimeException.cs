@@ -127,8 +127,15 @@ namespace OneScript.Exceptions
         public static RuntimeException TypeIsNotDefined(string typeName)
         {
             return new RuntimeException(new BilingualString(
-                $"Тип не определен. Конструктор не найден ({typeName})",
+                $"Тип не определен ({typeName})",
                 $"Type is not defined ({typeName})"));
+        }
+        
+        public static RuntimeException TypeIsNotRegistered(string typeName)
+        {
+            return new RuntimeException(new BilingualString(
+                $"Тип не зарегистрирован ({typeName})",
+                $"Type is not registered ({typeName})"));
         }
         
         public static RuntimeException InvalidEncoding(string encoding)
