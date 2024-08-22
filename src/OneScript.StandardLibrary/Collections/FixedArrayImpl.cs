@@ -14,7 +14,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.Collections
 {
     [ContextClass("ФиксированныйМассив", "FixedArray")]
-    public class FixedArrayImpl : AutoCollectionContext<FixedArrayImpl, IValue>
+    public class FixedArrayImpl : AutoCollectionContext<FixedArrayImpl, IValue>, IValueArray
     {
         private readonly ArrayImpl _array;
 
