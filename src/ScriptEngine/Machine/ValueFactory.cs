@@ -99,7 +99,7 @@ namespace ScriptEngine.Machine
                 return Create(s + op2.AsString());
             }
 
-            if (op1 is BslDateValue date && op2.SystemType == BasicTypes.Number)
+            if (op1 is BslDateValue date)
             {
                 return Create(date + op2.AsNumber());
             }
@@ -117,15 +117,15 @@ namespace ScriptEngine.Machine
             {
                 return Create(n - op2.AsNumber());
             }
-            if (op1 is BslDateValue date && op2 is BslNumericValue num)
+
+            if (op1 is BslDateValue date)
             {
-                var result = date - num;
-                return Create(result);
-            }
-            if (op1 is BslDateValue d1 && op2 is BslDateValue d2)
-            {
-                var diff = d1 - d2;
-                return Create(diff);
+                if (op2 is BslDateValue d2)
+                {
+                    return Create(date - d2);
+                }
+
+                return Create(date - op2.AsNumber());
             }
 
             // все к числовому типу.
