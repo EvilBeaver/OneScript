@@ -8,6 +8,7 @@ using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using ScriptEngine.Compiler;
@@ -35,6 +36,8 @@ namespace ScriptEngine.Machine
         private IList<ExecutionFrameInfo> _fullCallstackCache;
         private ModuleInformation _debugInfo;
 
+        private CancellationToken _cancellationToken = CancellationToken.None;
+        
         internal MachineInstance() 
         {
             InitCommands();
@@ -43,6 +46,11 @@ namespace ScriptEngine.Machine
 
         public event EventHandler<MachineStoppedEventArgs> MachineStopped;
 
+        public void SetCancellationToken(CancellationToken token)
+        {
+            _cancellationToken = token;
+        }
+        
         private struct ExceptionJumpInfo
         {
             public int handlerAddress;
@@ -563,6 +571,11 @@ namespace ScriptEngine.Machine
                 {
                     var command = _module.Code[_currentFrame.InstructionPointer];
                     _commands[(int)command.Code](command.Argument);
+
+                    if (_cancellationToken.IsCancellationRequested)
+                    {
+                        throw new ScriptInterruptionException(0x1984);
+                    }
                 }
             }
             catch (RuntimeException)
