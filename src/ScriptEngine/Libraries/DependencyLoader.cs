@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Contexts;
 using OneScript.Sources;
 using ScriptEngine.Machine.Contexts;
 
@@ -13,7 +14,7 @@ namespace ScriptEngine
     public class DependencyLoader
     {
         private readonly ScriptingEngine _engine;
-        private readonly RuntimeEnvironment _env;
+        private readonly IRuntimeEnvironment _env;
 
         public DependencyLoader(ScriptingEngine engine)
         {
