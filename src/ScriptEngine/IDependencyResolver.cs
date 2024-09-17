@@ -10,7 +10,7 @@ using OneScript.Compilation;
 namespace ScriptEngine
 {
     /// <summary>
-    /// Разрешитель внещних зависимостей (библиотек)
+    /// Разрешитель внешних зависимостей (библиотек)
     /// </summary>
     public interface IDependencyResolver : ICompileTimeDependencyResolver
     {
