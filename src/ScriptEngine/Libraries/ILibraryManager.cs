@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 
-namespace ScriptEngine
+namespace ScriptEngine.Libraries
 {
     /// <summary>
     /// Временный класс для откусывания ответственностей от RuntimeEnvironment

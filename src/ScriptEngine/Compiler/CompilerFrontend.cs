@@ -18,6 +18,10 @@ using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Compiler
 {
+    /// <summary>
+    /// Часть компилятора, независимая от рантайма (нативного или стекового)
+    /// Запускает компиляцию модуля, строит AST и делегирует построение кода в бэкенд компилятора под конкретный рантайм.
+    /// </summary>
     public class CompilerFrontend : CompilerFrontendBase
     {
         private readonly IDependencyResolver _dependencyResolver;

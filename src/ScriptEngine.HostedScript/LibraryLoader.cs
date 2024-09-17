@@ -15,6 +15,7 @@ using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
+using ScriptEngine.Libraries;
 
 namespace ScriptEngine.HostedScript
 {

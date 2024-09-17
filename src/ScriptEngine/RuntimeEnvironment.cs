@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
+using ScriptEngine.Libraries;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using SymbolScope = OneScript.Compilation.Binding.SymbolScope;
