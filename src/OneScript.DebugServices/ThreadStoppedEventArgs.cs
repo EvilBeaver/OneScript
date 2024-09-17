@@ -16,5 +16,7 @@ namespace OneScript.DebugServices
         public int ThreadId { get; set; }
 
         public MachineStopReason StopReason { get; set; }
+
+        public string ErrorMessage { get; set; }
     }
 }

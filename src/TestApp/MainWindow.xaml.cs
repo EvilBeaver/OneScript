@@ -15,6 +15,7 @@ using System.Windows.Input;
 using OneScript.Commons;
 using OneScript.Sources;
 using OneScript.StandardLibrary;
+using OneScript.Web.Server;
 using ScriptEngine.HostedScript;
 using ScriptEngine;
 using ScriptEngine.Compiler;
@@ -137,7 +138,12 @@ namespace TestApp
                 .Create()
                 .SetDefaultOptions()
                 .UseNativeRuntime()
-                .SetupEnvironment(e => e.AddStandardLibrary())
+                .UseImports()
+                .SetupEnvironment(e =>
+                {
+                    e.AddStandardLibrary();
+                    e.AddWebServer();
+                })
                 .SetupConfiguration(x =>
                 {
                     x.UseSystemConfigFile()

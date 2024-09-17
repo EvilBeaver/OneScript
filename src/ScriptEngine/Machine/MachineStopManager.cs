@@ -19,8 +19,6 @@ namespace ScriptEngine.Machine
         SteppingOut
     }
 
-    
-
     internal class MachineStopManager
     {
         private struct StopPoint
@@ -33,8 +31,6 @@ namespace ScriptEngine.Machine
         private readonly IBreakpointManager _breakpoints;
         private readonly MachineInstance _machine;
         private ExecutionFrame[] _stopFrames;
-
-        private StopPoint _lastStopPoint;
         
         public MachineStopManager(MachineInstance runner, IBreakpointManager breakpoints)
         {
@@ -44,11 +40,13 @@ namespace ScriptEngine.Machine
         
         public IBreakpointManager Breakpoints => _breakpoints;
         public MachineStopReason LastStopReason { get; internal set; }
+        public string LastStopErrorMessage { get; internal set; }
         public DebugState CurrentState => _currentState;
 
         public bool ShouldStopAtThisLine(string module, ExecutionFrame currentFrame)
         {
             bool mustStop = false;
+
             switch (_currentState)
             {
                 case DebugState.Running:
@@ -71,25 +69,32 @@ namespace ScriptEngine.Machine
 
             if (mustStop)
             {
-                // здесь мы уже останавливались
-                if (_lastStopPoint.frame != currentFrame || _lastStopPoint.line != currentFrame.LineNumber)
+                if (_currentState == DebugState.Running)
                 {
-                    if (_currentState == DebugState.Running)
-                        LastStopReason = MachineStopReason.Breakpoint;
-                    else
-                        LastStopReason = MachineStopReason.Step;
+                    LastStopReason = MachineStopReason.Breakpoint;
 
-                    _lastStopPoint = new StopPoint()
+                    // Проверим существование условия остановки
+                    var condition = Breakpoints.GetCondition(module, currentFrame.LineNumber);
+
+                    if (!string.IsNullOrEmpty(condition))
                     {
-                        frame = currentFrame,
-                        line = currentFrame.LineNumber
-                    };
-                    _currentState = DebugState.Running;
+                        try
+                        {
+                            mustStop = _machine.EvaluateInFrame(condition, currentFrame).AsBoolean();
+                        }
+                        catch (Exception ex)
+                        {
+                            // Остановим и сообщим, что остановка произошла не по условию, а в результате ошибки вычисления
+                            mustStop = true;
+                            LastStopReason = MachineStopReason.BreakpointConditionError;
+                            LastStopErrorMessage = $"Не удалось выполнить условие точки останова: {ex.Message}";
+                        }
+                    }
                 }
                 else
-                {
-                    mustStop = false;
-                }
+                    LastStopReason = MachineStopReason.Step;
+
+                _currentState = DebugState.Running;
             }
 
             return mustStop;
@@ -98,7 +103,7 @@ namespace ScriptEngine.Machine
         
         private bool HitBreakpointOnLine(string module, ExecutionFrame currentFrame)
         {
-            return _breakpoints.Find(module, currentFrame.LineNumber);
+            return _breakpoints.FindBreakpoint(module, currentFrame.LineNumber);
         }
 
         private bool FrameIsInStopList(ExecutionFrame currentFrame)
@@ -106,7 +111,7 @@ namespace ScriptEngine.Machine
             return _stopFrames != null && _stopFrames.Contains(currentFrame);
         }
 
-        public void StepOver(ExecutionFrame currentFrame)
+        public void StepOver()
         {
             _currentState = DebugState.SteppingOver;
             _stopFrames = _machine.GetExecutionFrames().Select(x => x.FrameObject).ToArray();
@@ -118,15 +123,10 @@ namespace ScriptEngine.Machine
             _currentState = DebugState.SteppingIn;
         }
 
-        internal void StepOut(ExecutionFrame currentFrame)
+        internal void StepOut()
         {
             _currentState = DebugState.SteppingOut;
             _stopFrames = _machine.GetExecutionFrames().Select(x => x.FrameObject).Skip(1).ToArray();
-        }
-
-        internal void Continue()
-        {
-            _lastStopPoint = default(StopPoint);
         }
     }
 }

@@ -9,9 +9,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OneScript.DebugProtocol;
 using Serilog;
 using VSCodeDebug;
+using static System.Net.WebRequestMethods;
 
 
 namespace VSCode.DebugAdapter
@@ -40,10 +42,29 @@ namespace VSCode.DebugAdapter
             
             SendResponse(response, new Capabilities
             {
-                supportsConditionalBreakpoints = false,
+                supportsConditionalBreakpoints = true,
                 supportsFunctionBreakpoints = false,
                 supportsConfigurationDoneRequest = true,
-                exceptionBreakpointFilters = new dynamic[0],
+                supportsExceptionFilterOptions = true,
+                exceptionBreakpointFilters = new dynamic[]
+                {
+                    new
+                    {
+                        filter = "uncaught",
+                        label = "Необработанные исключения",
+                        description = "Остановка при возникновении необработанного исключения",
+                        supportsCondition = true,
+                        conditionDescription = "Искомая подстрока текста исключения"
+                    },
+                    new
+                    {
+                        filter = "all",
+                        label = "Все исключения",
+                        description = "Остановка при возникновении любого исключения",
+                        supportsCondition = true,
+                        conditionDescription = "Искомая подстрока текста исключения"
+                    }
+                },
                 supportsEvaluateForHovers = true,
                 supportTerminateDebuggee = true
             });
@@ -113,7 +134,7 @@ namespace VSCode.DebugAdapter
         public override void Attach(Response response, dynamic arguments)
         {
             LogCommandReceived();
-            _process.DebugPort = getInt(arguments, "debugPort", 2801);
+            _process.DebugPort = GetFromContainer(arguments, "debugPort", 2801);
             _process.ProcessExited += (s, e) =>
             {
                 Log.Information("Debuggee has exited");
@@ -148,6 +169,31 @@ namespace VSCode.DebugAdapter
             SendResponse(response);
         }
 
+        public override void SetExceptionBreakpoints(Response response, dynamic arguments)
+        {
+            LogCommandReceived(arguments);
+            Log.Debug("Exception breakpoints: {Data}", JsonConvert.SerializeObject(arguments));
+
+            var acceptedFilters = new List<VSCodeDebug.Breakpoint>();
+            var filters = new List<(string Id, string Condition)>();
+
+            foreach(var filter in arguments.filters)
+            {
+                filters.Add((filter, ""));
+                acceptedFilters.Add(new VSCodeDebug.Breakpoint(true));
+            }
+
+            foreach (var filterOption in arguments.filterOptions)
+            {
+                filters.Add((filterOption.filterId, filterOption.condition ?? ""));
+                acceptedFilters.Add(new VSCodeDebug.Breakpoint(true));
+            }
+
+            _process.SetExceptionsBreakpoints(filters.ToArray());
+
+            SendResponse(response, new SetExceptionBreakpointsResponseBody(acceptedFilters));
+        }
+
         public override void SetBreakpoints(Response response, dynamic arguments)
         {
             LogCommandReceived();
@@ -176,17 +222,22 @@ namespace VSCode.DebugAdapter
 
             foreach (var srcBreakpoint in arguments.breakpoints)
             {
-                var bpt = new OneScript.DebugProtocol.Breakpoint();
-                bpt.Line = (int) srcBreakpoint.line;
-                bpt.Source = path;
+                var bpt = new OneScript.DebugProtocol.Breakpoint
+                {
+                    Line = (int)srcBreakpoint.line,
+                    Source = path,
+                    Condition = srcBreakpoint.condition ?? string.Empty
+                };
                 breaks.Add(bpt);
             }
 
             if(breaks.Count == 0) // в целях сохранения интерфейса WCF придется сделать костыль на перех. период
             {
-                var bpt = new OneScript.DebugProtocol.Breakpoint();
-                bpt.Line = 0;
-                bpt.Source = path;
+                var bpt = new OneScript.DebugProtocol.Breakpoint
+                {
+                    Line = 0,
+                    Source = path
+                };
                 breaks.Add(bpt);
             }
             
@@ -197,8 +248,7 @@ namespace VSCode.DebugAdapter
                 confirmedBreaksVSCode.Add(new VSCodeDebug.Breakpoint(true, confirmedBreaks[i].Line));
             }
             
-            SendResponse(response, new SetBreakpointsResponseBody(confirmedBreaksVSCode));
-            
+            SendResponse(response, new SetBreakpointsResponseBody(confirmedBreaksVSCode));  
         }
 
         private string NormalizeDriveLetter(string path)
@@ -210,11 +260,15 @@ namespace VSCode.DebugAdapter
 
         }
 
-        public void ThreadStopped(int threadId, ThreadStopReason reason)
+        public void ThreadStopped(int threadId, ThreadStopReason reason, string errorMessage)
         {
             LogEventOccured();
             _framesHandles.Reset();
             _variableHandles.Reset();
+
+            if (!string.IsNullOrEmpty(errorMessage))
+                SendOutput("stderr", errorMessage);
+
             SendEvent(new StoppedEvent(threadId, reason.ToString()));
         }
         
@@ -314,7 +368,7 @@ namespace VSCode.DebugAdapter
         public override void Scopes(Response response, dynamic arguments)
         {
             LogCommandReceived();
-            int frameId = getInt(arguments, "frameId");
+            int frameId = GetFromContainer(arguments, "frameId", 0);
             var frame = _framesHandles.Get(frameId, null);
             if (frame == null)
             {
@@ -330,7 +384,7 @@ namespace VSCode.DebugAdapter
         public override void Variables(Response response, dynamic arguments)
         {
             LogCommandReceived();
-            int varsHandle = getInt(arguments, "variablesReference");
+            int varsHandle = GetFromContainer(arguments, "variablesReference", 0);
             var variables = _variableHandles.Get(varsHandle, null);
             if (variables == null)
             {
@@ -378,7 +432,7 @@ namespace VSCode.DebugAdapter
         {
             LogCommandReceived();
             // expression, frameId, context
-            int frameId = getInt(arguments, "frameId");
+            int frameId = GetFromContainer(arguments, "frameId", 0);
             var frame = _framesHandles.Get(frameId, null);
             if (frame == null)
             {
@@ -430,11 +484,11 @@ namespace VSCode.DebugAdapter
             }
         }
 
-        private static int getInt(dynamic container, string propertyName, int dflt = 0)
+        private static T GetFromContainer<T>(dynamic container, string propertyName, T dflt = default)
         {
             try
             {
-                return (int)container[propertyName];
+                return (T)container[propertyName];
             }
             catch (Exception)
             {

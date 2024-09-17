@@ -37,18 +37,24 @@ namespace OneScript.DebugServices
             if (threadId > 0)
             {
                 var token = _threadManager.GetTokenForThread(threadId);
-                token.Machine.PrepareDebugContinuation();
                 token.Set();        
             }
             else
             {
                 var tokens = _threadManager.GetAllTokens();
+
                 foreach (var token in tokens)
-                {
-                    token.Machine.PrepareDebugContinuation();
                     token.Set();
-                }
             }
+        }
+
+        public void SetMachineExceptionBreakpoints((string Id, string Condition)[] filters)
+        {
+            _breakpointManager.SetExceptionBreakpoints(filters);
+
+            // Уведомить все потоки о новых фильтрах
+            foreach (var machine in _threadManager.GetAllTokens().Select(x => x.Machine))
+                machine.SetDebugMode(_breakpointManager);
         }
 
         public Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)
@@ -59,18 +65,19 @@ namespace OneScript.DebugServices
 
             foreach (var item in grouped)
             {
-                var lines = item
+                var points = item
                     .Where(x => x.Line != 0)
-                    .Select(x => x.Line)
+                    .Select(x => (x.Line, x.Condition))
                     .ToArray();
 
-                _breakpointManager.SetLineStops(item.Key, lines);
-                foreach (var line in lines)
+                _breakpointManager.SetBreakpoints(item.Key, points);
+                foreach (var point in points)
                 {
                     confirmedBreakpoints.Add(new Breakpoint()
                     {
-                        Line = line,
-                        Source = item.Key
+                        Line = point.Line,
+                        Source = item.Key,
+                        Condition = point.Condition
                     });
                 }
             }

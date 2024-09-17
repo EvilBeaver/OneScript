@@ -20,112 +20,168 @@ namespace OneScript.Exceptions
         {
         }
 
+        public RuntimeException(string message_ru, string message_en)
+            : base(new BilingualString(message_ru, message_en))
+        {
+        }
+
         #region Static Factory Methods
 
         public static RuntimeException DeprecatedMethodCall(string name)
         {
-            return new RuntimeException($"Вызов безнадёжно устаревшего метода {name}");
+            return new RuntimeException(
+                $"Вызов безнадёжно устаревшего метода {name}",
+                $"Call to deprecated method {name}");
         }
 
         public static RuntimeException MethodNotFoundException(string methodName)
         {
-            return new RuntimeException($"Метод объекта не обнаружен ({methodName})");
+            return new RuntimeException(
+                $"Метод объекта не обнаружен ({methodName})",
+                $"Method not found ({methodName})");
         }
 
         public static RuntimeException MethodNotFoundException(string methodName, string objectName)
         {
-            return new RuntimeException($"Метод объекта не обнаружен ({{{objectName}}}::{methodName})");
+            return new RuntimeException(
+                $"Метод объекта не обнаружен ({{{objectName}}}::{methodName})",
+                $"Method not found ({{{objectName}}}::{methodName})");
         }
 
         public static RuntimeException TooManyArgumentsPassed()
         {
-            return new RuntimeException("Слишком много фактических параметров");
+            return new RuntimeException(
+                "Слишком много фактических параметров",
+                "Too many arguments were passed");
         }
 
         public static RuntimeException TooFewArgumentsPassed()
         {
-            return new RuntimeException("Недостаточно фактических параметров");
+            return new RuntimeException(
+                "Недостаточно фактических параметров",
+                "Too few arguments were passed");
         }
         
         public static RuntimeException MissedArgument()
         {
-            return new RuntimeException("Пропущен обязательный параметр");
+            return new RuntimeException(
+                "Пропущен обязательный параметр",
+                "Missed mandatory argument");
         }
 
         public static RuntimeException InvalidArgumentType()
         {
-            return new RuntimeException("Неверный тип аргумента");
+            return new RuntimeException(
+                "Неверный тип аргумента", 
+                "Invalid type of argument");
         }
 
         public static RuntimeException InvalidArgumentType(string argName)
         {
-            return new RuntimeException(String.Format("Неверный тип аргумента '{0}'", argName));
+            return new RuntimeException(
+                $"Неверный тип аргумента '{argName}'", 
+                $"Invalid type of argument '{argName}'");
         }
 
         public static RuntimeException InvalidArgumentType(int argNum, string argName )
         {
-            return new RuntimeException(String.Format("Неверный тип аргумента номер {0} '{1}'", argNum, argName ));
+            return new RuntimeException(
+                $"Неверный тип аргумента номер {argNum} '{argName}'", 
+                $"Invalid type of argument number {argNum} '{argName}'");
         }
 
         public static RuntimeException InvalidNthArgumentType(int argNum)
         {
-            return new RuntimeException(String.Format("Неверный тип аргумента номер {0}", argNum));
+            return new RuntimeException(
+                $"Неверный тип аргумента номер {argNum}", 
+                $"Invalid type of argument number {argNum}");
         }
         
         public static RuntimeException InvalidArgumentValue()
         {
-            return new RuntimeException("Неверное значение аргумента");
+            return new RuntimeException(
+                "Неверное значение аргумента", 
+                "Invalid argument value");
         }
 
         public static RuntimeException InvalidArgumentValue(object value)
         {
-            return new RuntimeException("Неверное значение аргумента {"+value.ToString()+"}");
+            return new RuntimeException(
+                $"Неверное значение аргумента {value}", 
+                $"Invalid value for argument {value}");
         }
 
         public static RuntimeException InvalidNthArgumentValue(int argNum)
         {
-            return new RuntimeException(String.Format("Неверное значение аргумента номер {0}", argNum));
+            return new RuntimeException(
+                $"Неверное значение аргумента номер {argNum}", 
+                $"Invalid value for argument number {argNum}");
         }
         
         public static RuntimeException ComparisonNotSupportedException()
         {
-            return new RuntimeException("Сравнение на больше/меньше для данного типа не поддерживается");
+            return new RuntimeException(
+                "Сравнение на больше/меньше для данного типа не поддерживается",
+                "Greater-than/Less-than comparison operations are not supported");
         }
         
         public static RuntimeException ComparisonNotSupportedException(string type1, string type2)
         {
-            return new RuntimeException($"Сравнение на больше/меньше для данного типа не поддерживается {type1} <-> {type2}");
+            return new RuntimeException(
+                $"Сравнение на больше/меньше для данного типа не поддерживается {type1} <-> {type2}",
+                $"Greater-than/Less-than comparison operations are not supported for {type1} <-> {type2}");
         }
 
         public static RuntimeException IndexedAccessIsNotSupportedException()
         {
-            return new RuntimeException("Объект не поддерживает доступ по индексу");
+            return new RuntimeException(
+                "Объект не поддерживает доступ по индексу",
+                "Indexed access is not supported");
         }
 
         public static RuntimeException IteratorIsNotDefined()
         {
-            return new RuntimeException("Итератор не определен");
+            return new RuntimeException("Итератор не определен","Iterator is not defined");
         }
 
         public static RuntimeException UseProcAsAFunction()
         {
-            return new RuntimeException("Использование процедуры, как функции");
+            return new RuntimeException(
+                "Использование процедуры как функции",
+                "Procedure called as function");
         }
 
         public static RuntimeException DivideByZero()
         {
-            return new RuntimeException("Деление на ноль");
+            return new RuntimeException("Деление на ноль", "Divide by zero");
         }
 
         public static RuntimeException ConstructorNotFound(string typeName)
         {
-            return new RuntimeException(new BilingualString($"ru = 'Конструктор не найден ({typeName})';",
-                $"en = 'Constructor not found ({typeName})'"));
+            return new RuntimeException(
+                $"Конструктор не найден ({typeName})",
+                $"Constructor not found ({typeName})");
+        }
+        
+        public static RuntimeException TypeIsNotDefined(string typeName)
+        {
+            return new RuntimeException(
+                $"Тип не определен. Конструктор не найден ({typeName})", // для совместимости с v1
+                $"Type is not defined ({typeName})");
+        }
+        
+        public static RuntimeException TypeIsNotRegistered(string typeName)
+        {
+            return new RuntimeException(
+                $"Тип не зарегистрирован ({typeName})",
+                $"Type is not registered ({typeName})");
         }
         
         public static RuntimeException InvalidEncoding(string encoding)
         {
-            return new RuntimeException($"Неправильное имя кодировки '{encoding}'");
+            return new RuntimeException(
+                $"Неправильное имя кодировки '{encoding}'",
+                $"Invalid encoding name '{encoding}'");
         }
         
         #endregion
