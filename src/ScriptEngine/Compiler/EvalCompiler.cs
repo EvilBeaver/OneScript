@@ -15,6 +15,9 @@ using OneScript.Language.SyntaxAnalysis.AstNodes;
 
 namespace ScriptEngine.Compiler
 {
+    /// <summary>
+    /// Компилятор вычислимых выражений
+    /// </summary>
     public class EvalCompiler : CompilerFrontendBase
     {
         private readonly DefaultCompilerBackend _backend;

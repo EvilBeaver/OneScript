@@ -15,6 +15,7 @@ using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Compiler;
+using ScriptEngine.Libraries;
 
 namespace ScriptEngine
 {

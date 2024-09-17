@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using OneScript.Execution;
 using ScriptEngine.Machine;
 
-namespace ScriptEngine
+namespace ScriptEngine.Libraries
 {
     public class ExternalLibraryDef
     {
@@ -18,9 +18,9 @@ namespace ScriptEngine
         {
             LibraryName = name;
         }
-        
+
         public string LibraryName { get; }
-        
+
         public IList<UserAddedScript> Classes { get; } = new List<UserAddedScript>();
         public IList<UserAddedScript> Modules { get; } = new List<UserAddedScript>();
 
@@ -33,12 +33,12 @@ namespace ScriptEngine
                 Symbol = identifier,
                 FilePath = filePath
             };
-            
+
             Classes.Add(item);
 
             return item;
         }
-        
+
         public UserAddedScript AddModule(string identifier, string filePath, StackRuntimeModule module = null)
         {
             var item = new UserAddedScript
@@ -48,13 +48,13 @@ namespace ScriptEngine
                 Symbol = identifier,
                 FilePath = filePath
             };
-            
+
             Modules.Add(item);
 
             return item;
         }
     }
-    
+
     public class UserAddedScript
     {
         public UserAddedScriptType Type;
