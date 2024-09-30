@@ -22,10 +22,9 @@ namespace VSCode.DebugAdapter
                 var listener = TcpListener.Create(4711);
                 listener.Start();
 
-                using var client = listener.AcceptTcpClient();
-                using var stream = client.GetStream();
-
-                StartSession(stream, stream);
+                using (var client = listener.AcceptTcpClient())
+                    using (var stream = client.GetStream())
+                        StartSession(stream, stream);
             }
             else
                 StartSession(Console.OpenStandardInput(), Console.OpenStandardOutput());
