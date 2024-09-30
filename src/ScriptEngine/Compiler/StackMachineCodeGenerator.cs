@@ -33,7 +33,6 @@ namespace ScriptEngine.Compiler
         private readonly StackRuntimeModule _module;
         private SourceCode _sourceCode;
         private SymbolTable _ctx;
-        private List<ConstDefinition> _constMap = new List<ConstDefinition>();
         
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
@@ -260,7 +259,7 @@ namespace ScriptEngine.Compiler
                 
                 if (paramNode.HasDefaultValue)
                 {
-                    var constDef = CreateConstDefinition(paramNode.DefaultValue);
+                    var constDef = CreateConstValue(paramNode.DefaultValue);
                     var defValueIndex = GetConstNumber(constDef);
                     
                     parameter
@@ -306,15 +305,7 @@ namespace ScriptEngine.Compiler
             base.VisitMethodBody(methodNode);
             
             if (methodNode.Signature.IsFunction)
-            {
-                var undefConst = new ConstDefinition()
-                {
-                    Type = DataType.Undefined,
-                    Presentation = "Неопределено"
-                };
-
-                AddCommand(OperationCode.PushConst, GetConstNumber(undefConst));
-            }
+                AddCommand(OperationCode.PushConst, GetConstNumber(DataType.Undefined, "Неопределено"));
             
             var codeEnd = _module.Code.Count;
             
@@ -690,10 +681,7 @@ namespace ScriptEngine.Compiler
             
             PushCallArguments(args);
             
-            var cDef = new ConstDefinition();
-            cDef.Type = DataType.String;
-            cDef.Presentation = name.GetIdentifier();
-            int lastIdentifierConst = GetConstNumber(cDef);
+            int lastIdentifierConst = GetConstNumber(DataType.String, name.GetIdentifier());
             
             if (asFunction)
                 AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierConst);
@@ -703,10 +691,7 @@ namespace ScriptEngine.Compiler
         
         private void ResolveProperty(string identifier)
         {
-            var cDef = new ConstDefinition();
-            cDef.Type = DataType.String;
-            cDef.Presentation = identifier;
-            var identifierConstIndex = GetConstNumber(cDef);
+            var identifierConstIndex = GetConstNumber(DataType.String, identifier);
             AddCommand(OperationCode.ResolveProp, identifierConstIndex);
         }
 
@@ -989,12 +974,7 @@ namespace ScriptEngine.Compiler
         
         private void MakeNewObjectStatic(NewObjectNode node)
         {
-            var cDef = new ConstDefinition()
-            {
-                Type = DataType.String,
-                Presentation = node.TypeNameNode.GetIdentifier()
-            };
-            AddCommand(OperationCode.PushConst, GetConstNumber(cDef));
+            AddCommand(OperationCode.PushConst, GetConstNumber(DataType.String, node.TypeNameNode.GetIdentifier()));
 
             var callArgs = 0;
             if (node.ConstructorArguments != default)
@@ -1108,7 +1088,7 @@ namespace ScriptEngine.Compiler
         
         private void VisitConstant(in Lexem constant)
         {
-            var cDef = CreateConstDefinition(constant);
+            var cDef = CreateConstValue(constant);
             var num = GetConstNumber(cDef);
             AddCommand(OperationCode.PushConst, num);
         }
@@ -1138,7 +1118,7 @@ namespace ScriptEngine.Compiler
             BslAnnotationParameter result;
             if (param.Value.Type != LexemType.NotALexem)
             {
-                var constDef = CreateConstDefinition(param.Value);
+                var constDef = CreateConstValue(param.Value);
                 var constNumber = GetConstNumber(constDef);
                 var runtimeValue = _module.Constants[constNumber];
                 result = new BslAnnotationParameter(param.Name, runtimeValue)
@@ -1166,49 +1146,36 @@ namespace ScriptEngine.Compiler
             new BslMethodInfoFactory<MachineMethodInfo>(() => new MachineMethodInfo())
                 .NewMethod();
         
-        private static ConstDefinition CreateConstDefinition(in Lexem lex)
+        private static BslPrimitiveValue CreateConstValue(in Lexem lex)
         {
-            DataType constType;
-            switch (lex.Type)
+            var constType = lex.Type switch
             {
-                case LexemType.BooleanLiteral:
-                    constType = DataType.Boolean;
-                    break;
-                case LexemType.DateLiteral:
-                    constType = DataType.Date;
-                    break;
-                case LexemType.NumberLiteral:
-                    constType = DataType.Number;
-                    break;
-                case LexemType.StringLiteral:
-                    constType = DataType.String;
-                    break;
-                case LexemType.NullLiteral:
-                    constType = DataType.Null;
-                    break;
-                case LexemType.UndefinedLiteral:
-                    constType = DataType.Undefined;
-                    break;
-                default:
-                    throw new ArgumentException($"Can't create constant for literal from {lex.ToString()}");
-            }
-
-            ConstDefinition cDef = new ConstDefinition()
-            {
-                Type = constType,
-                Presentation = lex.Content
+                LexemType.BooleanLiteral => DataType.Boolean,
+                LexemType.DateLiteral => DataType.Date,
+                LexemType.NumberLiteral => DataType.Number,
+                LexemType.StringLiteral => DataType.String,
+                LexemType.NullLiteral => DataType.Null,
+                LexemType.UndefinedLiteral => DataType.Undefined,
+                _ => throw new ArgumentException($"Can't create constant for literal from {lex}"),
             };
-            return cDef;
+
+            return (BslPrimitiveValue)ValueFactory.Parse(lex.Content, constType);
         }
         
-        private int GetConstNumber(in ConstDefinition cDef)
+        private int GetConstNumber(DataType type, string presentation)
         {
-            var idx = _constMap.IndexOf(cDef);
+            var value = (BslPrimitiveValue)ValueFactory.Parse(presentation, type);
+
+            return GetConstNumber(value);
+        }
+
+        private int GetConstNumber(BslPrimitiveValue value)
+        {
+            var idx = _module.Constants.IndexOf(value);
             if (idx < 0)
             {
-                idx = _constMap.Count;
-                _constMap.Add(cDef);
-                _module.Constants.Add((BslPrimitiveValue)ValueFactory.Parse(cDef.Presentation, cDef.Type));
+                _module.Constants.Add(value);
+                idx = _module.Constants.Count - 1;
             }
             return idx;
         }

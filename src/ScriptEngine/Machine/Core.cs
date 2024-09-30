@@ -159,24 +159,6 @@ namespace ScriptEngine.Machine
         Boolean,
         Null
     }
-
-    [Serializable]
-    public struct ConstDefinition : IEquatable<ConstDefinition>
-    {
-        public DataType Type;
-        public string Presentation;
-
-        public override string ToString()
-        {
-            return Enum.GetName(typeof(DataType), Type) + ":" + Presentation;
-        }
-
-        public bool Equals(ConstDefinition other)
-        {
-            return Type == other.Type && string.Equals(Presentation, other.Presentation, StringComparison.Ordinal);
-        }
-        
-    }
     
     [Serializable]
     public struct AnnotationDefinition
