@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "VSCode.DebugAdapter": {
+      "commandName": "Project",
+      "commandLineArgs": "--debug"
+    }
+  }
+}
