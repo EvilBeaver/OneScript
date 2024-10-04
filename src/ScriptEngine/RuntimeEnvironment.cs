@@ -11,7 +11,6 @@ using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using ScriptEngine.Libraries;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 using SymbolScope = OneScript.Compilation.Binding.SymbolScope;
 
 namespace ScriptEngine
@@ -26,11 +25,12 @@ namespace ScriptEngine
 
         private readonly List<IAttachableContext> _contexts = new List<IAttachableContext>();
 
-        private readonly List<ExternalLibraryDef> _externalLibs = new List<ExternalLibraryDef>();
+        private readonly ILibraryManager _libraryManager;
 
         public RuntimeEnvironment()
         {
             _injectedProperties = new PropertyBag();
+            _libraryManager = new LibraryManager(_injectedProperties);
         }
 
         private void CreateGlobalScopeIfNeeded()
@@ -106,24 +106,12 @@ namespace ScriptEngine
 
         public IEnumerable<ExternalLibraryDef> GetLibraries()
         { 
-            return _externalLibs.ToArray();
+            return _libraryManager.GetLibraries();
         }
 
         public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library)
         {
-            var loadedObjects = new ScriptDrivenObject[library.Modules.Count];
-            int i = 0;
-            foreach (var module in library.Modules)
-            {
-                var instance = runtime.CreateUninitializedSDO(module.Module);
-                
-                var propId = _injectedProperties.GetPropertyNumber(module.Symbol);
-                _injectedProperties.SetPropValue(propId, instance);
-                loadedObjects[i++] = instance;
-            }
-            
-            _externalLibs.Add(library);
-            loadedObjects.ForEach(runtime.InitializeSDO);
+            _libraryManager.InitExternalLibrary(runtime, library);
         }
 
         private class WrappedPropertySymbol : IPropertySymbol
