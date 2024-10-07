@@ -9,9 +9,6 @@
     <OutputType>Exe</OutputType>
     <StartupObject>StandaloneRunner.Program</StartupObject>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType></DebugType>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\oscript\ConsoleHostImpl.cs">
       <Link>ConsoleHostImpl.cs</Link>
