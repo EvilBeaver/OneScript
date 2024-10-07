@@ -78,7 +78,7 @@ pipeline {
         stage('VSCode debugger Build') {
             agent {
                 docker {
-                    image 'node'
+                    image 'node:lts-alpine3.20'
                     label 'linux'
                 }
             }
