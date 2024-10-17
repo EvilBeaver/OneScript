@@ -42,9 +42,9 @@ OneScript позволяет создавать и выполнять текст
 
 - установить [homebrew](https://brew.sh/index_ru)
 - установить mono командой `brew install mono`
-- скачать [ovm](https://github.com/oscript-library/ovm/releases)
-- выполнить команду `mono ovm.exe install stable`
-- выполнить команду `mono ovm.exe use stable`
+- скачать [ovm](https://github.com/oscript-library/ovm/releases). Скачиваем именно `ovm.exe`
+- выполнить команду `mono path/to/ovm.exe install stable`. Чтобы корректно указать путь до `ovm.exe` можно перенести мышкой файл `ovm.exe`. Должно получится примерно так: `mono Users/username/Downloads/ovm.exe install stable`
+- выполнить команду `mono path/to/ovm.exe use stable`
 - перезапустить терминал
 
 #### Донастройка Self-Contained варианта поставки (не требующего инсталляции dotnet)
