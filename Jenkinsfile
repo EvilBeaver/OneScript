@@ -62,7 +62,8 @@ pipeline {
                             bat "chcp $outputEnc > nul\r\n dotnet publish src/OneScriptDocumenter/OneScriptDocumenter.csproj -c Release -o doctool"
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionFiles;CreateNuget"
                             
-                            stash includes: 'tests, built/**', name: 'buildResults'
+                            stash includes: 'built/**', name: 'buildResults'
+                            stash includes: 'tests/native-api/bin*/*.dll', name: 'nativeApiTestsDll'
                         }
                     }
                 }
@@ -132,6 +133,7 @@ pipeline {
                                 deleteDir()
                             }
                             unstash 'buildResults'
+                            unstash 'nativeApiTestsDll'
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:Test"
 
                             junit 'tests/*.xml'
