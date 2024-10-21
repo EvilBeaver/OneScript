@@ -1,0 +1,20 @@
+FROM evilbeaver/onescript:1.9.2
+
+# Использует в качестве системы с ovm и mono образ onescript, создаваемый из файла Dockerfile_v1 (лежит рядом в репо)
+# Потом копирует бинари из него в образ от Microsoft
+
+LABEL MAINTAINER="EvilBeaver <ovsiankin.aa@gmail.com>"
+
+ARG VERSION="dev"
+
+# Установка FDD двойки через ovm, имеющийся в базовом образе
+RUN mono ovm.exe install --fdd ${VERSION}
+
+# Основной образ
+FROM mcr.microsoft.com/dotnet/aspnet:6.0
+
+ARG VERSION="dev"
+
+RUN mkdir -p /var/oscript
+COPY --from=0 /root/.local/share/ovm/${VERSION}/ /var/oscript/
+ENV PATH="$PATH:/var/oscript/bin"

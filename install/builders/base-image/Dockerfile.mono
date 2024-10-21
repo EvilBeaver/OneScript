@@ -1,0 +1,17 @@
+FROM ubuntu:18.04
+
+# MAINTAINER EvilBeaver <ovsiankin.aa@gmail.com>
+
+ENV LANG ru_RU.UTF-8
+
+RUN apt update \
+	&& apt-get -y install locales tzdata \
+	&& locale-gen ru_RU && locale-gen ru_RU.UTF-8 \
+    && update-locale LANG=ru_RU.UTF-8 \
+	&& apt install -y gnupg ca-certificates \
+	&& apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF \
+	&& sh -c 'echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" > /etc/apt/sources.list.d/mono-official-stable.list' \
+	&& apt-get update \
+	&& apt-get -y install mono-runtime binutils curl mono-devel ca-certificates-mono mono-vbnc referenceassemblies-pcl mono-fastcgi-server4 \
+	&& apt-get clean \
+	&& rm -rf /var/lib/apt/lists/* /tmp/*

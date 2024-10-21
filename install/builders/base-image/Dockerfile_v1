@@ -1,0 +1,11 @@
+FROM evilbeaver/mono-ru:6.12
+
+# Файл базируется на моно с русской локалью
+# Устанавливает через ovm версию движка
+
+LABEL MAINTAINER="EvilBeaver <ovsiankin.aa@gmail.com>"
+
+ARG VERSION=stable
+
+RUN curl -L https://github.com/oscript-library/ovm/releases/latest/download/ovm.exe > ovm.exe \
+    && mono ovm.exe use --install $VERSION
