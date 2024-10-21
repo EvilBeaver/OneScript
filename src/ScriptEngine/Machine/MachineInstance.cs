@@ -69,6 +69,11 @@ namespace ScriptEngine.Machine
             _globalContexts = _mem.GlobalNamespace.AttachedContexts.Select(x => new AttachedContext(x))
                 .ToArray();
         }
+
+        public void UpdateGlobals() 
+        {
+            _globalContexts.ForEach(x => x.Attach());
+        }
         
         public bool IsRunning => _callStack.Count != 0;
 
