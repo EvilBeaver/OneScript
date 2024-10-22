@@ -15,13 +15,18 @@ namespace OneScript.Contexts
     /// </summary>
     public sealed class AttachedContext
     {
-        private readonly IVariable[] _variables;
-        private readonly BslMethodInfo[] _methods;
+        private IVariable[] _variables;
+        private BslMethodInfo[] _methods;
 
         public AttachedContext(IAttachableContext source)
         {
-            source.OnAttach(out _variables, out _methods);
             Instance = source;
+            Attach();
+        }
+
+        public void Attach()
+        {
+            Instance.OnAttach(out _variables, out _methods);
         }
 
         public AttachedContext(IAttachableContext target, IVariable[] vars)
