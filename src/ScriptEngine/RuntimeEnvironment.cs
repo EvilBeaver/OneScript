@@ -104,11 +104,6 @@ namespace ScriptEngine
 
         public IReadOnlyCollection<IAttachableContext> AttachedContexts => _contexts;
 
-        public IEnumerable<ExternalLibraryDef> GetLibraries()
-        { 
-            return _libraryManager.GetLibraries();
-        }
-
         public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library)
         {
             _libraryManager.InitExternalLibrary(runtime, library);

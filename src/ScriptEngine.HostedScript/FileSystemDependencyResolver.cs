@@ -22,7 +22,6 @@ namespace ScriptEngine.HostedScript
         public const string PREDEFINED_LOADER_FILE = "package-loader.os";
         
         private readonly List<Library> _libs = new List<Library>();
-        private readonly Lazy<LibraryLoader> _defaultLoader;
 
         #region Private classes
 
@@ -40,11 +39,6 @@ namespace ScriptEngine.HostedScript
         }
 
         #endregion
-
-        public FileSystemDependencyResolver()
-        {
-            _defaultLoader = new Lazy<LibraryLoader>(CreateDefaultLoader);
-        }
         
         public IList<string> SearchDirectories { get;} = new List<string>();
 
@@ -214,13 +208,9 @@ namespace ScriptEngine.HostedScript
 
         private bool ProcessLibrary(Library lib)
         {
-            LibraryLoader loader;
-            if (lib.customLoader != null)
-                loader = lib.customLoader;
-            else
-                loader = _defaultLoader.Value;
+            var loader = lib.customLoader ?? CreateDefaultLoader();
 
-            return loader.ProcessLibrary(lib.id) != default;
+            return loader.ProcessLibrary(lib.id);
         }
         
         private static string ListToStringStack(IEnumerable<Library> libs, string stopToken)

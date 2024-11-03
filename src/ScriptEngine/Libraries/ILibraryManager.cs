@@ -14,7 +14,6 @@ namespace ScriptEngine.Libraries
     /// </summary>
     public interface ILibraryManager
     {
-        IEnumerable<ExternalLibraryDef> GetLibraries();
         void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library);
     }
 }
