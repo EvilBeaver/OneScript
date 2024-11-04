@@ -66,13 +66,13 @@ namespace ScriptEngine.Machine
 
             _mem = memory;
             _codeStatCollector = _mem.Services.TryResolve<ICodeStatCollector>();
-            _globalContexts = _mem.GlobalNamespace.AttachedContexts.Select(x => new AttachedContext(x))
-                .ToArray();
+            UpdateGlobals();
         }
 
         public void UpdateGlobals() 
         {
-            _globalContexts.ForEach(x => x.Attach());
+            _globalContexts =_mem.GlobalNamespace.AttachedContexts.Select(x => new AttachedContext(x))
+                .ToArray();
         }
         
         public bool IsRunning => _callStack.Count != 0;

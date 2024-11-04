@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Commons;
-using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Values;
 using ScriptEngine.Compiler;
@@ -18,11 +17,10 @@ namespace ScriptEngine.Libraries
 {
     public class ModulesOrderingContext : IAttachableContext
     {
-        private readonly SymbolScope _libraryScope;
-
         private class ModuleToLoad
         {
             public DiscoveryState state;
+            public BslPropertyInfo propertyInfo;
             public BslValue moduleInstance;
         }
         
@@ -40,11 +38,6 @@ namespace ScriptEngine.Libraries
 
         private IVariable[] _attachedState;
 
-        public ModulesOrderingContext(SymbolScope libraryScope)
-        {
-            _libraryScope = libraryScope;
-        }
-
         public void SetUninitializedInstance(UserAddedScript module, ScriptDrivenObject instance)
         {
             var item = new ModuleToLoad
@@ -53,7 +46,14 @@ namespace ScriptEngine.Libraries
                 moduleInstance = instance
             };
 
-            _values.Add(item, module.Symbol);
+            var index = _values.Add(item, module.Symbol);
+
+            item.propertyInfo = BslPropertyBuilder.Create()
+                .Name(module.Symbol)
+                .CanRead(true)
+                .CanWrite(false)
+                .SetDispatchingIndex(index)
+                .Build();
         }
 
         public void InitializeModules(ScriptingEngine runtime)
@@ -62,9 +62,9 @@ namespace ScriptEngine.Libraries
             _attachedState = new IVariable[_values.Count];
 
             int i = 0;
-            foreach (var moduleToLoad in _libraryScope.Variables)
+            foreach (var moduleToLoad in _values)
             {
-                _attachedState[i] = Variable.CreateContextPropertyReference(this, i, moduleToLoad.Name);
+                _attachedState[i] = Variable.CreateContextPropertyReference(this, i, moduleToLoad.propertyInfo.Name);
                 i++;
             }
             
@@ -159,7 +159,7 @@ namespace ScriptEngine.Libraries
 
         public BslPropertyInfo GetPropertyInfo(int propertyNumber)
         {
-            return ((IPropertySymbol)_libraryScope.Variables[propertyNumber]).Property;
+            return _values[propertyNumber].propertyInfo;
         }
 
         public void CallAsProcedure(int methodNumber, IValue[] arguments)
@@ -174,7 +174,8 @@ namespace ScriptEngine.Libraries
 
         public void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
         {
-            throw new NotImplementedException();
+            variables = _attachedState;
+            methods = Array.Empty<BslMethodInfo>();
         }
     }
 }

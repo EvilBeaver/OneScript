@@ -30,7 +30,7 @@ namespace ScriptEngine
         public RuntimeEnvironment()
         {
             _injectedProperties = new PropertyBag();
-            _libraryManager = new LibraryManager(_injectedProperties);
+            _libraryManager = new LibraryManager();
         }
 
         private void CreateGlobalScopeIfNeeded()

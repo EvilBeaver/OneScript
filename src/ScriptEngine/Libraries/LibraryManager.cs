@@ -10,6 +10,7 @@ using OneScript.Compilation.Binding;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Localization;
+using ScriptEngine.Machine;
 
 namespace ScriptEngine.Libraries
 {
@@ -19,56 +20,15 @@ namespace ScriptEngine.Libraries
     /// </summary>
     internal class LibraryManager : ILibraryManager
     {
-        private readonly IRuntimeContextInstance _contextOfGlobalSymbols;
-
-        public LibraryManager(IRuntimeContextInstance contextOfGlobalSymbols)
-        {
-            _contextOfGlobalSymbols = contextOfGlobalSymbols;
-        }
-        
-        public LibraryManager()
-        {
-        }
-
         public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library)
         {
             CompileDelayedModules(runtime, library);
-            
+            MachineInstance.Current.UpdateGlobals();
         }
         
         private void CompileDelayedModules(ScriptingEngine runtime, ExternalLibraryDef library)
         {
-            var symbols = runtime.Environment.GetSymbolTable();
-
-            // Зарегистрируем все символы модулей из данной библиотеки
-            // Попутно проверяем конфликт имен среди известных символов
-            var libraryScope = new SymbolScope();
-            int i = 0;
-            foreach (var module in library.Modules)
-            {
-                if (symbols.FindVariable(module.Symbol, out _))
-                {
-                    // символ уже определен
-                    throw new RuntimeException(
-                        new BilingualString(
-                            $"Невозможно загрузить модуль {module.Symbol}. Такой символ уже определен.",
-                            $"Unable to load module {module.Symbol}. Symbol is already defined.")
-                    );
-                }
-
-                libraryScope.DefineVariable(
-                    BslPropertyBuilder.Create()
-                        .Name(module.Symbol)
-                        .CanRead(true)
-                        .CanWrite(false)
-                        .SetDispatchingIndex(i++)
-                        .Build().ToSymbol()
-                );
-            }
-            
-            // Получим байткоды всех классов и модулей из библиотеки
-            var ownerContext = new ModulesOrderingContext(libraryScope);
-            symbols.PushScope(libraryScope, new ModulesOrderingContext(libraryScope));
+            var ownerContext = new ModulesOrderingContext();
             
             library.Modules.ForEach(moduleFile =>
             {
@@ -87,10 +47,10 @@ namespace ScriptEngine.Libraries
             foreach (var module in library.Modules)
             {
                 var instance = runtime.CreateUninitializedSDO(module.Module);
-
                 ownerContext.SetUninitializedInstance(module, instance);
             }
-
+            
+            runtime.Environment.InjectObject(ownerContext);
             ownerContext.InitializeModules(runtime);
         }
 
