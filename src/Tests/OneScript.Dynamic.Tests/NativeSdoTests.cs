@@ -51,7 +51,7 @@ namespace OneScript.Dynamic.Tests
             testServices.Register(sp => sp);
             testServices.RegisterSingleton<ITypeManager, DefaultTypeManager>();
             testServices.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
-            testServices.RegisterSingleton<CompileTimeSymbolsProvider>();
+            testServices.RegisterSingleton<TypeSymbolsProviderFactory>();
             testServices.RegisterEnumerable<IDirectiveHandler, EmptyDirectiveHandler>();
             testServices.Register<IErrorSink, ThrowingErrorSink>();
             testServices.UseImports();
@@ -437,7 +437,7 @@ namespace OneScript.Dynamic.Tests
         
         private DynamicModule CreateModule(string code, IServiceContainer services, SymbolTable symbols)
         {
-            var symbolProvider = services.Resolve<CompileTimeSymbolsProvider>();
+            var symbolProvider = services.Resolve<TypeSymbolsProviderFactory>();
             var moduleScope = new SymbolScope();
             symbolProvider.Get<UserScriptContextInstance>().FillSymbols(moduleScope);
             symbols.PushScope(moduleScope, null);

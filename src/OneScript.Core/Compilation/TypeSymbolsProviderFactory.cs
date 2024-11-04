@@ -12,19 +12,22 @@ using OneScript.Compilation.Binding;
 
 namespace OneScript.Compilation
 {
-    public class CompileTimeSymbolsProvider
+    /// <summary>
+    /// Фабрика провайдеров дополнительных внешних символов для класса при компиляции.
+    /// </summary>
+    public class TypeSymbolsProviderFactory
     {
-        private delegate void Filler(CompileTimeSymbolsProvider provider, SymbolScope scope);
+        private delegate void Filler(TypeSymbolsProviderFactory providerFactory, SymbolScope scope);
         
         private readonly ConcurrentDictionary<Type, SymbolProvider> _providers =
             new ConcurrentDictionary<Type, SymbolProvider>();
 
-        public IModuleSymbolsProvider Get<T>()
+        public ITypeSymbolsProvider Get<T>()
         {
             return Get(typeof(T));
         }
         
-        public IModuleSymbolsProvider Get(Type type)
+        public ITypeSymbolsProvider Get(Type type)
         {
             return _providers.GetOrAdd(type, CreateProvider);
         }
@@ -46,7 +49,7 @@ namespace OneScript.Compilation
             return filler;
         }
 
-        private static void DoNothing(CompileTimeSymbolsProvider provider, SymbolScope scope)
+        private static void DoNothing(TypeSymbolsProviderFactory providerFactory, SymbolScope scope)
         {
         }
 
@@ -54,24 +57,24 @@ namespace OneScript.Compilation
         {
             var parameters = methodInfo.GetParameters();
             return parameters.Length == 2
-                   && parameters[0].ParameterType == typeof(CompileTimeSymbolsProvider)
+                   && parameters[0].ParameterType == typeof(TypeSymbolsProviderFactory)
                    && parameters[1].ParameterType == typeof(SymbolScope);
         }
 
-        private class SymbolProvider : IModuleSymbolsProvider
+        private class SymbolProvider : ITypeSymbolsProvider
         {
-            private readonly CompileTimeSymbolsProvider _provider;
+            private readonly TypeSymbolsProviderFactory _providerFactory;
             private readonly Filler _filler;
 
-            public SymbolProvider(CompileTimeSymbolsProvider provider, Filler filler)
+            public SymbolProvider(TypeSymbolsProviderFactory providerFactory, Filler filler)
             {
-                _provider = provider;
+                _providerFactory = providerFactory;
                 _filler = filler;
             }
 
             public void FillSymbols(SymbolScope moduleScope)
             {
-                _filler(_provider, moduleScope);
+                _filler(_providerFactory, moduleScope);
             }
         }
     }

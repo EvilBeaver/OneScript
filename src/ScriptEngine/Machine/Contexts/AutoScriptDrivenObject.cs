@@ -134,9 +134,9 @@ namespace ScriptEngine.Machine.Contexts
         #endregion
 
         [SymbolsProvider]
-        private static void FillSymbols(CompileTimeSymbolsProvider provider, SymbolScope moduleScope)
+        private static void FillSymbols(TypeSymbolsProviderFactory providerFactory, SymbolScope moduleScope)
         {
-            var baseProvider = provider.Get<ThisAwareScriptedObjectBase>();
+            var baseProvider = providerFactory.Get<ThisAwareScriptedObjectBase>();
             baseProvider.FillSymbols(moduleScope);
             
             for (int i = 0; i < _ownProperties.Count; i++)

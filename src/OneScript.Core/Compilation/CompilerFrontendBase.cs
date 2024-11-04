@@ -45,7 +45,7 @@ namespace OneScript.Compilation
 
         public SymbolScope FillSymbols(Type targetType)
         {
-            var symbolsProvider = Services.Resolve<CompileTimeSymbolsProvider>();
+            var symbolsProvider = Services.Resolve<TypeSymbolsProviderFactory>();
             var typeSymbols = symbolsProvider.Get(targetType);
             ModuleSymbols = new SymbolScope();
             typeSymbols.FillSymbols(ModuleSymbols);

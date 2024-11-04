@@ -9,7 +9,10 @@ using OneScript.Compilation.Binding;
 
 namespace OneScript.Compilation
 {
-    public interface IModuleSymbolsProvider
+    /// <summary>
+    /// Провайдер дополнительных внешних символов для класса при компиляции.
+    /// </summary>
+    public interface ITypeSymbolsProvider
     {
         void FillSymbols(SymbolScope moduleScope);
     }
