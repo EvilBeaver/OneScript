@@ -26,6 +26,8 @@ namespace ScriptEngine.Machine
 
         public int EntryMethodIndex { get; set; } = -1;
 
+        public int EnvironmentLoadingBoundary { get; set; } = -1;
+
         public List<BslPrimitiveValue> Constants { get; } = new List<BslPrimitiveValue>();
         
         internal IList<SymbolBinding> VariableRefs { get; } = new List<SymbolBinding>();

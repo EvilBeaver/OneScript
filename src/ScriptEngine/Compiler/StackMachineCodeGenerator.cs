@@ -32,7 +32,7 @@ namespace ScriptEngine.Compiler
         private readonly IErrorSink _errorSink;
         private readonly StackRuntimeModule _module;
         private SourceCode _sourceCode;
-        private SymbolTable _ctx;
+        private ISymbolTable _ctx;
         private List<ConstDefinition> _constMap = new List<ConstDefinition>();
         
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
@@ -48,7 +48,7 @@ namespace ScriptEngine.Compiler
 
         public IDependencyResolver DependencyResolver { get; set; }
         
-        public StackRuntimeModule CreateModule(ModuleNode moduleNode, SourceCode source, SymbolTable context)
+        public StackRuntimeModule CreateModule(ModuleNode moduleNode, SourceCode source, ISymbolTable context)
         {
             if (moduleNode.Kind != NodeKind.Module)
             {
@@ -67,6 +67,7 @@ namespace ScriptEngine.Compiler
             CheckForwardedDeclarations();
             
             _module.Source = _sourceCode;
+            _module.EnvironmentLoadingBoundary = _ctx.ScopeCount - 1;
             
             return _module;
         }

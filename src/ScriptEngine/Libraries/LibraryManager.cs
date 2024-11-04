@@ -1,15 +1,12 @@
-﻿using OneScript.Commons;
-using OneScript.Contexts;
-using ScriptEngine.Machine.Contexts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OneScript.Compilation.Binding;
-using OneScript.Exceptions;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using OneScript.Commons;
 using OneScript.Execution;
-using OneScript.Localization;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Libraries
@@ -23,12 +20,19 @@ namespace ScriptEngine.Libraries
         public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library)
         {
             CompileDelayedModules(runtime, library);
-            MachineInstance.Current.UpdateGlobals();
         }
         
         private void CompileDelayedModules(ScriptingEngine runtime, ExternalLibraryDef library)
         {
             var ownerContext = new ModulesOrderingContext();
+
+            // Зарегистрируем модули, как видимые символы
+            foreach (var module in library.Modules)
+            {
+                ownerContext.AddKnownModule(module);
+            }
+            runtime.Environment.InjectObject(ownerContext);
+            MachineInstance.Current.UpdateGlobals();
             
             library.Modules.ForEach(moduleFile =>
             {
@@ -50,7 +54,6 @@ namespace ScriptEngine.Libraries
                 ownerContext.SetUninitializedInstance(module, instance);
             }
             
-            runtime.Environment.InjectObject(ownerContext);
             ownerContext.InitializeModules(runtime);
         }
 

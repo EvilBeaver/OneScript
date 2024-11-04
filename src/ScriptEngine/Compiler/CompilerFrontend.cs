@@ -33,8 +33,7 @@ namespace ScriptEngine.Compiler
             IErrorSink errorSink,
             IServiceContainer services,
             IDependencyResolver dependencyResolver,
-            PredefinedInterfaceResolver interfaceResolver,
-            IEnumerable<IPredefinedInterfaceChecker> checkers) : base(handlers, errorSink, services)
+            PredefinedInterfaceResolver interfaceResolver) : base(handlers, errorSink, services)
         {
             _dependencyResolver = dependencyResolver;
             _interfaceResolver = interfaceResolver;
@@ -68,7 +67,7 @@ namespace ScriptEngine.Compiler
             backend.GenerateDebugCode = GenerateDebugCode;
         }
 
-        protected override IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType)
+        protected override IExecutableModule CompileInternal(ISymbolTable symbols, ModuleNode parsedModule, Type classType)
         {
             var backend = _backendSelector.Select(parsedModule);
             backend.Symbols = symbols;
@@ -80,14 +79,14 @@ namespace ScriptEngine.Compiler
             return module;
         }
 
-        protected override IExecutableModule CompileExpressionInternal(SymbolTable symbols, ModuleNode parsedModule)
+        protected override IExecutableModule CompileExpressionInternal(ISymbolTable symbols, ModuleNode parsedModule)
         {
             var backend = _backendSelector.Select(parsedModule);
             backend.Symbols = symbols;
             return backend.Compile(parsedModule, typeof(UserScriptContextInstance));
         }
 
-        protected override IExecutableModule CompileBatchInternal(SymbolTable symbols, ModuleNode parsedModule)
+        protected override IExecutableModule CompileBatchInternal(ISymbolTable symbols, ModuleNode parsedModule)
         {
             var backend = _backendSelector.Select(parsedModule);
             backend.Symbols = symbols;

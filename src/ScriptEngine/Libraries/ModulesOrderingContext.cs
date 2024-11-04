@@ -38,22 +38,28 @@ namespace ScriptEngine.Libraries
 
         private IVariable[] _attachedState;
 
-        public void SetUninitializedInstance(UserAddedScript module, ScriptDrivenObject instance)
+        public void AddKnownModule(UserAddedScript module)
         {
             var item = new ModuleToLoad
             {
                 state = DiscoveryState.New,
-                moduleInstance = instance
+                moduleInstance = null
             };
 
             var index = _values.Add(item, module.Symbol);
-
+            
             item.propertyInfo = BslPropertyBuilder.Create()
                 .Name(module.Symbol)
                 .CanRead(true)
                 .CanWrite(false)
                 .SetDispatchingIndex(index)
                 .Build();
+        }
+        
+        public void SetUninitializedInstance(UserAddedScript module, ScriptDrivenObject instance)
+        {
+            var item = _values[module.Symbol];
+            item.moduleInstance = instance;
         }
 
         public void InitializeModules(ScriptingEngine runtime)

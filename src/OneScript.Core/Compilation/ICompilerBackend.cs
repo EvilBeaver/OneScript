@@ -19,7 +19,7 @@ namespace OneScript.Compilation
         
         bool GenerateCodeStat { get; set; }
         
-        public SymbolTable Symbols { get; set; }
+        public ISymbolTable Symbols { get; set; }
         
         IExecutableModule Compile(ModuleNode parsedModule, Type classType);
     }

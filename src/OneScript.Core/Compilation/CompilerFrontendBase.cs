@@ -85,23 +85,16 @@ namespace OneScript.Compilation
             return CompileBatchInternal(symbols, parsedModule);
         }
 
-        protected abstract IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType);
+        protected abstract IExecutableModule CompileInternal(ISymbolTable symbols, ModuleNode parsedModule, Type classType);
         
-        protected abstract IExecutableModule CompileExpressionInternal(SymbolTable symbols, ModuleNode parsedModule);
+        protected abstract IExecutableModule CompileExpressionInternal(ISymbolTable symbols, ModuleNode parsedModule);
         
-        protected abstract IExecutableModule CompileBatchInternal(SymbolTable symbols, ModuleNode parsedModule);
+        protected abstract IExecutableModule CompileBatchInternal(ISymbolTable symbols, ModuleNode parsedModule);
 
-        private SymbolTable PrepareSymbols()
+        private ISymbolTable PrepareSymbols()
         {
-            var actualTable = new SymbolTable();
-            if (SharedSymbols != default)
-            {
-                for (int i = 0; i < SharedSymbols.ScopeCount; i++)
-                {
-                    actualTable.PushScope(SharedSymbols.GetScope(i), SharedSymbols.GetBinding(i));
-                }
-            }
-
+            var actualTable = new CompoundSymbolTable(SharedSymbols);
+            
             ModuleSymbols ??= new SymbolScope();
             actualTable.PushScope(ModuleSymbols, null);
 
