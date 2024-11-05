@@ -158,7 +158,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="array">Массив объектов типа ДвоичныеДанные.</param>
         /// <returns>Тип: ДвоичныеДанные.</returns>
-        [ContextMethod("СоединитьДвоичныеДанные", "ConcatenateBinaryData", IsDeprecated = true)]
+        [ContextMethod("ConcatenateBinaryData", IsDeprecated = true)]
         [ContextMethod("СоединитьДвоичныеДанные", "ConcatBinaryData")]
         public BinaryDataContext ConcatBinaryData(ArrayImpl array)
         {

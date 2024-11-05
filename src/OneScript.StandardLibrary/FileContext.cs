@@ -111,7 +111,7 @@ namespace OneScript.StandardLibrary
             }
         }
 
-        [ContextMethod("Существует","Exist", IsDeprecated = true)]
+        [ContextMethod("Exist", IsDeprecated = true)]
         [ContextMethod("Существует","Exists")]
         public bool Exists()
         {

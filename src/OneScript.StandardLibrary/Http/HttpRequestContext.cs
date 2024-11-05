@@ -76,14 +76,14 @@ namespace OneScript.StandardLibrary.Http
         /// Установить тело запроса из объекта ДвоичныеДанные
         /// </summary>
         /// <param name="data"></param>
-        [ContextMethod("УстановитьТелоИзДвоичныхДанных", "SetBodyFromBinary", IsDeprecated = true)]
+        [ContextMethod("SetBodyFromBinary", IsDeprecated = true)]
         [ContextMethod("УстановитьТелоИзДвоичныхДанных", "SetBodyFromBinaryData")]
         public void SetBodyFromBinary(BinaryDataContext data)
         {
             SetBody(new HttpRequestBodyBinary(data));
         }
 
-        [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinary", IsDeprecated = true)]
+        [ContextMethod("GetBodyAsBinary", IsDeprecated = true)]
         [ContextMethod("ПолучитьТелоКакДвоичныеДанные", "GetBodyAsBinaryData")]
         public IValue GetBodyFromBinary()
         {
