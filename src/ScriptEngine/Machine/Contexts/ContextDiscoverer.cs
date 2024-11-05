@@ -15,8 +15,13 @@ namespace ScriptEngine.Machine.Contexts
     static class ContextDiscoverer
     {
         private const string INSTANCE_RETRIEVER_NAME = "CreateInstance";
+
+        public static void DiscoverClasses(Assembly assembly)
+        {
+            DiscoverClasses(assembly, t => true);
+        }
         
-        public static void DiscoverClasses(System.Reflection.Assembly assembly)
+        public static void DiscoverClasses(Assembly assembly, Func<Type, bool> filter)
         {
             IEnumerable<Type> types;
             try
@@ -37,29 +42,34 @@ namespace ScriptEngine.Machine.Contexts
 
             var collection = GetMarkedTypes(types, typeof(ContextClassAttribute));
 
-            foreach (var type in collection)
+            foreach (var type in collection.Where(filter))
             {
                 RegisterSystemType(type);
             }
         }
 
-        public static void DiscoverGlobalContexts(RuntimeEnvironment environment, System.Reflection.Assembly assembly)
+        public static void DiscoverGlobalContexts(RuntimeEnvironment environment, Assembly assembly)
+        {
+            DiscoverGlobalContexts(environment, assembly, t => true);
+        }
+        
+        public static void DiscoverGlobalContexts(RuntimeEnvironment environment, Assembly assembly, Func<Type, bool> filter)
         {
             var allTypes = assembly.GetTypes();
             var enums = GetMarkedTypes(allTypes.AsParallel(), typeof(SystemEnumAttribute));
-            foreach (var item in enums)
+            foreach (var item in enums.Where(filter))
             {
                 RegisterSystemEnum(item, environment);
             }
 
             var simpleEnums = GetMarkedTypes(allTypes.AsParallel(), typeof(EnumerationTypeAttribute));
-            foreach (var item in simpleEnums)
+            foreach (var item in simpleEnums.Where(filter))
             {
                 RegisterSimpleEnum(item, environment);
             }
 
             var contexts = GetMarkedTypes(allTypes.AsParallel(), typeof(GlobalContextAttribute));
-            foreach (var item in contexts)
+            foreach (var item in contexts.Where(filter))
             {
                 RegisterGlobalContext(item, environment);
             }
