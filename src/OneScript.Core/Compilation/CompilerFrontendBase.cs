@@ -43,10 +43,10 @@ namespace OneScript.Compilation
         
         public SymbolTable SharedSymbols { get; set; }
 
-        public SymbolScope FillSymbols(Type type)
+        public SymbolScope FillSymbols(Type targetType)
         {
-            var symbolsProvider = Services.Resolve<CompileTimeSymbolsProvider>();
-            var typeSymbols = symbolsProvider.Get(type);
+            var symbolsProvider = Services.Resolve<TypeSymbolsProviderFactory>();
+            var typeSymbols = symbolsProvider.Get(targetType);
             ModuleSymbols = new SymbolScope();
             typeSymbols.FillSymbols(ModuleSymbols);
 
@@ -102,7 +102,8 @@ namespace OneScript.Compilation
                 }
             }
 
-            actualTable.PushScope(ModuleSymbols ?? new SymbolScope(), null);
+            ModuleSymbols ??= new SymbolScope();
+            actualTable.PushScope(ModuleSymbols, null);
 
             return actualTable;
         }

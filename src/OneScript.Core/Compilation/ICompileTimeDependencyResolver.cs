@@ -11,6 +11,11 @@ namespace OneScript.Compilation
 {
     public interface ICompileTimeDependencyResolver
     {
+        /// <summary>
+        /// Загрузить библиотеку для модуля
+        /// </summary>
+        /// <param name="module">Модуль в котором объявлен импорт</param>
+        /// <param name="libraryName">имя библиотеки</param>
         void Resolve(SourceCode module, string libraryName);
     }
 }

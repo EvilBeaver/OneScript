@@ -5,31 +5,33 @@ pipeline {
 
     environment {
         VersionPrefix = '2.0.0'
-        VersionSuffix = 'rc4'
+        VersionSuffix = 'rc5'
         outputEnc = '65001'
     }
 
     stages {
-        stage('Prepare Linux Environment') {
-            agent{ label 'master'}
-            steps{
-                dir('install'){
-                    sh 'chmod +x make-dockers.sh && ./make-dockers.sh'
-                }
-                withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'dockerpassword', usernameVariable: 'dockeruser')]) {
-                    sh """
-                    docker login -p $dockerpassword -u $dockeruser
-                    docker push oscript/onescript-builder:deb
-                    docker push oscript/onescript-builder:rpm
-                    docker push oscript/onescript-builder:gcc
-                    """.stripIndent()
-                }
-            }
-        }
+        //stage('Prepare Linux Environment') {
+        //    agent{ label 'master'}
+        //    steps{
+        //        dir('install'){
+        //            sh 'chmod +x make-dockers.sh && ./make-dockers.sh'
+        //        }
+        //        withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'dockerpassword', usernameVariable: 'dockeruser')]) {
+        //            sh """
+        //            docker login -p $dockerpassword -u $dockeruser
+        //            docker push oscript/onescript-builder:deb
+        //            docker push oscript/onescript-builder:rpm
+        //            docker push oscript/onescript-builder:gcc
+        //            """.stripIndent()
+        //        }
+        //    }
+        //}
         stage('Build'){
             parallel {
                 stage('Windows Build') {
                     agent { label 'windows' }
+
+                    options { skipDefaultCheckout() }
 
                     // пути к инструментам доступны только когда
                     // нода уже определена
@@ -60,7 +62,8 @@ pipeline {
                             bat "chcp $outputEnc > nul\r\n dotnet publish src/OneScriptDocumenter/OneScriptDocumenter.csproj -c Release -o doctool"
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CleanAll;PrepareDistributionFiles;CreateNuget"
                             
-                            stash includes: 'tests, built/**', name: 'buildResults'
+                            stash includes: 'built/**', name: 'buildResults'
+                            stash includes: 'tests/native-api/bin*/*.dll', name: 'nativeApiTestsDll'
                         }
                     }
                 }
@@ -95,7 +98,7 @@ pipeline {
         stage('VSCode debugger Build') {
             agent {
                 docker {
-                    image 'node'
+                    image 'node:lts-alpine3.20'
                     label 'linux'
                 }
             }
@@ -116,16 +119,21 @@ pipeline {
             parallel{
                 stage('Windows testing') {
                     agent { label 'windows' }
+                    options { skipDefaultCheckout() }
                     environment {
                         OSCRIPT_CONFIG = 'systemlanguage=ru'
                     }
                     steps {
                         ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                         {
+                            step([$class: 'WsCleanup'])
+                            checkout scm
+                            
                             dir('install/build'){
                                 deleteDir()
                             }
                             unstash 'buildResults'
+                            unstash 'nativeApiTestsDll'
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:Test"
 
                             junit 'tests/*.xml'
@@ -177,9 +185,14 @@ pipeline {
         stage('Packaging') {
             agent { label 'windows' }
 
+            options { skipDefaultCheckout() }
+
             steps {
                 ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                 {
+                    step([$class: 'WsCleanup'])
+                    checkout scm
+                    
                     dir('built'){
                         deleteDir()
                     }

@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
+
+	<PropertyGroup>
+		<TargetFramework>$(TargetFrameworkVersion)</TargetFramework>
+		<Configurations>Debug;Release;LinuxDebug</Configurations>
+		<Platforms>AnyCPU</Platforms>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageId>OneScript.Web.Server</PackageId>
+		<Title>OneScript web server implementation</Title>
+		<PackageAuthors>Akpaev E.A.</PackageAuthors>
+		<LangVersion>10.0</LangVersion>
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)' == 'LinuxDebug' ">
+		<DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+		<Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\OneScript.StandardLibrary\OneScript.StandardLibrary.csproj" />
+	  <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj" />
+	</ItemGroup>
+
+</Project>

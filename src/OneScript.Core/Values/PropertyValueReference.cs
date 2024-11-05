@@ -56,15 +56,17 @@ namespace OneScript.Values
                 if (_context.IsPropReadable(_contextPropertyNumber))
                     return (BslValue)_context.GetPropValue(_contextPropertyNumber);
                 
-                throw PropertyAccessException.PropIsNotReadableException("");
+                throw PropertyAccessException.PropIsNotReadableException(PropertyName());
             }
             set
             {
                 if(_context.IsPropWritable(_contextPropertyNumber))
                     _context.SetPropValue(_contextPropertyNumber, value);
                 else
-                    throw PropertyAccessException.PropIsNotWritableException("");
+                    throw PropertyAccessException.PropIsNotWritableException(PropertyName());
             }
         }
+
+        private string PropertyName() => _context.GetPropertyInfo(_contextPropertyNumber).Name;
     }
 }

@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using OneScript.Contexts;
 
@@ -12,21 +13,21 @@ namespace OneScript.Compilation.Binding
 {
     public class SymbolTable
     {
-        private struct BindingRecord
+        private class BindingRecord
         {
             public SymbolScope scope;
-            public IRuntimeContextInstance target;
+            public IAttachableContext target;
         }
         
         private readonly List<BindingRecord> _bindings = new List<BindingRecord>();
         
         public SymbolScope GetScope(int index) => _bindings[index].scope;
 
-        public IRuntimeContextInstance GetBinding(int scopeIndex) => _bindings[scopeIndex].target;
-        
+        public IAttachableContext GetBinding(int scopeIndex) => _bindings[scopeIndex].target;
+
         public int ScopeCount => _bindings.Count;
         
-        public int PushScope(SymbolScope scope, IRuntimeContextInstance target)
+        public int PushScope(SymbolScope scope, IAttachableContext target)
         {
             var idx = _bindings.Count;
             _bindings.Add(new BindingRecord

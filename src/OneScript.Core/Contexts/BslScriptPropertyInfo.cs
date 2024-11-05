@@ -15,6 +15,9 @@ using OneScript.Values;
 
 namespace OneScript.Contexts
 {
+    /// <summary>
+    /// Свойство BSL-объекта, объявленное в модуле. Экспортные переменные также создают одноименное свойство.
+    /// </summary>
     public class BslScriptPropertyInfo : BslPropertyInfo, IBuildableProperty
     {
         private Type _declaringType;

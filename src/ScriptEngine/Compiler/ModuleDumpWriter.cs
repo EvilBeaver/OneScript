@@ -113,7 +113,6 @@ namespace ScriptEngine.Compiler
 
         private void WriteImage(TextWriter output, StackRuntimeModule module)
         {
-            output.WriteLine(".loadAt: {0}", module.LoadAddress);
             output.WriteLine(".variableFrame:");
             module.Fields
                 .Cast<BslScriptFieldInfo>()

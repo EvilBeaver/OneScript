@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using Serilog;
@@ -16,7 +17,17 @@ namespace VSCode.DebugAdapter
     {
         static void Main(string[] args)
         {
-            StartSession(Console.OpenStandardInput(), Console.OpenStandardOutput());
+            if (args.Contains("--debug"))
+            {
+                var listener = TcpListener.Create(4711);
+                listener.Start();
+
+                using (var client = listener.AcceptTcpClient())
+                    using (var stream = client.GetStream())
+                        StartSession(stream, stream);
+            }
+            else
+                StartSession(Console.OpenStandardInput(), Console.OpenStandardOutput());
         }
         
         private static void StartSession(Stream input, Stream output)
@@ -30,6 +41,7 @@ namespace VSCode.DebugAdapter
             
             try
             {
+                Log.Logger.Information("Starting debug adapter");
                 session.Start(input, output);
             }
             catch (Exception e)
@@ -40,6 +52,8 @@ namespace VSCode.DebugAdapter
             {
                 Log.CloseAndFlush();
             }
+            
+            Log.Logger.Information("Session completed");
         }
     }
 }

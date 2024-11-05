@@ -10,6 +10,9 @@ using System.Reflection;
 
 namespace OneScript.Contexts
 {
+    /// <summary>
+    /// Поле объекта, доступное в языке.
+    /// </summary>
     public abstract class BslFieldInfo : FieldInfo, INameAndAliasProvider
     {
         private AnnotationHolder _annotations;
@@ -29,7 +32,7 @@ namespace OneScript.Contexts
         
         protected virtual AnnotationHolder RetrieveAnnotations()
         {
-            return new AnnotationHolder(new object[0]);
+            return new AnnotationHolder(Array.Empty<object>());
         }
 
         protected void SetAnnotations(AnnotationHolder holder)

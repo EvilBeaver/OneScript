@@ -70,7 +70,8 @@ namespace OneScript.DebugServices
             {
                 Machine = (MachineInstance)sender,
                 ThreadId = e.ThreadId,
-                StopReason = e.Reason
+                StopReason = e.Reason,
+                ErrorMessage = e.ErrorMessage
             };
             
             ThreadStopped?.Invoke(this, args);

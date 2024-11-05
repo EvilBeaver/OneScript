@@ -9,12 +9,19 @@ using OneScript.Execution;
 
 namespace OneScript.Contexts
 {
+    /// <summary>
+    /// Присоединяемый контекст. Методы и свойства этого контекста становятся глобальными методами и свойствами.
+    /// Каждый модуль также является присоединяемым, за счет чего его методы и свойства доступны в модуле, как глобальные.
+    /// </summary>
     public interface IAttachableContext : IRuntimeContextInstance
     {
         void OnAttach(out IVariable[] variables,
                       out BslMethodInfo[] methods);
     }
 
+    /// <summary>
+    /// Выполняемое. Имеет bsl-модуль и может присоединяться к машине
+    /// </summary>
     public interface IRunnable : IAttachableContext
     {
         IExecutableModule Module { get; }

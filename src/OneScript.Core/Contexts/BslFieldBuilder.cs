@@ -14,7 +14,7 @@ namespace OneScript.Contexts
 {
     public class BslFieldBuilder
     {
-        private IBuildableMember _member;
+        private readonly IBuildableMember _member;
         
         private BslFieldBuilder()
         {

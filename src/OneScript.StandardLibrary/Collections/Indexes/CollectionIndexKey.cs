@@ -75,8 +75,7 @@ namespace OneScript.StandardLibrary.Collections.Indexes
 
         private ISet<IValue> CombinedKeysSet(CollectionIndexKey other)
         {
-            var allKeys = new HashSet<IValue>();
-            allKeys.UnionWith(_values.Keys.ToHashSet());
+            var allKeys = new HashSet<IValue>(_values.Keys.ToHashSet());
             allKeys.UnionWith(other._values.Keys.ToHashSet());
             return allKeys;
         }

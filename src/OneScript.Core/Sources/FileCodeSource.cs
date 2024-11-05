@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.IO;
 using System.Text;
 using OneScript.Commons;
+using System;
 
 namespace OneScript.Sources
 {
@@ -62,6 +63,6 @@ namespace OneScript.Sources
             return buf[0] == '#' && buf[1] == '!';
         }
         
-        public string Location => _path[0].ToString().ToUpperInvariant() + _path.Substring(1);
+        public string Location => string.Concat(_path[0].ToString().ToUpperInvariant(), _path.AsSpan(1));
     }
 }

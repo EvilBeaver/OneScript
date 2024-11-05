@@ -15,6 +15,7 @@ namespace OneScript.DebugProtocol
         public int Id { get; set; }
         public string Source { get; set; }
         public int Line { get; set; }
+        public string Condition { get; set; } = string.Empty;
     }
     
 }

@@ -9,8 +9,15 @@ using OneScript.Compilation;
 
 namespace ScriptEngine
 {
+    /// <summary>
+    /// Разрешитель внешних зависимостей (библиотек)
+    /// </summary>
     public interface IDependencyResolver : ICompileTimeDependencyResolver
     {
+        /// <summary>
+        /// Инициализировать разрешитель. Вызывается при создании ScriptingEngine
+        /// </summary>
+        /// <param name="engine">Движок, который разрешитель может сохранить у себя</param>
         void Initialize(ScriptingEngine engine);
     }
 }

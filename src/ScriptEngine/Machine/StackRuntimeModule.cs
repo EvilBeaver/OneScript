@@ -24,16 +24,14 @@ namespace ScriptEngine.Machine
 
         public Type ClassType { get; }
 
-        public int LoadAddress { get; set; } = -1;
-
         public int EntryMethodIndex { get; set; } = -1;
 
         public List<BslPrimitiveValue> Constants { get; } = new List<BslPrimitiveValue>();
         
-        public IList<SymbolBinding> VariableRefs { get; } = new List<SymbolBinding>();
+        internal IList<SymbolBinding> VariableRefs { get; } = new List<SymbolBinding>();
         
-        public IList<SymbolBinding> MethodRefs { get; } = new List<SymbolBinding>();
-
+        internal IList<SymbolBinding> MethodRefs { get; } = new List<SymbolBinding>();
+        
         #region IExecutableModule members
 
         public BslMethodInfo ModuleBody

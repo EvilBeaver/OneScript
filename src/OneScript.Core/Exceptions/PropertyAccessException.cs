@@ -23,15 +23,15 @@ namespace OneScript.Exceptions
         public static PropertyAccessException PropIsNotReadableException(string prop)
         {
             return new PropertyAccessException(new BilingualString(
-                $"Свойство {prop} недоступно для чтения",
-                $"Property {prop} is not readable"));
+                $"Свойство '{prop}' недоступно для чтения",
+                $"Property '{prop}' is not readable"));
         }
 
         public static PropertyAccessException PropIsNotWritableException(string prop)
         {
             return new PropertyAccessException(new BilingualString(
-                $"Свойство {prop} недоступно для записи",
-                $"Property {prop} is not writable"));
+                $"Свойство '{prop}' недоступно для записи",
+                $"Property '{prop}' is not writable"));
         }
 
         public static PropertyAccessException PropNotFoundException(string prop)

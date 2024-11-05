@@ -78,6 +78,9 @@ namespace VSCode.DebugAdapter
             }
 
             options.AppDir = workingDirectory;
+            
+            // Кодировка DAP
+            SetEncoding(options.OutputEncoding);
 
             // validate argument 'runtimeExecutable'
             var runtimeExecutable = options.RuntimeExecutable;

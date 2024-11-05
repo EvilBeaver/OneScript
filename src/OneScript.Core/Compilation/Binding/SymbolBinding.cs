@@ -10,10 +10,15 @@ using System;
 namespace OneScript.Compilation.Binding
 {
     [Serializable]
-    public struct SymbolBinding
+    public struct SymbolBinding : IEquatable<SymbolBinding>
     {
         public int ScopeNumber { get; set; }
         
         public int MemberNumber { get; set; }
+
+        public bool Equals(SymbolBinding other)
+        {
+            return ScopeNumber == other.ScopeNumber && MemberNumber == other.MemberNumber;
+        }
     }
 }

@@ -1,7 +1,7 @@
 {
   "name": "oscript-debug",
   "displayName": "OneScript Debug (BSL)",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "publisher": "EvilBeaver",
   "description": "Visual Studio Code debugger extension for OneScript (BSL)",
   "icon": "images/logo-dbg.png",
@@ -16,8 +16,7 @@
   "engines": {
     "vscode": "^1.9.0"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/EvilBeaver/OneScript.git"
@@ -50,15 +49,17 @@
             "program": "${file}",
             "args": [],
             "cwd": "${workspaceRoot}",
-            "env" : {},
+            "env": {},
             "runtimeExecutable": null,
-            "runtimeArgs" : [],
+            "runtimeArgs": [],
             "debugPort": 2801
           }
         ],
         "configurationAttributes": {
           "launch": {
-            "required": [ "program" ],
+            "required": [
+              "program"
+            ],
             "properties": {
               "program": {
                 "type": "string",
@@ -67,7 +68,9 @@
               "args": {
                 "type": "array",
                 "description": "Аргументы, передаваемые в сценарий",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "default": []
               },
               "cwd": {
@@ -79,34 +82,51 @@
                 "type": "object",
                 "description": "Переменные окружения для отлаживаемого процесса",
                 "patternProperties": {
-                  "[a-zA-Z_][0-9a-zA-Z_]+": { "type": "string" }
+                  "[a-zA-Z_][0-9a-zA-Z_]+": {
+                    "type": "string"
+                  }
                 },
                 "default": null
               },
               "runtimeExecutable": {
-                "type": [ "string", "null" ],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "Путь к исполняемому файлу oscript.exe / OneScript.WebHost.exe",
                 "default": "oscript"
               },
               "runtimeArgs": {
                 "type": "array",
                 "description": "Аргументы движка 1Script (encoding, codestat, etc...)",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "default": []
               },
               "debugPort": {
                 "type": "number",
                 "description": "Порт для запуска отладчика. Одновременные сеансы отладки должны быть разделены по портам",
                 "default": 2801
+              },
+              "outputEncoding": {
+                "type": "string",
+                "description": "Кодировка вывода отлаживаемого приложения. Отладчик будет интерпретировать вывод приложения в указанной кодировке",
+                "default": ""
               }
             }
           },
           "attach": {
             "properties": {
-            "debugPort": {
+              "debugPort": {
                 "type": "number",
                 "description": "Присоединиться к работающему процессу",
                 "default": 2801
+              },
+              "outputEncoding": {
+                "type": "string",
+                "description": "Кодировка вывода отлаживаемого приложения. Отладчик будет интерпретировать вывод приложения в указанной кодировке",
+                "default": ""
               }
             }
           }
@@ -130,14 +150,17 @@
             "appDir": "${workspaceRoot}",
             "env": {},
             "runtimeExecutable": null,
-            "runtimeArgs" : [],
+            "runtimeArgs": [],
             "debugPort": 2801,
             "waitOnStart": false
           }
         ],
         "configurationAttributes": {
           "launch": {
-            "required": [ "appDir", "runtimeExecutable" ],
+            "required": [
+              "appDir",
+              "runtimeExecutable"
+            ],
             "properties": {
               "appDir": {
                 "type": "string",
@@ -148,19 +171,26 @@
                 "type": "object",
                 "description": "Переменные окружения для отлаживаемого процесса",
                 "patternProperties": {
-                  "[a-zA-Z_][0-9a-zA-Z_]+": { "type": "string" }
+                  "[a-zA-Z_][0-9a-zA-Z_]+": {
+                    "type": "string"
+                  }
                 },
                 "default": null
               },
               "runtimeExecutable": {
-                "type": [ "string", "null" ],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "Путь к исполняемому файлу oscript.exe / OneScript.WebHost.exe",
                 "default": "oscript"
               },
               "runtimeArgs": {
                 "type": "array",
                 "description": "Аргументы, передаваемые в строке запуска",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "default": []
               },
               "debugPort": {
@@ -172,6 +202,11 @@
                 "type": "boolean",
                 "description": "Ожидать подключения отладчика при старте приложения (не выполнять bsl до его подключения)",
                 "default": false
+              },
+              "outputEncoding": {
+                "type": "string",
+                "description": "Кодировка вывода отлаживаемого приложения. Отладчик будет интерпретировать вывод приложения в указанной кодировке",
+                "default": ""
               }
             }
           },
@@ -181,6 +216,11 @@
                 "type": "number",
                 "description": "Присоединиться к работающему процессу",
                 "default": 2801
+              },
+              "outputEncoding": {
+                "type": "string",
+                "description": "Кодировка вывода отлаживаемого приложения. Отладчик будет интерпретировать вывод приложения в указанной кодировке",
+                "default": ""
               }
             }
           }

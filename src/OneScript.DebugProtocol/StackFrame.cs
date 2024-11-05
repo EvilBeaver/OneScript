@@ -72,7 +72,7 @@ namespace OneScript.DebugProtocol
         {
             if (Variables != null)
                 return;
-            var variables = process.GetVariables(ThreadId, Index, new int[0]);
+            var variables = process.GetVariables(ThreadId, Index, Array.Empty<int>());
             Variables = variables;
         }
 

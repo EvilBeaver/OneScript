@@ -111,8 +111,9 @@ namespace OneScript.StandardLibrary
             }
         }
 
-        [ContextMethod("Существует","Exist")]
-        public bool Exist()
+        [ContextMethod("Существует","Exist", IsDeprecated = true)]
+        [ContextMethod("Существует","Exists")]
+        public bool Exists()
         {
             if (_givenName == String.Empty)
                 return false;

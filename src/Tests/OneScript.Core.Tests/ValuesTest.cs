@@ -220,7 +220,7 @@ namespace OneScript.Core.Tests
         }
 
         [Theory]
-        [InlineData("Null", DataType.GenericValue, typeof(BslNullValue))]
+        [InlineData("Null", DataType.Null, typeof(BslNullValue))]
         [InlineData("Истина", DataType.Boolean, typeof(BslBooleanValue))]
         [InlineData("Ложь", DataType.Boolean, typeof(BslBooleanValue))]
         [InlineData("True", DataType.Boolean, typeof(BslBooleanValue))]

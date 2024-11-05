@@ -53,11 +53,8 @@ namespace ScriptEngine.Machine
                 var td = RegisterType(name, default, typeof(COMWrapperContext));
                 return td;
             }
-
-            var template = Locale.NStr("ru = 'Тип не зарегистрирован ({0})';" +
-                                       "en = 'Type is not registered ({0})'");
-            
-            throw new RuntimeException(string.Format(template, name));
+          
+            throw RuntimeException.TypeIsNotRegistered(name);
         }
 
         public bool TryGetType(Type frameworkType, out TypeDescriptor type)

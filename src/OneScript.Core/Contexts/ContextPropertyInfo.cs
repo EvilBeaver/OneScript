@@ -13,6 +13,9 @@ using OneScript.Commons;
 
 namespace OneScript.Contexts
 {
+    /// <summary>
+    /// Свойство, объявленое в CLR-классе через атрибут ContextProperty
+    /// </summary>
     public class ContextPropertyInfo : BslPropertyInfo, IObjectWrapper
     {
         private readonly PropertyInfo _realProperty;
@@ -71,7 +74,7 @@ namespace OneScript.Contexts
 
         public override ParameterInfo[] GetIndexParameters()
         {
-            return new ParameterInfo[0];
+            return Array.Empty<ParameterInfo>();
         }
 
         public override MethodInfo GetSetMethod(bool nonPublic)

@@ -10,7 +10,7 @@ using ScriptEngine.Machine;
 
 namespace OneScript.Contexts
 {
-    public class Variable : IVariable
+    public sealed class Variable : IVariable
     {
         public string Name { get; private set; }
 
@@ -32,6 +32,15 @@ namespace OneScript.Contexts
 
         public static IVariable CreateReference(IVariable variable, string refName)
         {
+            if (variable is VariableReference vref)
+            {
+                if (vref._reference is IndexedValueReference iv)
+                {
+                    _ = iv.Value;
+                }
+
+                return variable;
+            }
             return new VariableReference(variable, refName);
         }
 
@@ -84,9 +93,9 @@ namespace OneScript.Contexts
 
         #region Reference
 
-        private class VariableReference : IVariable
+        private sealed class VariableReference : IVariable
         {
-            private readonly IValueReference _reference;
+            public readonly IValueReference _reference;
 
             public string Name { get; }
 
@@ -158,6 +167,11 @@ namespace OneScript.Contexts
         public bool Equals(IValueReference other)
         {
             return ReferenceEquals(this, other);
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

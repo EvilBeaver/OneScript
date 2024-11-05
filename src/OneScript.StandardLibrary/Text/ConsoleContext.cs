@@ -23,38 +23,20 @@ namespace OneScript.StandardLibrary.Text
     public class ConsoleContext : AutoContext<ConsoleContext>
     {
         [ContextProperty("НажатаКлавиша", "KeyPressed")]
-        public bool HasKey
-        {
-            get
-            {
-                return Console.KeyAvailable;
-            }
-        }
+        public bool HasKey => Console.KeyAvailable;
 
         [ContextProperty("КурсорЛево", "CursorLeft")]
         public int XPos
         {
-            get
-            {
-                return Console.CursorLeft;
-            }
-            set
-            {
-                Console.CursorLeft = Math.Min(value, Console.WindowWidth-1);
-            }
+            get => Console.CursorLeft;
+            set => Console.CursorLeft = Math.Min(value, Console.WindowWidth-1);
         }
 
         [ContextProperty("КурсорВерх", "CursorTop")]
         public int YPos
         {
-            get
-            {
-                return Console.CursorTop;
-            }
-            set
-            {
-                Console.CursorTop = Math.Min(value, Console.WindowHeight-1);
-            }
+            get => Console.CursorTop;
+            set => Console.CursorTop = Math.Min(value, Console.WindowHeight-1);
         }
 
         [ContextMethod("ПрочитатьСтроку", "ReadLine")]
@@ -89,22 +71,10 @@ namespace OneScript.StandardLibrary.Text
         }
 
         [ContextProperty("Ширина", "Width")]
-        public int Width
-        {
-            get
-            {
-                return Console.WindowWidth;
-            }
-        }
+        public int Width => Console.WindowWidth;
 
         [ContextProperty("Высота", "Height")]
-        public int Высота
-        {
-            get
-            {
-                return Console.WindowHeight;
-            }
-        }
+        public int Height => Console.WindowHeight;
 
         [ContextMethod("ВидимостьКурсора", "CursorVisible")]
         public bool CursorVisible(bool visible)
@@ -134,6 +104,8 @@ namespace OneScript.StandardLibrary.Text
                 {
                     Console.ForegroundColor = typed.UnderlyingValue;
                 }
+                else
+                    throw new TypeConversionException();
             }
         }
 
@@ -144,7 +116,7 @@ namespace OneScript.StandardLibrary.Text
             {
                 try
                 {
-                    return (ClrEnumValueWrapper<ConsoleColor>)GlobalsHelper.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.BackgroundColor);
+                    return GlobalsHelper.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.BackgroundColor);
                 }
                 catch (InvalidOperationException)
                 {
@@ -157,6 +129,8 @@ namespace OneScript.StandardLibrary.Text
                 {
                     Console.BackgroundColor = typed.UnderlyingValue;
                 }
+                else
+                    throw new TypeConversionException();
             }
         }
 
@@ -270,6 +244,4 @@ namespace OneScript.StandardLibrary.Text
             Console.SetError(writer);
         }
     }
-
-    
 }

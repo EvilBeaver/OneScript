@@ -26,7 +26,7 @@ namespace OneScript.Contexts
         
         #region Attributes Infrastructure
 
-        private AnnotationHolder Annotations => _annotations ??= new AnnotationHolder(new object[0]);
+        private AnnotationHolder Annotations => _annotations ??= new AnnotationHolder(Array.Empty<object>());
 
         public override object[] GetCustomAttributes(bool inherit)
         {

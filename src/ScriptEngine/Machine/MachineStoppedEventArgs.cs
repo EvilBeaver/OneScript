@@ -15,26 +15,29 @@ namespace ScriptEngine.Machine
         public MachineStoppedEventArgs(MachineStopReason reason)
         {
             Reason = reason;
-            ThreadId = Thread.CurrentThread.ManagedThreadId;
+            ThreadId = Environment.CurrentManagedThreadId;
+            ErrorMessage = string.Empty;
         }
         
-        public MachineStoppedEventArgs(MachineStopReason reason, int threadId)
+        public MachineStoppedEventArgs(MachineStopReason reason, int threadId, string errorMessage = "")
         {
             Reason = reason;
             ThreadId = threadId;
+            ErrorMessage = errorMessage;
         }
-        
+
         public MachineStopReason Reason { get; }
         
         public int ThreadId { get; }
 
+        public string ErrorMessage { get; }
     }
 
     public enum MachineStopReason
     {
         Breakpoint,
+        BreakpointConditionError,
         Step,
         Exception
     }
-
 }

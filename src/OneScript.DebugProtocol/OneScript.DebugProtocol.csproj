@@ -8,7 +8,7 @@
     <AssemblyTitle>1Script Debug Protocol common objects and DTO's</AssemblyTitle>
     <Platforms>AnyCPU</Platforms>
     <!--Нацеливание на net461 нужно для сборки дебаг-адаптера под net461 без лишних DLL-->
-    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net48;$(TargetFrameworkVersion)</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'LinuxDebug' ">

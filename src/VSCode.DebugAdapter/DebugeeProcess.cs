@@ -9,6 +9,8 @@ using System.Diagnostics;
 using OneScript.DebugProtocol;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using Newtonsoft.Json.Linq;
 using Serilog;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
@@ -23,8 +25,10 @@ namespace VSCode.DebugAdapter
         private bool _stdoutEOF;
         private bool _stderrEOF;
         private bool _attachMode;
+        
+        private Encoding _dapEncoding;
 
-        private IDebuggerService _debugger;
+        private TcpDebugServerClient _debugger;
 
         private readonly PathHandlingStrategy _strategy;
 
@@ -38,7 +42,6 @@ namespace VSCode.DebugAdapter
         public bool HasExited => _process?.HasExited ?? true;
         public int ExitCode => _process.ExitCode;
 
-        private IDebuggerService DebugChannel { get; set; }
         public int DebugPort { get; set; }
 
         public void Start()
@@ -48,8 +51,12 @@ namespace VSCode.DebugAdapter
             
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;
-            psi.StandardErrorEncoding = DebuggerSettings.DebugModeEncoding;
-            psi.StandardOutputEncoding = DebuggerSettings.DebugModeEncoding;
+
+            if (_dapEncoding != null)
+            {
+                psi.StandardErrorEncoding = _dapEncoding;
+                psi.StandardOutputEncoding = _dapEncoding;
+            }
 
             _process.EnableRaisingEvents = true;
             _process.OutputDataReceived += Process_OutputDataReceived;
@@ -96,7 +103,26 @@ namespace VSCode.DebugAdapter
             }
         }
 
-        public void SetConnection(IDebuggerService service)
+        protected void SetEncoding(string encodingFromOptions)
+        {
+            if (string.IsNullOrWhiteSpace(encodingFromOptions))
+            {
+                _dapEncoding = DefaultEncoding();
+            }
+            else
+            {
+                _dapEncoding = Utilities.GetEncodingFromOptions(encodingFromOptions);
+            }
+            
+            Log.Information("Encoding for debuggee output is {Encoding}", _dapEncoding);
+        }
+
+        private Encoding DefaultEncoding()
+        {
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? null : Encoding.UTF8;
+        }
+
+        public void SetConnection(TcpDebugServerClient service)
         {
             _debugger = service;
         }
@@ -106,6 +132,7 @@ namespace VSCode.DebugAdapter
         
         private void Process_Exited(object sender, EventArgs e)
         {
+            _debugger?.Disconnect();
             Terminate();
             ProcessExited?.Invoke(this, new EventArgs());
         }
@@ -159,7 +186,7 @@ namespace VSCode.DebugAdapter
             }
             _debugger.Disconnect(terminate);
 
-            var mustKill = terminate || !_attachMode;
+            var mustKill = terminate && !_attachMode;
             
             if (mustKill && _process != null && !_process.HasExited)
             {
@@ -172,6 +199,11 @@ namespace VSCode.DebugAdapter
         {
             _process.Kill();
             _process.WaitForExit(1500);
+        }
+
+        public void SetExceptionsBreakpoints((string Id, string Condition)[] filters)
+        {
+            _debugger.SetMachineExceptionBreakpoints(filters);
         }
 
         public Breakpoint[] SetBreakpoints(IEnumerable<Breakpoint> breakpoints)

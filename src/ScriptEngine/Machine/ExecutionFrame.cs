@@ -11,7 +11,7 @@ using OneScript.Language;
 
 namespace ScriptEngine.Machine
 {
-    class ExecutionFrame
+    internal class ExecutionFrame
     {
         public IVariable[] Locals;
         public int InstructionPointer;
@@ -22,11 +22,11 @@ namespace ScriptEngine.Machine
         public StackRuntimeModule Module;
         public bool IsReentrantCall;
         
-        public Stack<IValue> LocalFrameStack = new Stack<IValue>();
+        public readonly Stack<IValue> LocalFrameStack = new Stack<IValue>();
 
-
-        public Scope ModuleScope { get; set; }
-        public int ModuleLoadIndex { get; set; }
+        public AttachedContext ThisScope { get; set; }
+        
+        public IReadOnlyList<AttachedContext> Scopes { get; set; }
 
         public override string ToString()
         {

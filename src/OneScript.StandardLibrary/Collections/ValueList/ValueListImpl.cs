@@ -11,6 +11,7 @@ using System.Linq;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -81,7 +82,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         /// <param name="picture">Картинка (необязательный) - Визуальное  представление добавляемого значения</param>
         /// <returns>ЭлементСпискаЗначений</returns>
         [ContextMethod("Добавить", "Add")]
-        public ValueListItem Add(IValue value, string presentation = null, bool check = false, IValue picture = null)
+        public ValueListItem Add(IValue value = null, string presentation = null, bool check = false, IValue picture = null)
         {
             var newItem = CreateNewListItem(value, presentation, check, picture);
 
@@ -99,7 +100,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         /// <param name="picture">Картинка (необязательный) - Визуальное  представление добавляемого значения</param>
         /// <returns>ЭлементСпискаЗначений</returns>
         [ContextMethod("Вставить", "Insert")]
-        public ValueListItem Insert(int index, IValue value, string presentation = null, bool check = false, IValue picture = null)
+        public ValueListItem Insert(int index, IValue value = null, string presentation = null, bool check = false, IValue picture = null)
         {
             var newItem = CreateNewListItem(value, presentation, check, picture);
             _items.Insert(index, newItem);
@@ -109,11 +110,13 @@ namespace OneScript.StandardLibrary.Collections.ValueList
 
         private static ValueListItem CreateNewListItem(IValue value, string presentation, bool check, IValue picture)
         {
-            var newItem = new ValueListItem();
-            newItem.Value = value;
-            newItem.Presentation = presentation;
-            newItem.Check = check;
-            newItem.Picture = picture;
+            var newItem = new ValueListItem
+            {
+                Value = value ?? BslUndefinedValue.Instance,
+                Presentation = presentation,
+                Check = check,
+                Picture = picture
+            };
             return newItem;
         }
 

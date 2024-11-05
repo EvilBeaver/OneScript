@@ -15,6 +15,9 @@ using OneScript.Values;
 
 namespace OneScript.Contexts
 {
+    /// <summary>
+    /// Поле в BSL модуле. Технически, это переменные уровня bsl-модуля, объявленные в этом модуле.
+    /// </summary>
     public class BslScriptFieldInfo : BslFieldInfo, IBuildableMember
     {
         private Type _declaringType;

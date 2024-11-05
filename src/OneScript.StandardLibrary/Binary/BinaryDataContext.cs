@@ -12,110 +12,78 @@ using System.Text;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Types;
-using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Binary
 {
     [ContextClass("ДвоичныеДанные", "BinaryData")]
-    public class BinaryDataContext : AutoContext<BinaryDataContext>, IDisposable
+    public sealed class BinaryDataContext : AutoContext<BinaryDataContext>, IDisposable
     {
-        private const int INMEMORY_LIMIT = 1024 * 1024 * 50; // 50 Mb
-
         private byte[] _buffer;
-        
-        FileStream _backingFile;
-
-        public bool InMemory => _backingFile == null;
+        private BackingTemporaryFile _backingFile;
 
         public BinaryDataContext(string filename)
         {
-            using(var fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
-            {
-                ReadFromStream(fs);
-            }
+            using var fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            ReadFromStream(fs);
         }
 
         public BinaryDataContext(byte[] buffer)
         {
-            _buffer = buffer;
+            _buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
         }
 
         public BinaryDataContext(Stream stream)
         {
-            var pos = stream.Position;
+            long pos = 0;
             ReadFromStream(stream);
             stream.Position = pos;
         }
 
+        /// <summary>
+        /// Признак хранения данных в памяти
+        /// </summary>
+        public bool InMemory => _backingFile == null;
+        
         private void ReadFromStream(Stream stream)
         {
-            if (stream.Length < INMEMORY_LIMIT)
+            if (stream.Length < FileBackingConstants.DEFAULT_MEMORY_LIMIT)
             {
                 LoadToBuffer(stream);
             }
             else
             {
                 _buffer = null;
-                var backingFileName = Path.GetTempFileName();
-                _backingFile = new FileStream(backingFileName, FileMode.Create);
-                stream.CopyTo(_backingFile);
+                _backingFile = new BackingTemporaryFile(stream);
             }
-        }
-
-        public void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                GC.SuppressFinalize(this);
-                _buffer = null;
-            }
-            DeleteTemporaryFile();
         }
 
         public void Dispose()
         {
-            Dispose(true);
-        }
-
-        ~BinaryDataContext()
-        {
-            Dispose(false);
+            _backingFile?.Dispose();
         }
 
         private void LoadToBuffer(Stream fs)
         {
             _buffer = new byte[fs.Length];
+            // ReSharper disable once MustUseReturnValue
             fs.Read(_buffer, 0, _buffer.Length);
         }
 
-        private void DeleteTemporaryFile()
-        {
-            if (_backingFile != null && File.Exists(_backingFile.Name))
-            {
-                try
-                {
-                    _backingFile.Close();
-                    File.Delete(_backingFile.Name);
-                }
-                catch
-                {
-                    SystemLogger.Write($"WARNING! Can't delete temporary file {_backingFile.Name}");
-                }
-                finally
-                {
-                    _backingFile = null;
-                }
-            }
-        }
-
+        /// <summary>
+        /// Размер двоичных данных в байтах.
+        /// </summary>
         [ContextMethod("Размер", "Size")]
         public long Size()
         {
-            return _backingFile?.Length ?? _buffer?.Length ??  0;
+            return _backingFile?.Size() ?? _buffer.Length;
         }
 
+        /// <summary>
+        /// Сохранить содержимое двоичных данных в файл или другой поток
+        /// </summary>
+        /// <param name="filenameOrStream">путь к файлу или Поток</param>
         [ContextMethod("Записать", "Write")]
         public void Write(IValue filenameOrStream)
         {
@@ -146,22 +114,14 @@ namespace OneScript.StandardLibrary.Binary
             }
             else
             {
-                _backingFile.Seek(0, SeekOrigin.Begin);
-                _backingFile.CopyTo(stream);
+                using var source = _backingFile.OpenReadStream();
+                source.CopyTo(stream);
             }
         }
 
         public Stream GetStream()
         {
-            if (InMemory)
-            {
-                return new MemoryStream(_buffer, 0, _buffer.Length, false, true);
-            }
-            else
-            {
-                _backingFile.Seek(0,SeekOrigin.Begin);
-                return _backingFile;
-            }
+            return InMemory ? new MemoryStream(_buffer, 0, _buffer.Length, false, true) : _backingFile.OpenReadStream();
         }
 
         public byte[] Buffer
@@ -170,15 +130,10 @@ namespace OneScript.StandardLibrary.Binary
             {
                 if (!InMemory)
                 {
-                    _backingFile.Seek(0, SeekOrigin.Begin);
-                    try
-                    {
-                        LoadToBuffer(_backingFile);
-                    }
-                    finally
-                    {
-                        DeleteTemporaryFile();
-                    }
+                    using var readStream = _backingFile.OpenReadStream();
+                    LoadToBuffer(readStream);
+                    _backingFile.Dispose();
+                    _backingFile = null;
                 }
 
                 return _buffer;
@@ -201,13 +156,14 @@ namespace OneScript.StandardLibrary.Binary
             }
             else
             {
-                length = (int)Math.Min(_backingFile.Length, LIMIT);
+                length = (int)Math.Min(_backingFile.Size(), LIMIT);
                 if (length == 0)
                     return "";
 
                 buffer = new byte[length];
-                _backingFile.Seek(0, SeekOrigin.Begin);
-                _backingFile.Read(buffer, 0, length);
+                using var readStream = _backingFile.OpenReadStream();
+                // ReSharper disable once MustUseReturnValue
+                readStream.Read(buffer, 0, length);
             }
             
             StringBuilder hex = new StringBuilder(length*3);
@@ -256,9 +212,16 @@ namespace OneScript.StandardLibrary.Binary
                 Debug.Assert(binData != null);
 
                 if (InMemory && binData.InMemory)
-                   return ArraysAreEqual(_buffer, binData._buffer);
+                {
+                    return ArraysAreEqual(_buffer, binData._buffer);
+                }
                 else
-                   return StreamsAreEqual(GetStream(), binData.GetStream());
+                {
+                    using var s1 = GetStream();
+                    using var s2 = binData.GetStream();
+                    
+                    return StreamsAreEqual(s1, s2);
+                }
             }
 
             return false;

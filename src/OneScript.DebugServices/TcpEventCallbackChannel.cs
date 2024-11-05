@@ -21,9 +21,9 @@ namespace OneScript.DebugServices
             _channel = channel;
         }
 
-        public void ThreadStopped(int threadId, ThreadStopReason reason)
+        public void ThreadStopped(int threadId, ThreadStopReason reason, string errorMessage)
         {
-            var dto = RpcCall.Create(nameof(IDebugEventListener), nameof(ThreadStopped), threadId, reason);
+            var dto = RpcCall.Create(nameof(IDebugEventListener), nameof(ThreadStopped), threadId, reason, errorMessage);
             _channel.Write(dto);
         }
 

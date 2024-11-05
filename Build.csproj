@@ -322,6 +322,7 @@
             <NugetAbleProject Include="ScriptEngine"/>
             <NugetAbleProject Include="ScriptEngine.HostedScript"/>
             <NugetAbleProject Include="OneScript.StandardLibrary"/>
+            <NugetAbleProject Include="OneScript.Web.Server"/>
             <NugetAbleProject Include="OneScript.Core"/>
             <NugetAbleProject Include="OneScript.Native"/>
             <NugetAbleProject Include="OneScript.Language"/>
@@ -342,6 +343,7 @@
             <NugetAbleProject Include="ScriptEngine"/>
             <NugetAbleProject Include="ScriptEngine.HostedScript"/>
             <NugetAbleProject Include="OneScript.StandardLibrary"/>
+            <NugetAbleProject Include="OneScript.Web.Server"/>
             <NugetAbleProject Include="OneScript.Core"/>
             <NugetAbleProject Include="OneScript.Native"/>
             <NugetAbleProject Include="OneScript.Language"/>

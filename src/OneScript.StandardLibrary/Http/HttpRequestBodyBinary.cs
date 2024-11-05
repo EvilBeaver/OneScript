@@ -18,7 +18,7 @@ namespace OneScript.StandardLibrary.Http
 {
     class HttpRequestBodyBinary : IHttpRequestBody
     {
-        private readonly MemoryStream _memoryStream = new MemoryStream();
+        private readonly FileBackingStream _storage = new FileBackingStream();
 
         public HttpRequestBodyBinary()
         {
@@ -26,7 +26,7 @@ namespace OneScript.StandardLibrary.Http
 
         public HttpRequestBodyBinary(BinaryDataContext data)
         {
-            data.CopyTo(_memoryStream);
+            data.CopyTo(_storage);
         }
 
         public HttpRequestBodyBinary(string body, IValue encoding = null,
@@ -39,20 +39,20 @@ namespace OneScript.StandardLibrary.Http
             var encoder = encoding == null ? new UTF8Encoding(addBom) : TextEncodingEnum.GetEncoding(encoding, addBom);
 
             var byteArray = encoder.GetBytes(body);
-            _memoryStream.Write(byteArray, 0, byteArray.Length);
+            _storage.Write(byteArray, 0, byteArray.Length);
         }
 
         public IValue GetAsString()
         {
-            _memoryStream.Seek(0, SeekOrigin.Begin);
-            var reader = new StreamReader(_memoryStream);
+            _storage.Seek(0, SeekOrigin.Begin);
+            var reader = new StreamReader(_storage);
             return ValueFactory.Create(reader.ReadToEnd());
         }
 
         public IValue GetAsBinary()
         {
-            _memoryStream.Seek(0, SeekOrigin.Begin);
-            return new BinaryDataContext(_memoryStream);
+            _storage.Seek(0, SeekOrigin.Begin);
+            return new BinaryDataContext(_storage);
         }
 
         public IValue GetAsFilename()
@@ -62,13 +62,13 @@ namespace OneScript.StandardLibrary.Http
 
         public Stream GetDataStream()
         {
-            _memoryStream.Seek(0, SeekOrigin.Begin);
-            return _memoryStream;
+            _storage.Seek(0, SeekOrigin.Begin);
+            return _storage;
         }
 
         public void Dispose()
         {
-            _memoryStream.Close();
+            _storage.Close();
         }
     }
 }

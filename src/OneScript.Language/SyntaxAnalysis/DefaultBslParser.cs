@@ -711,8 +711,15 @@ namespace OneScript.Language.SyntaxAnalysis
                     BuildGotoOperator();
                     break;
                 default:
-                    var expected = _tokenStack.Peek();
-                    AddError(LocalizedErrors.TokenExpected(expected));
+                    if (LanguageDef.IsBuiltInFunction(_lastExtractedLexem.Token))
+                    {
+                        AddError(LocalizedErrors.UseBuiltInFunctionAsProcedure());
+                    }
+                    else
+                    {
+                        var expected = _tokenStack.Peek();
+                        AddError(LocalizedErrors.TokenExpected(expected));
+                    }
                     break;
             }
         }
@@ -1053,7 +1060,7 @@ namespace OneScript.Language.SyntaxAnalysis
             if (source == null)
                 return;
 
-            if (source.Kind != NodeKind.DereferenceOperation || !_lastDereferenceIsWritable)
+            if ((source.Kind != NodeKind.DereferenceOperation || !_lastDereferenceIsWritable) && source.Kind != NodeKind.IndexAccess)
             {
                 AddError(LocalizedErrors.WrongEventName());
                 return;
@@ -1062,7 +1069,8 @@ namespace OneScript.Language.SyntaxAnalysis
             var expr = BuildExpression(node, Token.Semicolon);
 
             if (expr.Kind != NodeKind.Identifier &&
-                (expr.Kind != NodeKind.DereferenceOperation || !_lastDereferenceIsWritable))
+                (expr.Kind != NodeKind.DereferenceOperation || !_lastDereferenceIsWritable) &&
+                expr.Kind != NodeKind.IndexAccess)
             {
                 AddError(LocalizedErrors.WrongHandlerName());
                 return;

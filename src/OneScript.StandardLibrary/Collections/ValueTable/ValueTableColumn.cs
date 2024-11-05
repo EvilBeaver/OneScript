@@ -24,7 +24,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         private string _title;
         private string _name;
         private TypeDescription _valueType;
-        private int _width;
         private readonly WeakReference _owner;
         private readonly int _id;
         
@@ -36,7 +35,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             _name = name;
             _title = title;
             _valueType = type ?? new TypeDescription();
-            _width = width;
+            Width = width;
             _id = id;
 
             _owner = new WeakReference(owner);
@@ -79,25 +78,13 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// </summary>
         /// <value>ОписаниеТипа</value>
         [ContextProperty("ТипЗначения", "ValueType")]
-        public TypeDescription ValueType
-        {
-            get { return _valueType; }
-        }
+        public TypeDescription ValueType => _valueType;
 
         /// <summary>
         /// Ширина колонки
         /// </summary>
         /// <value>Число</value>
         [ContextProperty("Ширина", "Width")]
-        public int Width
-        {
-            get { return _width; }
-            set { _width = value; }
-        }
-
-        public override int GetHashCode()
-        {
-            return _id;
-        }
+        public int Width { get; set; }
     }
 }

@@ -15,7 +15,7 @@ namespace OneScript.DebugProtocol
     /// <summary>
     /// TCP-канал, использующий стандартную Binary-сериализацию .NET
     /// </summary>
-    public class BinaryChannel : ICommunicationChannel
+    public sealed class BinaryChannel : ICommunicationChannel
     {
         private readonly TcpClient _client;
         private readonly NetworkStream _clientStream;

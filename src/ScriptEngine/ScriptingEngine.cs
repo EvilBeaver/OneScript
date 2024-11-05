@@ -15,6 +15,7 @@ using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Compiler;
+using ScriptEngine.Libraries;
 
 namespace ScriptEngine
 {
@@ -22,6 +23,9 @@ namespace ScriptEngine
     {
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IDebugController _debugController;
+        private IRuntimeEnvironment _runtimeEnvironment;
+        
+        private readonly ILibraryManager _libraryManager;
 
         public ScriptingEngine(ITypeManager types,
             IGlobalsManager globals,
@@ -33,7 +37,8 @@ namespace ScriptEngine
             // FIXME: Пока потребители не отказались от статических инстансов, они будут жить и здесь
             
             GlobalsManager = globals;
-            Environment = env;
+            _runtimeEnvironment = env;
+            _libraryManager = env;
             
             Loader = new ScriptSourceFactory();
             Services = services;
@@ -45,8 +50,10 @@ namespace ScriptEngine
         public IServiceContainer Services { get; }
 
         private ContextDiscoverer ContextDiscoverer { get; }
-        
-        public RuntimeEnvironment Environment { get; set; }
+
+        public IRuntimeEnvironment Environment => _runtimeEnvironment;
+
+        public ILibraryManager LibraryManager => _libraryManager;
 
         public ITypeManager TypeManager { get; }
         
@@ -60,19 +67,19 @@ namespace ScriptEngine
             ContextDiscoverer.DiscoverGlobalContexts(Environment, asm, filter);
         }
 
-        public void AttachExternalAssembly(System.Reflection.Assembly asm, RuntimeEnvironment globalEnvironment)
+        public void AttachExternalAssembly(System.Reflection.Assembly asm, IRuntimeEnvironment globalEnvironment)
         {
             ContextDiscoverer.DiscoverClasses(asm);
 
-            var lastCount = globalEnvironment.AttachedContexts.Count();
+            //var lastCount = globalEnvironment.AttachedContexts.Count();
             ContextDiscoverer.DiscoverGlobalContexts(globalEnvironment, asm);
 
-            var newCount = globalEnvironment.AttachedContexts.Count();
-            while (lastCount < newCount)
-            {
-                MachineInstance.Current.AttachContext(globalEnvironment.AttachedContexts[lastCount].Instance);
-                ++lastCount;
-            }
+            //var newCount = globalEnvironment.AttachedContexts.Count();
+            // while (lastCount < newCount)
+            // {
+            //     MachineInstance.Current.AttachContext(globalEnvironment.AttachedContexts[lastCount]);
+            //     ++lastCount;
+            // }
         }
         
         public void AttachExternalAssembly(System.Reflection.Assembly asm)
@@ -101,8 +108,7 @@ namespace ScriptEngine
 
         private void SetDefaultEnvironmentIfNeeded()
         {
-            if (Environment == null)
-                Environment = new RuntimeEnvironment();
+            _runtimeEnvironment ??= new RuntimeEnvironment();
         }
 
         public ScriptSourceFactory Loader { get; }
@@ -111,7 +117,7 @@ namespace ScriptEngine
         {
             using var scope = Services.CreateScope();
             var compiler = scope.Resolve<CompilerFrontend>();
-            compiler.SharedSymbols = Environment.Symbols;
+            compiler.SharedSymbols = _runtimeEnvironment.GetSymbolTable();
             
             switch (System.Environment.OSVersion.Platform)
             {
@@ -152,12 +158,6 @@ namespace ScriptEngine
 
             scriptContext.InitOwnData();
             return scriptContext;
-        }
-
-        public StackRuntimeModule LoadModuleImage(ModuleImage moduleImage)
-        {
-            throw new NotImplementedException("Deserialization of module not implemented");
-            //return new LoadedModule(moduleImage);
         }
 
         public void InitializeSDO(ScriptDrivenObject sdo)

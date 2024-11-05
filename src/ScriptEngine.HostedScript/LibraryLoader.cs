@@ -15,12 +15,14 @@ using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
+using ScriptEngine.Libraries;
 
 namespace ScriptEngine.HostedScript
 {
     public class LibraryLoader : AutoScriptDrivenObject<LibraryLoader>
     {
-        private readonly RuntimeEnvironment _env;
+        private readonly IRuntimeEnvironment _env;
+        private readonly ILibraryManager _libManager;
         private readonly ScriptingEngine _engine;
 
         readonly bool _customized;
@@ -34,9 +36,14 @@ namespace ScriptEngine.HostedScript
             public bool asClass;
         }
         
-        private LibraryLoader(IExecutableModule moduleHandle, RuntimeEnvironment env, ScriptingEngine engine): base(moduleHandle)
+        private LibraryLoader(
+            IExecutableModule moduleHandle,
+            IRuntimeEnvironment env,
+            ILibraryManager libManager,
+            ScriptingEngine engine): base(moduleHandle)
         {
             _env = env;
+            _libManager = libManager;
             _engine = engine;
             _customized = true;
             
@@ -44,9 +51,12 @@ namespace ScriptEngine.HostedScript
 
         }
 
-        private LibraryLoader(RuntimeEnvironment env, ScriptingEngine engine)
+        private LibraryLoader(IRuntimeEnvironment env,
+            ILibraryManager libManager,
+            ScriptingEngine engine)
         {
             _env = env;
+            _libManager = libManager;
             _engine = engine;
             _customized = false;
         }
@@ -59,13 +69,13 @@ namespace ScriptEngine.HostedScript
             var code = engine.Loader.FromFile(processingScript);
             var module = CompileModule(compiler, code, typeof(LibraryLoader));
             
-            return new LibraryLoader(module, engine.Environment, engine);
+            return new LibraryLoader(module, engine.Environment, engine.LibraryManager, engine);
 
         }
 
         public static LibraryLoader Create(ScriptingEngine engine)
         {
-            return new LibraryLoader(engine.Environment, engine);
+            return new LibraryLoader(engine.Environment, engine.LibraryManager, engine);
         }
 
         #endregion
@@ -104,6 +114,7 @@ namespace ScriptEngine.HostedScript
                                 $"en = 'Load module ={moduleName}= in to context from file {file}'")    
                 );
                 _env.InjectGlobalProperty(null, moduleName, true);
+                MachineInstance.Current.UpdateGlobals();
             }
             catch (InvalidOperationException e)
 	        {
@@ -115,9 +126,9 @@ namespace ScriptEngine.HostedScript
         [ContextMethod("ЗагрузитьБиблиотеку", "LoadLibrary")]
         public void LoadLibrary(string dllPath)
         {
-            var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
+            var context = new ComponentLoadingContext(dllPath);
+            var assembly = context.LoadFromAssemblyPath(dllPath);
             _engine.AttachExternalAssembly(assembly, _env);
-
         }
 
         [ContextMethod("ДобавитьМакет", "AddTemplate")]
@@ -239,7 +250,7 @@ namespace ScriptEngine.HostedScript
                 classFile.Module = module;
             });
 
-            _env.InitExternalLibrary(_engine, library);
+            _libManager.InitExternalLibrary(_engine, library);
         }
 
         private IExecutableModule CompileFile(string path)

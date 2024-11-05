@@ -2,7 +2,7 @@
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;</TargetFrameworks>
+    <TargetFramework>$(TargetFrameworkVersion)</TargetFramework>
     <Configurations>Debug;Release;LinuxDebug</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>

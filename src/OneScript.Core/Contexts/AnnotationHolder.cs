@@ -22,7 +22,7 @@ namespace OneScript.Contexts
 
         public object[] GetCustomAttributes(bool inherit)
         {
-            return _annotations ?? new object[0];
+            return _annotations ?? Array.Empty<object>();
         }
 
         public object[] GetCustomAttributes(Type attributeType, bool inherit)

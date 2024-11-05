@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using Serilog;
 
 namespace VSCode.DebugAdapter
 {
@@ -38,12 +39,6 @@ namespace VSCode.DebugAdapter
                 throw new InvalidDebugeeOptionsException(1001, "Property 'program' is missing or empty.");
             }
 
-            if (!File.Exists(options.Program))
-            {
-                var path = Path.Combine(Directory.GetCurrentDirectory(), options.Program);
-                throw new InvalidDebugeeOptionsException(1002, $"Script '{path}' does not exist.");
-            }
-
             // validate argument 'cwd'
             var workingDirectory = options.Cwd;
             if (workingDirectory != null)
@@ -63,8 +58,18 @@ namespace VSCode.DebugAdapter
             {
                 workingDirectory = Path.GetDirectoryName(options.Program);
             }
-
+            
+            // Кодировка DAP
+            SetEncoding(options.OutputEncoding);
+            
             WorkingDirectory = workingDirectory;
+            Log.Information("Working directory for debuggee is {WorkingDirectory}", WorkingDirectory);
+            
+            var programPath = Path.Combine(workingDirectory ?? Directory.GetCurrentDirectory(), options.Program);
+            if (!File.Exists(programPath))
+            {
+                throw new InvalidDebugeeOptionsException(1002, $"Script '{programPath}' does not exist.");
+            }
 
             // validate argument 'runtimeExecutable'
             var runtimeExecutable = options.RuntimeExecutable;
@@ -113,7 +118,7 @@ namespace VSCode.DebugAdapter
             var psi = process.StartInfo;
             psi.FileName = RuntimeExecutable;
             psi.UseShellExecute = false;
-            psi.Arguments = $"-debug {debugArguments} {RuntimeArguments} \"{StartupScript}\" {ScriptArguments}";
+            psi.Arguments = $"{RuntimeArguments} -debug {debugArguments} \"{StartupScript}\" {ScriptArguments}";
             psi.WorkingDirectory = WorkingDirectory;
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;

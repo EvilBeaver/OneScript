@@ -142,7 +142,7 @@ namespace OneScript.StandardLibrary
             {
                 // fix 225, 227, 228
                 var fObj = new FileContext(dir);
-                if(fObj.Exist())
+                if(fObj.Exists())
                 {
                     return new ArrayImpl(new[] { fObj });
                 }

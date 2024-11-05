@@ -5,7 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using OneScript.Compilation.Binding;
 
 namespace ScriptEngine.Machine
 {
@@ -158,10 +157,7 @@ namespace ScriptEngine.Machine
         Number,
         Date,
         Boolean,
-        Type,
-        Object,
-        NotAValidValue, // default argument value
-        GenericValue
+        Null
     }
 
     [Serializable]
@@ -214,35 +210,5 @@ namespace ScriptEngine.Machine
             }
             return String.Format("{0}=[{1}]", Name, ValueIndex);
         }
-    }
-
-    public enum SymbolType
-    {
-        Variable,
-        ContextProperty
-    }
-
-    [Serializable]
-    public struct VariableInfo
-    {
-        public int Index;
-        public string Identifier;
-        public string Alias;
-        public SymbolType Type;
-        
-        public AnnotationDefinition[] Annotations;
-
-        public int AnnotationsCount => Annotations?.Length ?? 0;
-
-        public override string ToString()
-        {
-            return $"{Index}:{Identifier}";
-        }
-    }
-
-    public struct VariableBinding
-    {
-        public SymbolType type;
-        public SymbolBinding binding;
     }
 }

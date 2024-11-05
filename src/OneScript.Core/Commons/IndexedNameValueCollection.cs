@@ -73,6 +73,11 @@ namespace OneScript.Commons
             return index;
         }
 
+        public string NameOf(int index)
+        {
+            return _nameIndex.First(pair => pair.Value == index).Key;
+        }
+
         public bool TryGetValue(string name, out T result)
         {
             int idx;

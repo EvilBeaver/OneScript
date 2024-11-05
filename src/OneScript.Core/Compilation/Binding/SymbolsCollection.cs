@@ -24,8 +24,8 @@ namespace OneScript.Compilation.Binding
             {
                 return item switch
                 {
-                    IVariableSymbol v => LocalizedErrors.DuplicateVarDefinition(text),
-                    IMethodSymbol m => LocalizedErrors.DuplicateMethodDefinition(text),
+                    IVariableSymbol _ => LocalizedErrors.DuplicateVarDefinition(text),
+                    IMethodSymbol _ => LocalizedErrors.DuplicateMethodDefinition(text),
                     _ => throw new InvalidOperationException()
                 };
             }

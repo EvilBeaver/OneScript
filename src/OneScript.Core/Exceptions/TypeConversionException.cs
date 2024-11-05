@@ -14,5 +14,12 @@ namespace OneScript.Exceptions
         public TypeConversionException(BilingualString message) : base(message)
         {
         }
+
+        public TypeConversionException() 
+            : base(new BilingualString(
+            "Несоответствие типов",
+            "Type mismatch"))
+        {
+        }
     }
 }

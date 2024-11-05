@@ -34,7 +34,7 @@ namespace OneScript.Contexts
 
         protected virtual AnnotationHolder RetrieveAnnotations()
         {
-            return new AnnotationHolder(new object[0]);
+            return new AnnotationHolder(Array.Empty<object>());
         }
         
         public override object[] GetCustomAttributes(bool inherit)

@@ -23,7 +23,7 @@ namespace OneScript.Contexts
             _factoryMethod = staticConstructor;
         }
 
-        private void CheckMethod(MethodInfo staticConstructor)
+        private static void CheckMethod(MethodInfo staticConstructor)
         {
             if (!staticConstructor.IsStatic)
                 throw new ArgumentException("Method must be static");
@@ -48,7 +48,8 @@ namespace OneScript.Contexts
 
         public override object Invoke(BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
-            return _factoryMethod.Invoke(null, invokeAttr, binder, parameters, culture);
+            return _factoryMethod.Invoke(null, invokeAttr, binder, parameters, culture) ?? 
+                   throw new InvalidOperationException("Constructors should not return null");
         }
     }
 }

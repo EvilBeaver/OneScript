@@ -181,12 +181,6 @@ namespace ScriptEngine.Machine.Contexts
                 .Build();
         }
 
-        private MethodSignature GetMethodDescription(int methodNumber)
-        {
-            //TODO: Доработать RcwMethodMetadata
-            return new MethodSignature();
-        }
-
         public override void CallAsProcedure(int methodNumber, IValue[] arguments)
         {
             var method = _methods[methodNumber];
@@ -245,7 +239,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
         
-        private void RemapOutputParams(IValue[] arguments, object[] values, ParameterModifier flags,
+        private static void RemapOutputParams(IValue[] arguments, object[] values, ParameterModifier flags,
             object[] initialValues)
         {
             for (int i = 0; i < arguments.Length; i++)

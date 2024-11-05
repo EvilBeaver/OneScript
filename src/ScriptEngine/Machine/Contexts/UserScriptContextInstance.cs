@@ -202,9 +202,9 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         [SymbolsProvider]
-        private static void PrepareCompilation(CompileTimeSymbolsProvider provider, SymbolScope scope)
+        private static void PrepareCompilation(TypeSymbolsProviderFactory providerFactory, SymbolScope scope)
         {
-            var baseSymbols = provider.Get<ThisAwareScriptedObjectBase>();
+            var baseSymbols = providerFactory.Get<ThisAwareScriptedObjectBase>();
             baseSymbols.FillSymbols(scope);
             GetOwnMethodsDefinition().ForEach(x => scope.DefineMethod(x.ToSymbol()));
         }
@@ -305,9 +305,9 @@ namespace ScriptEngine.Machine.Contexts
 
         void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
         {
-            var instanceProps = Module
-                .Properties
+            var instanceProps = this.GetProperties()
                 .OfType<BslScriptPropertyInfo>()
+                .Where(p => p.DispatchId != THISOBJ_VARIABLE_INDEX)
                 .OrderBy(x => x.DispatchId)
                 .ToDictionary(x => x.Name, x => x.DispatchId);
 

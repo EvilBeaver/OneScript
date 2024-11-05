@@ -28,7 +28,6 @@ namespace OneScript.Core.Tests
                 .SetDefaultOptions();
             
             host = builder.Build();
-            host.Environment = new RuntimeEnvironment();
         }
         
         private IExecutableModule LoadFromString(string code)

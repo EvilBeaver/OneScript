@@ -20,31 +20,43 @@ namespace OneScript.Values
         public abstract int CompareTo(BslValue other);
 
         public abstract bool Equals(BslValue other);
-
+        
         public static explicit operator string(BslValue value) => value.ConvertToString();
 
         public static explicit operator bool(BslValue target) =>
-            target is BslBooleanValue v ? (bool) v :
-            target is BslNumericValue nv ? (bool) nv :
-            target is BslStringValue sv ? (bool) sv :
-            throw BslExceptions.ConvertToBooleanException();
+            target switch
+            {
+                BslBooleanValue v => (bool) v,
+                BslNumericValue nv => (bool) nv,
+                BslStringValue sv => (bool) sv,
+                _ => throw BslExceptions.ConvertToBooleanException()
+            };
 
         public static explicit operator decimal(BslValue target) =>
-            target is BslNumericValue v ? (decimal) v :
-            target is BslStringValue sv ? (decimal) sv :
-            target is BslBooleanValue bv ? (decimal) bv :
-            throw BslExceptions.ConvertToNumberException(target);
+            target switch
+            {
+                BslNumericValue v => (decimal) v,
+                BslStringValue sv => (decimal) sv,
+                BslBooleanValue bv => (decimal) bv,
+                _ => throw BslExceptions.ConvertToNumberException(target)
+            };
 
         public static explicit operator int(BslValue target) =>
-            target is BslNumericValue v ? (int) (decimal) v :
-            target is BslStringValue sv ? (int) (decimal) sv :
-            target is BslBooleanValue bv ? (int) (decimal) bv :
-            throw BslExceptions.ConvertToNumberException();
+            target switch
+            {
+                BslNumericValue v => (int) (decimal) v,
+                BslStringValue sv => (int) (decimal) sv,
+                BslBooleanValue bv => (int) (decimal) bv,
+                _ => throw BslExceptions.ConvertToNumberException()
+            };
 
         public static explicit operator DateTime(BslValue target) =>
-            target is BslDateValue v ? (DateTime) v :
-            target is BslStringValue sv ? (DateTime) sv :
-            throw BslExceptions.ConvertToDateException();
+            target switch
+            {
+                BslDateValue v => (DateTime) v,
+                BslStringValue sv => (DateTime) sv,
+                _ => throw BslExceptions.ConvertToDateException()
+            };
 
         #region Stack Runtime Bridge
 
@@ -55,7 +67,7 @@ namespace OneScript.Values
         public virtual bool Equals(IValue other) => Equals((BslValue) other?.GetRawValue());
 
         public virtual IValue GetRawValue() => this;
-        
+
         #endregion
     }
 }

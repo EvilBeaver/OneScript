@@ -25,13 +25,14 @@ namespace OneScript.Contexts
             MethodName = methodName;
         }
 
+        public PredefinedInterfaceRegistration(MarkerLocation location, BilingualString annotation) : this(location, annotation, null)
+        {
+        }
+        
         public MarkerLocation Location { get; }
         public BilingualString Annotation { get; }
         public BilingualString MethodName { get; }
         
-        public PredefinedInterfaceRegistration(MarkerLocation location, BilingualString annotation) : this(location, annotation, null)
-        {
-        }
 
         /// <summary>
         /// Хелпер для регистрации аннотаций модуля
@@ -52,7 +53,7 @@ namespace OneScript.Contexts
             return new PredefinedInterfaceRegistration(MarkerLocation.SpecificMethodAnnotation, annotation, methodName);
         }
 
-        public bool Equals(PredefinedInterfaceRegistration other)
+        public virtual bool Equals(PredefinedInterfaceRegistration other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;

@@ -56,5 +56,15 @@ namespace VSCode.DebugAdapter
                 return match.Groups[0].Value;
             });
         }
+
+        public static Encoding GetEncodingFromOptions(string optionsValue)
+        {
+            if (string.IsNullOrWhiteSpace(optionsValue))
+            {
+                throw new ArgumentException("Encoding must be specified");
+            }
+
+            return Encoding.GetEncoding(optionsValue);
+        }
     }
 }

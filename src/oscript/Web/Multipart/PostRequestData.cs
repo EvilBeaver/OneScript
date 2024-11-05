@@ -23,28 +23,25 @@ namespace oscript.Web.Multipart
         private FixedMapImpl _params;
         private FixedMapImpl _files;
 
-        public PostRequestData(byte []buffer, string boundary)
+        public PostRequestData(Stream input, string boundary)
         {
-            using (var stdin = new MemoryStream(buffer))
+            var parser = new MultipartFormDataParser(input, boundary, Encoding.UTF8);
+            MapImpl mParams = new MapImpl();
+            foreach (var param in parser.Parameters)
             {
-                var parser = new MultipartFormDataParser(stdin, boundary, Encoding.UTF8);
-                MapImpl m_params = new MapImpl();
-                foreach (var param in parser.Parameters)
-                {
-                    m_params.Insert(ValueFactory.Create(param.Name), ValueFactory.Create(param.Data));
-                }
-                _params = new FixedMapImpl(m_params);
-
-                MapImpl m_files = new MapImpl();
-                foreach (var file in parser.Files)
-                {
-                    m_files.Insert(
-                        ValueFactory.Create(file.Name),
-                        new PostFileDescription(file)
-                    );
-                }
-                _files = new FixedMapImpl(m_files);
+                mParams.Insert(ValueFactory.Create(param.Name), ValueFactory.Create(param.Data));
             }
+            _params = new FixedMapImpl(mParams);
+
+            MapImpl mFiles = new MapImpl();
+            foreach (var file in parser.Files)
+            {
+                mFiles.Insert(
+                    ValueFactory.Create(file.Name),
+                    new PostFileDescription(file)
+                );
+            }
+            _files = new FixedMapImpl(mFiles);
         }
 
         public PostRequestData(string data)
@@ -96,7 +93,7 @@ namespace oscript.Web.Multipart
         [ScriptConstructor(Name = "Из двоичных данных")]
         public static PostRequestData Constructor(BinaryDataContext data, IValue boundary)
         {
-            return new PostRequestData(data.Buffer, boundary.ToString());
+            return new PostRequestData(data.GetStream(), boundary.ToString());
         }
 
         [ScriptConstructor(Name = "Из строки запроса")]

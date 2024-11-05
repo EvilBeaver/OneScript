@@ -168,6 +168,18 @@ namespace OneScript.StandardLibrary.Text
             reader.Open (input, null, "\n", "\r\n");
             return reader;
         }
+        
+        /// <summary>
+        /// Создаёт неинициализированный объект. Для инициализации необходимо открыть файл методом Открыть.
+        /// </summary>
+        /// <returns>ЧтениеТекста</returns>
+        [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
+        public static TextReadImpl Constructor()
+        {
+            var reader = new TextReadImpl();
+            reader.AnalyzeDefaultLineFeed = false;
+            return reader;
+        }
 
         /// <summary>
         /// Открывает текстовый файл или поток для чтения. Работает аналогично методу Открыть.
@@ -200,18 +212,6 @@ namespace OneScript.StandardLibrary.Text
                     monopoly?.AsBoolean() ?? true);
             }
 
-            return reader;
-        }
-
-        /// <summary>
-        /// Создаёт неинициализированный объект. Для инициализации необходимо открыть файл методом Открыть.
-        /// </summary>
-        /// <returns>ЧтениеТекста</returns>
-        [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
-        public static TextReadImpl Constructor()
-        {
-            var reader = new TextReadImpl();
-            reader.AnalyzeDefaultLineFeed = false;
             return reader;
         }
 

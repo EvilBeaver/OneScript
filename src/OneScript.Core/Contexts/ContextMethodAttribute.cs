@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Runtime.CompilerServices;
 using OneScript.Commons;
 
 namespace OneScript.Contexts
@@ -16,40 +17,27 @@ namespace OneScript.Contexts
         private readonly string _name;
         private readonly string _alias;
 
-        public ContextMethodAttribute(string name, string alias = null)
+        public ContextMethodAttribute(string name, string alias) 
         {
             if (!Utils.IsValidIdentifier(name))
-                throw new ArgumentException("Name must be a valid identifier");
+                throw new ArgumentException($"Name '{name}' must be a valid identifier");
 
             if (!string.IsNullOrEmpty(alias) && !Utils.IsValidIdentifier(alias))
-                throw new ArgumentException("Alias must be a valid identifier");
+                throw new ArgumentException($"Alias '{alias}' must be a valid identifier");
 
             _name = name;
             _alias = alias;
         }
 
-        public string GetName()
+        public ContextMethodAttribute(string name, string _ = null, 
+            [CallerMemberName] string nativeMethodName = null)
+        : this(name, nativeMethodName)
         {
-            return _name;
         }
 
-        public string GetAlias()
-        {
-            return _alias;
-        }
+        public string GetName() => _name;
 
-        public string GetAlias(string nativeMethodName)
-        {
-            if (!string.IsNullOrEmpty(_alias))
-            {
-                return _alias;
-            }
-            if (!IsDeprecated)
-            {
-                return nativeMethodName;
-            }
-            return null;
-        }
+        public string GetAlias() => _alias;
 
         public bool IsDeprecated { get; set; }
 

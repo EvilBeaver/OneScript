@@ -11,7 +11,6 @@ namespace ScriptEngine.Machine
 {
     internal class MachineStoredState
     {
-        public List<Scope> Scopes { get; set; }
         public Stack<IValue> OperationStack { get; set; }
         public Stack<ExecutionFrame> CallStack { get; set; }
         public Stack<ExceptionJumpInfo> ExceptionsStack { get; set; }

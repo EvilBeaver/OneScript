@@ -66,7 +66,6 @@ namespace ScriptEngine.Compiler
             VisitModule(moduleNode);
             CheckForwardedDeclarations();
             
-            _module.LoadAddress = _ctx.ScopeCount - 1;
             _module.Source = _sourceCode;
             
             return _module;
@@ -137,7 +136,7 @@ namespace ScriptEngine.Compiler
                     }
 
                     CheckFactArguments(methInfo.GetParameters(), item.factArguments);
-                    CorrectCommandArgument(item.commandIndex, GetMethodRefNumber(ref methN));
+                    CorrectCommandArgument(item.commandIndex, GetMethodRefNumber(methN));
                 }
             }
         }
@@ -564,7 +563,7 @@ namespace ScriptEngine.Compiler
                 }
                 else
                 {
-                    var num = GetVariableRefNumber(ref varBinding);
+                    var num = GetVariableRefNumber(varBinding);
                     AddCommand(OperationCode.LoadVar, num);
                 }
             }
@@ -740,14 +739,14 @@ namespace ScriptEngine.Compiler
             }
             else
             {
-                var idx = GetVariableRefNumber(ref binding);
+                var idx = GetVariableRefNumber(binding);
                 return AddCommand(OperationCode.PushVar, idx);
             }
         }
 
         private int PushPropertyReference(SymbolBinding binding)
         {
-            var idx = GetVariableRefNumber(ref binding);
+            var idx = GetVariableRefNumber(binding);
 
             return AddCommand(OperationCode.PushRef, idx);
         }
@@ -778,9 +777,9 @@ namespace ScriptEngine.Compiler
                 CheckFactArguments(methInfo, argList);
 
                 if (asFunction)
-                    AddCommand(OperationCode.CallFunc, GetMethodRefNumber(ref methBinding));
+                    AddCommand(OperationCode.CallFunc, GetMethodRefNumber(methBinding));
                 else
-                    AddCommand(OperationCode.CallProc, GetMethodRefNumber(ref methBinding)); 
+                    AddCommand(OperationCode.CallProc, GetMethodRefNumber(methBinding)); 
             }
             else
             {
@@ -905,10 +904,23 @@ namespace ScriptEngine.Compiler
 
         protected override void VisitHandlerOperation(BslSyntaxNode node)
         {
-            var (srcValue, eventName) = SplitExpressionAndName(node.Children[0]);
-            VisitExpression(srcValue);
-            VisitConstant(eventName);
-
+            var eventNameNode = node.Children[0];
+            
+            // выражение источника события
+            VisitExpression(eventNameNode.Children[0]);
+            
+            if (eventNameNode.Kind == NodeKind.DereferenceOperation)
+            {
+                var eventName = eventNameNode.Children[1].AsTerminal().Lexem;
+                eventName.Type = LexemType.StringLiteral;
+                VisitConstant(eventName);
+            }
+            else
+            {
+                Debug.Assert(eventNameNode.Kind == NodeKind.IndexAccess);
+                VisitExpression(eventNameNode.Children[1]);
+            }
+            
             var handlerNode = node.Children[1];
             int commandArg;
             if (handlerNode.Kind == NodeKind.Identifier)
@@ -927,24 +939,23 @@ namespace ScriptEngine.Compiler
                 }
                 commandArg = 1;
             }
+            else if (handlerNode.Kind == NodeKind.DereferenceOperation)
+            {
+                var eventName = handlerNode.Children[1].AsTerminal().Lexem;
+                eventName.Type = LexemType.StringLiteral;
+                VisitExpression(handlerNode.Children[0]);
+                VisitConstant(eventName);
+                commandArg = 0;
+            }
             else
             {
-                var (handler, procedureName) = SplitExpressionAndName(node.Children[1]);
-                VisitExpression(handler);
-                VisitConstant(procedureName);
+                Debug.Assert(handlerNode.Kind == NodeKind.IndexAccess);
+                VisitExpression(handlerNode.Children[0]);
+                VisitExpression(handlerNode.Children[1]);
                 commandArg = 0;
             }
 
             AddCommand(node.Kind == NodeKind.AddHandler ? OperationCode.AddHandler : OperationCode.RemoveHandler, commandArg);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static (BslSyntaxNode, Lexem) SplitExpressionAndName(BslSyntaxNode node)
-        {
-            var term = (TerminalNode) node.Children[1];
-            var lex = term.Lexem;
-            lex.Type = LexemType.StringLiteral;
-            return (node.Children[0], lex);
         }
 
         protected override void VisitNewObjectCreation(NewObjectNode node)
@@ -1173,7 +1184,7 @@ namespace ScriptEngine.Compiler
                     constType = DataType.String;
                     break;
                 case LexemType.NullLiteral:
-                    constType = DataType.GenericValue;
+                    constType = DataType.Null;
                     break;
                 case LexemType.UndefinedLiteral:
                     constType = DataType.Undefined;
@@ -1202,7 +1213,7 @@ namespace ScriptEngine.Compiler
             return idx;
         }
 
-        private int GetMethodRefNumber(ref SymbolBinding methodBinding)
+        private int GetMethodRefNumber(in SymbolBinding methodBinding)
         {
             var idx = _module.MethodRefs.IndexOf(methodBinding);
             if (idx < 0)
@@ -1213,7 +1224,7 @@ namespace ScriptEngine.Compiler
             return idx;
         }
 
-        private int GetVariableRefNumber(ref SymbolBinding binding)
+        private int GetVariableRefNumber(in SymbolBinding binding)
         {
             var idx = _module.VariableRefs.IndexOf(binding);
             if (idx < 0)

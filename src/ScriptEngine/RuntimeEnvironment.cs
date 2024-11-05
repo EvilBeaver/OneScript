@@ -9,30 +9,28 @@ using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
+using ScriptEngine.Libraries;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 using SymbolScope = OneScript.Compilation.Binding.SymbolScope;
 
 namespace ScriptEngine
 {
-    public class RuntimeEnvironment
+    [Obsolete("Use interface IRuntimeEnvironment")]
+    public class RuntimeEnvironment : IRuntimeEnvironment, ILibraryManager
     {
         private readonly SymbolTable _symbols = new SymbolTable();
         private SymbolScope _scopeOfGlobalProperties;
-
-//***        
-        //private readonly ICompilerContext _symbolScopes = new CompilerContext();
-        //private SymbolScope _globalScope;
+        
         private readonly PropertyBag _injectedProperties;
 
-        private readonly List<AttachedContext> _contexts = new List<AttachedContext>();
+        private readonly List<IAttachableContext> _contexts = new List<IAttachableContext>();
 
-        private readonly List<ExternalLibraryDef> _externalLibs = new List<ExternalLibraryDef>();
-//***
+        private readonly ILibraryManager _libraryManager;
 
         public RuntimeEnvironment()
         {
             _injectedProperties = new PropertyBag();
+            _libraryManager = new LibraryManager(_injectedProperties);
         }
 
         private void CreateGlobalScopeIfNeeded()
@@ -43,22 +41,13 @@ namespace ScriptEngine
             lock (_injectedProperties)
             {
                 _scopeOfGlobalProperties ??= _symbols.PushContext(_injectedProperties);
-                _contexts.Add(AttachedContext.Create(_injectedProperties));
+                _contexts.Add(_injectedProperties);
             }
         }
 
         public void InjectObject(IAttachableContext context)
         {
-            // по факту DynamicScope нигде не пригодился, надо спилить
-            InjectObject(context, false);
-        }
-
-        private void InjectObject(IAttachableContext context, bool asDynamicScope)
-        {
-            var injectedContext =
-                asDynamicScope ? AttachedContext.CreateDynamic(context) : AttachedContext.Create(context);
-            
-            RegisterObject(injectedContext);
+            RegisterObject(context);
         }
 
         public void InjectGlobalProperty(IValue value, string identifier, string alias, bool readOnly)
@@ -89,9 +78,9 @@ namespace ScriptEngine
             InjectGlobalProperty(value, identifier, default, readOnly);
         }
 
-        private void RegisterObject(AttachedContext context)
+        private void RegisterObject(IAttachableContext context)
         {
-            _symbols.PushContext(context.Instance);
+            _symbols.PushContext(context);
             _contexts.Add(context);
         }
         
@@ -100,7 +89,7 @@ namespace ScriptEngine
             _symbols.FindVariable(propertyName, out var binding);
 
             var context = _contexts[binding.ScopeNumber];
-            context.Instance.SetPropValue(binding.MemberNumber, value);
+            context.SetPropValue(binding.MemberNumber, value);
         }
 
         public IValue GetGlobalProperty(string propertyName)
@@ -108,34 +97,21 @@ namespace ScriptEngine
             _symbols.FindVariable(propertyName, out var binding);
 
             var context = _contexts[binding.ScopeNumber];
-            return context.Instance.GetPropValue(binding.MemberNumber);
+            return context.GetPropValue(binding.MemberNumber);
         }
 
-        internal SymbolTable Symbols => _symbols;
+        public SymbolTable GetSymbolTable() => _symbols;
 
-        internal IList<AttachedContext> AttachedContexts => _contexts;
+        public IReadOnlyCollection<IAttachableContext> AttachedContexts => _contexts;
 
         public IEnumerable<ExternalLibraryDef> GetLibraries()
         { 
-            return _externalLibs.ToArray();
+            return _libraryManager.GetLibraries();
         }
 
         public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library)
         {
-            var loadedObjects = new ScriptDrivenObject[library.Modules.Count];
-            int i = 0;
-            foreach (var module in library.Modules)
-            {
-                var instance = runtime.CreateUninitializedSDO(module.Module);
-                
-                var propId = _injectedProperties.GetPropertyNumber(module.Symbol);
-                _injectedProperties.SetPropValue(propId, instance);
-                module.InjectOrder = propId;
-                loadedObjects[i++] = instance;
-            }
-            
-            _externalLibs.Add(library);
-            loadedObjects.ForEach(runtime.InitializeSDO);
+            _libraryManager.InitExternalLibrary(runtime, library);
         }
 
         private class WrappedPropertySymbol : IPropertySymbol

@@ -13,6 +13,8 @@ namespace OneScript.DebugServices
         
         public int LineNumber;
 
+        public string Condition;
+
         public BreakpointDescriptor(int id)
         {
             BreakpointId = id;
