@@ -1,11 +1,13 @@
-﻿using OneScript.Commons;
-using OneScript.Contexts;
-using ScriptEngine.Machine.Contexts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using OneScript.Commons;
+using OneScript.Execution;
+using ScriptEngine.Machine;
 
 namespace ScriptEngine.Libraries
 {
@@ -15,34 +17,54 @@ namespace ScriptEngine.Libraries
     /// </summary>
     internal class LibraryManager : ILibraryManager
     {
-        private readonly List<ExternalLibraryDef> _externalLibs = new List<ExternalLibraryDef>();
-        private readonly IRuntimeContextInstance _contextOfGlobalSymbols;
-
-        public LibraryManager(IRuntimeContextInstance contextOfGlobalSymbols)
-        {
-            _contextOfGlobalSymbols = contextOfGlobalSymbols;
-        }
-
-        public IEnumerable<ExternalLibraryDef> GetLibraries()
-        {
-            return _externalLibs.ToArray();
-        }
-
         public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library)
         {
-            var loadedObjects = new ScriptDrivenObject[library.Modules.Count];
-            int i = 0;
+            CompileDelayedModules(runtime, library);
+        }
+        
+        private void CompileDelayedModules(ScriptingEngine runtime, ExternalLibraryDef library)
+        {
+            var ownerContext = new ModulesOrderingContext();
+
+            // Зарегистрируем модули, как видимые символы
+            foreach (var module in library.Modules)
+            {
+                ownerContext.AddKnownModule(module);
+            }
+            runtime.Environment.InjectObject(ownerContext);
+            MachineInstance.Current.UpdateGlobals();
+            
+            library.Modules.ForEach(moduleFile =>
+            {
+                var module = CompileFile(runtime, moduleFile.FilePath);
+                moduleFile.Module = module;
+            });
+            
+            library.Classes.ForEach(classFile =>
+            {
+                var module = CompileFile(runtime, classFile.FilePath);
+                runtime.AttachedScriptsFactory.RegisterTypeModule(classFile.Symbol, module);
+                classFile.Module = module;
+            });
+
+            // Проведем инициализацию всех модулей
             foreach (var module in library.Modules)
             {
                 var instance = runtime.CreateUninitializedSDO(module.Module);
-
-                var propId = _contextOfGlobalSymbols.GetPropertyNumber(module.Symbol);
-                _contextOfGlobalSymbols.SetPropValue(propId, instance);
-                loadedObjects[i++] = instance;
+                ownerContext.SetUninitializedInstance(module, instance);
             }
+            
+            ownerContext.InitializeModules(runtime);
+        }
 
-            _externalLibs.Add(library);
-            loadedObjects.ForEach(runtime.InitializeSDO);
+        private IExecutableModule CompileFile(ScriptingEngine runtime, string path)
+        {
+            var compiler = runtime.GetCompilerService();
+            
+            var source = runtime.Loader.FromFile(path);
+            var module = runtime.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, null);
+
+            return module;
         }
     }
 }

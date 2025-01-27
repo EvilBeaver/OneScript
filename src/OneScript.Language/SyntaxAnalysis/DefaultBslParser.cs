@@ -711,8 +711,15 @@ namespace OneScript.Language.SyntaxAnalysis
                     BuildGotoOperator();
                     break;
                 default:
-                    var expected = _tokenStack.Peek();
-                    AddError(LocalizedErrors.TokenExpected(expected));
+                    if (LanguageDef.IsBuiltInFunction(_lastExtractedLexem.Token))
+                    {
+                        AddError(LocalizedErrors.UseBuiltInFunctionAsProcedure());
+                    }
+                    else
+                    {
+                        var expected = _tokenStack.Peek();
+                        AddError(LocalizedErrors.TokenExpected(expected));
+                    }
                     break;
             }
         }

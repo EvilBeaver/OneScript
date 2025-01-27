@@ -29,12 +29,12 @@ namespace ScriptEngine.Compiler
             _backend = new DefaultCompilerBackend(errorSink);
         }
 
-        protected override IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType)
+        protected override IExecutableModule CompileInternal(ISymbolTable symbols, ModuleNode parsedModule, Type classType)
         {
             throw new NotSupportedException();
         }
 
-        protected override IExecutableModule CompileExpressionInternal(SymbolTable symbols, ModuleNode parsedModule)
+        protected override IExecutableModule CompileExpressionInternal(ISymbolTable symbols, ModuleNode parsedModule)
         {
             _backend.Symbols = symbols;
             _backend.GenerateDebugCode = false;
@@ -42,7 +42,7 @@ namespace ScriptEngine.Compiler
             return _backend.Compile(parsedModule, default);
         }
 
-        protected override IExecutableModule CompileBatchInternal(SymbolTable symbols, ModuleNode parsedModule)
+        protected override IExecutableModule CompileBatchInternal(ISymbolTable symbols, ModuleNode parsedModule)
         {
             _backend.Symbols = symbols;
             _backend.GenerateDebugCode = false;

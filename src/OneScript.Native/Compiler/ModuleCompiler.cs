@@ -40,7 +40,7 @@ namespace OneScript.Native.Compiler
         public DynamicModule Compile(
             SourceCode moduleInfo,
             BslSyntaxNode moduleNode,
-            SymbolTable symbols
+            ISymbolTable symbols
             )
         {
             InitContext(Errors, moduleInfo, symbols);

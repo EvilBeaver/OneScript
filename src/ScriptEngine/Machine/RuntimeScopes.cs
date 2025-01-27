@@ -25,7 +25,7 @@ namespace ScriptEngine.Machine
 
         public RuntimeScopes(IReadOnlyList<AttachedContext> outerScopes, AttachedContext innerScope)
         {
-            _outerScopes = outerScopes.Select(x => new AttachedContext(x.Instance)).ToList();
+            _outerScopes = outerScopes;
             _innerScope = innerScope;
 
             _outerScopeLast = _outerScopes.Count - 1;

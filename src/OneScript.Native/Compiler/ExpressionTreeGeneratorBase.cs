@@ -18,7 +18,7 @@ namespace OneScript.Native.Compiler
     {
         private IErrorSink _errors;
         private SourceCode _sourceCode;
-        private SymbolTable _ctx;
+        private ISymbolTable _ctx;
 
         protected ExpressionTreeGeneratorBase()
         {
@@ -39,7 +39,7 @@ namespace OneScript.Native.Compiler
             InitContext(context.Errors, context.Source, context.Symbols);
         }
         
-        protected void InitContext(IErrorSink errors, SourceCode lineInfo, SymbolTable symbols)
+        protected void InitContext(IErrorSink errors, SourceCode lineInfo, ISymbolTable symbols)
         {
             _errors = errors;
             _sourceCode = lineInfo;
@@ -48,7 +48,7 @@ namespace OneScript.Native.Compiler
         
         protected IErrorSink Errors => _errors;
 
-        protected SymbolTable Symbols => _ctx;
+        protected ISymbolTable Symbols => _ctx;
         
         protected virtual BslWalkerContext MakeContext()
         {

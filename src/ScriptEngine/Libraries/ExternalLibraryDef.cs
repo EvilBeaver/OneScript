@@ -28,7 +28,6 @@ namespace ScriptEngine.Libraries
         {
             var item = new UserAddedScript
             {
-                Type = UserAddedScriptType.Class,
                 Module = module,
                 Symbol = identifier,
                 FilePath = filePath
@@ -43,7 +42,6 @@ namespace ScriptEngine.Libraries
         {
             var item = new UserAddedScript
             {
-                Type = UserAddedScriptType.Module,
                 Module = module,
                 Symbol = identifier,
                 FilePath = filePath
@@ -57,17 +55,9 @@ namespace ScriptEngine.Libraries
 
     public class UserAddedScript
     {
-        public UserAddedScriptType Type;
         public string Symbol;
         public string FilePath;
 
         public IExecutableModule Module;
-    }
-
-    [Serializable]
-    public enum UserAddedScriptType
-    {
-        Module,
-        Class
     }
 }

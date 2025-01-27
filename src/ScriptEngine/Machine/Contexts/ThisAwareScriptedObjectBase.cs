@@ -93,7 +93,7 @@ namespace ScriptEngine.Machine.Contexts
 
         [SymbolsProvider]
         // ReSharper disable once UnusedMember.Local
-        private static void CompileTimeSymbols(CompileTimeSymbolsProvider provider, SymbolScope moduleScope)
+        private static void CompileTimeSymbols(TypeSymbolsProviderFactory providerFactory, SymbolScope moduleScope)
         {
             moduleScope.Variables.Add(BslFieldBuilder.Create()
                 .Name(THISOBJ_RU)

@@ -11,7 +11,7 @@ using OneScript.Contexts;
 
 namespace OneScript.Compilation.Binding
 {
-    public class SymbolTable
+    public class SymbolTable : ISymbolTable
     {
         private class BindingRecord
         {

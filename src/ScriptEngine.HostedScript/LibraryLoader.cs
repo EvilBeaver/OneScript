@@ -21,28 +21,18 @@ namespace ScriptEngine.HostedScript
 {
     public class LibraryLoader : AutoScriptDrivenObject<LibraryLoader>
     {
-        private readonly IRuntimeEnvironment _env;
         private readonly ILibraryManager _libManager;
         private readonly ScriptingEngine _engine;
 
-        readonly bool _customized;
-
-        readonly List<DelayLoadedScriptData> _delayLoadedScripts = new List<DelayLoadedScriptData>();
-
-        private struct DelayLoadedScriptData
-        {
-            public string path;
-            public string identifier;
-            public bool asClass;
-        }
+        private readonly bool _customized;
+        private ExternalLibraryDef _library;
+        
         
         private LibraryLoader(
             IExecutableModule moduleHandle,
-            IRuntimeEnvironment env,
             ILibraryManager libManager,
             ScriptingEngine engine): base(moduleHandle)
         {
-            _env = env;
             _libManager = libManager;
             _engine = engine;
             _customized = true;
@@ -51,11 +41,10 @@ namespace ScriptEngine.HostedScript
 
         }
 
-        private LibraryLoader(IRuntimeEnvironment env,
+        private LibraryLoader(
             ILibraryManager libManager,
             ScriptingEngine engine)
         {
-            _env = env;
             _libManager = libManager;
             _engine = engine;
             _customized = false;
@@ -69,13 +58,13 @@ namespace ScriptEngine.HostedScript
             var code = engine.Loader.FromFile(processingScript);
             var module = CompileModule(compiler, code, typeof(LibraryLoader));
             
-            return new LibraryLoader(module, engine.Environment, engine.LibraryManager, engine);
+            return new LibraryLoader(module, engine.LibraryManager, engine);
 
         }
 
         public static LibraryLoader Create(ScriptingEngine engine)
         {
-            return new LibraryLoader(engine.Environment, engine.LibraryManager, engine);
+            return new LibraryLoader(engine.LibraryManager, engine);
         }
 
         #endregion
@@ -86,12 +75,7 @@ namespace ScriptEngine.HostedScript
             if (!Utils.IsValidIdentifier(className))
                 throw RuntimeException.InvalidArgumentValue();
 
-            _delayLoadedScripts.Add(new DelayLoadedScriptData()
-                {
-                    path = file,
-                    identifier = className,
-                    asClass = true
-                });
+            _library.AddClass(className, file);
         }
 
         [ContextMethod("ДобавитьМодуль", "AddModule")]
@@ -100,26 +84,22 @@ namespace ScriptEngine.HostedScript
             if (!Utils.IsValidIdentifier(moduleName))
                 throw RuntimeException.InvalidArgumentValue();
 
-            _delayLoadedScripts.Add(new DelayLoadedScriptData()
-            {
-                path = file,
-                identifier = moduleName,
-                asClass = false
-            });
+            _library.AddModule(moduleName, file);
 
-            try
-            {
-                TraceLoadLibrary(
-                    Locale.NStr($"ru = 'Загружаю модуль ={moduleName}= в область видимости из файла {file}';"+
-                                $"en = 'Load module ={moduleName}= in to context from file {file}'")    
-                );
-                _env.InjectGlobalProperty(null, moduleName, true);
-            }
-            catch (InvalidOperationException e)
-	        {
-                // символ уже определен
-                throw new RuntimeException(String.Format("Невозможно загрузить модуль {0}. Такой символ уже определен.", moduleName), e);
-            }
+         //    try
+         //    {
+         //        TraceLoadLibrary(
+         //            Locale.NStr($"ru = 'Загружаю модуль ={moduleName}= в область видимости из файла {file}';"+
+         //                        $"en = 'Load module ={moduleName}= in to context from file {file}'")    
+         //        );
+         //        _env.InjectGlobalProperty(null, moduleName, true);
+         //        MachineInstance.Current.UpdateGlobals();
+         //    }
+         //    catch (InvalidOperationException e)
+	        // {
+         //        // символ уже определен
+         //        throw new RuntimeException(String.Format("Невозможно загрузить модуль {0}. Такой символ уже определен.", moduleName), e);
+         //    }
         }
 
         [ContextMethod("ЗагрузитьБиблиотеку", "LoadLibrary")]
@@ -127,7 +107,7 @@ namespace ScriptEngine.HostedScript
         {
             var context = new ComponentLoadingContext(dllPath);
             var assembly = context.LoadFromAssemblyPath(dllPath);
-            _engine.AttachExternalAssembly(assembly, _env);
+            _engine.AttachExternalAssembly(assembly);
         }
 
         [ContextMethod("ДобавитьМакет", "AddTemplate")]
@@ -137,10 +117,10 @@ namespace ScriptEngine.HostedScript
             manager.RegisterTemplate(file, name, kind);
         }
 
-        public ExternalLibraryDef ProcessLibrary(string libraryPath)
+        public bool ProcessLibrary(string libraryPath)
         {
             bool success;
-            _delayLoadedScripts.Clear();
+            _library = new ExternalLibraryDef(Path.GetFileName(libraryPath));
             
             if(!_customized)
             {
@@ -164,11 +144,9 @@ namespace ScriptEngine.HostedScript
             if (!success)
                 return default;
             
-            
-            var library = new ExternalLibraryDef(Path.GetFileName(libraryPath));
-            CompileDelayedModules(library);
+            _libManager.InitExternalLibrary(_engine, _library);
 
-            return library;
+            return true;
         }
 
         private bool CustomizedProcessing(string libraryPath)
@@ -222,50 +200,10 @@ namespace ScriptEngine.HostedScript
             return hasFiles;
         }
 
-        private void CompileDelayedModules(ExternalLibraryDef library)
-        {
-            foreach (var scriptFile in _delayLoadedScripts)
-            {
-                if (scriptFile.asClass)
-                {
-                    library.AddClass(scriptFile.identifier, scriptFile.path);
-                }
-                else
-                {
-                    library.AddModule(scriptFile.identifier, scriptFile.path);
-                }
-            }
-
-            library.Modules.ForEach(moduleFile =>
-            {
-                var module = CompileFile(moduleFile.FilePath);
-                moduleFile.Module = module;
-            });
-            
-            library.Classes.ForEach(classFile =>
-            {
-                var module = CompileFile(classFile.FilePath);
-                _engine.AttachedScriptsFactory.RegisterTypeModule(classFile.Symbol, module);
-                classFile.Module = module;
-            });
-
-            _libManager.InitExternalLibrary(_engine, library);
-        }
-
-        private IExecutableModule CompileFile(string path)
-        {
-            var compiler = _engine.GetCompilerService();
-            
-            var source = _engine.Loader.FromFile(path);
-            var module = _engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, null);
-
-            return module;
-        }
-
         private static Lazy<bool> TraceEnabled =
-            new Lazy<bool>(() => System.Environment.GetEnvironmentVariable("OS_LRE_TRACE") == "1");
-        
-        public static void TraceLoadLibrary(string message)
+            new Lazy<bool>(() => Environment.GetEnvironmentVariable("OS_LRE_TRACE") == "1");
+
+        private static void TraceLoadLibrary(string message)
         {
             if (TraceEnabled.Value) {
                 SystemLogger.Write("LRE: " + message);

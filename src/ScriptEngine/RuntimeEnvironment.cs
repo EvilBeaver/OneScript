@@ -30,7 +30,7 @@ namespace ScriptEngine
         public RuntimeEnvironment()
         {
             _injectedProperties = new PropertyBag();
-            _libraryManager = new LibraryManager(_injectedProperties);
+            _libraryManager = new LibraryManager();
         }
 
         private void CreateGlobalScopeIfNeeded()
@@ -103,11 +103,6 @@ namespace ScriptEngine
         public SymbolTable GetSymbolTable() => _symbols;
 
         public IReadOnlyCollection<IAttachableContext> AttachedContexts => _contexts;
-
-        public IEnumerable<ExternalLibraryDef> GetLibraries()
-        { 
-            return _libraryManager.GetLibraries();
-        }
 
         public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library)
         {

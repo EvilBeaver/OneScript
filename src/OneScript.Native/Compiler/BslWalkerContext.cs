@@ -14,7 +14,7 @@ namespace OneScript.Native.Compiler
 {
     public class BslWalkerContext
     {
-        public SymbolTable Symbols { get; set; }
+        public ISymbolTable Symbols { get; set; }
         
         public IErrorSink Errors { get; set; }
         

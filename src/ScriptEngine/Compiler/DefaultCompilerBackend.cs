@@ -28,7 +28,7 @@ namespace ScriptEngine.Compiler
         
         public bool GenerateCodeStat { get; set; }
         
-        public SymbolTable Symbols { get; set; }
+        public ISymbolTable Symbols { get; set; }
         
         public IExecutableModule Compile(ModuleNode parsedModule, Type classType)
         {

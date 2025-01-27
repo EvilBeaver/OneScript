@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -66,7 +67,12 @@ namespace ScriptEngine.Machine
 
             _mem = memory;
             _codeStatCollector = _mem.Services.TryResolve<ICodeStatCollector>();
-            _globalContexts = _mem.GlobalNamespace.AttachedContexts.Select(x => new AttachedContext(x))
+            UpdateGlobals();
+        }
+
+        public void UpdateGlobals() 
+        {
+            _globalContexts =_mem.GlobalNamespace.AttachedContexts.Select(x => new AttachedContext(x))
                 .ToArray();
         }
         
@@ -82,7 +88,11 @@ namespace ScriptEngine.Machine
             Debug.Assert(module != null);
 
             var thisScope = new AttachedContext(sdo);
-            var scopes = CreateFrameScopes(_globalContexts, thisScope);
+            var scopes = CreateFrameScopes(
+                _globalContexts
+                    .Take(module.EnvironmentLoadingBoundary)
+                    .ToList(), 
+                thisScope);
             
             var frame = new ExecutionFrame
             {
