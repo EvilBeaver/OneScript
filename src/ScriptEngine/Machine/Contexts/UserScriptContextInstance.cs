@@ -245,18 +245,6 @@ namespace ScriptEngine.Machine.Contexts
             return _ownPropertyIndexes.Where(x => x.Value == index).First().Key;
         }
 
-        public VariableInfo GetOwnVariableInfo(int index)
-        {
-            return new VariableInfo();/* { 
-                    Identifier = variable.Identifier,
-                    Type = variable.Type,
-                    Index = variable.Index,
-                    Annotations = HackGetAnnotations(context, variable.Index),
-                    IsExport = variable.IsExport
-            };*/
-            
-        }
-        
         public override int GetMethodsCount()
         {
             return GetOwnMethodCount() + _module.Methods.Length;
