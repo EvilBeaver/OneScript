@@ -326,7 +326,7 @@ DllExport int32_t GetNParams(ProxyComponent* proxy, int32_t lMethodNum)
 	return (int32_t)proxy->Component().GetNParams(lMethodNum);
 }
 
-DllExport bool ADDIN_API HasParamDefValue(ProxyComponent* proxy, int32_t lMethodNum, int32_t lParamNum)
+DllExport bool HasParamDefValue(ProxyComponent* proxy, int32_t lMethodNum, int32_t lParamNum)
 {
 	CHECK_PROXY(false);
 	tVariant variant = { 0 };
@@ -335,7 +335,7 @@ DllExport bool ADDIN_API HasParamDefValue(ProxyComponent* proxy, int32_t lMethod
 	return result;
 }
 
-DllExport bool ADDIN_API GetParamDefValue(ProxyComponent* proxy, int32_t lMethodNum, int32_t lParamNum, VariantFuncRespond respond)
+DllExport bool GetParamDefValue(ProxyComponent* proxy, int32_t lMethodNum, int32_t lParamNum, VariantFuncRespond respond)
 {
 	CHECK_PROXY(false);
 	tVariant variant = { 0 };
@@ -351,7 +351,7 @@ DllExport bool HasRetVal(ProxyComponent* proxy, int32_t lMethodNum)
 	return proxy->Component().HasRetVal(lMethodNum);
 }
 
-DllExport bool ADDIN_API CallAsProc(ProxyComponent* proxy, int32_t lMethodNum, tVariant* paParams)
+DllExport bool CallAsProc(ProxyComponent* proxy, int32_t lMethodNum, tVariant* paParams)
 {
 	CHECK_PROXY(false);
 	auto lSizeArray = GetNParams(proxy, lMethodNum);
@@ -359,7 +359,7 @@ DllExport bool ADDIN_API CallAsProc(ProxyComponent* proxy, int32_t lMethodNum, t
 	return ok;
 }
 
-DllExport bool ADDIN_API CallAsFunc(ProxyComponent* proxy, int32_t lMethodNum, tVariant* paParams, VariantFuncRespond respond)
+DllExport bool CallAsFunc(ProxyComponent* proxy, int32_t lMethodNum, tVariant* paParams, VariantFuncRespond respond)
 {
 	CHECK_PROXY(false);
 	tVariant variant = { 0 };
