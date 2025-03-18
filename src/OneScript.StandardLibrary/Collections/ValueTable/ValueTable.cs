@@ -258,7 +258,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                 foreach (var col in processing_list)
                 {
                     var current = row.Get(col);
-                    if (value.Equals(current))
+                    if (value.StrictEquals(current))
                         return row;
                 }
             }
@@ -274,7 +274,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                     throw WrongColumnNameException(kv.Key.AsString());
 
                 IValue current = Row.Get(Column);
-                if (!current.Equals(kv.Value))
+                if (!current.StrictEquals(kv.Value))
                     return false;
             }
             return true;

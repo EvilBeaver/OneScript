@@ -18,6 +18,7 @@ using OneScript.StandardLibrary.XMLSchema.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using OneScript.StandardLibrary.XMLSchema.Interfaces;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -208,17 +209,17 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         public XMLSchema SchemaForSchema { get; }
 
         [ContextProperty("ФормаАтрибутовПоУмолчанию", "AttributeFormDefault")]
-        public XSForm AttributeFormDefault
+        public ClrEnumValueWrapper<XmlSchemaForm> AttributeFormDefault
         {
-            get => XSForm.FromNativeValue(_schema.AttributeFormDefault);
-            set => _schema.AttributeFormDefault = XSForm.ToNativeValue(value);
+            get => EnumerationXSForm.FromNativeValue(_schema.AttributeFormDefault);
+            set => _schema.AttributeFormDefault = value.UnderlyingValue;
         }
 
         [ContextProperty("ФормаЭлементовПоУмолчанию", "ElementFormDefault")]
-        public XSForm ElementFormDefault
+        public ClrEnumValueWrapper<XmlSchemaForm> ElementFormDefault
         {
-            get => XSForm.FromNativeValue(_schema.ElementFormDefault);
-            set => _schema.ElementFormDefault = XSForm.ToNativeValue(value);
+            get => EnumerationXSForm.FromNativeValue(_schema.ElementFormDefault);
+            set => _schema.ElementFormDefault = value.UnderlyingValue;
         }
 
         [ContextProperty("Язык", "Lang")]

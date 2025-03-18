@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneScript.DebugProtocol;
 using Serilog;
+using VSCode.DebugAdapter.OscriptProtocols;
 using VSCodeDebug;
 using static System.Net.WebRequestMethods;
 
@@ -39,7 +40,7 @@ namespace VSCode.DebugAdapter
             AdapterID = (string) args.adapterID;
 
             _process = DebugeeFactory.CreateProcess(AdapterID, PathStrategy);
-            
+
             SendResponse(response, new Capabilities
             {
                 supportsConditionalBreakpoints = true,
@@ -128,7 +129,18 @@ namespace VSCode.DebugAdapter
                 return;
             }
 
+            SetupProtocol(args);
+            
             SendResponse(response);
+        }
+
+        private void SetupProtocol(dynamic args)
+        {
+            int protocolVersion = GetFromContainer(args, "protocolVersion", 0);
+            if (ProtocolVersions.IsValid(protocolVersion))
+            {
+                _process.ProtocolVersion = protocolVersion;
+            }
         }
 
         public override void Attach(Response response, dynamic arguments)
@@ -156,6 +168,8 @@ namespace VSCode.DebugAdapter
                 SendErrorResponse(response, 4550, "Can't connect: " + e.ToString());
                 return;
             }
+
+            SetupProtocol(arguments);
             
             SendResponse(response);
         }
@@ -260,7 +274,16 @@ namespace VSCode.DebugAdapter
 
         }
 
-        public void ThreadStopped(int threadId, ThreadStopReason reason, string errorMessage)
+        public void ThreadStopped(int threadId, ThreadStopReason reason)
+        {
+            LogEventOccured();
+            _framesHandles.Reset();
+            _variableHandles.Reset();
+
+            SendEvent(new StoppedEvent(threadId, reason.ToString()));
+        }
+        
+        public void ThreadStoppedEx(int threadId, ThreadStopReason reason, string errorMessage)
         {
             LogEventOccured();
             _framesHandles.Reset();
@@ -484,7 +507,7 @@ namespace VSCode.DebugAdapter
             }
         }
 
-        private static T GetFromContainer<T>(dynamic container, string propertyName, T dflt = default)
+        private static T GetFromContainer<T>(dynamic container, string propertyName, T defaultValue = default)
         {
             try
             {
@@ -494,7 +517,7 @@ namespace VSCode.DebugAdapter
             {
                 // ignore and return default value
             }
-            return dflt;
+            return defaultValue;
         }
 
         protected override void OnRequestError(Exception e)

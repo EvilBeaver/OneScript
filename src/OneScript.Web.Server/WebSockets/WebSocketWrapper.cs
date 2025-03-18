@@ -43,7 +43,7 @@ namespace OneScript.Web.Server.WebSockets
             get
             {
                 if (_webSocket.CloseStatusDescription == null)
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
                 else
                     return BslStringValue.Create(_webSocket.CloseStatusDescription);
             }
@@ -60,7 +60,7 @@ namespace OneScript.Web.Server.WebSockets
         /// </summary>
         [ContextProperty("Протокол", "Protocol", CanWrite = false)]
         public IValue Protocol
-            => _webSocket.SubProtocol == null ? BslNullValue.Instance : (IValue)BslStringValue.Create(_webSocket.SubProtocol);
+            => _webSocket.SubProtocol == null ? BslUndefinedValue.Instance : BslStringValue.Create(_webSocket.SubProtocol);
 
         /// <summary>
         /// Отменяет соединение WebSocket и отменяет все ожидающие операции ввода-вывода
@@ -76,7 +76,7 @@ namespace OneScript.Web.Server.WebSockets
         [ContextMethod("Закрыть", "Close")]
         public void Close(WebSocketCloseStatusWrapper status, IValue statusDescription)
         {
-            var desc = statusDescription is BslNullValue ? null : statusDescription.AsString();
+            var desc = statusDescription is BslUndefinedValue ? null : statusDescription.AsString();
 
             _webSocket.CloseAsync((WebSocketCloseStatus)status, desc, default).Wait();
         }
@@ -89,7 +89,7 @@ namespace OneScript.Web.Server.WebSockets
         [ContextMethod("ЗакрытьВыходнойПоток", "CloseOutput")]
         public void CloseOutput(WebSocketCloseStatusWrapper status, IValue statusDescription)
         {
-            var desc = statusDescription is BslNullValue ? null : statusDescription.AsString();
+            var desc = statusDescription is BslUndefinedValue ? null : statusDescription.AsString();
 
             _webSocket.CloseOutputAsync((WebSocketCloseStatus)status, desc, default).Wait();
         }

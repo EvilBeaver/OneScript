@@ -9,6 +9,7 @@ using System;
 using OneScript.Exceptions;
 using OneScript.Localization;
 using OneScript.Types;
+using ScriptEngine.Machine;
 
 namespace OneScript.Values
 {
@@ -57,12 +58,15 @@ namespace OneScript.Values
         
         public override bool Equals(BslValue other)
         {
-            if (ReferenceEquals(null, other))
-                return false;
-            if (ReferenceEquals(this, other))
-                return true;
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
 
-            return false;
+           return other switch
+            {
+                BslNumericValue num => num == ((decimal)this),
+                BslBooleanValue boolean => _flag == boolean._flag,
+                _ => false
+            };
         }
 
         public override int CompareTo(BslValue other)

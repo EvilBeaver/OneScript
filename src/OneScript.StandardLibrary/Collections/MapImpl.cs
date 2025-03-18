@@ -31,13 +31,7 @@ namespace OneScript.StandardLibrary.Collections
             }
         }
         
-        public override bool IsIndexed
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsIndexed => true;
 
         public override IValue GetIndexedValue(IValue index)
         {

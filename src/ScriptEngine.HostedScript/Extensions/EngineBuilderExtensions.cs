@@ -124,5 +124,11 @@ namespace ScriptEngine.HostedScript.Extensions
             
             return builder;
         }
+
+        public static IEngineBuilder UseEventHandlers(this IEngineBuilder builder)
+        {
+            builder.Services.RegisterSingleton<IEventProcessor, DefaultEventProcessor>();
+            return builder;
+        }
     }
 }

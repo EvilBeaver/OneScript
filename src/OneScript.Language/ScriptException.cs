@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Text;
+using OneScript.Localization;
 
 namespace OneScript.Language
 {
@@ -81,8 +82,8 @@ namespace OneScript.Language
                 if (LineNumber != ErrorPositionInfo.OUT_OF_TEXT)
                 {
                     parts.Add(ColumnNumber != ErrorPositionInfo.OUT_OF_TEXT
-                        ? $"Ошибка в строке: {LineNumber},{ColumnNumber}"
-                        : $"Ошибка в строке: {LineNumber}");
+                        ? BilingualString.Localize($"Ошибка в строке: {LineNumber},{ColumnNumber}", $"Error in line {LineNumber},{ColumnNumber}")
+                        : BilingualString.Localize($"Ошибка в строке: {LineNumber}", $"Error in line: {LineNumber}"));
                 }
                 parts.Add(base.Message);
 

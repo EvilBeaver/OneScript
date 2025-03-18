@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using OneScript.Contexts.Enums;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.DriveInfo
@@ -24,31 +25,22 @@ namespace OneScript.StandardLibrary.DriveInfo
     [SystemEnum("ТипДиска", "DriveType")]
     public class DriveTypeEnum : EnumerationContext
     {
-
         private DriveTypeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
         {
-
+            this.WrapClrValue("Неизвестный", "Unknown", System.IO.DriveType.Unknown);
+            this.WrapClrValue("НеИмеетКорневойКаталог", "NoRootDirectory", System.IO.DriveType.NoRootDirectory);
+            this.WrapClrValue("СъемноеЗапоминающееУстройство", "Removable", System.IO.DriveType.Removable);
+            this.WrapClrValue("ЖесткийДиск", "Fixed", System.IO.DriveType.Fixed);
+            this.WrapClrValue("СетевойДиск", "Network", System.IO.DriveType.Network);
+            this.WrapClrValue("ОптическийДиск", "CDRom", System.IO.DriveType.CDRom);
+            this.WrapClrValue("ДискОЗУ", "Ram", System.IO.DriveType.Ram);
         }
 
         public static DriveTypeEnum CreateInstance(ITypeManager typeManager)
         {
-            
-            var instance = EnumContextHelper.CreateClrEnumInstance<DriveTypeEnum, System.IO.DriveType>(
-                typeManager,
-                (t, v) => new DriveTypeEnum(t, v)); 
-            
-            instance.WrapClrValue("Неизвестный", "Unknown", System.IO.DriveType.Unknown);
-            instance.WrapClrValue("НеИмеетКорневойКаталог", "NoRootDirectory", System.IO.DriveType.NoRootDirectory);
-            instance.WrapClrValue("СъемноеЗапоминающееУстройство", "Removable", System.IO.DriveType.Removable);
-            instance.WrapClrValue("ЖесткийДиск", "Fixed", System.IO.DriveType.Fixed);
-            instance.WrapClrValue("СетевойДиск", "Network", System.IO.DriveType.Network);
-            instance.WrapClrValue("ОптическийДиск", "CDRom", System.IO.DriveType.CDRom);
-            instance.WrapClrValue("ДискОЗУ", "Ram", System.IO.DriveType.Ram);
-
-            return instance;
+            return EnumContextHelper.CreateClrEnumInstance<DriveTypeEnum, System.IO.DriveType>(
+                typeManager, (t, v) => new DriveTypeEnum(t, v)); 
         }
-
     }
-
 }

@@ -52,10 +52,10 @@ namespace OneScript.StandardLibrary.Xml
         public string Language => _context.XmlLang;
 
         [ContextProperty("ПробельныеСимволы", "Space")]
-        public IValue Space => XmlSpaceEnum.Instance.FromNativeValue(_context.XmlSpace);
+        public IValue Space => XmlSpaceEnum.FromNativeValue(_context.XmlSpace);
 
         [ContextProperty("ТипПроверкиПравильности","ValidationType")]
-        public IValue ValidationTypeImpl => XmlValidationTypeEnum.Instance.FromNativeValue(_settings.ValidationType);
+        public IValue ValidationTypeImpl => XmlValidationTypeEnum.FromNativeValue(_settings.ValidationType);
 
         [ContextProperty("ИгнорироватьОбъявлениеXML", "IgnoreXMLDeclaration")]
         public bool IgnoreXMLDeclaration { get; }

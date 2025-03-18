@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using Serilog;
+using VSCode.DebugAdapter.OscriptProtocols;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 
 namespace VSCode.DebugAdapter
@@ -32,6 +33,8 @@ namespace VSCode.DebugAdapter
 
         private readonly PathHandlingStrategy _strategy;
 
+        private int _activeProtocolVersion;
+
         public DebugeeProcess(PathHandlingStrategy pathHandling)
         {
             _strategy = pathHandling;
@@ -43,6 +46,16 @@ namespace VSCode.DebugAdapter
         public int ExitCode => _process.ExitCode;
 
         public int DebugPort { get; set; }
+
+        public int ProtocolVersion
+        {
+            get => _activeProtocolVersion;
+            set
+            {
+                _activeProtocolVersion = value;
+                SetupSupportedProtocolVersion();
+            }
+        }
 
         public void Start()
         {
@@ -77,7 +90,7 @@ namespace VSCode.DebugAdapter
             _process.EnableRaisingEvents = true;
             _process.Exited += Process_Exited;
         }
-
+        
         public void Init(JObject args)
         {
             InitInternal(args);
@@ -146,6 +159,30 @@ namespace VSCode.DebugAdapter
             RaiseOutputReceivedEvent("stdout", e.Data);
         }
 
+        private void SetupSupportedProtocolVersion()
+        {
+            if (!ProtocolVersions.IsValid(_activeProtocolVersion))
+            {
+                _activeProtocolVersion = ProtocolVersions.SafestVersion;
+                return;
+            }
+
+            if (_activeProtocolVersion != ProtocolVersions.UnknownVersion)
+            {
+                // Задали вручную корректное значение. Ничего не запрашиваем
+                return;
+            }
+
+            try
+            {
+                _activeProtocolVersion = _debugger.GetProtocolVersion();
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Unknown error while checking version");
+            }
+        }
+
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data == null)
@@ -203,7 +240,8 @@ namespace VSCode.DebugAdapter
 
         public void SetExceptionsBreakpoints((string Id, string Condition)[] filters)
         {
-            _debugger.SetMachineExceptionBreakpoints(filters);
+            if (ProtocolVersion > ProtocolVersions.Version1)
+                _debugger.SetMachineExceptionBreakpoints(filters);
         }
 
         public Breakpoint[] SetBreakpoints(IEnumerable<Breakpoint> breakpoints)

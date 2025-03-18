@@ -23,13 +23,10 @@ namespace OneScript.StandardLibrary.XDTO
     public sealed class XDTOSerializer : AutoContext<XDTOSerializer>
     {
         private readonly XmlGlobalFunctions _xmlGlobalFunctions;
-        private readonly XmlNodeTypeEnum _xmlNodeEnum;
-
 
         private XDTOSerializer(IGlobalsManager globalsManager)
         {
             _xmlGlobalFunctions = globalsManager.GetInstance<XmlGlobalFunctions>();
-            _xmlNodeEnum = globalsManager.GetInstance<XmlNodeTypeEnum>();
         }
 
         private void WriteXMLSimpleData(XmlWriterImpl xmlWriter,
@@ -190,7 +187,7 @@ namespace OneScript.StandardLibrary.XDTO
             if (valueType is BslTypeValue typeTypeValue)
                 typeValue = typeTypeValue;
 
-            else if (xmlReader.NodeType.Equals(_xmlNodeEnum.FromNativeValue(XmlNodeType.Element)))
+            else if (xmlReader.NodeType.Equals(XmlNodeTypeEnum.FromNativeValue(XmlNodeType.Element)))
             {
                 IValue xsiType = xmlReader.GetAttribute(ValueFactory.Create("type"), XmlSchema.InstanceNamespace);
                 IValue xsiNil = xmlReader.GetAttribute(ValueFactory.Create("nil"), XmlSchema.InstanceNamespace);
@@ -238,7 +235,7 @@ namespace OneScript.StandardLibrary.XDTO
             else if (typeof(BslPrimitiveValue).IsAssignableFrom(implType))
             {
                 xmlReader.Read();
-                if (xmlReader.NodeType.Equals(_xmlNodeEnum.FromNativeValue(XmlNodeType.Text)))
+                if (xmlReader.NodeType.Equals(XmlNodeTypeEnum.FromNativeValue(XmlNodeType.Text)))
                 {
                     result = XMLValue(typeValue, xmlReader.Value);
                     xmlReader.Read();

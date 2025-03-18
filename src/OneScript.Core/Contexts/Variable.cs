@@ -32,15 +32,11 @@ namespace OneScript.Contexts
 
         public static IVariable CreateReference(IVariable variable, string refName)
         {
-            if (variable is VariableReference vref)
+            if (variable is VariableReference vref && vref._reference is IndexedValueReference iv)
             {
-                if (vref._reference is IndexedValueReference iv)
-                {
-                    _ = iv.Value;
-                }
-
-                return variable;
+                _ = iv.Value; // проверить правильность индекса
             }
+
             return new VariableReference(variable, refName);
         }
 

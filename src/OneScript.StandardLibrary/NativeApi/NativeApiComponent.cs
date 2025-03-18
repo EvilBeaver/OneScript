@@ -17,14 +17,10 @@ namespace OneScript.StandardLibrary.NativeApi
     /// <summary>
     /// Экземпляр внешней компоненты Native API
     /// </summary>
-    class NativeApiComponent : NativeApiValue, IRuntimeContextInstance, IDisposable
+    class NativeApiComponent : BslObjectValue, IRuntimeContextInstance, IDisposable
     {
         private IntPtr _object;
-
-        public override IRuntimeContextInstance AsObject()
-        {
-            return this;
-        }
+        private TypeDescriptor _type;
 
         public event OnComponentEvent OnComponentEvent;
 
@@ -93,8 +89,11 @@ namespace OneScript.StandardLibrary.NativeApi
                     OnComponentStatusText?.Invoke(S(status));
                 }
             );
-            DefineType(typeDef);
+            _type = typeDef;
         }
+        
+        // ReSharper disable once ConvertToAutoProperty
+        public override TypeDescriptor SystemType => _type;
 
         public bool IsIndexed => true;
 

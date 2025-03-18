@@ -136,21 +136,15 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
 
-        public virtual int GetPropCount()
-        {
-            throw new NotImplementedException();
-        }
+        public virtual int GetPropCount() => 0;
 
         public virtual string GetPropName(int propNum)
         {
             throw new NotImplementedException();
         }
 
-        public virtual int GetMethodsCount()
-        {
-            throw new NotImplementedException();
-        }
-
+        public virtual int GetMethodsCount() => 0;
+ 
         public virtual int GetMethodNumber(string name)
         {
             throw RuntimeException.MethodNotFoundException(name);

@@ -34,7 +34,7 @@
 
 Процедура TestConstructor() Экспорт
 
-	ЮнитТест.ПроверитьРавенство(TypeOf(XSDisallowedSubstitutions),              Type("EnumerationXSDisallowedSubstitutions"));
+	ЮнитТест.ПроверитьРавенство(TypeOf(XSDisallowedSubstitutions),              Type("EnumXSDisallowedSubstitutions"));
 	ЮнитТест.ПроверитьРавенство(TypeOf(XSDisallowedSubstitutions.All),          Type("XSDisallowedSubstitutions"));
 	ЮнитТест.ПроверитьРавенство(TypeOf(XSDisallowedSubstitutions.Restriction),  Type("XSDisallowedSubstitutions"));
 	ЮнитТест.ПроверитьРавенство(TypeOf(XSDisallowedSubstitutions.Substitution), Type("XSDisallowedSubstitutions"));

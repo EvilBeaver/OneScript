@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using OneScript.Contexts.Enums;
 using OneScript.Types;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -51,7 +52,7 @@ namespace ScriptEngine.Machine.Contexts
             return new TypeDescriptor(
                 metadata.TypeUUID == default ? Guid.NewGuid() : Guid.Parse(metadata.TypeUUID),
                 "Перечисление" + metadata.Name,
-                metadata.Alias != default? "Enum" + metadata.Alias : default,
+                metadata.Alias != default ? "Enum" + metadata.Alias : default,
                 enumType
             );
         }
@@ -70,15 +71,8 @@ namespace ScriptEngine.Machine.Contexts
             where TOwner : EnumerationContext
             where TEnum : struct
         {
-            TOwner instance;
-
-            TypeDescriptor enumType;
-            TypeDescriptor enumValType;
-
-            (enumType, enumValType) = EnumContextHelper.RegisterEnumType<TOwner, ClrEnumValueWrapper<TEnum>>(typeManager);
-
-            instance = creator(enumType, enumValType);
-            return instance;
+            var (enumType, enumValType) = RegisterEnumType<TOwner, ClrEnumValueWrapper<TEnum>>(typeManager);
+            return creator(enumType, enumValType);
         }
         
         public static ClrEnumValueWrapper<T> WrapClrValue<T>(
@@ -88,11 +82,10 @@ namespace ScriptEngine.Machine.Contexts
             T value)
             where T : struct
         {
-            var wrappedValue = new ClrEnumValueWrapper<T>(owner, value); 
-            owner.AddValue(name, alias, wrappedValue);
+            var wrappedValue = new ClrEnumValueWrapper<T>(owner.ValuesType, value, name, alias); 
+            owner.AddValue(wrappedValue);
             return wrappedValue;
         }
-
     }
 
     public delegate T EnumCreationDelegate<T>(TypeDescriptor typeRepresentation, TypeDescriptor valuesType) where T : EnumerationContext;

@@ -12,6 +12,7 @@ using ScriptEngine.Machine;
 using OneScript.Commons;
 using OneScript.Compilation;
 using OneScript.Contexts;
+using OneScript.DependencyInjection;
 using OneScript.Execution;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Tasks;
@@ -126,6 +127,8 @@ namespace ScriptEngine.HostedScript
                 compilerSvc.PreprocessorDefinitions.Add("MONO");
             }
         }
+
+        public IServiceContainer Services => _engine.Services;
 
         public void SetGlobalEnvironment(IHostApplication host, SourceCode src)
         {

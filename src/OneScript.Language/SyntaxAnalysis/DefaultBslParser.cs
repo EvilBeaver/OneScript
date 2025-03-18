@@ -659,6 +659,11 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void BuildStatement()
         {
+            if (!_isInAsyncMethod && (_lastExtractedLexem.Token == Token.Async || _lastExtractedLexem.Token == Token.Await))
+            {
+                _lastExtractedLexem.Token = Token.NotAToken;
+            }
+            
             if (_lastExtractedLexem.Token == Token.NotAToken)
             {
                 BuildSimpleStatement();

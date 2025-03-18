@@ -224,7 +224,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
                 foreach (ValueTreeColumn col in processingList)
                 {
                     IValue current = row.Get(col);
-                    if (value.Equals(current))
+                    if (value.StrictEquals(current))
                         return row;
                 }
                 if (includeChildren)
@@ -248,7 +248,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
                     throw PropertyAccessException.PropNotFoundException(kv.Key.AsString());
 
                 IValue current = row.Get(column);
-                if (!current.Equals(kv.Value))
+                if (!current.StrictEquals(kv.Value))
                     return false;
             }
             return true;

@@ -267,6 +267,24 @@ namespace OneScript.Native.Compiler
 
                     return DowncastDecimal(decimalNum, targetType);
                 }
+                else if (targetType.IsEnum)
+                {
+                    Type generic = typeof(ClrEnumValueWrapper<>);
+                    var wrapperType = generic.MakeGenericType(new[]{targetType});
+                    try
+                    {
+                        var wrapper = Expression.Convert(value, wrapperType);
+                        return Expression.Property(wrapper,"UnderlyingValue");
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        throw new NativeCompilerException(
+                            BilingualString.Localize(
+                                $"Преобразование {value.Type} в тип {targetType} недоступно",
+                                $"Conversion from {value.Type} to {targetType} is unavailable")
+                        );                        
+                    }
+               }
                 else
                 {
                     var conversion = TryConvertBslValueToPrimitiveType(value, targetType);

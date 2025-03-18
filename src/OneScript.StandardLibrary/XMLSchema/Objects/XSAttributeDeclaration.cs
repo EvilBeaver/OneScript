@@ -15,6 +15,7 @@ using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using OneScript.StandardLibrary.XMLSchema.Interfaces;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using OneScript.Values;
 
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
@@ -190,10 +191,10 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         [ContextProperty("Форма", "Form")]
-        public XSForm Form
+        public ClrEnumValueWrapper<XmlSchemaForm> Form
         {
-            get => XSForm.FromNativeValue(_attribute.Form);
-            set => _attribute.Form = XSForm.ToNativeValue(value);
+            get => EnumerationXSForm.FromNativeValue(_attribute.Form);
+            set => _attribute.Form = value.UnderlyingValue;
         }
 
         [ContextProperty("ЭтоГлобальноеОбъявление", "IsGlobal")]

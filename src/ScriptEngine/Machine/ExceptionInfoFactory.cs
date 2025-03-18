@@ -48,7 +48,7 @@ namespace ScriptEngine.Machine
             return raiseValue switch
             {
                 ExceptionInfoContext { IsErrorTemplate: true } excInfo => 
-                    new ParametrizedRuntimeException(excInfo.Description, excInfo.Parameters),
+                    new ParametrizedRuntimeException(excInfo.Description, excInfo.Parameters, excInfo.InnerException),
                 BslValue bslVal => new RuntimeException(bslVal.AsString()),
                 _ => new RuntimeException(raiseValue.ToString())
             };

@@ -51,7 +51,7 @@ namespace oscript
                 .UseImports()
                 .UseFileSystemLibraries()
                 .UseNativeRuntime()
-                ;
+                .UseEventHandlers();
         }
     }
 }

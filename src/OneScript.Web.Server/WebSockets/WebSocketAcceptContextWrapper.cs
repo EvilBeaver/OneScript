@@ -19,7 +19,7 @@ namespace OneScript.Web.Server.WebSockets
     [ContextClass("КонтекстПодключенияВебСокета", "WebSocketsAcceptContext")]
     public class WebSocketAcceptContextWrapper : AutoContext<WebSocketAcceptContextWrapper>
     {
-        internal readonly WebSocketAcceptContext _context = new WebSocketAcceptContext();
+        internal readonly WebSocketAcceptContext _context = new();
 
         /// <summary>
         /// Согласовываемый субпротокол
@@ -29,11 +29,11 @@ namespace OneScript.Web.Server.WebSockets
         {
             get
             {
-                return _context.SubProtocol == null ? BslNullValue.Instance : (IValue)BslStringValue.Create(_context.SubProtocol);
+                return _context.SubProtocol == null ? BslUndefinedValue.Instance : BslStringValue.Create(_context.SubProtocol);
             }
             set
             {
-                _context.SubProtocol = value is BslNullValue ? null : value.AsString();
+                _context.SubProtocol = value is BslUndefinedValue ? null : value.AsString();
             }
         }
 
@@ -48,11 +48,11 @@ namespace OneScript.Web.Server.WebSockets
                 if (_context.KeepAliveInterval.HasValue)
                     return BslNumericValue.Create((decimal)_context.KeepAliveInterval.Value.TotalSeconds);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
             set
             {
-                if (value is BslNullValue)
+                if (value is BslUndefinedValue)
                     _context.KeepAliveInterval = null;
                 else
                     _context.KeepAliveInterval = TimeSpan.FromSeconds((double)value.AsNumber());

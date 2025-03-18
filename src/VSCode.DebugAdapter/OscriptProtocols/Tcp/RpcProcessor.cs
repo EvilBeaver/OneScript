@@ -36,12 +36,20 @@ namespace VSCode.DebugAdapter
         public void Start()
         {
             _server.DataReceived += ServerOnDataReceived;
+            _server.OnError += ServerOnServerExited; 
             _server.Start();
         }
-        
+
+        private void ServerOnServerExited(object sender, CommunicationEventArgs e)
+        {
+            Log.Fatal(e.Exception, "Server error");
+            Stop();
+        }
+
         public void Stop()
         {
             _server.DataReceived -= ServerOnDataReceived;
+            _server.OnError -= ServerOnServerExited;
             _server.Stop();
         }
         
@@ -74,6 +82,7 @@ namespace VSCode.DebugAdapter
             {
                 Log.Debug("Processing call to {Id}", rpcCall.Id);
                 var result = serviceRecord.Dispatcher.Dispatch(serviceRecord.ServiceInstance, rpcCall.Id, rpcCall.Parameters);
+                Log.Debug("Completed call to {Id}", rpcCall.Id);
                 if (result != null)
                 {
                     var callResult = RpcCallResult.Respond(rpcCall, result);

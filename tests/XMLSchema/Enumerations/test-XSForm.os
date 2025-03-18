@@ -32,7 +32,7 @@
 
 Процедура TestConstructor() Экспорт
 
-	ЮнитТест.ПроверитьРавенство(TypeOf(XSForm),             Type("EnumerationXSForm"));
+	ЮнитТест.ПроверитьРавенство(TypeOf(XSForm),             Type("EnumXSForm"));
 	ЮнитТест.ПроверитьРавенство(TypeOf(XSForm.Qualified),   Type("XSForm"));
 	ЮнитТест.ПроверитьРавенство(TypeOf(XSForm.Unqualified), Type("XSForm"));
 

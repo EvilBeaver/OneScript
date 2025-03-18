@@ -28,11 +28,10 @@ namespace OneScript.StandardLibrary.Collections
 
         public StructureImpl(string strProperties, params IValue[] values)
         {
-            var props = strProperties.Split(',');
-
-            for (int i = 0, nprop = 0; i < props.Length; i++)
+            var nprop = 0;
+            foreach (var item in strProperties.Split(','))
             {
-                var prop = props[i].Trim();
+                var prop = item.Trim();    
                 if (prop.Equals(string.Empty))
                     continue;
 
@@ -48,7 +47,7 @@ namespace OneScript.StandardLibrary.Collections
                 Insert(keyValue.Key.AsString(), keyValue.Value);
             }
         }
-
+      
         [ContextMethod("Вставить")]
         public void Insert(string name, IValue val = null)
         {
@@ -65,7 +64,7 @@ namespace OneScript.StandardLibrary.Collections
             {
                 val = ValueFactory.Create();
             }
-
+            
             SetPropValue(num, val);
         }
 
@@ -131,6 +130,17 @@ namespace OneScript.StandardLibrary.Collections
         public override string GetPropName(int propNum)
         {
             return GetPropertyName(propNum);
+        }
+
+        public override BslPropertyInfo GetPropertyInfo(int propNum)
+        {
+           return BslPropertyBuilder.Create()
+                .Name(GetPropName(propNum))
+                .CanRead(true)
+                .CanWrite(true)
+                .ReturnType(_values[propNum].GetType())
+                .DeclaringType(GetType())
+                .Build();
         }
 
         public override BslMethodInfo GetMethodInfo(int methodNumber)
@@ -243,20 +253,14 @@ namespace OneScript.StandardLibrary.Collections
         [ScriptConstructor(Name = "По ключам и значениям")]
         public static StructureImpl Constructor(IValue param1, IValue[] args)
         {
-            var rawArgument = param1?.GetRawValue();
-            if (rawArgument == null)
-                return new StructureImpl();
-            
-            if (rawArgument is BslStringValue s)
+            return param1?.GetRawValue() switch
             {
-                return new StructureImpl((string)s, args);
-            }
-            else if (rawArgument is FixedStructureImpl)
-            {
-                return new StructureImpl(rawArgument as FixedStructureImpl);
-            }
-
-            throw new RuntimeException("В качестве параметра для конструктора можно передавать только ФиксированнаяСтруктура или Ключи и Значения");
+                null => new StructureImpl(),
+                BslStringValue s => new StructureImpl((string)s, args),
+                FixedStructureImpl fixedstr => new StructureImpl(fixedstr),
+                 
+                _ => throw new RuntimeException("В качестве параметра для конструктора можно передавать только ФиксированнаяСтруктура или Ключи и Значения")
+            };
         }
 
 

@@ -40,7 +40,7 @@ namespace OneScript.Web.Server.WebSockets
             get
             {
                 if (_result.CloseStatusDescription == null)
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
                 else
                     return BslStringValue.Create(_result.CloseStatusDescription);
             }

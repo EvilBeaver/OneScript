@@ -5,7 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System.Collections.Generic;
 using System.Xml;
 using OneScript.Contexts.Enums;
 using OneScript.Types;
@@ -14,10 +13,8 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.Xml
 {
     [SystemEnum("ТипУзлаXML", "XMLNodeType")]
-    public class XmlNodeTypeEnum : ClrEnumWrapper<XmlNodeType>
+    public class XmlNodeTypeEnum : ClrEnumWrapperCached<XmlNodeType>
     {
-        readonly Dictionary<XmlNodeType, ClrEnumValueWrapper<XmlNodeType>> _valuesCache = new Dictionary<XmlNodeType,ClrEnumValueWrapper<XmlNodeType>>();
-
         private XmlNodeTypeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
         {
@@ -38,29 +35,9 @@ namespace OneScript.StandardLibrary.Xml
             MakeValue("Текст", "Text", XmlNodeType.Text);
         }
 
-        private void MakeValue(string name, string alias, XmlNodeType enumValue)
-        {
-            var wrappedValue = this.WrapClrValue(name, alias, enumValue);
-            _valuesCache[enumValue] = wrappedValue;
-        }
-
-        public override ClrEnumValueWrapper<XmlNodeType> FromNativeValue(XmlNodeType native)
-        {
-            if (native == XmlNodeType.SignificantWhitespace)
-                native = XmlNodeType.Whitespace;
-
-            return _valuesCache[native];
-        }
-
         public static XmlNodeTypeEnum CreateInstance(ITypeManager typeManager)
         {
-            var instance = EnumContextHelper.CreateClrEnumInstance<XmlNodeTypeEnum, XmlNodeType>(
-                typeManager,
-                (t,v) => new XmlNodeTypeEnum(t, v));
-
-            OnInstanceCreation(instance);
-            
-            return instance;
+            return CreateInstance(typeManager, (t, v) => new XmlNodeTypeEnum(t, v));
         }
    }
 }

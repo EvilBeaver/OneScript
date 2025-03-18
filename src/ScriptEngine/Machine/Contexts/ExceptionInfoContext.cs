@@ -33,10 +33,11 @@ namespace ScriptEngine.Machine.Contexts
             SetActualException(source);
         }
 
-        private ExceptionInfoContext(string message, IValue parameters) : base(ObjectType)
+        private ExceptionInfoContext(string message, IValue parameters, ExceptionInfoContext cause) : base(ObjectType)
         {
             Description = message;
             Parameters = parameters;
+            _innerException = cause;
         }
 
         public bool IsErrorTemplate => _exc == null;
@@ -48,10 +49,11 @@ namespace ScriptEngine.Machine.Contexts
             if (exception is ParametrizedRuntimeException pre)
             {
                 Parameters = pre.Parameter;
+                _innerException = pre.Cause;
             }
         }
 
-        private ScriptException ActualException()
+        public ScriptException ActualException()
         {
             if (IsErrorTemplate)
             {
@@ -147,8 +149,8 @@ namespace ScriptEngine.Machine.Contexts
 
         private IValue CreateInnerExceptionInfo()
         {
-            var exc = ActualException();
-            if (exc.InnerException == null)
+            var exc = _exc;
+            if (exc?.InnerException == null)
                 return ValueFactory.Create();
 
             var alreadyWrapped = ActualException() is ExternalSystemException;
@@ -193,11 +195,17 @@ namespace ScriptEngine.Machine.Contexts
             return Description;
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="msg">Строка - Сообщение об ошибке</param>
+        /// <param name="parameter">Произвольный - Дополнительная информация</param>
+        /// <param name="cause">ИнформацияОбОшибке - Причина, по которой произошло текущее исключение</param>
+        /// <returns></returns>
         [ScriptConstructor(Name = "С возможностью передачи параметров")]
-        public static ExceptionInfoContext Create(IValue msg, IValue parameter)
+        public static ExceptionInfoContext Create(IValue msg, IValue parameter, ExceptionInfoContext cause = null)
         {
-            return new ExceptionInfoContext(msg.AsString(), parameter);
+            return new ExceptionInfoContext(msg.AsString(), parameter, cause);
         }
 
         public static ExceptionInfoContext EmptyExceptionInfo()

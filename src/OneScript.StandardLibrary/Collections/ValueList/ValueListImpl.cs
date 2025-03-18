@@ -182,7 +182,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         [ContextMethod("НайтиПоЗначению", "FindByValue")]
         public IValue FindByValue(IValue val)
         {
-            var item = _items.FirstOrDefault(x => x.Value.Equals(val));
+            var item = _items.FirstOrDefault(x => x.Value.StrictEquals(val));
             if(item == null)
                 return ValueFactory.Create();
 

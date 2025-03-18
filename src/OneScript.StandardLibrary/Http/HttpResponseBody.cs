@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using System.Net.Http;
 
 namespace OneScript.StandardLibrary.Http
 {
@@ -27,6 +28,12 @@ namespace OneScript.StandardLibrary.Http
 
         public HttpResponseBody(HttpWebResponse response, string dumpToFile)
         {
+            if (response.Method == HttpMethod.Head.Method)
+            {
+                _inMemBody = Array.Empty<byte>();
+                return;
+            }
+            
             _autoDecompress = string.Equals(response.ContentEncoding, "gzip", StringComparison.OrdinalIgnoreCase);
             _contentSize = _autoDecompress ? -1 : response.ContentLength;
 
@@ -140,24 +147,22 @@ namespace OneScript.StandardLibrary.Http
         private void ReadToArray(HttpWebResponse response)
         {
             System.Diagnostics.Debug.Assert(_contentSize <= INMEMORY_BODY_LIMIT);
+            
+            using var stream = GetResponseStream(response);
+            var mustRead = (int)_contentSize;
+            _inMemBody = new byte[mustRead];
+            int offset = 0;
 
-            using (var stream = GetResponseStream(response))
+            while (mustRead > 0)
             {
-                var mustRead = (int)_contentSize;
-                _inMemBody = new byte[mustRead];
-                int offset = 0;
+                int portion = Math.Min(CHUNK_SIZE, (int)mustRead);
+                var read = stream.Read(_inMemBody, offset, portion);
 
-                while (mustRead > 0)
-                {
-                    int portion = Math.Min(CHUNK_SIZE, (int)mustRead);
-                    var read = stream.Read(_inMemBody, offset, portion);
+                if (read == 0)
+                    break;
 
-                    if (read == 0)
-                        break;
-
-                    mustRead -= read;
-                    offset += read;
-                }
+                mustRead -= read;
+                offset += read;
             }
         }
 

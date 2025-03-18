@@ -81,13 +81,20 @@ namespace OneScript.DebugProtocol.TcpServer
                         // свойство в исключении может быть уcтановлено в обработчике евента
                         _serverStopped = e.StopChannel;
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
-                        _serverStopped = true;
+                        var eventData = new CommunicationEventArgs
+                        {
+                            Data = null,
+                            Channel = _protocolChannel,
+                            Exception = new ChannelException("Unhandled error in message handler", true, e)
+                        };
+                        
+                        OnError?.Invoke(this, eventData);
                     }
                 }
             });
-
+            
             _messageThread.IsBackground = true;
             if (ServerThreadName != default)
             {
@@ -112,5 +119,6 @@ namespace OneScript.DebugProtocol.TcpServer
         }
 
         public event EventHandler<CommunicationEventArgs> DataReceived;
+        public event EventHandler<CommunicationEventArgs> OnError;
     }
 }

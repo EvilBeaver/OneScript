@@ -133,10 +133,25 @@
     <Target Name="BuildDebugger">
         <PropertyGroup>
             <DebuggerProject>src/VSCode.DebugAdapter/VSCode.DebugAdapter.csproj</DebuggerProject>
-            <LocalResolvedOutput>$(DebugAdapterDir)</LocalResolvedOutput>
+            <DebugSrc>$(DebugAdapterDir)/tmp</DebugSrc>
         </PropertyGroup>
         
-        <MSBuild Projects="$(DebuggerProject)" Properties="OutputPath=$(LocalResolvedOutput);Configuration=Release"/>
+        <MSBuild Projects="$(DebuggerProject)" Properties="OutputPath=$(DebugSrc);Configuration=Release"/>
+        
+        <ItemGroup>
+            <DbgBinFiles Include="$(DebugSrc)/*.dll"/>
+            <DbgBinFiles Include="$(DebugSrc)/*.exe"/>
+            <DbgBinFiles Include="$(DebugSrc)/*.config"/>
+            <DbgPackageFiles Include="$(DebugSrc)/README.md"/>
+            <DbgPackageFiles Include="$(DebugSrc)/package.json"/>
+            <DbgImageFiles Include="$(DebugSrc)/images/**"/>
+        </ItemGroup>
+
+        <Copy SourceFiles="@(DbgBinFiles)" DestinationFolder="$(DebugAdapterDir)/bin"/>
+        <Copy SourceFiles="@(DbgPackageFiles)" DestinationFolder="$(DebugAdapterDir)"/>
+        <Copy SourceFiles="@(DbgImageFiles)" DestinationFolder="$(DebugAdapterDir)/images"/>
+        
+        <RemoveDir Directories="$(DebugSrc)"/>
         
     </Target>
     

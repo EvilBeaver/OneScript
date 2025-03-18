@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.IO;
 using Microsoft.Win32.SafeHandles;
-using ScriptEngine;
 
 namespace OneScript.StandardLibrary.Binary
 {
@@ -57,7 +56,7 @@ namespace OneScript.StandardLibrary.Binary
 
         public Stream OpenReadStream()
         {
-            return new FileStream(_backingFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return new FileStream(_backingFilePath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
         }
         
         private void Init(Stream source)

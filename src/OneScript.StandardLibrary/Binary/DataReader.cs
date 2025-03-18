@@ -70,24 +70,23 @@ namespace OneScript.StandardLibrary.Binary
         [ScriptConstructor(Name = "На основании двоичных данных или имени файла")]
         public static DataReader Constructor(IValue dataSource, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = "\n", string convertibleSplitterOfLines = null)
         {
+            Stream stream;
             if (dataSource.SystemType == BasicTypes.String)
             {
-                var stream = new FileStream(dataSource.AsString(), FileMode.Open, FileAccess.Read, FileShare.Read);
-                return new DataReader(stream, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines);
+                stream = new FileStream(dataSource.AsString(), FileMode.Open, FileAccess.Read, FileShare.Read);
             }
             else
             {
-                var obj = dataSource.AsObject();
-                Stream stream;
-                if (obj is BinaryDataContext)
-                    stream = ((BinaryDataContext)obj).GetStream();
-                else if (obj is IStreamWrapper)
-                    stream = ((IStreamWrapper) obj).GetUnderlyingStream();
-                else
-                    throw RuntimeException.InvalidArgumentType("dataSource");
+                stream = dataSource.AsObject() switch
+                {
+                    BinaryDataContext binaryData => binaryData.GetStream(),
+                    IStreamWrapper wrapper => wrapper.GetUnderlyingStream(),
 
-                return new DataReader(stream, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines);
+                    _ => throw RuntimeException.InvalidArgumentType("dataSource")
+                };
             }
+
+            return new DataReader(stream, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines);
         }
         
         /// <summary>

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Types;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -25,35 +26,15 @@ namespace ScriptEngine.Machine.Contexts
             _valuesType = valuesType;
         }
 
-        public void AddValue(string name, EnumerationValue val)
+        public void AddValue(EnumerationValue val)
         {
-            AddValue(name, null, val);
-        }
-
-        public void AddValue(string name, string alias, EnumerationValue val)
-        {
-            System.Diagnostics.Debug.Assert(name != null);
             System.Diagnostics.Debug.Assert(val != null);
 
-            if (!Utils.IsValidIdentifier(name))
-                throw new ArgumentException("Name must be a valid identifier", "name");
-
-            if(alias != null && !Utils.IsValidIdentifier(alias))
-                throw new ArgumentException("Name must be a valid identifier", "alias");
-
-            _nameIds.RegisterName(name, alias);
-            val.ValuePresentation = name;
+            _nameIds.RegisterName(val.Name, val.Alias);
             _values.Add(val);
-
         }
 
-        public TypeDescriptor ValuesType
-        {
-            get
-            {
-                return _valuesType;
-            }
-        }
+        public TypeDescriptor ValuesType => _valuesType;
 
         public EnumerationValue this[string name]
         {

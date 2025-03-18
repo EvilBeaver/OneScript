@@ -4,12 +4,10 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using Microsoft.AspNetCore.Http;
-using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
-using OneScript.Web.Server;
 using OneScript.StandardLibrary.Json;
 using OneScript.StandardLibrary.Text;
 using OneScript.Values;
@@ -19,11 +17,11 @@ using System.Text;
 
 namespace OneScript.Web.Server
 {
-
     [ContextClass("HTTPСервисОтвет", "HTTPServiceResponse")]
-    public class HttpResponseWrapper: AutoContext<HttpResponseWrapper>
+    public class HttpResponseWrapper : AutoContext<HttpResponseWrapper>
     {
         private readonly HttpResponse _response;
+        private readonly PropertyWrappersCollection _wrappers = new();
 
         public HttpResponseWrapper(HttpResponse response)
         {
@@ -46,7 +44,7 @@ namespace OneScript.Web.Server
             get
             {
                 if (_response.ContentLength == null)
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
                 else
                     return BslNumericValue.Create((decimal)_response.ContentLength);
             }
@@ -60,23 +58,21 @@ namespace OneScript.Web.Server
         }
 
         [ContextProperty("Тело", "Body", CanWrite = false)]
-        public GenericStream Body => new GenericStream(_response.Body);
+        public GenericStream Body => _wrappers.Get(nameof(Body), () => new GenericStream(_response.Body));
 
         [ContextProperty("Заголовки", "Headers", CanWrite = false)]
-        public HeaderDictionaryWrapper Headers => new HeaderDictionaryWrapper(_response.Headers);
+        public HeaderDictionaryWrapper Headers =>
+            _wrappers.Get(nameof(Headers), () => new HeaderDictionaryWrapper(_response.Headers));
 
         [ContextProperty("КодСостояния", "StatusCode")]
-        public IValue StatusCode
+        public int StatusCode
         {
-            get => BslNumericValue.Create(_response.StatusCode);
-            set
-            {
-                _response.StatusCode = (int)value.AsNumber();
-            }
+            get => _response.StatusCode;
+            set => _response.StatusCode = value;
         }
 
         [ContextProperty("Куки", "Cookie", CanWrite = false)]
-        public ResponseCookiesWrapper Cookies => new ResponseCookiesWrapper(_response.Cookies);
+        public ResponseCookiesWrapper Cookies => _wrappers.Get(nameof(Cookies), () => new ResponseCookiesWrapper(_response.Cookies));
 
         [ContextMethod("Записать", "Write")]
         public void Write(string strData, IValue encoding = null)

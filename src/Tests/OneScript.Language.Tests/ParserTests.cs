@@ -1262,7 +1262,7 @@ namespace OneScript.Language.Tests
 
             CatchParsingError(code, errors =>
             {
-                errors.Single().Description.Should().Contain("Await");
+                errors.Single().ErrorId.Should().Be("ExpressionSyntax");
             });
         }
         
@@ -1397,6 +1397,27 @@ namespace OneScript.Language.Tests
             validator.NextChildIs(NodeKind.Assignment);
             validator.NextChildIs(NodeKind.Goto);
             validator.NextChildIs(NodeKind.Assignment);
+        }
+        
+        [Fact]
+        public void Async_And_Await_Are_Ordinary_Identifiers_In_NonAsync_Scope()
+        {
+            var code = @"
+                Ждать = ""МояПеременная"";
+                Асинх = ""МояПеременная2"";
+                ";
+
+            var validator = ParseBatchAndGetValidator(code);
+
+            validator.Is(NodeKind.CodeBatch);
+
+            var awaitNode = validator.NextChild().Is(NodeKind.Assignment)
+                .NextChildIs(NodeKind.Identifier)
+                .ChildItself().Value.Should().Be("Ждать");
+            
+            var asyncNode = validator.NextChild().Is(NodeKind.Assignment)
+                .NextChildIs(NodeKind.Identifier)
+                .ChildItself().Value.Should().Be("Асинх");
         }
 
         private static void CatchParsingError(string code)

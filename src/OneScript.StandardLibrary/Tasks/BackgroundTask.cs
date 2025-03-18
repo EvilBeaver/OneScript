@@ -111,6 +111,7 @@ namespace OneScript.StandardLibrary.Tasks
             catch (ScriptException exception)
             {
                 State = TaskStateEnum.CompletedWithErrors;
+                exception.RuntimeSpecificInfo = MachineInstance.Current.GetExecutionFrames();
                 ExceptionInfo = new ExceptionInfoContext(exception);
             }
         }

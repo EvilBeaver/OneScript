@@ -18,6 +18,7 @@ namespace OneScript
             switch (Type.GetTypeCode(type))
             {
                 case TypeCode.Int32:
+                    return !type.IsEnum;
                 case TypeCode.Decimal:
                 case TypeCode.UInt32:
                 case TypeCode.Int64:

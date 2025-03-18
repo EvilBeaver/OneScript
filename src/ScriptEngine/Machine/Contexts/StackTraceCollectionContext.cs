@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -30,6 +31,11 @@ namespace ScriptEngine.Machine.Contexts
             }).ToList();
         }
 
+        /// <summary>
+        /// Возвращает количество кадров в стеке вызовов
+        /// </summary>
+        /// <returns>Число - Количество кадров в стеке вызовов</returns>
+        [ContextMethod("Количество", "Count")]
         public override int Count()
         {
             return _frames.Count;
@@ -39,5 +45,23 @@ namespace ScriptEngine.Machine.Contexts
         {
             return _frames.GetEnumerator();
         }
+
+        public override bool IsIndexed => true;
+
+        public override IValue GetIndexedValue(IValue index)
+        {
+            var idx = (int)index.AsNumber();
+
+            if (idx < 0 || idx >= Count())
+                throw IndexOutOfBoundsException();
+
+            return _frames[idx];
+        }
+
+        private static RuntimeException IndexOutOfBoundsException()
+        {
+            return new RuntimeException("Значение индекса выходит за пределы диапазона");
+        }
+
     }
 }

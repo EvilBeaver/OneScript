@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -307,13 +308,7 @@ namespace ScriptEngine.Compiler
             
             if (methodNode.Signature.IsFunction)
             {
-                var undefConst = new ConstDefinition()
-                {
-                    Type = DataType.Undefined,
-                    Presentation = "Неопределено"
-                };
-
-                AddCommand(OperationCode.PushConst, GetConstNumber(undefConst));
+                AddCommand(OperationCode.PushUndef);
             }
             
             var codeEnd = _module.Code.Count;
@@ -885,7 +880,7 @@ namespace ScriptEngine.Compiler
             var endIndex = AddLineNumber(node.EndLocation.LineNumber,
                 CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
             
-            AddCommand(OperationCode.EndTry);
+            AddCommand(OperationCode.EndTry, beginHandler);
             CorrectCommandArgument(jmpIndex, endIndex);
         }
 
@@ -1108,9 +1103,33 @@ namespace ScriptEngine.Compiler
         
         private void VisitConstant(in Lexem constant)
         {
-            var cDef = CreateConstDefinition(constant);
-            var num = GetConstNumber(cDef);
-            AddCommand(OperationCode.PushConst, num);
+            if (constant.Type == LexemType.BooleanLiteral)
+            {
+                AddCommand(OperationCode.PushBool, (bool)(BslValue)BslBooleanValue.Parse(constant.Content) ? 1 : 0);
+            }
+            else if (constant.Type == LexemType.NumberLiteral && ParseIntegerString(constant.Content, out var integer)) 
+            {
+                AddCommand(OperationCode.PushInt, integer);
+            }
+            else if (constant.Type == LexemType.UndefinedLiteral)
+            {
+                AddCommand(OperationCode.PushUndef);
+            }
+            else if (constant.Type == LexemType.NullLiteral)
+            {
+                AddCommand(OperationCode.PushNull);
+            }
+            else
+            {
+                var cDef = CreateConstDefinition(constant);
+                var num = GetConstNumber(cDef);
+                AddCommand(OperationCode.PushConst, num);
+            }
+        }
+
+        private bool ParseIntegerString(string constantContent, out int integer)
+        {
+            return int.TryParse(constantContent, NumberStyles.None, NumberFormatInfo.InvariantInfo, out integer);
         }
 
         private IEnumerable<BslAnnotationAttribute> GetAnnotationAttributes(AnnotatableNode node)

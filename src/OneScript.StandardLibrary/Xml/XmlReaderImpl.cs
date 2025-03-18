@@ -11,6 +11,7 @@ using System.Xml;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -189,7 +190,6 @@ namespace OneScript.StandardLibrary.Xml
         {
             get
             {
-                var enumInstance = XmlNodeTypeEnum.Instance;
                 XmlNodeType nodeType;
                 if (_reader == null)
                 {
@@ -212,7 +212,7 @@ namespace OneScript.StandardLibrary.Xml
                     nodeType = _reader.NodeType;
                 }
 
-                return enumInstance.FromNativeValue(nodeType);
+                return XmlNodeTypeEnum.FromNativeValue(nodeType);
             }
         }
 
@@ -431,7 +431,7 @@ namespace OneScript.StandardLibrary.Xml
 
         private bool IsEndElement()
         {
-            var isEnd = (NodeType == XmlNodeTypeEnum.Instance.FromNativeValue(XmlNodeType.EndElement));
+            var isEnd = (NodeType == XmlNodeTypeEnum.FromNativeValue(XmlNodeType.EndElement));
             return isEnd;
         }
 
@@ -484,7 +484,7 @@ namespace OneScript.StandardLibrary.Xml
         {
             var nodeType = _reader.MoveToContent();
             CheckEmptyElementEntering();
-            return GlobalsHelper.GetEnum<XmlNodeTypeEnum>().FromNativeValue(nodeType);        
+            return XmlNodeTypeEnum.FromNativeValue(nodeType);        
 	    } 
 
         #endregion

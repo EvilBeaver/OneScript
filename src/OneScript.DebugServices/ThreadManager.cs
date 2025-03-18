@@ -20,7 +20,12 @@ namespace OneScript.DebugServices
 
         public MachineWaitToken GetTokenForThread(int threadId)
         {
-            return _machinesOnThreads[threadId];
+            if (_machinesOnThreads.TryGetValue(threadId, out var value))
+            {
+                return value;
+            }
+
+            throw new ArgumentOutOfRangeException($"Thread {threadId} is unregistered");
         }
         
         public MachineWaitToken GetTokenForCurrentThread()

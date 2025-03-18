@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Compilation.Binding;
@@ -45,11 +46,17 @@ namespace ScriptEngine.Machine
         // актуален в момент останова машины
         private IList<ExecutionFrameInfo> _fullCallstackCache;
         private ScriptInformationContext _debugInfo;
+        
+        // кешированный обработчик событий
+        private readonly Lazy<IEventProcessor> _eventProcessor;
 
         private MachineInstance() 
         {
             InitCommands();
             Reset();
+
+            _eventProcessor = new Lazy<IEventProcessor>(() => _mem.Services.TryResolve<IEventProcessor>(),
+                LazyThreadSafetyMode.None);
         }
 
         public event EventHandler<MachineStoppedEventArgs> MachineStopped;
@@ -68,6 +75,7 @@ namespace ScriptEngine.Machine
             _codeStatCollector = _mem.Services.TryResolve<ICodeStatCollector>();
             _globalContexts = _mem.GlobalNamespace.AttachedContexts.Select(x => new AttachedContext(x))
                 .ToArray();
+            
         }
 
         public void UpdateGlobals() 
@@ -302,11 +310,8 @@ namespace ScriptEngine.Machine
         }
         
         #endregion
-
-        /// <summary>
-        /// Обработчик событий, генерируемых классами прикладной логики.
-        /// </summary>
-        public IEventProcessor EventProcessor { get; set; }
+        
+        private IEventProcessor EventProcessor => _eventProcessor.Value ?? throw new InvalidOperationException("Host does not support events");
         
         private ScriptInformationContext CurrentScript
         {
@@ -533,6 +538,10 @@ namespace ScriptEngine.Machine
                 (i)=>{NextInstruction();},
                 PushVar,
                 PushConst,
+                PushInt,
+                PushBool,
+                PushUndef,
+                PushNull,
                 PushLoc,
                 PushRef,
                 LoadVar,
@@ -669,6 +678,30 @@ namespace ScriptEngine.Machine
         private void PushConst(int arg)
         {
             _operationStack.Push(_module.Constants[arg]);
+            NextInstruction();
+        }
+        
+        private void PushBool(int arg)
+        {
+            _operationStack.Push(BslBooleanValue.Create(arg == 1));
+            NextInstruction();
+        }
+        
+        private void PushInt(int arg)
+        {
+            _operationStack.Push(BslNumericValue.Create(arg));
+            NextInstruction();
+        }
+        
+        private void PushUndef(int arg)
+        {
+            _operationStack.Push(BslUndefinedValue.Instance);
+            NextInstruction();
+        }
+        
+        private void PushNull(int arg)
+        {
+            _operationStack.Push(BslNullValue.Instance);
             NextInstruction();
         }
 
@@ -1227,8 +1260,12 @@ namespace ScriptEngine.Machine
 
         private void EndTry(int arg)
         {
-            if (_exceptionsStack.Count > 0 && _exceptionsStack.Peek().HandlerFrame == _currentFrame)
-                _exceptionsStack.Pop();
+            if (_exceptionsStack.Count > 0)
+            {
+                var jmpInfo = _exceptionsStack.Peek();
+                if (jmpInfo.HandlerFrame == _currentFrame && arg == jmpInfo.HandlerAddress)
+                    _exceptionsStack.Pop();
+            }
             _currentFrame.LastException = null;
             NextInstruction();
         }
@@ -1250,9 +1287,21 @@ namespace ScriptEngine.Machine
             else
             {
                 var exceptionValue = _operationStack.Pop().GetRawValue();
-                if (exceptionValue is ExceptionInfoContext { IsErrorTemplate: true } excInfo)
+                if (exceptionValue is ExceptionInfoContext { IsErrorTemplate: true } excTemplateInfo)
                 {
-                    throw new ParametrizedRuntimeException(excInfo.Description, excInfo.Parameters);
+                    throw new ParametrizedRuntimeException(
+                        excTemplateInfo.Description,
+                        excTemplateInfo.Parameters,
+                        excTemplateInfo.InnerException
+                    );
+                }
+                else if (exceptionValue is ExceptionInfoContext { IsErrorTemplate: false } excInfo)
+                {
+                    throw new ParametrizedRuntimeException(
+                        excInfo.Description,
+                        ValueFactory.Create(),
+                        excInfo
+                    );
                 }
                 else
                 {
@@ -2451,6 +2500,7 @@ namespace ScriptEngine.Machine
 
         public IList<ExecutionFrameInfo> GetExecutionFrames()
         {
+            CreateFullCallstack();
             return _fullCallstackCache;
         }
 
@@ -2476,7 +2526,7 @@ namespace ScriptEngine.Machine
         // multithreaded instance
         [ThreadStatic]
         private static MachineInstance _currentThreadWorker;
-
+        
         private static void SetCurrentMachineInstance(MachineInstance current)
             => _currentThreadWorker = current;
 

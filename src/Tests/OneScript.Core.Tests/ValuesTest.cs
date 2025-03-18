@@ -202,6 +202,37 @@ namespace OneScript.Core.Tests
         }
 
         [Fact]
+        public void Boolean_Equality()
+        {
+            var bool1 = ValueFactory.Create(true);
+            var bool0 = ValueFactory.Create(false);
+            var num1 = ValueFactory.Create(1);
+            var num0 = ValueFactory.Create(0);
+            var num2 = ValueFactory.Create(2);
+
+            Assert.True(bool0.Equals(bool0));
+            Assert.True(bool1.Equals(bool1));
+            Assert.False(bool0.Equals(bool1));
+            Assert.False(bool1.Equals(bool0));
+
+            Assert.True(bool0.Equals(num0));
+            Assert.True(bool1.Equals(num1));
+            Assert.False(bool0.Equals(num1));
+            Assert.False(bool1.Equals(num0));
+
+            Assert.False(bool0.Equals(num2));
+            Assert.False(bool1.Equals(num2));
+
+            Assert.True(num0.Equals(bool0));
+            Assert.True(num1.Equals(bool1));
+            Assert.False(num0.Equals(bool1));
+            Assert.False(num1.Equals(bool0));
+
+            Assert.False(num2.Equals(bool1));
+            Assert.False(num2.Equals(bool0));
+        }
+
+        [Fact]
         public void Boolean_Comparison()
         {
             var v1 = ValueFactory.Create(true);

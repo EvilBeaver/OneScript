@@ -21,7 +21,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
         private readonly ArrayImpl _values;
         private bool Contains(XmlSchemaDerivationMethod value)
         {
-            XSSubstitutionGroupExclusions enumValue = EnumerationXSSubstitutionGroupExclusions.FromNativeValue(value);
+            var enumValue = EnumerationXSSubstitutionGroupExclusions.FromNativeValue(value);
             IValue idx = _values.Find(enumValue);
             return (idx.SystemType != BasicTypes.Undefined);
         }

@@ -7,6 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Contexts;
+using OneScript.DependencyInjection;
+using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -15,10 +17,11 @@ namespace OneScript.StandardLibrary.Text
     [GlobalContext(Category = "Работа с консолью")]
     public class ConsoleProvider : GlobalContextBase<ConsoleProvider>
     {
-        private readonly ConsoleContext _console = new ConsoleContext();
+        private readonly ConsoleContext _console;
 
-        private ConsoleProvider()
+        private ConsoleProvider(ExecutionContext executionContext)
         {
+            _console = new ConsoleContext(executionContext);
         }
 
         public override void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
@@ -45,9 +48,9 @@ namespace OneScript.StandardLibrary.Text
             }
         }
 
-        public static ConsoleProvider CreateInstance()
+        public static ConsoleProvider CreateInstance(ExecutionContext executionContext)
         {
-            return new ConsoleProvider();
+            return new ConsoleProvider(executionContext);
         }
     }
 }

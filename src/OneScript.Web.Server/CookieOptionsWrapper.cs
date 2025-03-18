@@ -24,13 +24,13 @@ namespace OneScript.Web.Server
             get
             {
                 if (_cookieOptions.Domain == null)
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
                 else
                     return BslStringValue.Create(_cookieOptions.Domain);
             }
             set
             {
-                if (value is BslNullValue)
+                if (value is BslUndefinedValue)
                     _cookieOptions.Domain = null;
                 else
                     _cookieOptions.Domain = value.AsString();
@@ -40,10 +40,10 @@ namespace OneScript.Web.Server
         [ContextProperty("Путь", "Path")]
         public IValue Path
         {
-            get => _cookieOptions.Path == null ? BslNullValue.Instance : BslStringValue.Create(_cookieOptions.Path);
+            get => _cookieOptions.Path == null ? BslUndefinedValue.Instance : BslStringValue.Create(_cookieOptions.Path);
             set
             {
-                if (value is BslNullValue)
+                if (value is BslUndefinedValue)
                     _cookieOptions.Path = null;
                 else
                     _cookieOptions.Path = value.AsString();
@@ -58,11 +58,11 @@ namespace OneScript.Web.Server
                 if (_cookieOptions.Expires.HasValue)
                     return BslDateValue.Create(_cookieOptions.Expires.Value.UtcDateTime);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
             set
             {
-                if (value is BslNullValue)
+                if (value is BslUndefinedValue)
                     _cookieOptions.Expires = null;
                 else
                     _cookieOptions.Expires = new DateTimeOffset(value.AsDate());
@@ -70,10 +70,10 @@ namespace OneScript.Web.Server
         }
 
         [ContextProperty("Безопасный", "Secure")]
-        public IValue Secure
+        public bool Secure
         {
-            get => BslBooleanValue.Create(_cookieOptions.Secure);
-            set => _cookieOptions.Secure = value.AsBoolean();
+            get => _cookieOptions.Secure;
+            set => _cookieOptions.Secure = value;
         }
 
         [ContextProperty("РежимSameSite", "SameSiteMode")]
@@ -84,10 +84,10 @@ namespace OneScript.Web.Server
         }
 
         [ContextProperty("ТолькоHttp", "HttpOnly")]
-        public IValue HttpOnly
+        public bool HttpOnly
         {
-            get => BslBooleanValue.Create(_cookieOptions.HttpOnly);
-            set => _cookieOptions.HttpOnly = value.AsBoolean();
+            get => _cookieOptions.HttpOnly;
+            set => _cookieOptions.HttpOnly = value;
         }
 
         [ContextProperty("МаксимальныйВозраст", "MaxAge")]
@@ -98,11 +98,11 @@ namespace OneScript.Web.Server
                 if (_cookieOptions.MaxAge.HasValue)
                     return BslNumericValue.Create((decimal)_cookieOptions.MaxAge.Value.TotalSeconds);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
             set
             {
-                if (value is BslNullValue)
+                if (value is BslUndefinedValue)
                     _cookieOptions.MaxAge = null;
                 else
                     _cookieOptions.MaxAge = TimeSpan.FromSeconds((double)value.AsNumber());
@@ -110,10 +110,16 @@ namespace OneScript.Web.Server
         }
 
         [ContextProperty("Важный", "IsEssential")]
-        public IValue IsEssential
+        public bool IsEssential
         {
-            get => BslBooleanValue.Create(_cookieOptions.IsEssential);
-            set => _cookieOptions.IsEssential = value.AsBoolean();
+            get => _cookieOptions.IsEssential;
+            set => _cookieOptions.IsEssential = value;
+        }
+
+        [ScriptConstructor]
+        public static CookieOptionsWrapper Create()
+        {
+            return new CookieOptionsWrapper();
         }
     }
 }

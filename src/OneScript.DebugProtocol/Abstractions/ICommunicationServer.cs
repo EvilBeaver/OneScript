@@ -19,5 +19,6 @@ namespace OneScript.DebugProtocol.Abstractions
         void Stop();
 
         event EventHandler<CommunicationEventArgs> DataReceived;
+        event EventHandler<CommunicationEventArgs> OnError;
     }
 }

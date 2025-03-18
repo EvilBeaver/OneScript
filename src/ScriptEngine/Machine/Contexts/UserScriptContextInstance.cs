@@ -65,7 +65,7 @@ namespace ScriptEngine.Machine.Contexts
 
             base.OnInstanceCreation();
             var methId = GetScriptMethod(OnInstanceCreationTerms.Russian, OnInstanceCreationTerms.English);
-            int constructorParamsCount = ConstructorParams.Count();
+            int constructorParamsCount = ConstructorParams.Length;
 
             if (methId > -1)
             {
@@ -83,7 +83,18 @@ namespace ScriptEngine.Machine.Contexts
                 else if (parameters.Skip(constructorParamsCount).Any(param => !param.HasDefaultValue))
                     throw RuntimeException.TooFewArgumentsPassed();
 
-                CallScriptMethod(methId, ConstructorParams);
+                if (constructorParamsCount < procParamsCount)
+                {
+                    var ctorParameters = new IValue[procParamsCount];
+                    ConstructorParams.CopyTo(ctorParameters, 0);
+                    for (int i = constructorParamsCount; i < procParamsCount; i++)
+                    {
+                        ctorParameters[i] = (IValue)parameters[i].DefaultValue;
+                    }
+                    CallScriptMethod(methId, ctorParameters);
+                }
+                else
+                    CallScriptMethod(methId, ConstructorParams);
             }
             else
             {
@@ -244,7 +255,7 @@ namespace ScriptEngine.Machine.Contexts
             if (eventArgs == null)
                 eventArgs = new IValue[0];
             
-            MachineInstance.Current.EventProcessor?.HandleEvent(this, eventName, eventArgs);
+            MachineInstance.Current.Memory.Services.TryResolve<IEventProcessor>()?.HandleEvent(this, eventName, eventArgs);
         }
 
         protected override int GetOwnVariableCount()

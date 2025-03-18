@@ -26,6 +26,11 @@ namespace OneScript.StandardLibrary.NativeApi
             const int ZIP_LEAD_BYTES = 0x04034b50;
             return (BitConverter.ToInt32(bytes, 0) == ZIP_LEAD_BYTES);
         }
+        
+        private static bool Is64BitProcess()
+        {
+            return IntPtr.Size == 8;
+        }
 
         public static void Extract(Stream stream, String tempfile)
         {
@@ -50,7 +55,7 @@ namespace OneScript.StandardLibrary.NativeApi
                         using (var reader = XmlReader.Create(stream))
                         {
                             var thisOs = NativeApiProxy.IsLinux ? "Linux" : "Windows";
-                            var thisArch = System.Environment.Is64BitOperatingSystem ? "x86_64" : "i386";
+                            var thisArch = Is64BitProcess() ? "x86_64" : "i386";
                             while (reader.ReadToFollowing("component"))
                             {
                                 var attrOs = reader.GetAttribute("os");

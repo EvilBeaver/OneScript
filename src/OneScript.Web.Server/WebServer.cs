@@ -7,22 +7,16 @@ at http://mozilla.org/MPL/2.0/.
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using OneScript.Contexts;
-using OneScript.StandardLibrary.Tasks;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Threading;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
+using Microsoft.AspNetCore.Diagnostics;
 using ExecutionContext = ScriptEngine.Machine.ExecutionContext;
+using Microsoft.Extensions.Configuration;
 
 namespace OneScript.Web.Server
 {
@@ -32,7 +26,10 @@ namespace OneScript.Web.Server
         private readonly ExecutionContext _executionContext;
         private WebApplication _app;
         private readonly List<(IRuntimeContextInstance Target, string MethodName)> _middlewares = new List<(IRuntimeContextInstance Target, string MethodName)>();
+        
         private string _contentRoot = null;
+        private string _wwwRoot;
+        
         private bool _useStaticFiles = false;
         private bool _useWebSockets = false;
         private (IRuntimeContextInstance Target, string MethodName)? _exceptionHandler = null;
@@ -75,17 +72,33 @@ namespace OneScript.Web.Server
             _app.Run();
         }
 
+        /// <summary>
+        /// Останавливает веб-сервер
+        /// </summary>
+        [ContextMethod("Остановить", "Stop")]
+        public void Stop()
+        {
+            _app?.StopAsync().Wait();
+        }
+
         private void ConfigureApp()
         {
-            var builder = WebApplication.CreateBuilder();
+            var appOptions = new WebApplicationOptions
+            {
+                ContentRootPath = _contentRoot,
+                WebRootPath = _wwwRoot
+            };
+            
+            var builder = WebApplication.CreateBuilder(appOptions);
             builder.WebHost.ConfigureKestrel(options =>
             {
+                var kestrelSection = builder.Configuration.GetSection("Kestrel");
+                options.Configure(kestrelSection);
+                kestrelSection.Bind(options);
+
                 options.AllowSynchronousIO = true;
                 options.ListenAnyIP(Port);
             });
-
-            if (_contentRoot != null)
-                builder.WebHost.UseContentRoot(_contentRoot);
 
             _app = builder.Build();
 
@@ -93,40 +106,14 @@ namespace OneScript.Web.Server
                 _app.UseStaticFiles();
 
             if (_exceptionHandler != null)
-                _app.UseExceptionHandler(handler =>
-                {
-                    handler.Run(context =>
-                    {
-                        var args = new IValue[]
-                        {
-                            new HttpContextWrapper(context),
-                        };
-
-                        var methodNumber = _exceptionHandler?.Target.GetMethodNumber(_exceptionHandler?.MethodName);
-
-                        var debugController = _executionContext.Services.TryResolve<IDebugController>();
-
-                        // Thread unsafe call!
-                        debugController?.AttachToThread();
-
-                        try
-                        {
-                            _exceptionHandler?.Target.CallAsProcedure((int)methodNumber, args);
-                        }
-                        catch (Exception ex)
-                        {
-                            WriteExceptionToResponse(context, ex);
-                        }
-                        finally
-                        {
-                            // Thread unsafe call!
-                            debugController?.DetachFromThread();
-                        }
-
-                        return Task.CompletedTask;
-                    });
-                });
-
+            {
+                UseBslExceptionHandler();
+            }
+            else
+            {
+                UseDefaultExceptionHandler();
+            }
+            
             if (_useWebSockets)
                 _app.UseWebSockets();
 
@@ -136,7 +123,7 @@ namespace OneScript.Web.Server
                 {
                     var args = new IValue[]
                     {
-                        new HttpContextWrapper(context),
+                        new HttpContextWrapper(_executionContext.TypeManager, context),
                         new RequestDelegateWrapper(next)
                     };
 
@@ -149,15 +136,64 @@ namespace OneScript.Web.Server
                     {
                         middleware.Target.CallAsProcedure(methodNumber, args);
                     }
+                    finally
+                    {
+                        debugController?.DetachFromThread();
+                    }
+
+                    return Task.CompletedTask;
+                });
+            });
+        }
+
+        private void UseDefaultExceptionHandler()
+        {
+            _app.UseExceptionHandler(errApp =>
+            {
+                errApp.Run(context =>
+                {
+                    var exceptionHandlerPathFeature =
+                        context.Features.Get<IExceptionHandlerPathFeature>();
+
+                    WriteExceptionToResponse(context, exceptionHandlerPathFeature?.Error);
+
+                    return Task.CompletedTask;
+                });
+            });
+        }
+
+        private void UseBslExceptionHandler()
+        {
+            _app.UseExceptionHandler(handler =>
+            {
+                handler.Run(context =>
+                {
+                    var args = new IValue[]
+                    {
+                        new HttpContextWrapper(_executionContext.TypeManager, context),
+                    };
+
+                    var methodNumber = _exceptionHandler?.Target.GetMethodNumber(_exceptionHandler?.MethodName);
+
+                    var debugController = _executionContext.Services.TryResolve<IDebugController>();
+
+                    // Thread unsafe call!
+                    debugController?.AttachToThread();
+
+                    try
+                    {
+                        _exceptionHandler?.Target.CallAsProcedure((int)methodNumber, args);
+                    }
                     catch (Exception ex)
                     {
-                        if (_exceptionHandler == null)
+                        if (!context.Response.HasStarted)
                             WriteExceptionToResponse(context, ex);
                         else
                             throw;
                     }
                     finally
                     {
+                        // Thread unsafe call!
                         debugController?.DetachFromThread();
                     }
 
@@ -184,10 +220,16 @@ namespace OneScript.Web.Server
         public void SetExceptionsHandler(IRuntimeContextInstance target, string methodName)
             => _exceptionHandler = (target, methodName);
 
-        [ContextMethod("УстановитьКорневойПутьСодержимого", "SetContentRoot")]
+        [ContextMethod("УстановитьКаталогСервера", "SetServerDir")]
         public void SetContentRoot(IValue path)
         {
             _contentRoot = path.AsString();
+        }
+        
+        [ContextMethod("УстановитьКорневойПуть", "SetWebRoot")]
+        public void SetWebRoot(IValue path)
+        {
+            _wwwRoot = path.AsString();
         }
 
         [ContextMethod("ИспользоватьСтатическиеФайлы", "UseStaticFiles")]

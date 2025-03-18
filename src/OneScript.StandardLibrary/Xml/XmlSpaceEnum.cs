@@ -13,24 +13,18 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.Xml
 {
     [SystemEnum("ПробельныеСимволыXML", "XMLSpace")]
-    public class XmlSpaceEnum : ClrEnumWrapper<XmlSpace>
+    public class XmlSpaceEnum : ClrEnumWrapperCached<XmlSpace>
     {
         private XmlSpaceEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
         {
-            this.WrapClrValue("ПоУмолчанию", "Default", XmlSpace.Default);
-            this.WrapClrValue("Сохранять", "Preserve", XmlSpace.Preserve);
+            MakeValue("ПоУмолчанию", "Default", XmlSpace.Default);
+            MakeValue("Сохранять", "Preserve", XmlSpace.Preserve);
         }
 
         public static XmlSpaceEnum CreateInstance(ITypeManager typeManager)
         {
-            var instance = EnumContextHelper.CreateClrEnumInstance<XmlSpaceEnum, XmlSpace>(
-                typeManager,
-                (t,v) => new XmlSpaceEnum(t, v));
-            
-            OnInstanceCreation(instance);
-
-            return instance;
+             return CreateInstance(typeManager, (t, v) => new XmlSpaceEnum(t, v));
         }
    }
 }

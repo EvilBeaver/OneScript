@@ -113,7 +113,7 @@ namespace OneScript.StandardLibrary.Collections
         [ContextMethod("Найти", "Find")]
         public IValue Find(IValue what)
         {
-            var idx = _values.FindIndex(x => x.Equals(what));
+            var idx = _values.FindIndex(x => x.StrictEquals(what));
             if(idx < 0)
             {
                 return ValueFactory.Create();

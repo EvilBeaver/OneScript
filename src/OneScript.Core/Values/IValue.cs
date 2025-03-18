@@ -18,4 +18,9 @@ namespace ScriptEngine.Machine
         IValue GetRawValue();
     }
 
+    public static class IValueExtension
+    {
+        public static bool StrictEquals(this IValue value, IValue other)
+            => value.Equals(other) && value.SystemType == other.SystemType;
+    }
 }

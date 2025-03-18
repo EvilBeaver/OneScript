@@ -30,7 +30,6 @@ namespace ScriptEngine.HostedScript
 
             try
             {
-                MachineInstance.Current.EventProcessor = new DefaultEventProcessor();
                 _engine.UpdateContexts();
                 _engine.NewObject(_module);
                 exitCode = 0;

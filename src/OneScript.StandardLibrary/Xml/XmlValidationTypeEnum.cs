@@ -8,16 +8,15 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using System.Xml;
 using OneScript.Contexts.Enums;
+using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using OneScript.Types;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Xml
 {
     [SystemEnum("ТипПроверкиXML", "XMLValidationType")]
-    public class XmlValidationTypeEnum : ClrEnumWrapper<ValidationType>
+    public class XmlValidationTypeEnum : ClrEnumWrapperCached<ValidationType>
     {
-        readonly Dictionary<ValidationType, ClrEnumValueWrapper<ValidationType>> _valuesCache = new Dictionary<ValidationType, ClrEnumValueWrapper<ValidationType>>();
-
         private XmlValidationTypeEnum(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
         {
@@ -26,34 +25,9 @@ namespace OneScript.StandardLibrary.Xml
             MakeValue("СхемаXML", "XMLSchema", ValidationType.Schema);
         }
 
-        private void MakeValue(string name, string alias, ValidationType enumValue)
-        {
-            var wrappedValue = this.WrapClrValue(name, alias, enumValue);
-            _valuesCache[enumValue] = wrappedValue;
-        }
-        
-        public override ClrEnumValueWrapper<ValidationType> FromNativeValue(ValidationType native)
-        {
-            if (_valuesCache.TryGetValue(native, out var val))
-            {
-                return val;
-            }
-
-            val = base.FromNativeValue(native);
-            _valuesCache.Add(native, val);
-
-            return val;
-        }
-
         public static XmlValidationTypeEnum CreateInstance(ITypeManager typeManager)
         {
-            var instance = EnumContextHelper.CreateClrEnumInstance<XmlValidationTypeEnum, ValidationType>(
-                typeManager,
-                (t,v) => new XmlValidationTypeEnum(t, v));
-            
-            OnInstanceCreation(instance);
-
-            return instance;
+            return CreateInstance(typeManager, (t, v) => new XmlValidationTypeEnum(t, v));
         }
     }
 }

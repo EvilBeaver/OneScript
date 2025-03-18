@@ -14,6 +14,7 @@ using OneScript.Contexts;
 using OneScript.Contexts.Enums;
 using OneScript.DependencyInjection;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
