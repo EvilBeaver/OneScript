@@ -218,7 +218,7 @@ pipeline {
             }
         }
 
-        stage ('Publishing revision') {
+        stage ('Publishing dev-revision') {
             when { anyOf {
                 // TODO сделать автовычисление маркера lts или latest и согласовать его с путём к папке на стр. 250 (TARGET=..._)
                 branch 'latest'
