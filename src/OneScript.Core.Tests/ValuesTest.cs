@@ -28,8 +28,8 @@ namespace OneScript.Core.Tests
 
             Assert.True(BooleanValue.True.CompareTo(BooleanValue.False) > 0);
 
-            Assert.Throws<RuntimeException>(() => BooleanValue.True.AsDate());
-            Assert.Throws<RuntimeException>(() => BooleanValue.True.AsObject());
+            Assert.Throws<TypeConvertionException>(() => BooleanValue.True.AsDate());
+            Assert.Throws<TypeConvertionException>(() => BooleanValue.True.AsObject());
         }
 
         [Theory]
@@ -68,8 +68,8 @@ namespace OneScript.Core.Tests
             Assert.True(num4.CompareTo(num3) < 0);
 
             Assert.Equal("12.5", num1.AsString());
-            Assert.Throws<RuntimeException>(() => num1.AsDate());
-            Assert.Throws<RuntimeException>(() => num1.AsObject());
+            Assert.Throws<TypeConvertionException>(() => num1.AsDate());
+            Assert.Throws<TypeConvertionException>(() => num1.AsObject());
         }
 
         [Fact]
@@ -103,8 +103,8 @@ namespace OneScript.Core.Tests
             var numString = ValueFactory.Create("012.12");
             Assert.True(numString.AsNumber() == 12.12m);
 
-            Assert.Throws<RuntimeException>(() => dateString.AsObject());
-            Assert.Throws<RuntimeException>(() => trueString.AsNumber());
+            Assert.Throws<TypeConvertionException>(() => dateString.AsObject());
+            Assert.Throws<TypeConvertionException>(() => trueString.AsNumber());
         }
         
         [Fact]
@@ -114,10 +114,10 @@ namespace OneScript.Core.Tests
             Assert.True(value.DataType == DataType.Undefined);
             Assert.True(value.AsString() == "");
 
-            Assert.Throws<RuntimeException>(() => value.AsNumber());
-            Assert.Throws<RuntimeException>(() => value.AsBoolean());
-            Assert.Throws<RuntimeException>(() => value.AsObject());
-            Assert.Throws<RuntimeException>(() => value.AsDate());
+            Assert.Throws<TypeConvertionException>(() => value.AsNumber());
+            Assert.Throws<TypeConvertionException>(() => value.AsBoolean());
+            Assert.Throws<TypeConvertionException>(() => value.AsObject());
+            Assert.Throws<TypeConvertionException>(() => value.AsDate());
         }
 
         [Fact]
@@ -127,10 +127,10 @@ namespace OneScript.Core.Tests
             Assert.True(value.DataType == DataType.GenericValue);
             Assert.True(value.AsString() == "");
 
-            Assert.Throws<RuntimeException>(() => value.AsNumber());
-            Assert.Throws<RuntimeException>(() => value.AsBoolean());
-            Assert.Throws<RuntimeException>(() => value.AsObject());
-            Assert.Throws<RuntimeException>(() => value.AsDate());
+            Assert.Throws<TypeConvertionException>(() => value.AsNumber());
+            Assert.Throws<TypeConvertionException>(() => value.AsBoolean());
+            Assert.Throws<TypeConvertionException>(() => value.AsObject());
+            Assert.Throws<TypeConvertionException>(() => value.AsDate());
         }
 
         [Fact]
@@ -144,10 +144,10 @@ namespace OneScript.Core.Tests
             Assert.True(typeValue.DataType == DataType.Type);
             Assert.True(typeValue.AsString() == "Строка");
 
-            Assert.Throws<RuntimeException>(() => typeValue.AsNumber());
-            Assert.Throws<RuntimeException>(() => typeValue.AsBoolean());
-            Assert.Throws<RuntimeException>(() => typeValue.AsObject());
-            Assert.Throws<RuntimeException>(() => typeValue.AsDate());
+            Assert.Throws<TypeConvertionException>(() => typeValue.AsNumber());
+            Assert.Throws<TypeConvertionException>(() => typeValue.AsBoolean());
+            Assert.Throws<TypeConvertionException>(() => typeValue.AsObject());
+            Assert.Throws<TypeConvertionException>(() => typeValue.AsDate());
 
         }
 

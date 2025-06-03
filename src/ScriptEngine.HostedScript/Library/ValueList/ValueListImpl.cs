@@ -4,10 +4,13 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
+using System;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
 using System.Linq;
+using ScriptEngine.Machine.Values;
 
 namespace ScriptEngine.HostedScript.Library.ValueList
 {
@@ -76,7 +79,7 @@ namespace ScriptEngine.HostedScript.Library.ValueList
         /// <param name="picture">Картинка (необязательный) - Визуальное  представление добавляемого значения</param>
         /// <returns>ЭлементСпискаЗначений</returns>
         [ContextMethod("Добавить", "Add")]
-        public ValueListItem Add(IValue value, string presentation = null, bool check = false, IValue picture = null)
+        public ValueListItem Add(IValue value = null, string presentation = null, bool check = false, IValue picture = null)
         {
             var newItem = CreateNewListItem(value, presentation, check, picture);
 
@@ -94,7 +97,7 @@ namespace ScriptEngine.HostedScript.Library.ValueList
         /// <param name="picture">Картинка (необязательный) - Визуальное  представление добавляемого значения</param>
         /// <returns>ЭлементСпискаЗначений</returns>
         [ContextMethod("Вставить", "Insert")]
-        public ValueListItem Insert(int index, IValue value, string presentation = null, bool check = false, IValue picture = null)
+        public ValueListItem Insert(int index, IValue value = null, string presentation = null, bool check = false, IValue picture = null)
         {
             var newItem = CreateNewListItem(value, presentation, check, picture);
             _items.Insert(index, newItem);
@@ -105,7 +108,7 @@ namespace ScriptEngine.HostedScript.Library.ValueList
         private static ValueListItem CreateNewListItem(IValue value, string presentation, bool check, IValue picture)
         {
             var newItem = new ValueListItem();
-            newItem.Value = value;
+            newItem.Value = value ?? UndefinedValue.Instance;
             newItem.Presentation = presentation;
             newItem.Check = check;
             newItem.Picture = picture;
@@ -285,7 +288,7 @@ namespace ScriptEngine.HostedScript.Library.ValueList
             catch(RuntimeException)
             {
                 // Сравнение типов не поддерживается
-                return x.AsString().CompareTo(y.AsString());
+                return string.Compare(x?.AsString(), y?.AsString(), StringComparison.Ordinal);
             }
         }
 

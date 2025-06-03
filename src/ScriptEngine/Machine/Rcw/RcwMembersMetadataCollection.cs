@@ -14,12 +14,12 @@ namespace ScriptEngine.Machine.Rcw
     public class RcwMembersMetadataCollection<T> where T : RcwMemberMetadata
     {
         private readonly List<T> _collection = new List<T>();
-        private readonly Dictionary<int, T> _dispIds = new Dictionary<int, T>();
-        private readonly Dictionary<string, T> _names = new Dictionary<string, T>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly Dictionary<int, T> _indexByDispId = new Dictionary<int, T>();
+        private readonly Dictionary<string, T> _indexByName = new Dictionary<string, T>(StringComparer.InvariantCultureIgnoreCase);
 
-        public IReadOnlyDictionary<int, T> DispatchIds => new ReadOnlyDictionary<int, T>(_dispIds);
+        public IReadOnlyDictionary<int, T> ByDispatchId => _indexByDispId;
 
-        public IReadOnlyDictionary<string, T> Names => new ReadOnlyDictionary<string, T>(_names);
+        public IReadOnlyDictionary<string, T> ByName => _indexByName;
 
         public T this[int index] => _collection[index];
 
@@ -27,15 +27,28 @@ namespace ScriptEngine.Machine.Rcw
         
         public void Add(T item)
         {
-            if (_dispIds.ContainsKey(item.DispatchId))
+            if (_indexByDispId.TryGetValue(item.DispatchId, out var method))
             {
-                _names.Add(item.Name, _dispIds[item.DispatchId]);
+                if (method.Name != item.Name)
+                {
+                    // добавляют метод, который известен нам, с тем же dispId, но который имеет другое имя
+                    _indexByName.Remove(method.Name); // известное нам старое имя этого dispId - инвалидируем
+                    
+                    // добавляемый метод поместим в индекс диспатчей и имен
+                    _indexByDispId[item.DispatchId] = item;
+                    _indexByName[item.Name] = item;
+                }
+                else
+                {
+                    _indexByName[item.Name] = item;
+                }
+                
                 return;
             }
 
             _collection.Add(item);
-            _dispIds.Add(item.DispatchId, item);
-            _names.Add(item.Name, item);
+            _indexByDispId.Add(item.DispatchId, item);
+            _indexByName.Add(item.Name, item);
         }
 
         public bool Contains(T item) => _collection.Contains(item);

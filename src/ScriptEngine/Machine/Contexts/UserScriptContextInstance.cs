@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -87,7 +87,7 @@ namespace ScriptEngine.Machine.Contexts
                 _asStringOverride = base.AsString;
             else
             {
-                var signature = GetMethodInfo(methId);
+                var signature = GetMethodInfo(GetOwnMethodCount()+methId);
                 if (signature.ArgCount != 2)
                     throw new RuntimeException("Обработчик получения представления должен иметь 2 параметра");
 
@@ -255,9 +255,10 @@ namespace ScriptEngine.Machine.Contexts
 
         void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
         {
-            var propVariables = this.GetProperties()
+            var propVariables = this.GetProperties(true)
                 .Where(x => x.Identifier != "ЭтотОбъект")
-                .Select(x => Variable.Create(GetPropValue(x.Index), x.Identifier));
+                .OrderBy(x => x.IsExport? 0:1) // Сначала публичные
+                .Select(x => Variable.Create(GetPropValue(x.Index), x.IsExport? x.Identifier : "$" + x.Identifier));
             
             visitor.ShowCustom(propVariables.ToList());
         }
