@@ -37,6 +37,10 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
                     _tempfile = Path.GetTempFileName();
                     NativeApiPackage.Extract(stream, _tempfile);
                     Module = NativeApiKernel.LoadLibrary(_tempfile);
+                    if (Module == IntPtr.Zero)
+                    {
+                        File.Delete(_tempfile);
+                    }
                 }
                 else 
                     Module = NativeApiKernel.LoadLibrary(filepath);

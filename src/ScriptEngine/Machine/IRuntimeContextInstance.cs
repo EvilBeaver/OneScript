@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
@@ -58,25 +59,28 @@ namespace ScriptEngine.Machine
         private static IEnumerable<VariableInfo> GetPropertiesWithPrivate(IRuntimeContextInstance context)
         {
             if (!(context is UserScriptContextInstance userScript))
-                return Array.Empty<VariableInfo>();
+                return GetPropertiesWithoutPrivate(context);
 
-            List<VariableInfo> infos = new List<VariableInfo>();
-            foreach (var variable in userScript.Module.Variables)
+            var infos = new List<VariableInfo>();
+            for (int i = 1; i < userScript.GetOwnPropCount(); i++) // skip ThisObject == _ownProperties[0]
             {
                 infos.Add(new VariableInfo() { 
-                    Identifier = variable.Identifier,
-                    Type = variable.Type,
-                    Index = variable.Index,
-                    Annotations = HackGetAnnotations(context, variable.Index),
-                    IsExport = variable.IsExport
+                    Identifier = userScript.GetPropName(i),
+                    Type = SymbolType.ContextProperty,
+                    Index = i,
+                    Annotations = Array.Empty<AnnotationDefinition>(),
+                    IsExport = false
                 });
             }
 
-            return infos;
+            return infos.Concat(userScript.Module.Variables);
         }
 
         private static IEnumerable<VariableInfo> GetPropertiesWithoutPrivate(IRuntimeContextInstance context)
         {
+            if (context is UserScriptContextInstance userScript)
+                return userScript.Module.Variables.Where(x => x.IsExport).ToList();
+
             VariableInfo[] infos = new VariableInfo[context.GetPropCount()];
             for (int i = 0; i < infos.Length; i++)
             {
@@ -85,24 +89,12 @@ namespace ScriptEngine.Machine
                     Identifier = context.GetPropName(i),
                     Type = SymbolType.ContextProperty,
                     Index = i,
-                    Annotations = HackGetAnnotations(context, i),
+                    Annotations = Array.Empty<AnnotationDefinition>(),
                     IsExport = true
                 };
             }
 
             return infos;
-        }
-
-        private static AnnotationDefinition[] HackGetAnnotations(IRuntimeContextInstance context, int i)
-        {
-            if (!(context is UserScriptContextInstance userScript)) 
-                return Array.Empty<AnnotationDefinition>();
-            
-            if (i == 0)
-                return Array.Empty<AnnotationDefinition>();
-            
-            var variable = userScript.Module.Variables[i - 1];
-            return variable.Annotations;
         }
 
         public static IValue GetPropValue(this IRuntimeContextInstance context, string propName)
