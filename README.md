@@ -46,3 +46,63 @@ OneScript позволяет создавать и выполнять текст
 - выполнить команду `mono ovm.exe install stable`
 - выполнить команду `mono ovm.exe use stable`
 - перезапустить терминал
+
+# Ручная локальная сборка
+
+## Подготовка
+
+Ниже приведены ссылки на дистрибутивы, однако, учтите, что ссылки могут меняться со временем и их актуальность не гарантируется. Нужен dotnet SDK и компилятор C++, скачать можно из любого места, которое нагуглится.
+
+* Установить [MS BuildTools](https://visualstudio.microsoft.com/ru/thank-you-downloading-visual-studio/?sku=buildtools&rel=16), при установке включить таргетинг на .net6, .net4.8, установить компилятор C++.
+* Установить [InnoSetup](https://jrsoftware.org/isdl.php)
+* Скачать [OneScriptDocumenter](https://github.com/EvilBeaver/OneScriptDocumenter/releases) и установить в произвольный каталог на диске
+* Создать произвольный каталог библиотек и разместить в нем библиотеки, которые нужно будет включить в поставку. Проще всего создать пустой каталог и установить в него пакеты менеджером opm
+
+```bat
+opm install -d E:\my_libraries asserts
+opm install -d E:\my_libraries gitsync
+opm install -d E:\my_libraries fs
+```
+
+## Сборка
+
+Запустить Developer Command Prompt (появится в меню Пуск после установки MSBuildTools или Visual Studio). Перейти в каталог репозитория OneScript. Далее приведены команды в консоли Developer Command Prompt
+Сборка выполняется с помощью msbuild. Таргеты:
+
+* CleanAll - очистка результатов предыдущих сборок
+* PrepareDistributionContent - сборка файлов для поставки в один каталог
+* CreateDistributions - упаковка файлов в разные типы дистрибутивов (zip, exe, nuget)
+
+**Параметры сборки**
+
+* ReleaseNumber - номер релиза, который будет прописан в файлах
+* OneScriptDocumenter - путь к exe файлу OneScriptDocumenter.exe (если не указать, документация не собирается)
+* StandardLibraryPacks - путь к каталогу, который будет являться поставляемым каталогом библиотек (библиотеки оттуда будут размещены в дистрибутиве в подпапке lib). Если не указан, библиотеки в дистрибутив не включаются.
+* InnoSetupPath - путь к каталогу установки InnoSetup. Обязателен, если собираем инсталлятор (таргет CreateDistributions)
+
+Все поставляемые файлы будут размещены в каталоге `built` в корне репозитория 1Script
+
+### Сборка содержимого дистрибутивов в отдельном каталоге
+
+```bat
+msbuild Build.csproj /t:CleanAll;PrepareDistributionContent
+```
+
+### Сборка с ручным указанием версии
+
+```bat
+msbuild Build.csproj /t:CleanAll;PrepareDistributionContent /p:ReleaseNumber=1.99.6
+```
+
+#### Сборка библиотек и документации
+
+```bat
+msbuild Build.csproj /t:CleanAll;PrepareDistributionContent /p:ReleaseNumber=1.99.6 /p:OneScriptDocumenter=path-to-documenter.exe /p:StandardLibraryPacks=E:\my_libraries
+```
+
+#### Сборка библиотек, документации и инсталлятора
+
+```bat
+msbuild Build.csproj /t:CleanAll;PrepareDistributionContent;CreateDistributions /p:ReleaseNumber=1.99.6 /p:OneScriptDocumenter=path-to-documenter.exe /p:StandardLibraryPacks=E:\my_libraries /p:InnoSetupPath=path-to-innosetup-install-dir
+```
+

@@ -9,6 +9,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 
 namespace ScriptEngine.HostedScript.Library.Json
 {
@@ -55,131 +56,139 @@ namespace ScriptEngine.HostedScript.Library.Json
         [ContextMethod("ПрочитатьJSON", "ReadJSON")]
         public IValue ReadJSON(JSONReader Reader, bool ReadToMap = false, IValue PropertiesWithDateValuesNames = null, IValue ExpectedDateFormat = null, string ReviverFunctionName = null, IValue ReviverFunctionModule = null, IValue ReviverFunctionAdditionalParameters = null, IValue RetriverPropertiesNames = null, int MaximumNesting = 500)
         {
-            if (ReadToMap)
-                return ReadJSONInMap(Reader);
-            else
-                return ReadJSONInStruct(Reader);
+            var jsonReader = new JsonReaderInternal(Reader);
+            return ReadToMap ? jsonReader.Read<MapImpl>() : jsonReader.Read<StructureImpl>();
         }
 
-        public IValue ReadJSONInStruct(JSONReader Reader, bool nestedArray = false)
+        internal class JsonReaderInternal
         {
-            if (nestedArray)
-            {
-                ArrayImpl NestedArray = new ArrayImpl();
+            private readonly JSONReader _reader;
+            private Func<IValue> _builder;
+            private Action<IValue, string, IValue> _inserter;
 
-                while (Reader.Read())
+            private void Init<TStructure>()
+            {
+                if (typeof(TStructure) == typeof(StructureImpl))
                 {
-                    if (Reader.CurrentJsonTokenType == JsonToken.EndArray)
-                    {
+                    _builder = () => new StructureImpl();
+                    _inserter = (o, s, v) => ((StructureImpl)o).Insert(s, v);
+                }
+                else if (typeof(TStructure) == typeof(MapImpl))
+                {
+                    _builder = () => new MapImpl();
+                    _inserter = (o, s, v) =>((MapImpl)o).Insert(ValueFactory.Create(s), v);
+                }
+                else
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+
+            public JsonReaderInternal(JSONReader reader)
+            {
+                _reader = reader;
+            }
+
+            private IValue Create() => _builder();
+
+            private void AddProperty(IValue obj, string str, IValue val) => _inserter(obj, str, val);
+            
+            public IValue Read<T>() where T: IEnumerable<KeyAndValueImpl>
+            {
+                System.Diagnostics.Debug.Assert(typeof(T)==typeof(StructureImpl)||typeof(T)==typeof(MapImpl));
+                Init<T>();
+
+                try
+                {
+                    if (ReadJsonValue(out var value))
+                        return value;
+                }
+                catch (JSONReaderException)
+                {
+                    throw;
+                }
+                catch (Exception exc)
+                {
+                    throw InvalidJsonException(exc.Message);
+                }
+
+                throw InvalidJsonException();
+            }
+
+            private JsonToken ReadJsonToken()
+            {
+                while (_reader.Read())
+                {
+                    var tok = _reader.CurrentJsonTokenType;
+                    if (tok != JsonToken.Comment)
+                        return tok;
+                }
+
+                return JsonToken.None;
+            }
+ 
+            private bool ReadJsonValue(out IValue value) 
+            {
+                switch (ReadJsonToken())
+                {
+                    case JsonToken.StartObject:
+                        var jsonObject = Create();
+
+                        while (ReadJsonToken() == JsonToken.PropertyName)
+                        {
+                            var propertyName = _reader.CurrentValue.AsString();
+                            if (!ReadJsonValue(out value))
+                                return false;
+
+                            AddProperty(jsonObject, propertyName, value);
+                        }
+
+                        if (_reader.CurrentJsonTokenType == JsonToken.EndObject)
+                        {
+                            value = jsonObject;
+                            return true;
+                        }
                         break;
-                    }
-                    else if (Reader.CurrentJsonTokenType == JsonToken.StartObject)
-                    {
-                        NestedArray.Add(ReadJSONInStruct(Reader));
-                    }
-                    else if (Reader.CurrentJsonTokenType == JsonToken.StartArray)
-                    {
-                        NestedArray.Add(ReadJSONInStruct(Reader, true));
-                    }
-                    else
-                        NestedArray.Add(Reader.CurrentValue);
+
+                    case JsonToken.StartArray:
+                        var resArray = new ArrayImpl();
+
+                        while (ReadJsonValue(out value))
+                        {
+                            resArray.Add(value);
+                        }
+
+                        if (_reader.CurrentJsonTokenType == JsonToken.EndArray)
+                        {
+                            value = resArray;
+                            return true;
+                        }
+                        break;
+
+                    case JsonToken.EndArray:
+                    case JsonToken.EndObject:
+                    case JsonToken.None:
+                        break;
+
+                    default:
+                        value = _reader.CurrentValue;
+                        return true;
                 }
-                return NestedArray;
+
+                value = null;
+                return false;
             }
 
-            StructureImpl ResStruct = new StructureImpl();
-
-            while ((Reader).Read())
+            private RuntimeException InvalidJsonException(string message=null)
             {
-                if (Reader.CurrentJsonTokenType == JsonToken.PropertyName)
-                {
-                    string PropertyName = Reader.CurrentValue.AsString();
-                    Reader.Read();
-
-                    if (Reader.CurrentJsonTokenType == JsonToken.StartObject)
-                    {
-                        ResStruct.Insert(PropertyName, ReadJSONInStruct(Reader));
-                    }
-                    else if (Reader.CurrentJsonTokenType == JsonToken.StartArray)
-                    {
-                        ResStruct.Insert(PropertyName, ReadJSONInStruct(Reader, true));
-                    }
-                    else
-                    {
-                        ResStruct.Insert(PropertyName, Reader.CurrentValue);
-                    }
-                }
-                else if (Reader.CurrentJsonTokenType == JsonToken.EndObject)
-                {
-                    break;
-                }
-                else if (Reader.CurrentJsonTokenType == JsonToken.StartArray)
-                {
-                    return ReadJSONInStruct(Reader, true);
-                }
+                var addition = string.IsNullOrWhiteSpace(message) ? string.Empty : $"\n({message})";
+                return new RuntimeException(string.Format(Locale.NStr
+                    ("ru='Недопустимое состояние потока чтения JSON в строке {0} позиции {1}{2}'"
+                     + "en='Invalid JSON reader state at line {0} position {1}{2}'"),
+                    _reader.CurrentLine, _reader.CurrentPosition, addition));
             }
-            return ResStruct;
         }
 
-        public IValue ReadJSONInMap(JSONReader Reader, bool nestedArray = false)
-        {
-
-            if (nestedArray)
-            {
-                ArrayImpl NestedArray = new ArrayImpl();
-
-                while (Reader.Read())
-                {
-                    if (Reader.CurrentJsonTokenType == JsonToken.EndArray)
-                    {
-                        break;
-                    }
-                    else if (Reader.CurrentJsonTokenType == JsonToken.StartObject)
-                    {
-                        NestedArray.Add(ReadJSONInMap(Reader));
-                    }
-                    else if (Reader.CurrentJsonTokenType == JsonToken.StartArray)
-                    {
-                        NestedArray.Add(ReadJSONInMap(Reader, true));
-                    }
-                    else
-                        NestedArray.Add(Reader.CurrentValue);
-                }
-                return NestedArray;
-            }
-
-            MapImpl ResStruct = new MapImpl();
-            while ((Reader).Read())
-            {
-                if (Reader.CurrentJsonTokenType == JsonToken.PropertyName)
-                {
-                    string PropertyName = Reader.CurrentValue.AsString();
-                    Reader.Read();
-
-                    if (Reader.CurrentJsonTokenType == JsonToken.StartObject)
-                    {
-                        ResStruct.Insert(ValueFactory.Create(PropertyName), ReadJSONInMap(Reader));
-                    }
-                    else if (Reader.CurrentJsonTokenType == JsonToken.StartArray)
-                    {
-                        ResStruct.Insert(ValueFactory.Create(PropertyName), ReadJSONInMap(Reader, true));
-                    }
-                    else
-                    {
-                        ResStruct.Insert(ValueFactory.Create(PropertyName), Reader.CurrentValue);
-                    }
-                }
-                else if (Reader.CurrentJsonTokenType == JsonToken.EndObject)
-                {
-                    break;
-                }
-                else if (Reader.CurrentJsonTokenType == JsonToken.StartArray)
-                {
-                    return ReadJSONInMap(Reader, true);
-                }
-            }
-            return ResStruct;
-        }
 
         /// <summary>
         /// 
@@ -197,7 +206,7 @@ namespace ScriptEngine.HostedScript.Library.Json
         [ContextMethod("ПрочитатьДатуJSON", "ReadJSONDate")]
         public IValue ReadJSONDate(string String, IValue Format)
         {
-         
+
             var format = Format.GetRawValue() as SelfAwareEnumValue<JSONDateFormatEnum>;
             var JSONDateFormatEnum = GlobalsManager.GetEnum<JSONDateFormatEnum>();
             DateFormatHandling dateFormatHandling = new DateFormatHandling();
@@ -209,14 +218,22 @@ namespace ScriptEngine.HostedScript.Library.Json
             else
                 throw new RuntimeException(Locale.NStr("ru='Формат даты JavaScript не поддерживается.'; en='JavaScript date format is not supported'"));
 
-            string json = @"{""Date"":""" + String +  @"""}";
+            string json = @"{""Date"":""" + String + @"""}";
 
             var settings = new JsonSerializerSettings
             {
                 DateFormatHandling = dateFormatHandling
-        };
-            var result = JsonConvert.DeserializeObject<ConvertedDate>(json, settings);
-            return ValueFactory.Create((DateTime)result.Date);
+            };
+
+            try
+            {
+                var result = JsonConvert.DeserializeObject<ConvertedDate>(json, settings);
+                return ValueFactory.Create((DateTime)result.Date);
+            }
+            catch (JsonException)
+            {
+                throw new RuntimeException(Locale.NStr("ru='Представление даты имеет неверный формат.'; en='Invalid date presentation format'"));
+            }
         }
 
         /// <summary>
