@@ -13,6 +13,7 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Text;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -103,21 +104,24 @@ namespace OneScript.StandardLibrary.Binary
         ///  Значение по умолчанию: Ложь. </param>
         ///
         [ScriptConstructor]
-        public static DataWriter Constructor(IValue file_stream, IValue textEncoding = null, IValue byteOrder = null, IValue lineSplitter = null, IValue param5 = null, IValue param6 = null, IValue param7 = null)
+        public static DataWriter Constructor(IValue file_stream, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, IValue param5 = null, IValue param6 = null, IValue param7 = null)
         {
             if (file_stream.SystemType == BasicTypes.String)
-                return new DataWriter(file_stream.AsString(), textEncoding, 
-                            ContextValuesMarshaller.ConvertParam<ByteOrderEnum?>(byteOrder,null),
-                            ContextValuesMarshaller.ConvertParam<string>(lineSplitter),
-                            ContextValuesMarshaller.ConvertParam<bool>(param5),
-                            ContextValuesMarshaller.ConvertParam<string>(param6),
-                            ContextValuesMarshaller.ConvertParam<bool>(param7));
+                return new DataWriter(file_stream.ToString(),
+                    textEncoding, 
+                    byteOrder,
+                    lineSplitter,
+                    ContextValuesMarshaller.ConvertValueStrict<bool>(param5),
+                    ContextValuesMarshaller.ConvertValueStrict<string>(param6),
+                    ContextValuesMarshaller.ConvertValueStrict<bool>(param7));
             else
-                return ConstructorByStream(file_stream, textEncoding,
-                            ContextValuesMarshaller.ConvertParam<ByteOrderEnum?>(byteOrder,null),
-                            ContextValuesMarshaller.ConvertParam<string>(lineSplitter),
-                            ContextValuesMarshaller.ConvertParam<string>(param5),
-                            ContextValuesMarshaller.ConvertParam<bool>(param6));
+                return ConstructorByStream(
+                    file_stream,
+                    textEncoding,
+                    byteOrder,
+                    lineSplitter,
+                    ContextValuesMarshaller.ConvertValueStrict<string>(param5),
+                    ContextValuesMarshaller.ConvertValueStrict<bool>(param6));
         }
 
         /// <summary>
@@ -345,15 +349,14 @@ namespace OneScript.StandardLibrary.Binary
                 _binaryWriter.Write(lineSplitter.ToCharArray());
         }
 
-        private byte[] GetBytes<T>(T value, Converter<T, byte[]> leConverter, Converter<T, byte[]> beConverter, IValue byteOrder = null)
+        private byte[] GetBytes<T>(T value, Converter<T, byte[]> leConverter, Converter<T, byte[]> beConverter, BslValue byteOrder = null)
         {
             ByteOrderEnum workByteOrder;
             if (byteOrder == null)
                 workByteOrder = ByteOrder;
             else
             {
-                var enumVal = byteOrder.GetRawValue() as IObjectWrapper;
-                if (enumVal == null)
+                if (!(byteOrder is IObjectWrapper enumVal))
                     throw RuntimeException.InvalidArgumentType(nameof(byteOrder));
 
                 try
@@ -383,7 +386,7 @@ namespace OneScript.StandardLibrary.Binary
         /// Значение по умолчанию: Неопределено. </param>
         ///
         [ContextMethod("ЗаписатьЦелое16", "WriteInt16")]
-        public void WriteInt16(ushort number, IValue byteOrder = null)
+        public void WriteInt16(ushort number, BslValue byteOrder = null)
         {
             var buffer = GetBytes(number, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
             _binaryWriter.Write(buffer, 0, buffer.Length);
@@ -401,7 +404,7 @@ namespace OneScript.StandardLibrary.Binary
         /// Значение по умолчанию: Неопределено. </param>
         ///
         [ContextMethod("ЗаписатьЦелое32", "WriteInt32")]
-        public void WriteInt32(uint number, IValue byteOrder = null)
+        public void WriteInt32(uint number, BslValue byteOrder = null)
         {
             var buffer = GetBytes(number, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
             _binaryWriter.Write(buffer, 0, buffer.Length);
@@ -420,7 +423,7 @@ namespace OneScript.StandardLibrary.Binary
         /// Значение по умолчанию: Неопределено. </param>
         ///
         [ContextMethod("ЗаписатьЦелое64", "WriteInt64")]
-        public void WriteInt64(ulong number, IValue byteOrder = null)
+        public void WriteInt64(ulong number, BslValue byteOrder = null)
         {
             var buffer = GetBytes(number, BitConversionFacility.LittleEndian.GetBytes, BitConversionFacility.BigEndian.GetBytes, byteOrder);
             _binaryWriter.Write(buffer, 0, buffer.Length);

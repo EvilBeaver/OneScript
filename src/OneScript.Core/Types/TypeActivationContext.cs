@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.DependencyInjection;
+using OneScript.Execution;
 
 namespace OneScript.Types
 {
@@ -14,6 +15,8 @@ namespace OneScript.Types
         public string TypeName { get; set; }
         
         public ITypeManager TypeManager { get; set; }
+
+        public IBslProcess CurrentProcess { get; set; }
 
         public IServiceContainer Services { get; set; }
     }

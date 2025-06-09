@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using FluentAssertions;
 using Moq;
 using OneScript.Compilation.Binding;
+using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
@@ -25,7 +26,7 @@ namespace OneScript.Core.Tests
         public void EmptyImageIsReturnedWithNoCode()
         {
             var code = "";
-            var image = BuildModule(code);
+            var image = BuildModule(code, Mock.Of<IBslProcess>());
             image.Should().NotBeNull();
             image.Code.Should().BeEmpty();
             image.Constants.Should().BeEmpty();
@@ -39,7 +40,7 @@ namespace OneScript.Core.Tests
             var code = "Procedure Foo() EndProcedure\n" +
                        "Function Bar() EndFunction";
 
-            var image = BuildModule(code);
+            var image = BuildModule(code, Mock.Of<IBslProcess>());
             image.Methods.Should().HaveCount(2);
         }
         
@@ -49,11 +50,11 @@ namespace OneScript.Core.Tests
             var code = "Var A;\n" +
                        "Var B;";
 
-            var image = BuildModule(code);
+            var image = BuildModule(code, Mock.Of<IBslProcess>());
             image.Fields.Should().HaveCount(2);
         }
 
-        private static StackRuntimeModule BuildModule(string code)
+        private static StackRuntimeModule BuildModule(string code, IBslProcess process)
         {
             var lexer = new DefaultLexer();
             lexer.Iterator = SourceCodeBuilder.Create().FromString(code).Build().CreateIterator();
@@ -68,7 +69,7 @@ namespace OneScript.Core.Tests
             var ctx = new SymbolTable();
             ctx.PushScope(new SymbolScope(), null);
             var compiler = new StackMachineCodeGenerator(errSink);
-            return compiler.CreateModule(node, lexer.Iterator.Source, ctx);
+            return compiler.CreateModule(node, lexer.Iterator.Source, ctx, process);
         }
     }
 }

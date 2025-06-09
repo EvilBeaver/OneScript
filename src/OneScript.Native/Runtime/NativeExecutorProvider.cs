@@ -25,9 +25,10 @@ namespace OneScript.Native.Runtime
         }
 
         private static BslValue Executor(
+            IBslProcess process,
             BslObjectValue target,
             IExecutableModule module,
-            BslMethodInfo method,
+            BslScriptMethodInfo method,
             IValue[] arguments)
         {
             if (!(module is DynamicModule))
@@ -45,7 +46,11 @@ namespace OneScript.Native.Runtime
                 throw new InvalidOperationException();
             }
 
-            return (BslValue) nativeMethod.Invoke(context, BindingFlags.Default, null, arguments, CultureInfo.CurrentCulture);
+            var methodArguments = new object[arguments.Length + 1];
+            methodArguments[0] = process;
+            Array.Copy(arguments, 0, methodArguments, 1, arguments.Length);
+
+            return (BslValue) nativeMethod.Invoke(context, BindingFlags.Default, null, methodArguments, CultureInfo.CurrentCulture);
 
         }
     }

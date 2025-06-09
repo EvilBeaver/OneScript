@@ -58,7 +58,7 @@ namespace ScriptEngine.Machine.Contexts
             return sBuilder.ToString();
         }
 
-        public void AttachByPath(ICompilerFrontend compiler, string path, string typeName)
+        public void AttachByPath(ICompilerFrontend compiler, string path, string typeName, IBslProcess process)
         {
             if (!Utils.IsValidIdentifier(typeName))
                 throw RuntimeException.InvalidArgumentValue();
@@ -67,33 +67,35 @@ namespace ScriptEngine.Machine.Contexts
             
             ThrowIfTypeExist(typeName, code);
 
-            CompileAndRegister(typeof(AttachedScriptsFactory), compiler, typeName, code);
+            CompileAndRegister(typeof(AttachedScriptsFactory), compiler, typeName, code, process);
 
         }
 
-        public void AttachFromString(ICompilerFrontend compiler, string text, string typeName)
+        public void AttachFromString(ICompilerFrontend compiler, string text, string typeName, IBslProcess process)
         {
             var code = _engine.Loader.FromString(text);
             ThrowIfTypeExist(typeName, code);
             
-            CompileAndRegister(typeof(AttachedScriptsFactory), compiler, typeName, code);
+            CompileAndRegister(typeof(AttachedScriptsFactory), compiler, typeName, code, process);
         }
 
-        public IRuntimeContextInstance LoadFromPath(ICompilerFrontend compiler, string path)
+        public UserScriptContextInstance LoadFromPath(ICompilerFrontend compiler, string path, IBslProcess process)
         {
-            return LoadFromPath(compiler, path, null);
+            return LoadFromPath(compiler, path, null, process);
         }
 
-        public IRuntimeContextInstance LoadFromPath(ICompilerFrontend compiler, string path, ExternalContextData externalContext)
+        public UserScriptContextInstance LoadFromPath(ICompilerFrontend compiler, string path,
+            ExternalContextData externalContext, IBslProcess process)
         {
             var code = _engine.Loader.FromFile(path);
-            return LoadAndCreate(compiler, code, externalContext);
+            return LoadAndCreate(compiler, code, externalContext, process);
         }
 
-        public IRuntimeContextInstance LoadFromString(ICompilerFrontend compiler, string text, ExternalContextData externalContext = null)
+        public UserScriptContextInstance LoadFromString(ICompilerFrontend compiler, string text, IBslProcess process,
+            ExternalContextData externalContext = null)
         {
             var code = _engine.Loader.FromString(text);
-            return LoadAndCreate(compiler, code, externalContext);
+            return LoadAndCreate(compiler, code, externalContext, process);
         }
 
 
@@ -116,14 +118,14 @@ namespace ScriptEngine.Machine.Contexts
 
         }
 
-        private void CompileAndRegister(Type type, ICompilerFrontend compiler, string typeName, SourceCode code)
+        private void CompileAndRegister(Type type, ICompilerFrontend compiler, string typeName, SourceCode code, IBslProcess process)
         {
             if(_loadedModules.ContainsKey(typeName))
             {
                 return;
             }
 
-            var module = CompileModuleFromSource(compiler, code, null);
+            var module = CompileModuleFromSource(compiler, code, null, process);
             _loadedModules.Add(typeName, module);
             using(var md5Hash = MD5.Create())
             {
@@ -152,13 +154,14 @@ namespace ScriptEngine.Machine.Contexts
             _engine.TypeManager.RegisterType(typeName, default, typeof(AttachedScriptsFactory));
         }
         
-        private IRuntimeContextInstance LoadAndCreate(ICompilerFrontend compiler, SourceCode code, ExternalContextData externalContext)
+        private UserScriptContextInstance LoadAndCreate(ICompilerFrontend compiler, SourceCode code,
+            ExternalContextData externalContext, IBslProcess process)
         {
-            var module = CompileModuleFromSource(compiler, code, externalContext);
-            return _engine.NewObject(module, externalContext);
+            var module = CompileModuleFromSource(compiler, code, externalContext, process);
+            return _engine.NewObject(module, process, externalContext);
         }
 
-        public IExecutableModule CompileModuleFromSource(ICompilerFrontend compiler, SourceCode code, ExternalContextData externalContext)
+        public IExecutableModule CompileModuleFromSource(ICompilerFrontend compiler, SourceCode code, ExternalContextData externalContext, IBslProcess process)
         {
             var scope = compiler.FillSymbols(typeof(UserScriptContextInstance));
             if (externalContext != null)
@@ -169,7 +172,7 @@ namespace ScriptEngine.Machine.Contexts
                 }
             }
 
-            return compiler.Compile(code);
+            return compiler.Compile(code, process);
         }
         
         private static AttachedScriptsFactory _instance;
@@ -205,7 +208,7 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             newObj.InitOwnData();
-            newObj.Initialize();
+            newObj.Initialize(context.CurrentProcess);
 
             return newObj;
         }

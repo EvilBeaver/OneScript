@@ -12,6 +12,7 @@ using ScriptEngine.Machine.Contexts;
 using System.IO;
 using System.Net.WebSockets;
 using System.Text;
+using OneScript.Execution;
 
 namespace OneScript.Web.Server.WebSockets
 {
@@ -74,11 +75,9 @@ namespace OneScript.Web.Server.WebSockets
         /// <param name="status">Статус закрытия</param>
         /// <param name="statusDescription">Описание причины закрытия</param>
         [ContextMethod("Закрыть", "Close")]
-        public void Close(WebSocketCloseStatusWrapper status, IValue statusDescription)
+        public void Close(WebSocketCloseStatusWrapper status, string statusDescription)
         {
-            var desc = statusDescription is BslUndefinedValue ? null : statusDescription.AsString();
-
-            _webSocket.CloseAsync((WebSocketCloseStatus)status, desc, default).Wait();
+            _webSocket.CloseAsync((WebSocketCloseStatus)status, statusDescription, default).Wait();
         }
 
         /// <summary>
@@ -87,11 +86,9 @@ namespace OneScript.Web.Server.WebSockets
         /// <param name="status">Статус закрытия</param>
         /// <param name="statusDescription">Описание причины закрытия</param>
         [ContextMethod("ЗакрытьВыходнойПоток", "CloseOutput")]
-        public void CloseOutput(WebSocketCloseStatusWrapper status, IValue statusDescription)
+        public void CloseOutput(WebSocketCloseStatusWrapper status, string statusDescription)
         {
-            var desc = statusDescription is BslUndefinedValue ? null : statusDescription.AsString();
-
-            _webSocket.CloseOutputAsync((WebSocketCloseStatus)status, desc, default).Wait();
+            _webSocket.CloseOutputAsync((WebSocketCloseStatus)status, statusDescription, default).Wait();
         }
 
         /// <summary>
@@ -170,9 +167,9 @@ namespace OneScript.Web.Server.WebSockets
         /// </summary>
         /// <param name="value">Строка - отправляемые данные</param>
         [ContextMethod("ОтправитьСтроку", "SendString")]
-        public void SendString(IValue value)
+        public void SendString(IBslProcess process, IValue value)
         {
-            _webSocket.SendAsync(Encoding.UTF8.GetBytes(value.AsString()), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, default).AsTask().Wait();
+            _webSocket.SendAsync(Encoding.UTF8.GetBytes(value.AsString(process)), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, default).AsTask().Wait();
         }
 
         /// <summary>

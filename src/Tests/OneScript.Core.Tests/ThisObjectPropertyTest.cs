@@ -23,7 +23,7 @@ namespace OneScript.Core.Tests
                 .SetDefaultOptions();
             var engine = builder.Build();
             engine.Initialize();
-            var instance = engine.AttachedScriptsFactory.LoadFromString(engine.GetCompilerService(), "");
+            var instance = engine.AttachedScriptsFactory.LoadFromString(engine.GetCompilerService(), "", engine.NewProcess());
             
             instance.Should().BeOfType<UserScriptContextInstance>();
             instance.GetPropertyNumber("ЭтотОбъект").Should().NotBe(-1);

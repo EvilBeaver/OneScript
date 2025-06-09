@@ -23,19 +23,13 @@ namespace ScriptEngine.Types
 
             var attr = (ContextClassAttribute)attribData[0];
 
-            if (attr.TypeUUID != default)
-            {
-                var type = new TypeDescriptor(
-                    new Guid(attr.TypeUUID),
-                    attr.GetName(),
-                    attr.GetAlias(),
-                    classType);
+            var type = new TypeDescriptor(
+                classType,
+                attr.Name,
+                attr.Alias);
 
-                manager.RegisterType(type);
-                return type;
-            }
-            else
-                return manager.RegisterType(attr.GetName(), attr.GetAlias(), classType);
+            manager.RegisterType(type);
+            return type;
         }
 
         public static TypeDescriptor GetTypeFromClassMarkup(this Type classType)
@@ -47,16 +41,11 @@ namespace ScriptEngine.Types
             }
 
             var attr = (ContextClassAttribute)attribData[0];
-            if (attr.TypeUUID == default)
-            {
-                throw new InvalidOperationException($"TypeUUID is not defined for {classType}");
-            }
             
             return new TypeDescriptor(
-                new Guid(attr.TypeUUID),
-                attr.GetName(),
-                attr.GetAlias(),
-                classType);
+                classType,
+                attr.Name,
+                attr.Alias);
         }
     }
 }

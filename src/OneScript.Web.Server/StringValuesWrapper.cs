@@ -61,11 +61,6 @@ namespace OneScript.Web.Server
 
         #endregion
 
-        protected override string ConvertToString()
-        {
-            return _value.ToString();
-        }
-
         public override string ToString()
         {
             return _value.ToString();

@@ -45,7 +45,7 @@ namespace ScriptEngine.Machine
             if (x.SystemType == y.SystemType)
                 return x.CompareTo(y);
             else
-                return x.AsString().CompareTo(y.AsString());
+                return x.ToString().CompareTo(y.ToString());
         }
     }
 }

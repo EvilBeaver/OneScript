@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using OneScript.Contexts;
 using OneScript.Types;
 using ScriptEngine.Machine;
@@ -15,8 +16,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Diagnostics;
-using ExecutionContext = ScriptEngine.Machine.ExecutionContext;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using OneScript.Execution;
 
 namespace OneScript.Web.Server
 {
@@ -100,6 +102,8 @@ namespace OneScript.Web.Server
                 options.ListenAnyIP(Port);
             });
 
+            builder.Services.Configure<FormOptions>(builder.Configuration.GetSection("FormOptions"));
+
             _app = builder.Build();
 
             if (_useStaticFiles)
@@ -117,6 +121,13 @@ namespace OneScript.Web.Server
             if (_useWebSockets)
                 _app.UseWebSockets();
 
+            _app.Use((context, next) =>
+            {
+                var process = _executionContext.Services.Resolve<IBslProcessFactory>().NewProcess();
+                context.Items.Add(typeof(IBslProcess), process);
+                return next();
+            });
+
             _middlewares.ForEach(middleware =>
             {
                 _app.Use((context, next) =>
@@ -127,19 +138,10 @@ namespace OneScript.Web.Server
                         new RequestDelegateWrapper(next)
                     };
 
+                    var process = (IBslProcess)context.Items[typeof(IBslProcess)];
+                    
                     var methodNumber = middleware.Target.GetMethodNumber(middleware.MethodName);
-
-                    var debugController = _executionContext.Services.TryResolve<IDebugController>();
-                    debugController?.AttachToThread();
-
-                    try
-                    {
-                        middleware.Target.CallAsProcedure(methodNumber, args);
-                    }
-                    finally
-                    {
-                        debugController?.DetachFromThread();
-                    }
+                    middleware.Target.CallAsProcedure(methodNumber, args, process);
 
                     return Task.CompletedTask;
                 });
@@ -173,16 +175,14 @@ namespace OneScript.Web.Server
                         new HttpContextWrapper(_executionContext.TypeManager, context),
                     };
 
-                    var methodNumber = _exceptionHandler?.Target.GetMethodNumber(_exceptionHandler?.MethodName);
+                    var methodNumber = _exceptionHandler?.Target.GetMethodNumber(_exceptionHandler?.MethodName)
+                        ?? throw new InvalidOperationException();
 
-                    var debugController = _executionContext.Services.TryResolve<IDebugController>();
-
-                    // Thread unsafe call!
-                    debugController?.AttachToThread();
+                    var process = _executionContext.Services.Resolve<IBslProcessFactory>().NewProcess();
 
                     try
                     {
-                        _exceptionHandler?.Target.CallAsProcedure((int)methodNumber, args);
+                        _exceptionHandler?.Target.CallAsProcedure(methodNumber, args, process);
                     }
                     catch (Exception ex)
                     {
@@ -191,12 +191,7 @@ namespace OneScript.Web.Server
                         else
                             throw;
                     }
-                    finally
-                    {
-                        // Thread unsafe call!
-                        debugController?.DetachFromThread();
-                    }
-
+                    
                     return Task.CompletedTask;
                 });
             });
@@ -221,15 +216,15 @@ namespace OneScript.Web.Server
             => _exceptionHandler = (target, methodName);
 
         [ContextMethod("УстановитьКаталогСервера", "SetServerDir")]
-        public void SetContentRoot(IValue path)
+        public void SetContentRoot(string path)
         {
-            _contentRoot = path.AsString();
+            _contentRoot = path;
         }
         
         [ContextMethod("УстановитьКорневойПуть", "SetWebRoot")]
-        public void SetWebRoot(IValue path)
+        public void SetWebRoot(string path)
         {
-            _wwwRoot = path.AsString();
+            _wwwRoot = path;
         }
 
         [ContextMethod("ИспользоватьСтатическиеФайлы", "UseStaticFiles")]

@@ -9,21 +9,39 @@ using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
+using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections
 {
+    /// <summary>
+    /// Универсальный объект, хранящий значения по именам свойств.
+    /// Доступ к элементам структуры возможен через точку, или по имени свойства в квадратных скобках []
+    ///
+    /// Возможен обход в цикле <c>Для Каждого Из</c>. При обходе, элементами коллекции являются объекты типа <see cref="KeyAndValueImpl">КлючИЗначение</see>
+    /// </summary>
+    /// <example>
+    /// Пользователь = Новый Структура("Логин, Адрес, Пароль");
+    /// Пользователь.Логин = "user";
+    /// Пользователь.Адрес = "somemail@server.com";
+    /// Пользователь.Пароль = "password";
+    /// </example>
+    /// <seealso cref="KeyAndValueImpl"/>
     [ContextClass("Структура", "Structure")]
     public class StructureImpl : DynamicPropertiesAccessor, ICollectionContext<KeyAndValueImpl>, IDebugPresentationAcceptor
     {
         private readonly List<IValue> _values = new List<IValue>();
         private static readonly ContextMethodsMapper<StructureImpl> _methods = new ContextMethodsMapper<StructureImpl>();
+
+        private static readonly TypeDescriptor typeDescriptor = typeof(StructureImpl).GetTypeFromClassMarkup();
         
         public StructureImpl()
         {
-            
+            DefineType(typeDescriptor);
         }
 
         public StructureImpl(string strProperties, params IValue[] values)
@@ -44,7 +62,7 @@ namespace OneScript.StandardLibrary.Collections
         {
             foreach (KeyAndValueImpl keyValue in structure)
             {
-                Insert(keyValue.Key.AsString(), keyValue.Value);
+                Insert(keyValue.Key.ToString(), keyValue.Value);
             }
         }
       
@@ -148,12 +166,12 @@ namespace OneScript.StandardLibrary.Collections
             return _methods.GetRuntimeMethod(methodNumber);
         }
 
-        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
+        public override void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
             var binding = _methods.GetCallableDelegate(methodNumber);
             try
             {
-                binding(this, arguments);
+                binding(this, arguments, process);
             }
             catch (System.Reflection.TargetInvocationException e)
             {
@@ -161,12 +179,12 @@ namespace OneScript.StandardLibrary.Collections
             }
         }
 
-        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process)
         {
             var binding = _methods.GetCallableDelegate(methodNumber);
             try
             {
-                retValue = binding(this, arguments);
+                retValue = binding(this, arguments, process);
             }
             catch (System.Reflection.TargetInvocationException e)
             {
@@ -195,6 +213,8 @@ namespace OneScript.StandardLibrary.Collections
         {
             return _values.Count;
         }
+
+        public int Count(IBslProcess process) => Count();
 
         [ContextMethod("Очистить", "Clear")]
         public void Clear()
@@ -253,7 +273,7 @@ namespace OneScript.StandardLibrary.Collections
         [ScriptConstructor(Name = "По ключам и значениям")]
         public static StructureImpl Constructor(IValue param1, IValue[] args)
         {
-            return param1?.GetRawValue() switch
+            return param1 switch
             {
                 null => new StructureImpl(),
                 BslStringValue s => new StructureImpl((string)s, args),

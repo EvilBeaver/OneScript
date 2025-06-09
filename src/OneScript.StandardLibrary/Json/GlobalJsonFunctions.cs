@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -140,7 +141,7 @@ namespace OneScript.StandardLibrary.Json
 
                         while (ReadJsonToken() == JsonToken.PropertyName)
                         {
-                            var propertyName = _reader.CurrentValue.AsString();
+                            var propertyName = (string)_reader.ReaderValue;
                             if (!ReadJsonValue(out value))
                                 return false;
 
@@ -256,87 +257,84 @@ namespace OneScript.StandardLibrary.Json
         /// Если методу требуется передать значение недопустимого типа, то можно использовать функцию преобразования значения (параметры ИмяФункцииПреобразования и МодульФункцииПреобразования).
         /// </summary>
         ///
-        /// <param name="Writer">
+        /// <param name="writer">
         /// Объект, через который осуществляется запись JSON. Поток JSON должен быть подготовлен для записи значения. </param>
-        /// <param name="Value">
+        /// <param name="value">
         /// Объект записи JSON. Меняет состояние потока записи. </param>
-        /// <param name="SerializationSettings">
+        /// <param name="serializationSettings">
         /// В текущий версии не обрабатывается. Настройки сериализации в JSON. </param>
-        /// <param name="ConversionFunctionName">
+        /// <param name="conversionFunctionName">
         /// В текущий версии не обрабатывается. Значение по умолчанию: Неопределено. </param>
-        /// <param name="ConversionFunctionModule">
+        /// <param name="conversionFunctionModule">
         /// Указывает контекст, в котором реализована функция преобразования значения в значение формата JSON.
         /// В текущий версии не обрабатывается.  Значение по умолчанию: Неопределено. </param>
-        /// <param name="ConversionFunctionAdditionalParameters">
+        /// <param name="conversionFunctionAdditionalParameters">
         /// В текущий версии не обрабатывается. Значение по умолчанию: Неопределено. </param>
         ///
         ///
         [ContextMethod("ЗаписатьJSON", "WriteJSON")]
-        public void WriteJSON(JSONWriter Writer, IValue Value, IValue SerializationSettings = null, string ConversionFunctionName = null, IValue ConversionFunctionModule = null, IValue ConversionFunctionAdditionalParameters = null)
+        public void WriteJSON(IBslProcess process, JSONWriter writer, IValue value, IValue serializationSettings = null, string conversionFunctionName = null, IValue conversionFunctionModule = null, IValue conversionFunctionAdditionalParameters = null)
         {
-
-            var RawValue = Value.GetRawValue();
-
-            if (RawValue is ArrayImpl)
+            if (value is ArrayImpl)
             {
-                Writer.WriteStartArray();
-                foreach (var item in (ArrayImpl)RawValue)
+                writer.WriteStartArray();
+                foreach (var item in (ArrayImpl)value)
                 {
-                        WriteJSON(Writer, item);
+                    WriteJSON(process, writer, item);
                 }
-                Writer.WriteEndArray();
+                writer.WriteEndArray();
             }
-            else if (RawValue is FixedArrayImpl)
+            else if (value is FixedArrayImpl)
             {
-                Writer.WriteStartArray();
-                foreach (var item in (FixedArrayImpl)RawValue)
+                writer.WriteStartArray();
+                foreach (var item in (FixedArrayImpl)value)
                 {
-                        WriteJSON(Writer, item);
+                    WriteJSON(process, writer, item);
                 }
-                Writer.WriteEndArray();
+                writer.WriteEndArray();
             }
-            else if (RawValue is StructureImpl)
+            else if (value is StructureImpl)
             {
-                Writer.WriteStartObject();
-                foreach (var item in (StructureImpl)RawValue)
+                writer.WriteStartObject();
+                foreach (var item in (StructureImpl)value)
                 {
-                        Writer.WritePropertyName(item.Key.AsString());
-                        WriteJSON(Writer, item.Value);
+                    writer.WritePropertyName(item.Key.ToString());
+                    WriteJSON(process, writer, item.Value);
                 }
-                Writer.WriteEndObject();
+                writer.WriteEndObject();
             }
-            else if (RawValue is FixedStructureImpl)
+            else if (value is FixedStructureImpl)
             {
-                Writer.WriteStartObject();
-                foreach (var item in (FixedStructureImpl)RawValue)
+                writer.WriteStartObject();
+                foreach (var item in (FixedStructureImpl)value)
                 {
-                        Writer.WritePropertyName(item.Key.AsString());
-                        WriteJSON(Writer, item.Value);
+                    writer.WritePropertyName(item.Key.ToString());
+                    WriteJSON(process, writer, item.Value);
                 }
-                Writer.WriteEndObject();
+                writer.WriteEndObject();
             }
-            else if (RawValue is MapImpl)
+            else if (value is MapImpl)
             {
-                Writer.WriteStartObject();
-                foreach (var item in (MapImpl)RawValue)
+                writer.WriteStartObject();
+                foreach (var item in (MapImpl)value)
                 {
-                        Writer.WritePropertyName(item.Key.AsString());
-                        WriteJSON(Writer, item.Value);
+                    writer.WritePropertyName(item.Key.AsString(process));
+                    WriteJSON(process, writer, item.Value);
                 }
-                Writer.WriteEndObject();
+                writer.WriteEndObject();
             }
-            else if (RawValue is FixedMapImpl)
+            else if (value is FixedMapImpl)
             {
-                Writer.WriteStartObject();
-                foreach (var item in (FixedMapImpl)RawValue)
+                writer.WriteStartObject();
+                foreach (var item in (FixedMapImpl)value)
                 {
-                       Writer.WritePropertyName(item.Key.AsString());
-                       WriteJSON(Writer, item.Value);
+                   writer.WritePropertyName(item.Key.AsString(process));
+                   WriteJSON(process, writer, item.Value);
                 }
-                Writer.WriteEndObject();
+                writer.WriteEndObject();
             }
             else
-                Writer.WriteValue(RawValue);
+                writer.WriteValue(value);
         }
      }
 

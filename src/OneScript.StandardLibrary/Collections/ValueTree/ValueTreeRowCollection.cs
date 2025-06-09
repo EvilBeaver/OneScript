@@ -11,6 +11,7 @@ using System.Linq;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Types;
@@ -20,7 +21,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
     /// <summary>
     /// Коллекция строк дерева значений.
     /// </summary>
-    [ContextClass("КоллекцияСтрокДереваЗначений", "ValueTreeRowCollection", TypeUUID = "CEBF52F0-DA62-4058-9A22-0E659747E622")]
+    [ContextClass("КоллекцияСтрокДереваЗначений", "ValueTreeRowCollection")]
     public class ValueTreeRowCollection : AutoCollectionContext<ValueTreeRowCollection, ValueTreeRow>
     {
         private readonly List<ValueTreeRow> _rows = new List<ValueTreeRow>();
@@ -28,10 +29,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         private readonly ValueTree _owner;
         private readonly int _level;
         
-        private static TypeDescriptor _instanceType = typeof(ValueTreeRowCollection).GetTypeFromClassMarkup();
-
         public ValueTreeRowCollection(ValueTree owner, ValueTreeRow parent, int level)
-            : base(_instanceType)
         {
             _owner = owner;
             _parent = parent;
@@ -107,9 +105,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         /// </summary>
         /// <param name="row">СтрокаДереваЗначений, Число. Удаляемая строка или её индекс.</param>
         [ContextMethod("Удалить", "Delete")]
-        public void Delete(IValue row)
+        public void Delete(BslValue row)
         {
-            row = row.GetRawValue();
             int index;
             if (row is ValueTreeRow)
             {
@@ -130,10 +127,10 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         /// <param name="values">Массив. Значения.</param>
         /// <param name="columnIndex">КолонкаДереваЗначений, Число, Строка. Колонка, в которую будут загружены значения, её имя или индекс.</param>
         [ContextMethod("ЗагрузитьКолонку", "LoadColumn")]
-        public void LoadColumn(IValue values, IValue columnIndex)
+        public void LoadColumn(ArrayImpl values, IValue columnIndex)
         {
             var rowIterator = _rows.GetEnumerator();
-            var arrayIterator = (values as ArrayImpl).GetEnumerator();
+            using var arrayIterator = values.GetEnumerator();
 
             while (rowIterator.MoveNext() && arrayIterator.MoveNext())
             {
@@ -165,10 +162,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         /// <param name="row">СтрокаДереваЗначений. Строка.</param>
         /// <returns>Число. Индекс строки в коллекции. Если строка не найдена, возвращается -1.</returns>
         [ContextMethod("Индекс", "IndexOf")]
-        public int IndexOf(IValue row)
+        public int IndexOf(BslValue row)
         {
-            row = row.GetRawValue();
-
             if (row is ValueTreeRow treeRow)
                 return _rows.IndexOf(treeRow);
 
@@ -182,7 +177,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         /// <param name="includeChildren">Булево. Если Истина, в расчёт будут включены все вложенные строки.</param>
         /// <returns>Число. Вычисленная сумма.</returns>
         [ContextMethod("Итог", "Total")]
-        public IValue Total(IValue columnIndex, bool includeChildren = false)
+        public IValue Total(BslValue columnIndex, bool includeChildren = false)
         {
             ValueTreeColumn column = Columns.GetColumnByIIndex(columnIndex);
             decimal result = 0;
@@ -243,9 +238,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         {
             foreach (KeyAndValueImpl kv in filter)
             {
-                ValueTreeColumn column = Columns.FindColumnByName(kv.Key.AsString());
+                ValueTreeColumn column = Columns.FindColumnByName(kv.Key.ToString());
                 if (column == null)
-                    throw PropertyAccessException.PropNotFoundException(kv.Key.AsString());
+                    throw PropertyAccessException.PropNotFoundException(kv.Key.ToString());
 
                 IValue current = row.Get(column);
                 if (!current.StrictEquals(kv.Value))
@@ -261,9 +256,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         /// <param name="includeChildren">Булево. Если Истина, в поиск будут включены все вложенные строки. Необязательный параметр.</param>
         /// <returns>Массив. Найденные строки.</returns>
         [ContextMethod("НайтиСтроки", "FindRows")]
-        public ArrayImpl FindRows(IValue filter, bool includeChildren = false)
+        public ArrayImpl FindRows(BslValue filter, bool includeChildren = false)
         {
-            var filterStruct = filter.GetRawValue() as StructureImpl;
+            var filterStruct = filter as StructureImpl;
 
             if (filterStruct == null)
                 throw RuntimeException.InvalidArgumentType();
@@ -318,10 +313,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         /// <param name="row">СтрокаДереваЗначений. Строка.</param>
         /// <param name="offset">Число. Смещение.</param>
         [ContextMethod("Сдвинуть", "Move")]
-        public void Move(IValue row, int offset)
+        public void Move(BslValue row, int offset)
         {
-            row = row.GetRawValue();
-
             int indexSource;
             if (row is ValueTreeRow)
                 indexSource = _rows.IndexOf(row as ValueTreeRow);

@@ -391,8 +391,8 @@ namespace OneScript.StandardLibrary.Http
             {
                 System.Diagnostics.Trace.Assert(item != null);
 
-                var key = item.Key.AsString();
-                var value = item.Value.AsString();
+                var key = item.Key.ToString();
+                var value = item.Value.ToString();
 
                 switch (key.ToUpperInvariant())
                 {
@@ -511,24 +511,25 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="useOSAuthentication">Использовать аутентификацию ОС.</param>
         /// <returns></returns>
         [ScriptConstructor(Name = "По указанному серверу")]
-        public static HttpConnectionContext Constructor(IValue host, 
-            IValue port = null, 
-            IValue user = null, 
-            IValue password = null,
-            IValue proxy = null,
-            IValue timeout = null,
+        public static HttpConnectionContext Constructor(
+            string host, 
+            int port = default, 
+            string user = null, 
+            string password = null,
+            InternetProxyContext proxy = null,
+            int timeout = default,
             IValue ssl = null,
-            IValue useOSAuthentication = null)
+            bool useOSAuthentication = default)
         {
-            return new HttpConnectionContext(host.AsString(),
-                ContextValuesMarshaller.ConvertParam<int>(port),
-                ContextValuesMarshaller.ConvertParam<string>(user),
-                ContextValuesMarshaller.ConvertParam<string>(password),
-                ContextValuesMarshaller.ConvertParam<InternetProxyContext>(proxy),
-                ContextValuesMarshaller.ConvertParam<int>(timeout),
-                ContextValuesMarshaller.ConvertParam<IValue>(ssl),
-                ContextValuesMarshaller.ConvertParam<bool>(useOSAuthentication)
-                );
+            return new HttpConnectionContext(
+                host,
+                port,
+                user,
+                password,
+                proxy,
+                timeout,
+                ssl,
+                useOSAuthentication);
         }
 
     }

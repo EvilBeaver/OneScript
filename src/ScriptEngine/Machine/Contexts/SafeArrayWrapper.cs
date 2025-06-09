@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Execution;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -32,7 +33,7 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         [ContextMethod("Количество", "Count")]
-		public int Count()
+		public int Count(IBslProcess process)
         {
             return _array.Length;
         }

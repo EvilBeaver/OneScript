@@ -183,7 +183,7 @@ namespace OneScript.StandardLibrary.Binary
         /// <param name="data">Объект типа ДвоичныеДанные.</param>
         /// <param name="size">Размер одной части данных.</param>
         /// <returns>Массив объектов типа ДвоичныеДанные.</returns>
-        [ContextMethod("РазделитьДвоичныеДанные")]
+        [ContextMethod("РазделитьДвоичныеДанные", "SplitBinaryData")]
         public ArrayImpl SplitBinaryData(BinaryDataContext data, long size)
         {
             CheckAndThrowIfNull(data, 1, nameof(data));
@@ -225,7 +225,7 @@ namespace OneScript.StandardLibrary.Binary
         /// <param name="encoding">Кодировка текста</param>
         /// <param name="addBOM">Определяет, будет ли добавлена метка порядка байт (BOM) кодировки текста в начало данных.</param>
         /// <returns>Тип: ДвоичныеДанные.</returns>
-        [ContextMethod("ПолучитьДвоичныеДанныеИзСтроки")]
+        [ContextMethod("ПолучитьДвоичныеДанныеИзСтроки", "GetBinaryDataFromString")]
         public BinaryDataContext GetBinaryDataFromString(string str, IValue encoding = null, bool addBOM = false)
         {
             // Получаем кодировку
@@ -254,7 +254,7 @@ namespace OneScript.StandardLibrary.Binary
         /// <param name="encoding">Кодировка текста</param>
         /// <param name="addBOM">Определяет, будет ли добавлена метка порядка байт (BOM) кодировки текста в начало данных.</param>
         /// <returns>Тип: БуферДвоичныхДанных.</returns>
-        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзСтроки")]
+        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзСтроки", "GetBinaryDataBufferFromString")]
         public BinaryDataBuffer GetBinaryDataBufferFromString(string str, IValue encoding = null, bool addBOM = false)
         {
             var enc = (encoding != null)? TextEncodingEnum.GetEncoding(encoding, addBOM) : Encoding.UTF8;
@@ -268,7 +268,7 @@ namespace OneScript.StandardLibrary.Binary
         /// <param name="data">Двоичные данные, которые требуется преобразовать в строку.</param>
         /// <param name="encoding">Кодировка текста</param>
         /// <returns>Тип: Строка.</returns>
-        [ContextMethod("ПолучитьСтрокуИзДвоичныхДанных")]
+        [ContextMethod("ПолучитьСтрокуИзДвоичныхДанных", "GetStringFromBinaryData")]
         public string GetStringFromBinaryData(BinaryDataContext data, IValue encoding = null)
         {
             CheckAndThrowIfNull(data, 1, nameof(data));
@@ -286,7 +286,7 @@ namespace OneScript.StandardLibrary.Binary
         /// <param name="buffer">Буфер двоичных данных, который требуется преобразовать в строку.</param>
         /// <param name="encoding">Кодировка текста</param>
         /// <returns>Тип: Строка.</returns>
-        [ContextMethod("ПолучитьСтрокуИзБуфераДвоичныхДанных")]
+        [ContextMethod("ПолучитьСтрокуИзБуфераДвоичныхДанных", "GetStringFromBinaryDataBuffer")]
         public string GetStringFromBinaryDataBuffer(BinaryDataBuffer buffer, IValue encoding = null)
         {
             CheckAndThrowIfNull(buffer, 1, nameof(buffer));
@@ -301,7 +301,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="str">Строка в формате Base64.</param>
         /// <returns>Тип: ДвоичныеДанные.</returns>
-        [ContextMethod("ПолучитьДвоичныеДанныеИзBase64Строки")]
+        [ContextMethod("ПолучитьДвоичныеДанныеИзBase64Строки", "GetBinaryDataFromBase64String")]
         public BinaryDataContext GetBinaryDataFromBase64String(string str)
         {
             try
@@ -319,7 +319,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="str">Строка в формате Base64.</param>
         /// <returns>Тип: ДвоичныеДанные.</returns>
-        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзBase64Строки")]
+        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзBase64Строки", "GetBinaryDataBufferFromBase64String")]
         public BinaryDataBuffer GetBinaryDataBufferFromBase64String(string str)
         {
             try
@@ -339,7 +339,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="data">Двоичные данные.</param>
         /// <returns>Тип: Строка.</returns>
-        [ContextMethod("ПолучитьBase64СтрокуИзДвоичныхДанных")]
+        [ContextMethod("ПолучитьBase64СтрокуИзДвоичныхДанных", "GetBase64StringFromBinaryData")]
         public string GetBase64StringFromBinaryData(BinaryDataContext data)
         {
             CheckAndThrowIfNull(data, 1, nameof(data));
@@ -354,7 +354,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="buffer">Буфер двоичных данных.</param>
         /// <returns>Тип: Строка.</returns>
-        [ContextMethod("ПолучитьBase64СтрокуИзБуфераДвоичныхДанных")]
+        [ContextMethod("ПолучитьBase64СтрокуИзБуфераДвоичныхДанных", "GetBase64StringFromBinaryDataBuffer")]
         public string GetBase64StringFromBinaryDataBuffer(BinaryDataBuffer buffer)
         {
             CheckAndThrowIfNull(buffer);
@@ -367,7 +367,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="data">Двоичные данные, закодированные по методу Base64.</param>
         /// <returns>Тип: ДвоичныеДанные.</returns>
-        [ContextMethod("ПолучитьДвоичныеДанныеИзBase64ДвоичныхДанных")]
+        [ContextMethod("ПолучитьДвоичныеДанныеИзBase64ДвоичныхДанных", "GetBinaryDataFromBase64BinaryData")]
         public BinaryDataContext GetBinaryDataFromBase64BinaryData(BinaryDataContext data)
         {
             CheckAndThrowIfNull(data);
@@ -389,7 +389,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="buffer">Буфер двоичных данных.</param>
         /// <returns>Тип: ДвоичныеДанные.</returns>
-        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзBase64БуфераДвоичныхДанных")]
+        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзBase64БуфераДвоичныхДанных", "GetBinaryDataBufferFromBase64BinaryDataBuffer")]
         public BinaryDataBuffer GetBinaryDataBufferFromBase64BinaryDataBuffer(BinaryDataBuffer buffer)
         {
             CheckAndThrowIfNull(buffer);
@@ -413,7 +413,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="data">Двоичные данные.</param>
         /// <returns>Тип: ДвоичныеДанные.</returns>
-        [ContextMethod("ПолучитьBase64ДвоичныеДанныеИзДвоичныхДанных")]
+        [ContextMethod("ПолучитьBase64ДвоичныеДанныеИзДвоичныхДанных", "GetBase64BinaryDataFromBinaryData")]
         public BinaryDataContext GetBase64BinaryDataFromBinaryData(BinaryDataContext data)
         {
             CheckAndThrowIfNull(data);
@@ -429,7 +429,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="buffer">Буфер двоичных данных.</param>
         /// <returns>Тип: БуферДвоичныхДанных.</returns>
-        [ContextMethod("ПолучитьBase64БуферДвоичныхДанныхИзБуфераДвоичныхДанных")]
+        [ContextMethod("ПолучитьBase64БуферДвоичныхДанныхИзБуфераДвоичныхДанных", "GetBase64BinaryDataBufferFromBinaryDataBuffer")]
         public BinaryDataBuffer GetBase64BinaryDataBufferFromBinaryDataBuffer(BinaryDataBuffer buffer)
         {
             CheckAndThrowIfNull(buffer);
@@ -443,7 +443,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="hex">Строка в формате Base 16 (Hex).</param>
         /// <returns>Тип: ДвоичныеДанные.</returns>
-        [ContextMethod("ПолучитьДвоичныеДанныеИзHexСтроки")]
+        [ContextMethod("ПолучитьДвоичныеДанныеИзHexСтроки", "GetBinaryDataFromHexString")]
         public BinaryDataContext GetBinaryDataFromHexString(string hex)
         {
             return new BinaryDataContext(HexStringToByteArray(hex));
@@ -454,7 +454,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="hex">Строка в формате Base 16 (Hex).</param>
         /// <returns>Тип: БуферДвоичныхДанных.</returns>
-        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзHexСтроки")]
+        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзHexСтроки", "GetBinaryDataBufferFromHexString")]
         public BinaryDataBuffer GetBinaryDataBufferFromHexString(string hex)
         {
             return new BinaryDataBuffer(HexStringToByteArray(hex));
@@ -465,7 +465,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="data">Двоичные данные.</param>
         /// <returns>Тип: Строка.</returns>
-        [ContextMethod("ПолучитьHexСтрокуИзДвоичныхДанных")]
+        [ContextMethod("ПолучитьHexСтрокуИзДвоичныхДанных", "GetHexStringFromBinaryData")]
         public string GetHexStringFromBinaryData(BinaryDataContext data)
         {
             CheckAndThrowIfNull(data);
@@ -478,7 +478,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="buffer">Буфер двоичных данных.</param>
         /// <returns>Тип: Строка.</returns>
-        [ContextMethod("ПолучитьHexСтрокуИзБуфераДвоичныхДанных")]
+        [ContextMethod("ПолучитьHexСтрокуИзБуфераДвоичныхДанных", "GetHexStringFromBinaryDataBuffer")]
         public string GetHexStringFromBinaryDataBuffer(BinaryDataBuffer buffer)
         {
             CheckAndThrowIfNull(buffer); 
@@ -491,7 +491,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="data">Двоичные данные в формате Base 16 (Hex).</param>
         /// <returns>Тип: ДвоичныеДанные. </returns>
-        [ContextMethod("ПолучитьДвоичныеДанныеИзHexДвоичныхДанных")]
+        [ContextMethod("ПолучитьДвоичныеДанныеИзHexДвоичныхДанных", "GetBinaryDataFromHexBinaryData")]
         public BinaryDataContext GetBinaryDataFromHexBinaryData(BinaryDataContext data)
         {
             CheckAndThrowIfNull(data);
@@ -504,7 +504,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="buffer">Буфер двоичных данных в формате Base 16 (Hex).</param>
         /// <returns>Тип: БуферДвоичныхДанных.</returns>
-        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзHexБуфераДвоичныхДанных")]
+        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзHexБуфераДвоичныхДанных", "GetBinaryDataBufferFromHexBinaryDataBuffer")]
         public BinaryDataBuffer GetBinaryDataBufferFromHexBinaryDataBuffer(BinaryDataBuffer buffer)
         {
             CheckAndThrowIfNull(buffer); 
@@ -517,7 +517,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="data">Двоичные данные.</param>
         /// <returns>Тип: ДвоичныеДанные. </returns>
-        [ContextMethod("ПолучитьHexДвоичныеДанныеИзДвоичныхДанных")]
+        [ContextMethod("ПолучитьHexДвоичныеДанныеИзДвоичныхДанных", "GetHexBinaryDataFromBinaryData")]
         public BinaryDataContext GetHexBinaryDataFromBinaryData(BinaryDataContext data)
         {
             var str = GetHexStringFromBinaryData(data);
@@ -529,7 +529,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="buffer">Буфер двоичных данных.</param>
         /// <returns>Тип: БуферДвоичныхДанных.</returns>
-        [ContextMethod("ПолучитьHexБуферДвоичныхДанныхИзБуфераДвоичныхДанных")]
+        [ContextMethod("ПолучитьHexБуферДвоичныхДанныхИзБуфераДвоичныхДанных", "GetHexBinaryDataBufferFromBinaryDataBuffer")]
         public BinaryDataBuffer GetHexBinaryDataBufferFromBinaryDataBuffer(BinaryDataBuffer buffer)
         {
             var str = GetHexStringFromBinaryDataBuffer(buffer);
@@ -541,7 +541,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="data">Двоичные данные.</param>
         /// <returns>Тип: БуферДвоичныхДанных.</returns>
-        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзДвоичныхДанных")]
+        [ContextMethod("ПолучитьБуферДвоичныхДанныхИзДвоичныхДанных", "GetBinaryDataBufferFromBinaryData")]
         public BinaryDataBuffer GetBinaryDataBufferFromBinaryData(BinaryDataContext data)
         {
             CheckAndThrowIfNull(data);
@@ -554,7 +554,7 @@ namespace OneScript.StandardLibrary.Binary
         /// </summary>
         /// <param name="buffer">Буфер двоичных данных.</param>
         /// <returns>Тип: ДвоичныеДанные.</returns>
-        [ContextMethod("ПолучитьДвоичныеДанныеИзБуфераДвоичныхДанных")]
+        [ContextMethod("ПолучитьДвоичныеДанныеИзБуфераДвоичныхДанных", "GetBinaryDataFromBinaryDataBuffer")]
         public BinaryDataContext GetBinaryDataFromBinaryDataBuffer(BinaryDataBuffer buffer)
         {
             CheckAndThrowIfNull(buffer);

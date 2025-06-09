@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using OneScript.Values;
@@ -124,9 +125,8 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 		}
 
 		[ContextMethod("ПривестиЗначение", "AdjustValue")]
-		public IValue AdjustValue(IValue pValue = null)
+		public IValue AdjustValue(IValue value = null)
 		{
-			var value = pValue?.GetRawValue();
 			if (_types.Count == 0)
 			{
 				return value ?? ValueFactory.Create();
@@ -179,13 +179,13 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 		[ScriptConstructor]
 		public static TypeDescription Constructor(
 			TypeActivationContext context,
-			IValue source = null,
-			IValue p2 = null,
-			IValue p3 = null,
-			IValue p4 = null,
-			IValue p5 = null,
-			IValue p6 = null,
-			IValue p7 = null)
+			BslValue source = null,
+			BslValue p2 = null,
+			BslValue p3 = null,
+			BslValue p4 = null,
+			BslValue p5 = null,
+			BslValue p6 = null,
+			BslValue p7 = null)
 		{
 			var builder = new TypeDescriptionBuilder();
 			
@@ -193,10 +193,9 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			// чтобы указать номер параметра при выводе ошибки несоответствия типа
 			var qualifiers = new[] { null, p2, p3, p4, p5, p6, p7 };
 			
-			var rawSource = source?.GetRawValue();
-			if (rawSource != null && rawSource.SystemType != BasicTypes.Undefined)
+			if (source != null && source.SystemType != BasicTypes.Undefined)
 			{
-				if (rawSource is TypeDescription typeDesc)
+				if (source is TypeDescription typeDesc)
 				{
 					// Если 1 парарметр - ОписаниеТипов, то 2 - добавляемые типы, 3 - убираемые типы,
 					builder.SourceDescription(typeDesc);
@@ -210,11 +209,11 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 					qualifiers[1] = null; // эти параметры не квалификаторы
 					qualifiers[2] = null; // эти параметры не квалификаторы
 				}
-				else if (rawSource.SystemType == BasicTypes.String || rawSource is ArrayImpl)
+				else if (source.SystemType == BasicTypes.String || source is ArrayImpl)
 				{
 					// Если 1 парарметр - Массив или строка, то это набор конкретных типов
 					// остальные параметры (2 и далее) - клвалификаторы в произвольном порядке
-					var typesList = CheckAndParseTypeList(context.TypeManager, rawSource, 1);
+					var typesList = CheckAndParseTypeList(context.TypeManager, source, 1);
 					builder.AddTypes(typesList);
 				}
 				else
@@ -237,13 +236,12 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 		/// <returns>Список переданных типов, приведенный к конкретным TypeTypeValue</returns>
 		private static List<BslTypeValue> CheckAndParseTypeList(ITypeManager typeManager, IValue types, int nParam)
 		{
-			types = types?.GetRawValue();
 			if (types == null || types.SystemType == BasicTypes.Undefined)
 				return new List<BslTypeValue>();
 			
 			if (types.SystemType == BasicTypes.String)
 			{
-				return FromTypeNames(typeManager, types.AsString());
+				return FromTypeNames(typeManager, types.ToString());
 			}
 			if (types is ArrayImpl arrayOfTypes)
 			{
@@ -275,7 +273,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			var typesList = new List<BslTypeValue>();
 			foreach (var type in arrayOfTypes)
 			{
-				if (type.GetRawValue() is BslTypeValue rawType)
+				if (type is BslTypeValue rawType)
 				{
 					typesList.Add(rawType);
 				}
@@ -283,11 +281,11 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			return typesList;
 		}
 
-		private static void CheckAndAddQualifiers(TypeDescriptionBuilder builder, IValue[] parameters)
+		private static void CheckAndAddQualifiers(TypeDescriptionBuilder builder, BslValue[] parameters)
 		{
 			for (var i = 0; i < parameters.Length; i++)
 			{
-				var rawQualifier = parameters[i]?.GetRawValue();
+				var rawQualifier = parameters[i];
 				if (rawQualifier != null && !rawQualifier.Equals(ValueFactory.Create()))
 				{
 					CheckAndAddOneQualifier(builder, rawQualifier, i + 1);

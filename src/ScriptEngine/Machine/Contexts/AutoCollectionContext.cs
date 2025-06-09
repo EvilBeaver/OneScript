@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections;
 using System.Collections.Generic;
 using OneScript.Contexts;
+using OneScript.Execution;
 using OneScript.Types;
 
 namespace ScriptEngine.Machine.Contexts
@@ -25,6 +26,8 @@ namespace ScriptEngine.Machine.Contexts
         }
         
         public abstract int Count();
+
+        public int Count(IBslProcess process) => Count();
         
         public abstract IEnumerator<TItem> GetEnumerator();
 

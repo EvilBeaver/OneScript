@@ -111,12 +111,12 @@ namespace ScriptEngine.Machine.Contexts
             return (inst, val) => method(inst, ConvertParam<T>(val));
         }
 
-        private T ConvertParam<T>(IValue value)
+        private static T ConvertParam<T>(IValue value)
         {
-            return ContextValuesMarshaller.ConvertParam<T>(value);
+            return ContextValuesMarshaller.ConvertValueStrict<T>(value);
         }
 
-        private IValue ConvertReturnValue<TRet>(TRet param)
+        private static IValue ConvertReturnValue<TRet>(TRet param)
         {
             return ContextValuesMarshaller.ConvertReturnValue(param);
         }

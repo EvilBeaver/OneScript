@@ -12,22 +12,22 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
     /// <summary>
     /// Определяет вид модели содержания.
     /// </summary>
-    [EnumerationType("XSContentModel", "МодельСодержимогоXS")]
+    [EnumerationType("МодельСодержимогоXS", "XSContentModel")]
     public enum XSContentModel
     {
-        [EnumValue("EmptyRef", "ПустаяСсылка")]
+        [EnumValue("ПустаяСсылка", "EmptyRef")]
         EmptyRef,
 
         /// <summary>
         /// Простая модель содержания.
         /// </summary>
-        [EnumValue("Simple", "Простая")]
+        [EnumValue("Простая", "Simple")]
         Simple,
 
         /// <summary>
         /// Составная модель содержания.
         /// </summary>
-        [EnumValue("Complex", "Составная")]
+        [EnumValue("Составная", "Complex")]
         Complex
     }
 }

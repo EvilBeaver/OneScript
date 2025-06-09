@@ -10,6 +10,7 @@ using FluentAssertions;
 using Moq;
 using OneScript.Commons;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.StandardLibrary;
 using OneScript.Types;
 using OneScript.Values;
@@ -47,8 +48,8 @@ namespace OneScript.Core.Tests
         public void BooleanStringLocales(string locale, string trueString, string falseString)
         {
             Locale.SystemLanguageISOName = locale;
-            Assert.Equal(trueString, BslBooleanValue.True.AsString());
-            Assert.Equal(falseString, BslBooleanValue.False.AsString());
+            Assert.Equal(trueString, BslBooleanValue.True.ToString());
+            Assert.Equal(falseString, BslBooleanValue.False.ToString());
         }
 
         [Fact]
@@ -75,7 +76,7 @@ namespace OneScript.Core.Tests
             Assert.True(num1.CompareTo(num3) > 0);
             Assert.True(num4.CompareTo(num3) < 0);
 
-            Assert.Equal("12.5", num1.AsString());
+            Assert.Equal("12.5", num1.ToString());
             Assert.ThrowsAny<TypeConversionException>(() => num1.AsDate());
             Assert.ThrowsAny<TypeConversionException>(() => num1.AsObject());
         }
@@ -98,11 +99,11 @@ namespace OneScript.Core.Tests
             var trueString = ValueFactory.Create("ИстИНа");
             Assert.True(trueString.SystemType == BasicTypes.String);
             Assert.True(trueString.AsBoolean());
-            Assert.True(trueString.AsString() == "ИстИНа");
+            Assert.True(trueString.ToString() == "ИстИНа");
 
             var falseString = ValueFactory.Create("лОжЬ");
             Assert.False(falseString.AsBoolean());
-            Assert.True(falseString.AsString() == "лОжЬ");
+            Assert.True(falseString.ToString() == "лОжЬ");
 
             var dateString = ValueFactory.Create("20140101");
             DateTime jan_01_14 = new DateTime(2014,01,01);
@@ -120,7 +121,7 @@ namespace OneScript.Core.Tests
         {
             var value = ValueFactory.Create();
             Assert.True(value.SystemType == BasicTypes.Undefined);
-            Assert.True(value.AsString() == "");
+            Assert.True(value.ToString() == "");
 
             Assert.ThrowsAny<TypeConversionException>(() => value.AsNumber());
             Assert.ThrowsAny<TypeConversionException>(() => value.AsBoolean());
@@ -134,7 +135,7 @@ namespace OneScript.Core.Tests
             var value = ValueFactory.CreateNullValue();
             Assert.True(value is BslNullValue);
             Assert.True(ReferenceEquals(value, BslNullValue.Instance));
-            Assert.True(value.AsString() == "");
+            Assert.True(value.ToString() == "");
 
             Assert.ThrowsAny<TypeConversionException>(() => value.AsNumber());
             Assert.ThrowsAny<TypeConversionException>(() => value.AsBoolean());
@@ -147,7 +148,7 @@ namespace OneScript.Core.Tests
         {
             var typeValue = new BslTypeValue(BasicTypes.String);
             Assert.True(typeValue.SystemType == BasicTypes.Type);
-            Assert.Equal("Строка", typeValue.AsString());
+            Assert.Equal("Строка", typeValue.ToString());
 
             Assert.ThrowsAny<TypeConversionException>(() => typeValue.AsNumber());
             Assert.ThrowsAny<TypeConversionException>(() => typeValue.AsBoolean());
@@ -312,7 +313,7 @@ namespace OneScript.Core.Tests
         public void ValueFilledTest(IValue value)
         {
             var globCtx = new StandardGlobalContext();
-            Assert.True(globCtx.ValueIsFilled(value));
+            Assert.True(globCtx.ValueIsFilled(ForbiddenBslProcess.Instance, (BslValue)value));
         }
         
         [Theory]
@@ -320,7 +321,7 @@ namespace OneScript.Core.Tests
         public void ValueEmptyTest(IValue value)
         {
             var globCtx = new StandardGlobalContext();
-            Assert.False(globCtx.ValueIsFilled(value));
+            Assert.False(globCtx.ValueIsFilled(ForbiddenBslProcess.Instance, (BslValue)value));
         }
     }
 }

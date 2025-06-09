@@ -29,7 +29,7 @@ namespace ScriptEngine.Compiler
             _backend = new DefaultCompilerBackend(errorSink);
         }
 
-        protected override IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType)
+        protected override IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType, IBslProcess process)
         {
             throw new NotSupportedException();
         }
@@ -39,7 +39,7 @@ namespace ScriptEngine.Compiler
             _backend.Symbols = symbols;
             _backend.GenerateDebugCode = false;
             _backend.GenerateCodeStat = false;
-            return _backend.Compile(parsedModule, default);
+            return _backend.Compile(parsedModule, default, ForbiddenBslProcess.Instance);
         }
 
         protected override IExecutableModule CompileBatchInternal(SymbolTable symbols, ModuleNode parsedModule)
@@ -47,7 +47,7 @@ namespace ScriptEngine.Compiler
             _backend.Symbols = symbols;
             _backend.GenerateDebugCode = false;
             _backend.GenerateCodeStat = false;
-            return _backend.Compile(parsedModule, default);
+            return _backend.Compile(parsedModule, default, ForbiddenBslProcess.Instance);
         }
     }
 }

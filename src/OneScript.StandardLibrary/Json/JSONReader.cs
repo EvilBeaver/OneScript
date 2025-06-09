@@ -166,6 +166,8 @@ namespace OneScript.StandardLibrary.Json
             }
         }
 
+        public object ReaderValue => _reader.Value;
+
         /// <summary>
         /// 
         /// Тип текущего значения в документе JSON во внутреннем формате.

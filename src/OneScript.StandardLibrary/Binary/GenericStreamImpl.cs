@@ -28,8 +28,7 @@ namespace OneScript.StandardLibrary.Binary
 
         public void CopyTo(IValue targetStream, int bufferSize = 0)
         {
-            IStreamWrapper sw = targetStream.GetRawValue() as IStreamWrapper;
-            if (sw == null)
+            if (!(targetStream is IStreamWrapper sw))
                 throw RuntimeException.InvalidArgumentType("targetStream");
 
             var stream = sw.GetUnderlyingStream();

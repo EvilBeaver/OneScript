@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.StandardLibrary.Binary;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -120,53 +121,23 @@ namespace OneScript.StandardLibrary.Text
         }
         
         [ContextProperty("ЦветТекста", "TextColor")]
-        public IValue TextColor
+        public ClrEnumValueWrapper<ConsoleColor> TextColor
         {
-            get
-            {
-                try
-                {
-                    return ConsoleColorEnum.Instance.FromNativeValue(Console.ForegroundColor);
-                }
-                catch (InvalidOperationException)
-                {
-                    return null;
-                }
-            }
-            set
-            {
-                if (value.GetRawValue() is ClrEnumValueWrapper<ConsoleColor> typed)
-                {
-                    Console.ForegroundColor = typed.UnderlyingValue;
-                }
-                else
-                    throw new TypeConversionException();
-            }
+            get =>
+                ConsoleColorEnum.Instance.TryGetFromNativeValue(Console.ForegroundColor) 
+                ?? ConsoleColorEnum.Instance.FromNativeValue(ConsoleColor.Gray);
+            
+            set => Console.ForegroundColor = value.UnderlyingValue;
         }
 
         [ContextProperty("ЦветФона", "BackgroundColor")]
-        public IValue BackgroundColor
+        public ClrEnumValueWrapper<ConsoleColor> BackgroundColor
         {
-            get
-            {
-                try
-                {
-                    return GlobalsHelper.GetEnum<ConsoleColorEnum>().FromNativeValue(Console.BackgroundColor);
-                }
-                catch (InvalidOperationException)
-                {
-                    return null;
-                }
-            }
-            set
-            {
-                if (value.GetRawValue() is ClrEnumValueWrapper<ConsoleColor> typed)
-                {
-                    Console.BackgroundColor = typed.UnderlyingValue;
-                }
-                else
-                    throw new TypeConversionException();
-            }
+            get =>
+                ConsoleColorEnum.Instance.TryGetFromNativeValue(Console.BackgroundColor) 
+                ?? ConsoleColorEnum.Instance.FromNativeValue(ConsoleColor.Black);
+            
+            set => Console.BackgroundColor = value.UnderlyingValue;
         }
 
         /// <summary>
@@ -178,13 +149,22 @@ namespace OneScript.StandardLibrary.Text
         {
             get
             {
-                var encodingEnum = GlobalsHelper.GetEnum<TextEncodingEnum>();
+                var encodingEnum = _executionContext.GlobalInstances.GetInstance<TextEncodingEnum>();
                 return encodingEnum.GetValue(Console.InputEncoding);
             }
             set 
             {
                 Console.InputEncoding = TextEncodingEnum.GetEncoding(value);                
             }
+        }
+
+        /// <summary>
+        /// Сбрасывает цвета консоли к их исходному состоянию
+        /// </summary>
+        [ContextMethod("СброситьЦвет", "ResetColor")]
+        public void ResetColor()
+        {
+            Console.ResetColor();
         }
         
         /// <summary>
@@ -196,7 +176,7 @@ namespace OneScript.StandardLibrary.Text
         {
             get
             {
-                var encodingEnum = GlobalsHelper.GetEnum<TextEncodingEnum>();
+                var encodingEnum = _executionContext.GlobalInstances.GetInstance<TextEncodingEnum>();
                 return encodingEnum.GetValue(Console.OutputEncoding);
             }
             set 
@@ -208,7 +188,7 @@ namespace OneScript.StandardLibrary.Text
         /// <summary>
         /// Воспроизводит звуковой сигнал.
         /// </summary>
-        [ContextMethod("Сигнал")]
+        [ContextMethod("Сигнал", "Beep")]
         public void Beep()
         {
             Console.Beep();
@@ -290,18 +270,14 @@ namespace OneScript.StandardLibrary.Text
             var eventProcessor = _executionContext.Services.TryResolve<IEventProcessor>();
             if (eventProcessor == null)
                 return;
-                
-            MachineInstance.Current.SetMemory(_executionContext);
-            var debugger = _executionContext.Services.TryResolve<IDebugController>();
-            debugger?.AttachToThread();
 
+            var process = _executionContext.Services.Resolve<IBslProcessFactory>().NewProcess();
+            
             var cancelVar = Variable.Create(BslBooleanValue.False, "Cancel");
             var reference = Variable.CreateReference(cancelVar, "Cancel");
             var args = new IValue[] { reference };
 
-            // Вызываем обработчик. Исключение в обработчике никак отдельно не обрабатываем.
-            eventProcessor.HandleEvent(this, ConsoleCancelKeyEvent, args);
-
+            eventProcessor.HandleEvent(this, ConsoleCancelKeyEvent, args, process);
             e.Cancel = reference.Value.AsBoolean();
         }
     }

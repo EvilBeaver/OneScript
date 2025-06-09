@@ -10,6 +10,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Values;
 
 namespace OneScript.Native.Runtime
@@ -29,11 +30,6 @@ namespace OneScript.Native.Runtime
             _callable.Compile();
         }
 
-        private CallableMethod CreateCallable()
-        {
-            return new CallableMethod(this);
-        }
-
         internal CallableMethod GetCallable() => _callable;
 
         public LambdaExpression Implementation { get; private set; }
@@ -44,10 +40,10 @@ namespace OneScript.Native.Runtime
         {
             // FIXME: Из стековой машины дефолтные значения могут прийти, как null или Skipped
             // здесь мы принудительно проставляем пропущенные параметры
-            var bslArguments = new BslValue[parameters.Length];
+            var bslArguments = new BslValue[parameters.Length - 1];
             for (int i = 0; i < bslArguments.Length; i++)
             {
-                var param = parameters[i];
+                var param = parameters[i + 1];
                 if (param == null || param == BslSkippedParameterValue.Instance)
                 {
                     if (_parameters[i].HasDefaultValue)
@@ -55,13 +51,17 @@ namespace OneScript.Native.Runtime
                     else
                         throw RuntimeException.MissedArgument();
                 }
-                else
+                else if(param is BslValue bslVal)
                 {
-                    bslArguments[i] = (BslValue)param;
+                    bslArguments[i] = bslVal;
+                }
+                else if (param is IVariable variable)
+                {
+                    bslArguments[i] = variable.BslValue;
                 }
             }
 
-            return _callable.Invoke(obj, bslArguments);
+            return _callable.Invoke((IBslProcess)parameters[0], obj, bslArguments);
         }
         
     }

@@ -5,7 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using OneScript.Contexts;
+using OneScript.Execution;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -37,14 +40,14 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			    && AllowedLength == asThis.AllowedLength;
 		}
 
-		public override bool Equals(IValue other)
+		public override bool Equals(BslValue other)
 		{
-			return object.Equals(this, other?.GetRawValue());
+			return Equals((object)other);
 		}
 
 		public override int GetHashCode()
 		{
-			return Length.GetHashCode();
+			return HashCode.Combine(Length, AllowedLength);
 		}
 
 		public string DefaultString()
@@ -60,7 +63,10 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 
 		public IValue Adjust(IValue value)
 		{
-			var stringValue = value?.AsString() ?? "";
+			// FIXME: не пробрасывается процесс в приведение значения
+			// Кастомизированные представления из UserScriptContextInstance при присваивании в строковые
+			// колонки ТаблицыЗначений будут получать стандартное приведение, а не кастомное.
+			var stringValue = value?.ToString() ?? "";
 
 			if (Length != 0 && stringValue.Length > Length)
 			{
@@ -70,19 +76,17 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 			if (AllowedLength == AllowedLengthEnum.Fixed && stringValue.Length < Length)
 			{
 				var tail = new string(' ', Length - stringValue.Length);
-				stringValue = string.Format("{0}{1}", stringValue, tail);
+				stringValue += tail;
 			}
 
 			return ValueFactory.Create(stringValue);
 		}
 
 		[ScriptConstructor(Name = "На основании описания строки")]
-		public static StringQualifiers Constructor(IValue length = null,
-		                                                  IValue allowedLength = null)
+		public static StringQualifiers Constructor(int length = default,
+		                                           AllowedLengthEnum allowedLength = default)
 		{
-			var paramLength        = ContextValuesMarshaller.ConvertParam<int>(length);
-			var paramAllowedLength = ContextValuesMarshaller.ConvertParam<AllowedLengthEnum>(allowedLength);
-			return new StringQualifiers(paramLength, paramAllowedLength);
+			return new StringQualifiers(length, allowedLength);
 		}
 	}
 }

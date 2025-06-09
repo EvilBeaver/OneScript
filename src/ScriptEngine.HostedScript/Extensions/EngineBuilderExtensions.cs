@@ -88,19 +88,15 @@ namespace ScriptEngine.HostedScript.Extensions
                         entrypoint = typeof(FileSystemDependencyResolver).Assembly;
                 
                     sysDir = Path.GetDirectoryName(entrypoint.Location);
-                    searchDirs.Add(sysDir);
                 }
-                else
-                {
-                    searchDirs.Add(sysDir);
-                }
-            
+                
                 if (libOptions.AdditionalLibraries != null)
                 {
                     searchDirs.AddRange(libOptions.AdditionalLibraries);
                 }
                 
                 var resolver = new FileSystemDependencyResolver();
+                resolver.LibraryRoot = sysDir;
                 resolver.SearchDirectories.AddRange(searchDirs);
 
                 return resolver;

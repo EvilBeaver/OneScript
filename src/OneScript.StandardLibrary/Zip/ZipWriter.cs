@@ -14,7 +14,6 @@ using Ionic.Zlib;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Values;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Zip
@@ -312,47 +311,24 @@ namespace OneScript.StandardLibrary.Zip
 
         [ScriptConstructor(Name = "На основании имени файла")]
         public static ZipWriter ConstructByFileOptions(
-            IValue filename, 
-            IValue password = null,
-            IValue comment = null,
-            IValue compressionMethod = null,
-            IValue compressionLevel = null,
-            IValue encryptionMethod = null,
+            string filename, 
+            string password = null,
+            string comment = null,
+            ZipCompressionMethod compressionMethod = default,
+            ZipCompressionLevel compressionLevel = default,
+            ClrEnumValueWrapper<ZipEncryptionMethod> encryptionMethod = null,
             FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
             var zip = new ZipWriter();
-            zip.Open(filename.AsString(),
-                ConvertParam<string>(password),
-                ConvertParam<string>(comment),
-                ConvertParam<ZipCompressionMethod>(compressionMethod),
-                ConvertParam<ZipCompressionLevel>(compressionLevel),
-                ConvertParam<ZipEncryptionMethod?>(encryptionMethod),
-                    encoding);
+            zip.Open(filename,
+                password,
+                comment,
+                compressionMethod,
+                compressionLevel,
+                encryptionMethod?.UnderlyingValue,
+                encoding);
+            
             return zip;
-        }
-
-        private static T ConvertParam<T>(IValue paramSource)
-        {
-            if (paramSource == null)
-                return default(T);
-
-            var raw = paramSource.GetRawValue();
-            if (raw.IsSkippedArgument())
-                return default(T);
-
-            if (typeof(EnumerationValue).IsAssignableFrom(typeof(T)))
-            {
-                try
-                {
-                    return (T)raw;
-                }
-                catch (InvalidCastException)
-                {
-                    throw RuntimeException.InvalidArgumentType();
-                }
-            }
-            else
-                return ContextValuesMarshaller.ConvertParam<T>(raw);
         }
 
         #region IDisposable Members

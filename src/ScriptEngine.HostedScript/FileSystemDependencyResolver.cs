@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using OneScript.Compilation;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Localization;
 using OneScript.Sources;
 
@@ -20,9 +21,10 @@ namespace ScriptEngine.HostedScript
     public class FileSystemDependencyResolver : IDependencyResolver
     {
         public const string PREDEFINED_LOADER_FILE = "package-loader.os";
-        
         private readonly List<Library> _libs = new List<Library>();
-        private readonly Lazy<LibraryLoader> _defaultLoader;
+        private LibraryLoader _defaultLoader;
+        private object _defaultLoaderLocker = new object();
+        private string _libraryRoot;
 
         #region Private classes
 
@@ -43,13 +45,31 @@ namespace ScriptEngine.HostedScript
 
         public FileSystemDependencyResolver()
         {
-            _defaultLoader = new Lazy<LibraryLoader>(CreateDefaultLoader);
         }
         
         public IList<string> SearchDirectories { get;} = new List<string>();
 
-        public string LibraryRoot => SearchDirectories.FirstOrDefault() ?? string.Empty;
-        
+        public string LibraryRoot
+        {
+            get
+            {
+                if (_libraryRoot == null)
+                    _libraryRoot = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+                return _libraryRoot;
+            }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    _libraryRoot = null;
+                }
+                
+                _libraryRoot = value;
+            }
+        }
+            
+
         private ScriptingEngine Engine { get; set; }
         
         public void Initialize(ScriptingEngine engine)
@@ -57,20 +77,20 @@ namespace ScriptEngine.HostedScript
             Engine = engine;
         }
         
-        public void Resolve(SourceCode module, string libraryName)
+        public void Resolve(SourceCode module, string libraryName, IBslProcess process)
         {
             bool quoted = PrepareQuoted(ref libraryName);
             bool loaded;
             if (quoted)
-                loaded = LoadByRelativePath(module, libraryName);
+                loaded = LoadByRelativePath(module, libraryName, process);
             else
-                loaded = LoadByName(libraryName);
+                loaded = LoadByName(libraryName, process);
 
             if(!loaded)
                 throw new CompilerException(String.Format("Библиотека не найдена: '{0}'", libraryName));
         }
 
-        private bool LoadByName(string libraryName)
+        private bool LoadByName(string libraryName, IBslProcess process)
         {
             foreach (var path in SearchDirectories)
             {
@@ -78,18 +98,18 @@ namespace ScriptEngine.HostedScript
                     continue;
 
                 var libraryPath = Path.Combine(path, libraryName);
-                if (LoadByPath(libraryPath))
+                if (LoadByPath(libraryPath, process))
                     return true;
             }
 
             var rootPath = Path.Combine(LibraryRoot, libraryName);
-            if (LoadByPath(rootPath))
+            if (LoadByPath(rootPath, process))
                 return true;
 
             return false;
         }
 
-        private bool LoadByRelativePath(SourceCode module, string libraryPath)
+        private bool LoadByRelativePath(SourceCode module, string libraryPath, IBslProcess process)
         {
             string realPath;
 
@@ -110,15 +130,31 @@ namespace ScriptEngine.HostedScript
                 realPath = libraryPath;
             }
 
-            return LoadByPath(realPath);
+            return LoadByPath(realPath, process);
         }
 
-        private LibraryLoader CreateDefaultLoader()
+        private LibraryLoader CreateDefaultLoader(IBslProcess process)
         {
             var loaderscript = Path.Combine(LibraryRoot, PREDEFINED_LOADER_FILE);
             return File.Exists(loaderscript) ? 
-                LibraryLoader.Create(Engine, loaderscript) 
-                : LibraryLoader.Create(Engine);
+                LibraryLoader.Create(Engine, loaderscript, process) 
+                : LibraryLoader.Create(Engine, process);
+        }
+
+        private LibraryLoader GetDefaultLoader(IBslProcess process)
+        {
+            if (_defaultLoader != default)
+                return _defaultLoader;
+            
+            lock (_defaultLoaderLocker)
+            {
+                if (_defaultLoader == default)
+                {
+                    _defaultLoader = CreateDefaultLoader(process);
+                }
+            }
+
+            return _defaultLoader;
         }
         
         private bool PrepareQuoted(ref string value)
@@ -161,17 +197,17 @@ namespace ScriptEngine.HostedScript
             return quoted;
         }
 
-        private bool LoadByPath(string libraryPath)
+        private bool LoadByPath(string libraryPath, IBslProcess process)
         {
             if (Directory.Exists(libraryPath))
             {
-                return LoadLibraryInternal(libraryPath);
+                return LoadLibraryInternal(libraryPath, process);
             }
 
             return false;
         }
         
-        private bool LoadLibraryInternal(string libraryPath)
+        private bool LoadLibraryInternal(string libraryPath, IBslProcess process)
         {
             var id = GetLibraryId(libraryPath);
             var existedLib = _libs.FirstOrDefault(x => x.id == id);
@@ -195,12 +231,12 @@ namespace ScriptEngine.HostedScript
             
             var customLoaderFile = Path.Combine(libraryPath, PREDEFINED_LOADER_FILE);
             if (File.Exists(customLoaderFile))
-                newLib.customLoader = LibraryLoader.Create(Engine, customLoaderFile);
+                newLib.customLoader = LibraryLoader.Create(Engine, customLoaderFile, process);
 
             try
             {
                 _libs.Add(newLib);
-                hasFiles = ProcessLibrary(newLib);
+                hasFiles = ProcessLibrary(newLib, process);
                 newLib.state = ProcessingState.Processed;
             }
             catch (Exception)
@@ -212,17 +248,17 @@ namespace ScriptEngine.HostedScript
             return hasFiles;
         }
 
-        private bool ProcessLibrary(Library lib)
+        private bool ProcessLibrary(Library lib, IBslProcess process)
         {
             LibraryLoader loader;
             if (lib.customLoader != null)
                 loader = lib.customLoader;
             else
-                loader = _defaultLoader.Value;
+                loader = GetDefaultLoader(process);
 
-            return loader.ProcessLibrary(lib.id) != default;
+            return loader.ProcessLibrary(lib.id, process) != default;
         }
-        
+
         private static string ListToStringStack(IEnumerable<Library> libs, string stopToken)
         {
             var builder = new StringBuilder();

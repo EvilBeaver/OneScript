@@ -6,12 +6,14 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Binary;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -51,7 +53,12 @@ namespace OneScript.StandardLibrary.Text
             }
             else
             {
-                OpenFile(input.AsString(), encoding, lineDelimiter, eolDelimiter, monopoly);
+                OpenFile(
+                    ContextValuesMarshaller.ConvertValueStrict<string>(input),
+                    encoding,
+                    lineDelimiter,
+                    eolDelimiter,
+                    monopoly);
             }
         }
 
@@ -192,7 +199,7 @@ namespace OneScript.StandardLibrary.Text
         /// <returns>ЧтениеТекста</returns>
         [ScriptConstructor(Name = "На основании потока или файла")]
         public static TextReadImpl ConstructorWithEncoding(IValue input, IValue encoding = null,
-            IValue lineDelimiter = null, IValue eolDelimiter = null, IValue monopoly = null)
+            string lineDelimiter = null, string eolDelimiter = null, bool monopoly = true)
         {
             var reader = new TextReadImpl();
             if (lineDelimiter != null)
@@ -200,16 +207,20 @@ namespace OneScript.StandardLibrary.Text
 
             if(IsStream(input, out var wrapper))
             {
-                reader.OpenStream(wrapper, encoding,
-                        lineDelimiter?.GetRawValue().AsString() ?? "\n",
-                        eolDelimiter?.GetRawValue().AsString());
+                reader.OpenStream(
+                    wrapper,
+                    encoding,
+                    lineDelimiter ?? "\n",
+                    eolDelimiter);
             }
             else
             {
-                reader.OpenFile(input.AsString(), encoding,
-                    lineDelimiter?.GetRawValue().AsString() ?? "\n",
-                    eolDelimiter?.GetRawValue().AsString(),
-                    monopoly?.AsBoolean() ?? true);
+                reader.OpenFile(
+                    ContextValuesMarshaller.ConvertValueStrict<string>(input),
+                    encoding,
+                    lineDelimiter ?? "\n",
+                    eolDelimiter,
+                    monopoly);
             }
 
             return reader;
@@ -217,8 +228,10 @@ namespace OneScript.StandardLibrary.Text
 
         private static bool IsStream(IValue input, out IStreamWrapper wrapper)
         {
+            Debug.Assert(!(input is IValueReference));
+            
             wrapper = null;
-            if (input.GetRawValue() is IStreamWrapper wrap)
+            if (input is IStreamWrapper wrap)
             {
                 wrapper = wrap;
                 return true;

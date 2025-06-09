@@ -14,28 +14,9 @@ namespace ScriptEngine.Machine
         void Init();
         void Wait();
         void NotifyProcessExit(int exitCode);
-
-        void AttachToThread();
-
-        void DetachFromThread();
         
         IBreakpointManager BreakpointManager { get; }
-    }
-
-    public interface IBreakpointManager
-    {
-        void SetExceptionBreakpoints((string Id, string Condition)[] filters);
-
-        void SetBreakpoints(string module, (int Line, string Condition)[] breakpoints);
-
-        bool StopOnAnyException(string message);
-
-        bool StopOnUncaughtException(string message);
         
-        bool FindBreakpoint(string module, int line);
-
-        string GetCondition(string module, int line);
-
-        void Clear();
+        IThreadManager ThreadManager { get; }
     }
 }

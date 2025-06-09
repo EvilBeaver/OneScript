@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Values;
 using ScriptEngine.Machine.Contexts;
@@ -19,6 +20,13 @@ namespace ScriptEngine.Machine
     /// </summary>
     public class ExceptionInfoFactory : IExceptionInfoFactory
     {
+        private readonly IBslProcessFactory _processFactory;
+
+        public ExceptionInfoFactory(IBslProcessFactory processFactory)
+        {
+            _processFactory = processFactory;
+        }
+
         public BslObjectValue GetExceptionInfo(Exception exception)
         {
             if (exception == null)
@@ -49,7 +57,7 @@ namespace ScriptEngine.Machine
             {
                 ExceptionInfoContext { IsErrorTemplate: true } excInfo => 
                     new ParametrizedRuntimeException(excInfo.Description, excInfo.Parameters, excInfo.InnerException),
-                BslValue bslVal => new RuntimeException(bslVal.AsString()),
+                UserScriptContextInstance userContext => new RuntimeException(userContext.ToString(_processFactory.NewProcess())),
                 _ => new RuntimeException(raiseValue.ToString())
             };
         }

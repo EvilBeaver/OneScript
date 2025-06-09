@@ -17,6 +17,7 @@ using OneScript.Execution;
 using OneScript.Localization;
 using OneScript.Types;
 using OneScript.Values;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -37,13 +38,13 @@ namespace ScriptEngine.Machine.Contexts
         Dictionary<string, int> _ownPropertyIndexes;
         List<IValue> _ownProperties;
 
-        private Func<string> _asStringOverride;
-        
-        public IValue[] ConstructorParams { get; private set; }
+        private Func<IBslProcess, string> _asStringOverride;
+
         
         public UserScriptContextInstance(IExecutableModule module, bool deferred = false) : base(module, deferred)
         {
             ConstructorParams = Array.Empty<IValue>();
+            DefineType(GetType().GetTypeFromClassMarkup());
         }
 
         public UserScriptContextInstance(IExecutableModule module, TypeDescriptor asObjectOfType, IValue[] args = null)
@@ -56,14 +57,15 @@ namespace ScriptEngine.Machine.Contexts
             {
                 ConstructorParams = Array.Empty<IValue>();
             }
-
         }
+        
+        private IValue[] ConstructorParams { get; }
 
-        protected override void OnInstanceCreation()
+        protected override void OnInstanceCreation(IBslProcess process)
         {
             ActivateAsStringOverride();
 
-            base.OnInstanceCreation();
+            base.OnInstanceCreation(process);
             var methId = GetScriptMethod(OnInstanceCreationTerms.Russian, OnInstanceCreationTerms.English);
             int constructorParamsCount = ConstructorParams.Length;
 
@@ -91,10 +93,10 @@ namespace ScriptEngine.Machine.Contexts
                     {
                         ctorParameters[i] = (IValue)parameters[i].DefaultValue;
                     }
-                    CallScriptMethod(methId, ctorParameters);
+                    CallScriptMethod(methId, ctorParameters, process);
                 }
                 else
-                    CallScriptMethod(methId, ConstructorParams);
+                    CallScriptMethod(methId, ConstructorParams, process);
             }
             else
             {
@@ -104,23 +106,28 @@ namespace ScriptEngine.Machine.Contexts
                 }
             }
         }
+        
+        public override string ToString(IBslProcess process)
+        {
+            return _asStringOverride(process);
+        }
 
         private void ActivateAsStringOverride()
         {
             var methId = GetScriptMethod(PresentationGetProcessingTerms.Russian, PresentationGetProcessingTerms.English);
             if (methId == -1)
-                _asStringOverride = base.ConvertToString;
+                _asStringOverride = base.ToString;
             else
             {
                 var signature = GetMethodInfo(GetOwnMethodCount()+methId);
                 if (signature.GetParameters().Length != 2)
                     throw new RuntimeException("Обработчик получения представления должен иметь 2 параметра");
 
-                _asStringOverride = () => GetOverridenPresentation(methId);
+                _asStringOverride = (p) => GetOverridenPresentation(methId, p);
             }
         }
 
-        private string GetOverridenPresentation(int methId)
+        private string GetOverridenPresentation(int methId, IBslProcess process)
         {
             var standard = ValueFactory.Create(true);
             var strValue = ValueFactory.Create();
@@ -131,12 +138,19 @@ namespace ScriptEngine.Machine.Contexts
                 Variable.Create(standard, "standardProcessing")
             };
 
-            CallScriptMethod(methId, arguments);
+            CallScriptMethod(methId, arguments, process);
 
             if (arguments[1].AsBoolean() == true)
-                return base.ConvertToString();
+                return base.ToString(process);
 
-            return arguments[0].AsString();
+            if (arguments[0].SystemType != BasicTypes.String && arguments[0].SystemType != BasicTypes.Undefined)
+            {
+                throw new RuntimeException(new BilingualString(
+                    $"Полученное представление имеет тип {arguments[0].SystemType}. Ожидается тип Строка",
+                    $"Returned presentation has type {arguments[0].SystemType}. Expected type is String"));
+            }
+
+            return arguments[0].ToString();
         }
 
         public void AddProperty(string name, string alias, IValue value)
@@ -238,11 +252,14 @@ namespace ScriptEngine.Machine.Contexts
             return new BslMethodInfo[]{methodBuilder.Build()};
         }
 
-        protected override void CallOwnProcedure(int index, IValue[] arguments)
+        protected override void CallOwnProcedure(int index, IValue[] arguments, IBslProcess process)
         {
             Debug.Assert(index == RAIZEEVENT_INDEX);
+            var eventProcessor = process.Services.TryResolve<IEventProcessor>();
+            if (eventProcessor == default)
+                return;
 
-            var eventName = arguments[0].AsString();
+            var eventName = arguments[0].ExplicitString();
             IValue[] eventArgs = null;
             if (arguments.Length > 1)
             {
@@ -255,7 +272,7 @@ namespace ScriptEngine.Machine.Contexts
             if (eventArgs == null)
                 eventArgs = new IValue[0];
             
-            MachineInstance.Current.Memory.Services.TryResolve<IEventProcessor>()?.HandleEvent(this, eventName, eventArgs);
+            eventProcessor.HandleEvent(this, eventName, eventArgs, process);
         }
 
         protected override int GetOwnVariableCount()
@@ -307,11 +324,6 @@ namespace ScriptEngine.Machine.Contexts
         public override int GetMethodsCount()
         {
             return GetOwnMethodCount() + Module.Methods.Count;
-        }
-
-        protected override string ConvertToString()
-        {
-            return _asStringOverride();
         }
 
         void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)

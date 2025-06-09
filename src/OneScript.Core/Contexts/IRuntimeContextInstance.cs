@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using OneScript.Execution;
 using ScriptEngine.Machine;
 
 namespace OneScript.Contexts
@@ -32,8 +34,21 @@ namespace OneScript.Contexts
         BslMethodInfo GetMethodInfo(int methodNumber);
 
         BslPropertyInfo GetPropertyInfo(int propertyNumber);
-        
-        void CallAsProcedure(int methodNumber, IValue[] arguments);
-        void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue);
+
+        void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process);
+
+        void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process);
+
+        [Obsolete("Use function with IBslProcess parameter")]
+        void CallAsProcedure(int methodNumber, IValue[] arguments)
+        {
+            CallAsProcedure(methodNumber, arguments, ForbiddenBslProcess.Instance);
+        }
+
+        [Obsolete("Use function with IBslProcess parameter")]
+        void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        {
+            CallAsFunction(methodNumber, arguments, out retValue, ForbiddenBslProcess.Instance);
+        }
     }
 }

@@ -277,9 +277,9 @@ namespace OneScript.StandardLibrary.Xml
             else if (indexOrName.SystemType == BasicTypes.String)
             {
                 if (URIIfGiven == null)
-                    attributeValue = _reader.GetAttribute(indexOrName.AsString());
+                    attributeValue = _reader.GetAttribute(indexOrName.ToString()!);
                 else
-                    attributeValue = _reader.GetAttribute(indexOrName.AsString(), URIIfGiven);
+                    attributeValue = _reader.GetAttribute(indexOrName.ToString()!, URIIfGiven);
             }
             else
             {

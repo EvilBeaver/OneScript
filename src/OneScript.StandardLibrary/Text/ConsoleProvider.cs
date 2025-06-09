@@ -42,7 +42,7 @@ namespace OneScript.StandardLibrary.Text
         public override void SetPropValue(int propNum, IValue newVal)
         {
             // обратная совместимость. Присваивание Консоль = Новый Консоль не должно ничего делать
-            if (!ReferenceEquals(newVal.GetRawValue(), _console))
+            if (!ReferenceEquals(newVal, _console))
             {
                 throw new InvalidOperationException("Can't assign to global property Console");
             }

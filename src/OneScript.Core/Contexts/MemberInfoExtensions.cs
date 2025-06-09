@@ -25,5 +25,12 @@ namespace OneScript.Contexts
         {
             return method.ReturnType != typeof(void);
         }
+
+        public static ParameterInfo[] GetBslParameters(this BslMethodInfo methodInfo)
+        {
+            return methodInfo is ContextMethodInfo { InjectsProcess: true } ?
+                methodInfo.GetParameters()[1..]:
+                methodInfo.GetParameters();
+        }
     }
 }

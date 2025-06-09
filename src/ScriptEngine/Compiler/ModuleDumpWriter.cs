@@ -14,6 +14,7 @@ using OneScript.Commons;
 using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
+using OneScript.Execution;
 using OneScript.Native.Compiler;
 using OneScript.Native.Runtime;
 using OneScript.Sources;
@@ -24,15 +25,17 @@ namespace ScriptEngine.Compiler
     public class ModuleDumpWriter
     {
         readonly ICompilerFrontend _compiler;
+        private readonly IBslProcess _process;
 
-        public ModuleDumpWriter(ICompilerFrontend compilerService)
+        public ModuleDumpWriter(ICompilerFrontend compilerService, IBslProcess process)
         {
             _compiler = compilerService;
+            _process = process;
         }
 
         public void Write(TextWriter output, SourceCode source)
         {
-            var compilerResult = _compiler.Compile(source);
+            var compilerResult = _compiler.Compile(source, _process);
             if (compilerResult is StackRuntimeModule stackModule)
             {
                 var module = stackModule;

@@ -66,28 +66,17 @@ namespace OneScript.StandardLibrary.Json
             _escapeNonAscii = false;
         }
 
-        private void SetOptions(IValue settings)
+        private void SetOptions(JSONWriterSettings settings)
         {
-            _settings = (JSONWriterSettings)settings.GetRawValue();
+            _settings = settings;
             if (_settings.UseDoubleQuotes)
                 _writer.QuoteChar = '\"';
             else { 
                 _writer.QuoteChar = '\'';
             }
 
-            if (_settings.PaddingSymbols != null && _settings.PaddingSymbols.Length > 0)
-                _writer.IndentChar = _settings.PaddingSymbols[0];
-            else
-                _writer.IndentChar = ' ';
-
-            if (_settings.PaddingSymbols != null && _settings.PaddingSymbols.Length > 0)
-            {
-                _writer.Indentation = 1;
-            }
-            else
-            {
-                _writer.Indentation = INDENT_SIZE;
-            }
+            _writer.IndentChar = !string.IsNullOrEmpty(_settings.PaddingSymbols) ? _settings.PaddingSymbols[0] : ' ';
+            _writer.Indentation = !string.IsNullOrEmpty(_settings.PaddingSymbols) ? 1 : INDENT_SIZE;
             _writer.Formatting = Formatting.Indented;
 
             if (_settings.EscapeCharacters != JSONCharactersEscapeModeEnum.None)
@@ -123,96 +112,81 @@ namespace OneScript.StandardLibrary.Json
 
         string EscapeCharacters(string sval, bool EscapeSlash)
         {
-            var sb = new StringBuilder(sval);
+            var sb = new StringBuilder();
 
-            int Length = sval.Length;
-            for (var i = 0; i < Length; i++)
+            int length = sval.Length;
+            int start = 0;
+
+            for (var i = 0; i < length; i++)
             {
-                char c = sb[i];
+                char c = sval[i];
+                string? escapedValue = null;
+
                 if (EscapeSlash && c == '/')
                 {
-                    sb.Replace("/", "\\/", i, 1);
-                    Length++;
-                    i++;
+                    escapedValue = "\\/";
                 }
                 else if (_settings.EscapeAmpersand && c == '&')
                 {
-                    sb.Replace("&", "\\&", i, 1);
-                    Length++;
-                    i++;
+                    escapedValue = "\\&";
                 }
                 else if ((_settings.EscapeSingleQuotes || !_settings.UseDoubleQuotes) && c == '\'')
                 {
-                    sb.Replace("'", "\\u0027", i, 1);
-                    Length = Length + 5;
-                    i = i + 5;
+                    escapedValue = "\\u0027";
                 }
                 else if (_settings.EscapeAngleBrackets && c == '<')
                 {
-                    sb.Replace("<", "\\u003C", i, 1);
-                    Length = Length + 5;
-                    i = i + 5;
+                    escapedValue = "\\u003C";
                 }
                 else if (_settings.EscapeAngleBrackets && c == '>')
                 {
-                    sb.Replace(">", "\\u003E", i, 1);
-                    Length = Length + 5;
-                    i = i + 5;
+                    escapedValue = "\\u003E";
                 }
                 else if (c == '\r')
                 {
-                    sb.Replace("\r", "\\r", i, 1);
-                    Length++;
-                    i++;
+                    escapedValue = "\\r";
                 }
                 else if (c == '\n')
                 {
-                    sb.Replace("\n", "\\n", i, 1);
-                    Length++;
-                    i++;
+                    escapedValue = "\\n";
                 }
                 else if (c == '\f')
                 {
-                    sb.Replace("\f", "\\f", i, 1);
-                    Length++;
-                    i++;
+                    escapedValue = "\\f";
                 }
                 else if (c == '\"')
                 {
-                    sb.Replace("\"", "\\\"", i, 1);
-                    Length++;
-                    i++;
+                    escapedValue = "\\\"";
                 }
                 else if (c == '\b')
                 {
-                    sb.Replace("\b", "\\b", i, 1);
-                    Length++;
-                    i++;
+                    escapedValue = "\\b";
                 }
                 else if (c == '\t')
                 {
-                    sb.Replace("\t", "\\t", i, 1);
-                    Length++;
-                    i++;
+                    escapedValue = "\\t";
                 }
                 else if (c == '\\')
                 {
-                    sb.Replace("\\", "\\\\", i, 1);
-                    Length++;
-                    i++;
+                    escapedValue = "\\\\";
                 }
 
                 // Спец. символы: \u0000, \u0001, \u0002, ... , \u001e, \u001f;
                 else if ((int)c >= 0 && (int)c <= 31)
                 {
-                    string unicode = "\\u" + ((int)c).ToString("X4").ToLower();
-                    sb.Replace(c.ToString(), unicode, i, 1);
-                    Length = Length + 5;
-                    i = i + 5;
+                    escapedValue = "\\u" + ((int)c).ToString("x4");
                 }
 
+                if (escapedValue != null)
+                {
+                    sb.Append(sval, start, i - start);
+                    sb.Append(escapedValue);
+                    start = i + 1;
+                }
             }
+
             sb.Insert(0, _writer.QuoteChar);
+            sb.Append(sval, start, length - start);
             sb.Append(_writer.QuoteChar);
             return sb.ToString();
         }
@@ -340,7 +314,7 @@ namespace OneScript.StandardLibrary.Json
             if (!IsOpen())
                 throw NotOpenException();
 
-            var clrValue = value.GetRawValue().UnwrapToClrObject();
+            var clrValue = value.UnwrapToClrObject();
             switch (clrValue)
             {
                 case string v:
@@ -460,20 +434,16 @@ namespace OneScript.StandardLibrary.Json
         /// <param name="settings">
         /// Параметры, используемые при открытии файла для настройки записи в формате JSON. </param>
         [ContextMethod("ОткрытьФайл", "OpenFile")]
-        public void OpenFile(string fileName, string encoding = null, IValue addBOM = null, IValue settings = null)
+        public void OpenFile(string fileName, string encoding = null, bool addBOM = false, JSONWriterSettings settings = null)
         {
-            bool bAddBOM = false;
-            if (addBOM != null)
-                bAddBOM = addBOM.AsBoolean();
-
             StreamWriter streamWriter;
             
             try
             {
                 if (encoding != null)
-                    streamWriter = FileOpener.OpenWriter(fileName, TextEncodingEnum.GetEncodingByName(encoding, bAddBOM));
+                    streamWriter = FileOpener.OpenWriter(fileName, TextEncodingEnum.GetEncodingByName(encoding, addBOM));
                 else
-                    streamWriter = FileOpener.OpenWriter(fileName, TextEncodingEnum.GetEncodingByName("UTF-8", bAddBOM));
+                    streamWriter = FileOpener.OpenWriter(fileName, TextEncodingEnum.GetEncodingByName("UTF-8", addBOM));
             }
             catch (Exception e)
             {
@@ -502,7 +472,7 @@ namespace OneScript.StandardLibrary.Json
         /// Параметры, используемые при записи объекта JSON.
         /// По умолчанию, содержит ПараметрыЗаписиJSON, сгенерированные автоматически. </param>
         [ContextMethod("УстановитьСтроку", "SetString")]
-        public void SetString(IValue settings = null)
+        public void SetString(JSONWriterSettings settings = null)
         {
             if (IsOpen())
                 Close();

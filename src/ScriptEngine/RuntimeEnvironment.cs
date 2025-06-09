@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
+using OneScript.Execution;
 using ScriptEngine.Libraries;
 using ScriptEngine.Machine;
 using SymbolScope = OneScript.Compilation.Binding.SymbolScope;
@@ -109,9 +110,9 @@ namespace ScriptEngine
             return _libraryManager.GetLibraries();
         }
 
-        public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library)
+        public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library, IBslProcess process)
         {
-            _libraryManager.InitExternalLibrary(runtime, library);
+            _libraryManager.InitExternalLibrary(runtime, library, process);
         }
 
         private class WrappedPropertySymbol : IPropertySymbol

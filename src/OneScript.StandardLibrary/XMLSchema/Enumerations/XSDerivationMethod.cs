@@ -9,16 +9,16 @@ using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    [EnumerationType("XSDerivationMethod", "МетодНаследованияXS")]
+    [EnumerationType("МетодНаследованияXS", "XSDerivationMethod")]
     public enum XSDerivationMethod
     {
-        [EnumValue("EmptyRef", "ПустаяСсылка")]
+        [EnumValue("ПустаяСсылка", "EmptyRef")]
         EmptyRef,
 
-        [EnumValue("Restriction", "Ограничение")]
+        [EnumValue("Ограничение", "Restriction")]
         Restriction,
 
-        [EnumValue("Extension", "Расширение")]
+        [EnumValue("Расширение", "Extension")]
         Extension
     }
 }

@@ -5,7 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
 using OneScript.Values;
 
 namespace OneScript.Types
@@ -28,47 +27,14 @@ namespace OneScript.Types
 
         static BasicTypes()
         {
-            Number = new TypeDescriptor(
-                new Guid("A7403601-38B7-420A-8630-84A1F675E102"),
-                "Число",
-                "Number",
-                typeof(BslNumericValue));
-            
-            String = new TypeDescriptor(
-                new Guid("1AF7A333-33A1-45E2-BC5E-65CE2455D619"), 
-                "Строка",
-                "String",
-                typeof(BslStringValue));
-            
-            Date = new TypeDescriptor(new Guid("A7E20D06-E876-4949-9DB2-7C93891F3B87"), 
-                "Дата",
-                "Date",
-                typeof(BslDateValue));
-            
-            Boolean = new TypeDescriptor(new Guid("34EDD2E3-DD29-4829-A424-67B3404AF423"), 
-                "Булево",
-                "Boolean",
-                typeof(BslBooleanValue));
-            
-            Undefined = new TypeDescriptor(new Guid("783CE532-8CE0-4C59-BEF4-835AEFB715E4"),
-                "Неопределено",
-                "Undefined",
-                typeof(BslUndefinedValue));
-            
-            Type = new TypeDescriptor(new Guid("4BCF3B78-B525-4159-8180-C76EDA613652"),
-                "Тип",
-                "Type",
-                typeof(BslTypeValue));
-            
-            Null = new TypeDescriptor(new Guid("26D78088-915A-4294-97E1-FB39E70187A6"),
-                "Null",
-                "Null",
-                typeof(BslNullValue));
-
-            UnknownType = new TypeDescriptor(new Guid("EC3408A3-18A7-4A38-936F-7E7094D3C4E3"),
-                "$UnknownType$",
-                "$UnknownType$",
-                typeof(BslValue));
+            Number = new TypeDescriptor(typeof(BslNumericValue), "Число", "Number");
+            String = new TypeDescriptor(typeof(BslStringValue), "Строка", "String");
+            Date = new TypeDescriptor(typeof(BslDateValue), "Дата", "Date");
+            Boolean = new TypeDescriptor(typeof(BslBooleanValue), "Булево", "Boolean");
+            Undefined = new TypeDescriptor(typeof(BslUndefinedValue), "Неопределено", "Undefined");
+            Type = new TypeDescriptor(typeof(BslTypeValue), "Тип", "Type");
+            Null = new TypeDescriptor(typeof(BslNullValue), "Null", "Null");
+            UnknownType = new TypeDescriptor(typeof(BslValue), "$UnknownType$", "$UnknownType$");
         }
     }
 }

@@ -83,7 +83,7 @@ namespace OneScript.Exceptions
                 $"Invalid type of argument '{argName}'");
         }
 
-        public static RuntimeException InvalidArgumentType(int argNum, string argName )
+        public static RuntimeException InvalidArgumentType(int argNum, string argName)
         {
             return new RuntimeException(
                 $"Неверный тип аргумента номер {argNum} '{argName}'", 

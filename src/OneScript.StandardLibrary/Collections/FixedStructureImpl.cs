@@ -8,9 +8,12 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
+using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections
 {
@@ -18,17 +21,20 @@ namespace OneScript.StandardLibrary.Collections
     public class FixedStructureImpl : DynamicPropertiesAccessor, ICollectionContext<KeyAndValueImpl>
     {
         private readonly StructureImpl _structure = new StructureImpl();
-
+        
+        private static readonly TypeDescriptor typeDescriptor = typeof(StructureImpl).GetTypeFromClassMarkup();
 
         public FixedStructureImpl(StructureImpl structure)
         {
-        	foreach (KeyAndValueImpl keyValue in structure)
-        		_structure.Insert(keyValue.Key.AsString(), keyValue.Value);
+        	DefineType(typeDescriptor);
+            foreach (KeyAndValueImpl keyValue in structure)
+        		_structure.Insert(keyValue.Key.ToString(), keyValue.Value);
         }
 
         public FixedStructureImpl(string strProperties, params IValue[] values)
         {
-        	_structure = new StructureImpl(strProperties, values);
+            DefineType(typeDescriptor);
+            _structure = new StructureImpl(strProperties, values);
         }
 
         [ContextMethod("Свойство", "Property")]
@@ -79,12 +85,12 @@ namespace OneScript.StandardLibrary.Collections
                 .Build();
         }
 
-        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
+        public override void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
             var binding = _methods.GetCallableDelegate(methodNumber);
             try
             {
-                binding(this, arguments);
+                binding(this, arguments, process);
             }
             catch (System.Reflection.TargetInvocationException e)
             {
@@ -92,12 +98,12 @@ namespace OneScript.StandardLibrary.Collections
             }
         }
 
-        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process)
         {
             var binding = _methods.GetCallableDelegate(methodNumber);
             try
             {
-                retValue = binding(this, arguments);
+                retValue = binding(this, arguments, process);
             }
             catch (System.Reflection.TargetInvocationException e)
             {
@@ -126,6 +132,8 @@ namespace OneScript.StandardLibrary.Collections
         {
         	return _structure.Count();
         }
+        
+        public int Count(IBslProcess process) => Count();
 
         #endregion
 
@@ -168,10 +176,10 @@ namespace OneScript.StandardLibrary.Collections
         [ScriptConstructor(Name = "По ключам и значениям")]
         public static FixedStructureImpl Constructor(IValue param1, IValue[] args)
         {
-            return param1?.GetRawValue() switch
+            return param1 switch
             {
                 null => new FixedStructureImpl(""),
-                BslStringValue s => new FixedStructureImpl((string)s, args),
+                BslStringValue s => new FixedStructureImpl(s, args),
                 StructureImpl structure => new FixedStructureImpl(structure),
                  
                 _ => throw new RuntimeException("В качестве параметра для конструктора можно передавать только Структура или Ключи и Значения")

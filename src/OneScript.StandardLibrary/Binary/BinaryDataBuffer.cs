@@ -13,6 +13,7 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -47,12 +48,12 @@ namespace OneScript.StandardLibrary.Binary
         /// Значение по умолчанию: LittleEndian. </param>
         ///
         [ScriptConstructor]
-        public static BinaryDataBuffer Constructor(IValue size, IValue byteOrder = null)
+        public static BinaryDataBuffer Constructor(int size, ByteOrderEnum? byteOrder = null)
         {
-            var orderValue = byteOrder == null ? ByteOrderEnum.LittleEndian : ContextValuesMarshaller.ConvertParam<ByteOrderEnum>(byteOrder);
+            var orderValue = byteOrder ?? ByteOrderEnum.LittleEndian;
 
             return new BinaryDataBuffer(
-                new byte[ContextValuesMarshaller.ConvertParam<int>(size)],
+                new byte[size],
                 orderValue);
         }
 
@@ -120,14 +121,14 @@ namespace OneScript.StandardLibrary.Binary
                 Array.Copy(bytes.Bytes, 0, Bytes, position, number);
         }
 
-        private byte[] GetBytes<T>(T value, Converter<T, byte[]> leConverter, Converter<T, byte[]> beConverter, IValue byteOrder = null)
+        private byte[] GetBytes<T>(T value, Converter<T, byte[]> leConverter, Converter<T, byte[]> beConverter, BslValue byteOrder = null)
         {
             ByteOrderEnum workByteOrder;
             if (byteOrder == null)
                 workByteOrder = ByteOrder;
             else
             {
-                var enumVal = byteOrder.GetRawValue() as IObjectWrapper;
+                var enumVal = byteOrder as IObjectWrapper;
                 if (enumVal == null)
                     throw RuntimeException.InvalidArgumentType(nameof(byteOrder));
 
@@ -182,7 +183,7 @@ namespace OneScript.StandardLibrary.Binary
         ///
         ///
         [ContextMethod("ЗаписатьЦелое16", "WriteInt16")]
-        public void WriteInt16(int position, IValue value, IValue byteOrder = null)
+        public void WriteInt16(int position, BslValue value, BslValue byteOrder = null)
         {
             ThrowIfReadonly();
 
@@ -205,7 +206,7 @@ namespace OneScript.StandardLibrary.Binary
         /// Порядок байтов, который будет использован для кодировки числа при записи в буфер. Если не установлен, то будет использован порядок байтов, заданный для текущего экземпляра БуферДвоичныхДанных.
         /// Значение по умолчанию: Неопределено. </param>
         [ContextMethod("ЗаписатьЦелое32", "WriteInt32")]
-        public void WriteInt32(int position, IValue value, IValue byteOrder = null)
+        public void WriteInt32(int position, BslValue value, BslValue byteOrder = null)
         {
             ThrowIfReadonly();
 
@@ -233,7 +234,7 @@ namespace OneScript.StandardLibrary.Binary
 
         ///
         [ContextMethod("ЗаписатьЦелое64", "WriteInt64")]
-        public void WriteInt64(int position, IValue value, IValue byteOrder = null)
+        public void WriteInt64(int position, BslValue value, BslValue byteOrder = null)
         {
             ThrowIfReadonly();
 
@@ -422,14 +423,14 @@ namespace OneScript.StandardLibrary.Binary
             return new BinaryDataBuffer(data, ByteOrder);
         }
     
-        private T FromBytes<T>(int position, Func<byte[], int, T> leConverter, Func<byte[], int, T> beConverter, IValue byteOrder = null)
+        private T FromBytes<T>(int position, Func<byte[], int, T> leConverter, Func<byte[], int, T> beConverter, BslValue byteOrder = null)
         {
             ByteOrderEnum workByteOrder;
             if (byteOrder == null)
                 workByteOrder = ByteOrder;
             else
             {
-                var enumVal = byteOrder.GetRawValue() as IObjectWrapper;
+                var enumVal = byteOrder as IObjectWrapper;
                 if (enumVal == null)
                     throw RuntimeException.InvalidArgumentType(nameof(byteOrder));
 
@@ -462,7 +463,7 @@ namespace OneScript.StandardLibrary.Binary
         /// <returns name="Number"/>
         ///
         [ContextMethod("ПрочитатьЦелое16", "ReadInt16")]
-        public int ReadInt16(int position, IValue byteOrder = null)
+        public int ReadInt16(int position, BslValue byteOrder = null)
         {
             return FromBytes(position, BitConversionFacility.LittleEndian.ToInt16, BitConversionFacility.BigEndian.ToInt16, byteOrder);
         }
@@ -485,7 +486,7 @@ namespace OneScript.StandardLibrary.Binary
 
         ///
         [ContextMethod("ПрочитатьЦелое32", "ReadInt32")]
-        public uint ReadInt32(int position, IValue byteOrder = null)
+        public uint ReadInt32(int position, BslValue byteOrder = null)
         {
             return FromBytes(position, BitConversionFacility.LittleEndian.ToUInt32, BitConversionFacility.BigEndian.ToUInt32, byteOrder);
         }
@@ -508,7 +509,7 @@ namespace OneScript.StandardLibrary.Binary
 
         ///
         [ContextMethod("ПрочитатьЦелое64", "ReadInt64")]
-        public ulong ReadInt64(int position, IValue byteOrder = null)
+        public ulong ReadInt64(int position, BslValue byteOrder = null)
         {
             return FromBytes(position, BitConversionFacility.LittleEndian.ToUInt64, BitConversionFacility.BigEndian.ToUInt64, byteOrder);
         }
@@ -531,7 +532,7 @@ namespace OneScript.StandardLibrary.Binary
         /// <returns name="Array"/>
         ///
         [ContextMethod("Разделить", "Split")]
-        public ArrayImpl Split(IValue separator)
+        public ArrayImpl Split(BslValue separator)
         {
             var buffers = ParseParam(separator);
 
@@ -540,10 +541,9 @@ namespace OneScript.StandardLibrary.Binary
             return SplitBuffer(buffers.ToArray());
         }
 
-        private static List<BinaryDataBuffer> ParseParam(IValue separator)
+        private static List<BinaryDataBuffer> ParseParam(BslValue separator)
         {
-            var rawSeparator = separator?.GetRawValue();
-            switch (rawSeparator)
+            switch (separator)
             {
                 case BinaryDataBuffer buffer:
                     return new List<BinaryDataBuffer> { CheckedBuffer(buffer) };
@@ -554,7 +554,7 @@ namespace OneScript.StandardLibrary.Binary
 
                     foreach (var element in array)
                     {
-                        buffers.AddRange(ParseParam(element));
+                        buffers.AddRange(ParseParam((BslValue)element));
                     }
 
                     return buffers;

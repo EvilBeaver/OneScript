@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Contexts;
+using OneScript.Execution;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -110,25 +111,25 @@ namespace OneScript.StandardLibrary.Collections
 
         public override BslMethodInfo GetMethodInfo(int methodNumber) => _methods.GetRuntimeMethod(methodNumber);
 
-        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
+        public override void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
             var binding = _methods.GetCallableDelegate(methodNumber);
             try
             {
-                binding(this, arguments);
+                binding(this, arguments, process);
             }
             catch (System.Reflection.TargetInvocationException e)
             {
                 throw e.InnerException!;
             }
         }
-
-        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        
+        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process)
         {
             var binding = _methods.GetCallableDelegate(methodNumber);
             try
             {
-                retValue = binding(this, arguments);
+                retValue = binding(this, arguments, process);
             }
             catch (System.Reflection.TargetInvocationException e)
             {

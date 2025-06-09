@@ -10,19 +10,19 @@ using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    [EnumerationType("XSAttributeUseCategory", "КатегорияИспользованияАтрибутаXS")]
+    [EnumerationType("КатегорияИспользованияАтрибутаXS", "XSAttributeUseCategory")]
     public enum XSAttributeUseCategory
     {
-        [EnumValue("EmptyRef", "ПустаяСсылка")]
+        [EnumValue("ПустаяСсылка", "EmptyRef")]
         EmptyRef = XmlSchemaUse.None,
 
-        [EnumValue("Optional", "Необязательно")]
+        [EnumValue("Необязательно", "Optional")]
         Optional = XmlSchemaUse.Optional,
 
-        [EnumValue("Prohibited", "Запрещено")]
+        [EnumValue("Запрещено", "Prohibited")]
         Prohibited = XmlSchemaUse.Prohibited,
 
-        [EnumValue("Required", "Обязательно")]
+        [EnumValue("Обязательно", "Required")]
         Required = XmlSchemaUse.Required
     }
 }

@@ -15,6 +15,7 @@ using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
@@ -102,13 +103,14 @@ namespace OneScript.StandardLibrary.Native
             return new DelegateAction(method);
         }
 
-        public Func<BslValue[], BslValue> CreateDelegate()
+        public Func<IBslProcess, BslValue[], BslValue> CreateDelegate()
         {
             var l = MakeExpression();
 
             var arrayOfValuesParam = Expression.Parameter(typeof(BslValue[]));
             var convertedAccessList = new List<Expression>();
 
+            convertedAccessList.Add(l.Parameters.First());
             int index = 0;
             foreach (var parameter in Parameters)
             {
@@ -120,7 +122,7 @@ namespace OneScript.StandardLibrary.Native
             }
             
             var lambdaInvocation = Expression.Invoke(l, convertedAccessList);
-            var func = Expression.Lambda<Func<BslValue[], BslValue>>(lambdaInvocation, arrayOfValuesParam);
+            var func = Expression.Lambda<Func<IBslProcess, BslValue[], BslValue>>(lambdaInvocation, (ParameterExpression)convertedAccessList[0], arrayOfValuesParam);
 
             return func.Compile();
         }
@@ -128,8 +130,32 @@ namespace OneScript.StandardLibrary.Native
         public T CreateDelegate<T>() where T:class
         {
             var l = MakeExpression();
-            var call = Expression.Invoke(l, l.Parameters);
-            var func = Expression.Lambda<T>(call, l.Parameters);
+
+            var methodInfo = typeof(T).GetMethod("Invoke") ?? throw new ArgumentException("T must be a delegate type");
+            var firstParam = methodInfo.GetParameters().FirstOrDefault();
+            var mockProcess = firstParam == null || firstParam.ParameterType != typeof(IBslProcess);
+
+            IEnumerable<Expression> invocationParameters;
+            IEnumerable<ParameterExpression> delegateParameters;
+            
+            if (mockProcess)
+            {
+                var invocationParametersLst = new List<Expression>();
+                
+                delegateParameters = l.Parameters.Skip(1).ToList();
+                invocationParametersLst.Add(Expression.Constant(ForbiddenBslProcess.Instance));
+                invocationParametersLst.AddRange(delegateParameters);
+                invocationParameters = invocationParametersLst;
+
+            }
+            else
+            {
+                invocationParameters = l.Parameters;
+                delegateParameters = l.Parameters;
+            }
+            
+            var call = Expression.Invoke(l, invocationParameters);
+            var func = Expression.Lambda<T>(call, delegateParameters);
 
             return func.Compile();
         }
@@ -191,7 +217,7 @@ namespace OneScript.StandardLibrary.Native
             foreach (var parameter in Parameters)
             {
                 methodInfo.NewParameter()
-                    .Name(parameter.Key.AsString())
+                    .Name(parameter.Key.ToString())
                     .ParameterType(ConvertTypeToClrType(parameter.Value as BslTypeValue));
             }
 

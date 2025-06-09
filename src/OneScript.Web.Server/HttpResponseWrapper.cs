@@ -14,6 +14,7 @@ using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Text;
+using OneScript.Execution;
 
 namespace OneScript.Web.Server
 {
@@ -29,13 +30,13 @@ namespace OneScript.Web.Server
         }
 
         [ContextProperty("Начат", "HasStarted", CanWrite = false)]
-        public IValue HasStarted => BslBooleanValue.Create(_response.HasStarted);
+        public bool HasStarted => _response.HasStarted;
 
         [ContextProperty("ТипКонтента", "ContentType")]
-        public IValue ContentType
+        public string ContentType
         {
-            get => BslStringValue.Create(_response.ContentType);
-            set => _response.ContentType = value.AsString();
+            get => _response.ContentType;
+            set => _response.ContentType = value;
         }
 
         [ContextProperty("ДлинаКонтента", "ContentLength")]
@@ -50,7 +51,7 @@ namespace OneScript.Web.Server
             }
             set
             {
-                if (value == null)
+                if (value == null || value == BslUndefinedValue.Instance)
                     _response.ContentLength = null;
                 else
                     _response.ContentLength = (long)value.AsNumber();
@@ -84,7 +85,7 @@ namespace OneScript.Web.Server
         }
 
         [ContextMethod("ЗаписатьКакJson", "WriteAsJson")]
-        public void WriteJson(IValue obj, IValue encoding = null)
+        public void WriteJson(IBslProcess process, IValue obj, IValue encoding = null)
         {
             var enc = encoding == null ? Encoding.UTF8 : TextEncodingEnum.GetEncoding(encoding);
 
@@ -92,7 +93,7 @@ namespace OneScript.Web.Server
             writer.SetString();
 
             var jsonFunctions = GlobalJsonFunctions.CreateInstance() as GlobalJsonFunctions;
-            jsonFunctions.WriteJSON(writer, obj);
+            jsonFunctions.WriteJSON(process, writer, obj);
 
             var data = writer.Close();
 

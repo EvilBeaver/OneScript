@@ -48,7 +48,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
         {
             if (value.SystemType == BasicTypes.String)
             {
-                return _items.FirstOrDefault(x => x.Name.Equals(value.AsString()));
+                return _items.FirstOrDefault(x => x.Name.Equals(value.ToString()));
             }
             else if (value.SystemType == BasicTypes.Number)
             {

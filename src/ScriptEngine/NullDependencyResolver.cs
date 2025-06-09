@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Execution;
 using OneScript.Sources;
 
 namespace ScriptEngine
@@ -12,7 +13,7 @@ namespace ScriptEngine
     // ReSharper disable once ClassNeverInstantiated.Global
     internal class NullDependencyResolver : IDependencyResolver
     {
-        public void Resolve(SourceCode module, string libraryName)
+        public void Resolve(SourceCode module, string libraryName, IBslProcess process)
         {
         }
 

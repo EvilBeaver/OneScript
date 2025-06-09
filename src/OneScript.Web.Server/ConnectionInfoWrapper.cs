@@ -11,6 +11,7 @@ using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Net;
+using OneScript.Localization;
 
 namespace OneScript.Web.Server
 {
@@ -31,28 +32,25 @@ namespace OneScript.Web.Server
         /// Идентификатор подключения
         /// </summary>
         [ContextProperty("Идентификатор", "Id")]
-        public IValue Id
+        public string Id
         {
-            get => BslStringValue.Create(_connectionInfo.Id);
-            set
-            {
-                _connectionInfo.Id = value.AsString();
-            }
+            get => _connectionInfo.Id;
+            set => _connectionInfo.Id = value;
         }
 
         /// <summary>
         /// IP адрес клиента
         /// </summary>
         [ContextProperty("УдаленныйIpАдрес", "RemoteIpAddress")]
-        public IValue RemoteIpAddress
+        public string RemoteIpAddress
         {
-            get => BslStringValue.Create(_connectionInfo.RemoteIpAddress?.ToString() ?? "");
+            get => _connectionInfo.RemoteIpAddress?.ToString() ?? "";
             set
             {
-                if (IPAddress.TryParse(value.AsString(), out var ip))
+                if (IPAddress.TryParse(value, out var ip))
                     _connectionInfo.RemoteIpAddress = ip;
                 else
-                    throw new RuntimeException(Localization.BilingualString.Localize($"Ошибка разбора IP адреса: {value}", $"Failed to parse IP address: {value}"));
+                    throw new RuntimeException(new BilingualString($"Ошибка разбора IP адреса: {value}", $"Failed to parse IP address: {value}"));
             }
         }
 
@@ -73,15 +71,15 @@ namespace OneScript.Web.Server
         /// IP адрес сервера
         /// </summary>
         [ContextProperty("ЛокальныйIpАдрес", "LocalIpAddress")]
-        public IValue LocalIpAddress
+        public string LocalIpAddress
         {
-            get => BslStringValue.Create(_connectionInfo.LocalIpAddress?.ToString() ?? "");
+            get => _connectionInfo.LocalIpAddress?.ToString() ?? "";
             set
             {
-                if (IPAddress.TryParse(value.AsString(), out var ip))
+                if (IPAddress.TryParse(value, out var ip))
                     _connectionInfo.LocalIpAddress = ip;
                 else
-                    throw new RuntimeException(Localization.BilingualString.Localize($"Ошибка разбора IP адреса: {value}", $"Failed to parse IP address: {value}"));
+                    throw new RuntimeException(new BilingualString($"Ошибка разбора IP адреса: {value}", $"Failed to parse IP address: {value}"));
             }
         }
 

@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Execution;
 using OneScript.Types;
 using OneScript.Values;
 
@@ -76,7 +77,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override string GetPropName(int propNum)
         {
-            return _values[propNum].AsString();
+            return _values[propNum].ToString();
         }
 
 
@@ -90,7 +91,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region ICollectionContext Members
 
-        public int Count()
+        public int Count(IBslProcess process)
         {
             return _values.Count;
         }

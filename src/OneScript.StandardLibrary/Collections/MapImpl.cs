@@ -14,6 +14,12 @@ using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary.Collections
 {
+    /// <summary>
+    /// Стандартный ассоциативный массив (словарь), соответствие вида Ключ->Значение.
+    /// Ключом данной коллекции может выступать произвольный объект.
+    /// Доступен обход в цикле <c>Для Каждого Из</c>, элементами коллекции выступают объекты вида <see cref="KeyAndValueImpl">КлючИЗначение</see>.
+    /// </summary>
+    /// <seealso cref="KeyAndValueImpl"/>
     [ContextClass("Соответствие", "Map")]
     public class MapImpl : AutoCollectionContext<MapImpl, KeyAndValueImpl>
     {
@@ -27,7 +33,7 @@ namespace OneScript.StandardLibrary.Collections
         {
             foreach (var kv in source)
             {
-                _content.Add(kv.Key.GetRawValue(), kv.Value.GetRawValue());
+                _content.Add(kv.Key, kv.Value);
             }
         }
         
@@ -46,10 +52,7 @@ namespace OneScript.StandardLibrary.Collections
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
-            if (index.SystemType != BasicTypes.Undefined)
-            {
-                _content[index] = val;
-            }
+            _content[index] = val;
         }
 
         public override bool IsPropReadable(int propNum)
@@ -78,7 +81,7 @@ namespace OneScript.StandardLibrary.Collections
         #region ICollectionContext Members
 
         [ContextMethod("Вставить", "Insert")]
-        public void Insert(IValue key, IValue val=null)
+        public void Insert(IValue key, IValue val = null)
         {
             SetIndexedValue(key, val ?? ValueFactory.Create() );
         }
@@ -127,12 +130,9 @@ namespace OneScript.StandardLibrary.Collections
         }
         
         [ScriptConstructor(Name = "Из фиксированного соответствия")]
-        public static MapImpl Constructor(IValue source)
+        public static MapImpl Constructor(FixedMapImpl source)
         {
-            if (!(source.GetRawValue() is FixedMapImpl fix))
-                throw RuntimeException.InvalidArgumentType();
-            
-            return new MapImpl(fix);
+            return new MapImpl(source);
         }
     }
 }

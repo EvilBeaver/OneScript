@@ -14,13 +14,8 @@ namespace ScriptEngine.Machine
 {
     public class StackMachineExecutor : IExecutorProvider
     {
-        private readonly ExecutionContext _environment;
+        private MachineInstance _machine;
 
-        public StackMachineExecutor(ExecutionContext environment)
-        {
-            _environment = environment;
-        }
-        
         public Type SupportedModuleType => typeof(StackRuntimeModule);
         
         public Invoker GetInvokeDelegate()
@@ -28,25 +23,45 @@ namespace ScriptEngine.Machine
             return Executor;
         }
 
-        private BslValue Executor(BslObjectValue target, IExecutableModule module, BslMethodInfo method, IValue[] arguments)
+        public void BeforeProcessStart(IBslProcess process)
+        {
+            _machine = new MachineInstance();
+            _machine.Setup(process);
+            
+            var debugger = process.Services.TryResolve<IDebugController>();
+            if (debugger != default)
+            {
+                _machine.SetDebugMode(debugger.ThreadManager, debugger.BreakpointManager);
+                debugger.ThreadManager.ThreadStarted(process.VirtualThreadId, _machine);
+            }
+
+            process.Services.Resolve<StackMachineProvider>().Machine = _machine;
+        }
+
+        public void AfterProcessExit(IBslProcess process)
+        {
+            var debugger = process.Services.TryResolve<IDebugController>();
+            debugger?.ThreadManager.ThreadExited(process.VirtualThreadId);
+        }
+
+        private BslValue Executor(IBslProcess process, BslObjectValue target, IExecutableModule module, BslScriptMethodInfo method, IValue[] arguments)
         {
             if (!(method is MachineMethodInfo scriptMethodInfo))
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException($"Method has type {method?.GetType()} but expected {typeof(MachineMethodInfo)}");
             }
             
             if (!(target is IRunnable runnable))
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException($"Target must implement {typeof(IRunnable)}");
             }
-            
-            var currentMachine = MachineInstance.Current;
-            if (!currentMachine.IsRunning)
+
+            if (_machine?.Process == default)
             {
-                currentMachine.SetMemory(_environment);
+                throw new InvalidOperationException("Machine is not initialized by process");
             }
             
-            return (BslValue)currentMachine.ExecuteMethod(runnable, scriptMethodInfo, arguments);
+            return (BslValue)_machine.ExecuteMethod(runnable, scriptMethodInfo, arguments);
         }
     }
 }

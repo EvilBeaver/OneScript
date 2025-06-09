@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Xml;
 using OneScript.Contexts;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -79,16 +80,21 @@ namespace OneScript.StandardLibrary.Xml
         public bool UseIgnorableWhitespace { get; }
 
         [ScriptConstructor]
-        public static XmlReaderSettingsImpl Constructor(IValue version = null, IValue lang = null,
-             IValue spaceChars = null, 
-             IValue validityCheckType = null,
-             IValue ignoreXMLDeclaration = null, IValue ignoreDocumentType = null,
-             IValue ignoreDataProcessorInstructions = null, IValue ignoreComments = null,
-             IValue ignoreSpaceCharacters = null, IValue CDATASectionAsText = null,
-             IValue useIgnorableWhitespace = null)
+        public static XmlReaderSettingsImpl Constructor(
+            string version = null,
+            string lang = null,
+            ClrEnumValueWrapper<XmlSpace> spaceChars = null, 
+            ClrEnumValueWrapper<ValidationType> validityCheckType = null,
+            bool ignoreXMLDeclaration = true,
+            bool ignoreDocumentType = true,
+            bool ignoreDataProcessorInstructions = false,
+            bool ignoreComments = false,
+            bool ignoreSpaceCharacters = true,
+            bool CDATASectionAsText = false,
+            bool useIgnorableWhitespace = false)
         {
             var context = new XmlParserContext(null, null,
-                lang?.AsString() ?? "",
+                lang ?? "",
                 ContextValuesMarshaller.ConvertWrappedEnum(spaceChars, XmlSpace.Default))
                 {
                     Encoding = System.Text.Encoding.UTF8
@@ -97,16 +103,19 @@ namespace OneScript.StandardLibrary.Xml
             var settings = new XmlReaderSettings
             {
                 ValidationType = ContextValuesMarshaller.ConvertWrappedEnum(validityCheckType, ValidationType.None),
-                IgnoreComments = ContextValuesMarshaller.ConvertParam(ignoreComments, false),
-                IgnoreProcessingInstructions = ContextValuesMarshaller.ConvertParam(ignoreDataProcessorInstructions, false),
-                IgnoreWhitespace = ContextValuesMarshaller.ConvertParam(ignoreSpaceCharacters, true),
+                IgnoreComments = ignoreComments,
+                IgnoreProcessingInstructions = ignoreDataProcessorInstructions,
+                IgnoreWhitespace = ignoreSpaceCharacters,
             };
 
-            return new XmlReaderSettingsImpl(version?.AsString() ?? "1.0", context, settings,
-                ContextValuesMarshaller.ConvertParam(ignoreXMLDeclaration, true),
-                ContextValuesMarshaller.ConvertParam(ignoreDocumentType, true),
-                ContextValuesMarshaller.ConvertParam(CDATASectionAsText, false),
-                ContextValuesMarshaller.ConvertParam(useIgnorableWhitespace, false) );
+            return new XmlReaderSettingsImpl(
+                version ?? "1.0",
+                context,
+                settings,
+                ignoreXMLDeclaration,
+                ignoreDocumentType,
+                CDATASectionAsText,
+                useIgnorableWhitespace);
         }
 
         public static XmlReaderSettingsImpl Create()

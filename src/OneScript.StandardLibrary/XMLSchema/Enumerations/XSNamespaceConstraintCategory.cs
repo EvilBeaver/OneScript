@@ -9,19 +9,19 @@ using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    [EnumerationType("XSNamespaceConstraintCategory", "КатегорияОграниченияПространствИменXS")]
+    [EnumerationType("КатегорияОграниченияПространствИменXS", "XSNamespaceConstraintCategory")]
     public enum XSNamespaceConstraintCategory
     {
-        [EnumValue("EmptyRef", "ПустаяСсылка")]
+        [EnumValue("ПустаяСсылка", "EmptyRef")]
         EmptyRef,
 
-        [EnumValue("Not", "Кроме")]
+        [EnumValue("Кроме", "Not")]
         Not,
 
-        [EnumValue("Any", "Любое")]
+        [EnumValue("Любое", "Any")]
         Any,
 
-        [EnumValue("Set", "Набор")]
+        [EnumValue("Набор", "Set")]
         Set
     }
 }

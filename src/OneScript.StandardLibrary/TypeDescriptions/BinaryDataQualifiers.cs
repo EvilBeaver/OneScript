@@ -5,7 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using OneScript.Contexts;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -29,31 +31,27 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 
 		public override bool Equals(object obj)
 		{
-			var asThis = obj as BinaryDataQualifiers;
-			if (asThis == null)
+			if (!(obj is BinaryDataQualifiers asThis))
 				return false;
 
 			return Length == asThis.Length
 				&& AllowedLength == asThis.AllowedLength;
 		}
 
-		public override bool Equals(IValue other)
+		public override bool Equals(BslValue other)
 		{
-			return object.Equals(this, other?.GetRawValue());
+			return Equals((object)other);
 		}
 
 		public override int GetHashCode()
 		{
-			return Length.GetHashCode();
+			return HashCode.Combine(Length, AllowedLength);
 		}
 
 		[ScriptConstructor]
-		public static BinaryDataQualifiers Constructor(IValue length = null,
-		                                                  IValue allowedLength = null)
+		public static BinaryDataQualifiers Constructor(int length = default, AllowedLengthEnum allowedLength = default)
 		{
-			var paramLength = ContextValuesMarshaller.ConvertParam<int>(length);
-			var paramAllowedLength = ContextValuesMarshaller.ConvertParam<AllowedLengthEnum>(allowedLength);
-			return new BinaryDataQualifiers(paramLength, paramAllowedLength);
+			return new BinaryDataQualifiers(length, allowedLength);
 		}
 	}
 }

@@ -5,21 +5,24 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Diagnostics;
 using OneScript.Contexts;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections
 {
-    [ContextClass("КлючИЗначение", "KeyAndValue", TypeUUID = "2F949104-FC88-4ACD-A6A5-3B6C39A9C2C5")]
+    [ContextClass("КлючИЗначение", "KeyAndValue")]
     public class KeyAndValueImpl : AutoContext<KeyAndValueImpl>
     {
-        private static TypeDescriptor _instanceType = typeof(KeyAndValueImpl).GetTypeFromClassMarkup();
-        
-        public KeyAndValueImpl(IValue key, IValue value) : base(_instanceType)
+        public KeyAndValueImpl(IValue key, IValue value)
         {
+            Debug.Assert(!(key is IValueReference));
+            Debug.Assert(!(value is IValueReference));
+            
             Key = key;
             Value = value;
         }

@@ -90,10 +90,5 @@ namespace ScriptEngine.Machine
 
             return attribute;
         }
-
-        public static CollectionEnumerator GetManagedIterator(this IEnumerable<IValue> enumerable)
-        {
-            return new CollectionEnumerator(enumerable.GetEnumerator());
-        }
     }
 }

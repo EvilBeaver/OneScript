@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -21,7 +22,7 @@ namespace ScriptEngine.HostedScript
         {
             public ScriptDrivenObject Target;
             public string MethodName;
-            public Action<IValue[]> Method;
+            public Action<IBslProcess, IValue[]> Method;
         }
 
         private class HandlersList : IEnumerable<Handler>
@@ -113,7 +114,8 @@ namespace ScriptEngine.HostedScript
             }
         }
 
-        public void HandleEvent(IRuntimeContextInstance eventSource, string eventName, IValue[] eventArgs)
+        public void HandleEvent(IRuntimeContextInstance eventSource, string eventName, IValue[] eventArgs,
+            IBslProcess process)
         {
             HandlersList handlersLocalCopy;
 
@@ -131,7 +133,7 @@ namespace ScriptEngine.HostedScript
 
             foreach (var handler in handlersLocalCopy)
             {
-                handler.Method(eventArgs);
+                handler.Method(process, eventArgs);
             }
         }
     }

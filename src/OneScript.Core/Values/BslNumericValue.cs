@@ -9,6 +9,7 @@ using System;
 using System.Dynamic;
 using System.Globalization;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Types;
 
 namespace OneScript.Values
@@ -60,7 +61,7 @@ namespace OneScript.Values
             {
                 if (binder.Type == typeof(string))
                 {
-                    result = ConvertToString();
+                    result = ToString(ForbiddenBslProcess.Instance);
                 }
                 throw new InvalidOperationException($"Conversion from Number to {binder.Type} is not supported");
             }

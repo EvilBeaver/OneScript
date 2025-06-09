@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using OneScript.Contexts;
 using OneScript.DebugProtocol;
 using OneScript.DebugProtocol.TcpServer;
@@ -25,15 +26,27 @@ namespace OneScript.DebugServices
         private readonly IVariableVisualizer _visualizer;
         private readonly ThreadManager _threadManager;
 
+        private ManualResetEventSlim _awaiter = new ManualResetEventSlim();
+        
         public DefaultDebugService(IBreakpointManager breakpointManager, ThreadManager threads, IVariableVisualizer visualizer)
         {
             _breakpointManager = breakpointManager;
             _visualizer = visualizer;
             _threadManager = threads;
         }
+
+        public void WaitForExecution()
+        {
+            _awaiter.Wait();
+        }
         
         public void Execute(int threadId)
         {
+            if (!_awaiter.IsSet)
+            {
+                _awaiter.Set();
+            }
+            
             if (threadId > 0)
             {
                 var token = _threadManager.GetTokenForThread(threadId);
@@ -54,7 +67,7 @@ namespace OneScript.DebugServices
 
             // Уведомить все потоки о новых фильтрах
             foreach (var machine in _threadManager.GetAllTokens().Select(x => x.Machine))
-                machine.SetDebugMode(_breakpointManager);
+                machine.SetDebugMode(_threadManager, _breakpointManager);
         }
 
         public Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)
@@ -85,7 +98,7 @@ namespace OneScript.DebugServices
             // Уведомить все потоки о новых точках остановки
             foreach (var machine in _threadManager.GetAllTokens().Select(x=>x.Machine))
             {
-                machine.SetDebugMode(_breakpointManager);
+                machine.SetDebugMode(_threadManager, _breakpointManager);
             }
             
             return confirmedBreakpoints.ToArray();
@@ -113,12 +126,7 @@ namespace OneScript.DebugServices
 
         private MachineInstance GetMachine(int threadId)
         {
-            // Из-за того, что прикладные классы пока завязаны на статические сервисы машины тек. потока
-            // Приходится в поток отладчика копировать сервисы отлаживаемой машины
-            
-            var savedMachine = _threadManager.GetTokenForThread(threadId).Machine;
-            MachineInstance.Current.SetMemory(savedMachine.Memory);
-            return savedMachine;
+            return _threadManager.GetTokenForThread(threadId).Machine;
         }
 
         public Variable[] GetVariables(int threadId, int frameIndex, int[] path)
@@ -165,8 +173,7 @@ namespace OneScript.DebugServices
             try
             {
                 var value = GetMachine(threadId)
-                    .EvaluateInFrame(expression, contextFrame)
-                    .GetRawValue();
+                    .EvaluateInFrame(expression, contextFrame);
                 
                 var variable = _visualizer.GetVariable(MachineVariable.Create(value, "$evalResult"));
                 return variable;
@@ -209,7 +216,7 @@ namespace OneScript.DebugServices
 
         public int[] GetThreads()
         {
-            return _threadManager.GetAllThreadIds();
+            return _threadManager.GetThreadIds().ToArray();
         }
         
         public int GetProcessId()
@@ -238,7 +245,7 @@ namespace OneScript.DebugServices
 
         private IList<IVariable> GetChildVariables(IVariable src)
         {
-            return _visualizer.GetChildVariables(src).ToList();
+            return _visualizer.GetChildVariables(src.Value).ToList();
         }
     }
 }

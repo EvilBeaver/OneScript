@@ -33,7 +33,7 @@ namespace OneScript.Web.Server
                 if (value is BslUndefinedValue)
                     _cookieOptions.Domain = null;
                 else
-                    _cookieOptions.Domain = value.AsString();
+                    _cookieOptions.Domain = ContextValuesMarshaller.ConvertValueStrict<string>(value);
             }
         }
 
@@ -46,7 +46,7 @@ namespace OneScript.Web.Server
                 if (value is BslUndefinedValue)
                     _cookieOptions.Path = null;
                 else
-                    _cookieOptions.Path = value.AsString();
+                    _cookieOptions.Path = ContextValuesMarshaller.ConvertValueStrict<string>(value);;
             }
         }
 

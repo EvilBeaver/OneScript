@@ -75,18 +75,19 @@ namespace OneScript.StandardLibrary.Xml
         }
 
         [ScriptConstructor]
-        public static XmlWriterSettingsImpl Constructor(IValue encoding = null,
-            IValue version = null, IValue indent = null, IValue indentAttributes = null,
-            IValue indentChars = null)
+        public static XmlWriterSettingsImpl Constructor(
+            string encoding = null,
+            string version = null,
+            bool indent = true,
+            bool indentAttributes = false,
+            string indentChars = null)
         {
-            var _indent = ContextValuesMarshaller.ConvertParam<bool>(indent, true);
-            var _indentAttributes = ContextValuesMarshaller.ConvertParam<bool>(indentAttributes);
-
-            return new XmlWriterSettingsImpl(encoding?.AsString() ?? "UTF-8",
-                version?.AsString() ?? "1.0",
-                _indent,
-                _indentAttributes,
-                indentChars?.AsString() ?? "\t");
+            return new XmlWriterSettingsImpl(
+                encoding ?? "UTF-8",
+                version ?? "1.0",
+                indent,
+                indentAttributes,
+                indentChars ?? "\t");
         }
     }
 }

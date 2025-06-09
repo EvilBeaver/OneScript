@@ -30,11 +30,13 @@ namespace ScriptEngine.Machine
         private DebugState _currentState = DebugState.Running;
         private readonly IBreakpointManager _breakpoints;
         private readonly MachineInstance _machine;
+        private readonly IThreadManager _threadManager;
         private ExecutionFrame[] _stopFrames;
         
-        public MachineStopManager(MachineInstance runner, IBreakpointManager breakpoints)
+        public MachineStopManager(MachineInstance runner, IThreadManager threadManager, IBreakpointManager breakpoints)
         {
             _machine = runner ?? throw new ArgumentNullException(nameof(runner));
+            _threadManager = threadManager;
             _breakpoints = breakpoints ?? throw new ArgumentNullException(nameof(runner));
         }
         
@@ -43,6 +45,16 @@ namespace ScriptEngine.Machine
         public string LastStopErrorMessage { get; internal set; }
         public DebugState CurrentState => _currentState;
 
+        public void NotifyStop(MachineStopReason reason, string errMessage)
+        {
+            _threadManager.ThreadStopped(_machine.Process.VirtualThreadId, reason, errMessage);
+        }
+        
+        public void NotifyStop()
+        {
+            _threadManager.ThreadStopped(_machine.Process.VirtualThreadId, LastStopReason, LastStopErrorMessage);
+        }
+        
         public bool ShouldStopAtThisLine(string module, ExecutionFrame currentFrame)
         {
             bool mustStop = false;

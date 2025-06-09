@@ -30,10 +30,10 @@ namespace Component
 		}
 
 		[ScriptConstructor]
-		public static SimpleClass Constructor(IValue initialProperty)
+		public static SimpleClass Constructor(int initialProperty)
 		{
 			var result = new SimpleClass();
-			result.IntProperty = ContextValuesMarshaller.ConvertParam<int>(initialProperty);
+			result.IntProperty = initialProperty;
 			return result;
 		}
 	}

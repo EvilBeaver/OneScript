@@ -9,16 +9,16 @@ using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    [EnumerationType("XSSimpleTypeVariety", "ВариантПростогоТипаXS")]
+    [EnumerationType("ВариантПростогоТипаXS", "XSSimpleTypeVariety")]
     public enum XSSimpleTypeVariety
     {
-        [EnumValue("Atomic", "Атомарная")]
+        [EnumValue("Атомарная", "Atomic")]
         Atomic,
 
-        [EnumValue("Union", "Объединение")]
+        [EnumValue("Объединение", "Union")]
         Union,
 
-        [EnumValue("List", "Список")]
+        [EnumValue("Список", "List")]
         List
     }
 }

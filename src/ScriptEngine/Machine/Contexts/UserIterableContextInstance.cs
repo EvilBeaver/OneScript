@@ -32,7 +32,7 @@ namespace ScriptEngine.Machine.Contexts
             _getCountMethod = methods.GetCountMethod;
         }
 
-        public int Count()
+        public int Count(IBslProcess process)
         {
             if (_getCountMethod == null)
                 throw new RuntimeException(
@@ -41,20 +41,25 @@ namespace ScriptEngine.Machine.Contexts
                         "Class doesn't support items counting, because method "+GetCountTerms.English+"() is not defined")
                 );
 
-            CallAsFunction(_getCountMethod.DispatchId, Array.Empty<IValue>(), out var ret);
+            CallAsFunction(_getCountMethod.DispatchId, Array.Empty<IValue>(), out var ret, process);
 
             return (int)ret.AsNumber();
         }
-
-        public IEnumerator<BslValue> GetEnumerator()
+        
+        public IEnumerator<BslValue> GetEnumerator(IBslProcess process)
         {
-            CallAsFunction(_getIteratorMethod.DispatchId, Array.Empty<IValue>(), out var enumerator);
+            CallAsFunction(_getIteratorMethod.DispatchId, Array.Empty<IValue>(), out var enumerator, process);
             if (!(enumerator is UserScriptContextInstance userObject))
             {
                 throw ScriptedEnumeratorWrapper.IncompatibleInterfaceError();
             }
 
-            return new ScriptedEnumeratorWrapper(userObject);
+            return new ScriptedEnumeratorWrapper(userObject, process);
+        }
+
+        public IEnumerator<BslValue> GetEnumerator()
+        {
+            throw BslProcessRequired();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

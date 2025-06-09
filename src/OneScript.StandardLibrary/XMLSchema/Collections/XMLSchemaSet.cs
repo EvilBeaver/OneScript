@@ -44,9 +44,9 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
         public override int Count() => _schemaSet.Count;
 
         [ContextMethod("Получить", "Get")]
-        public Objects.XMLSchema Get(IValue value)
+        public Objects.XMLSchema Get(BslValue value)
         {
-            switch (value.GetRawValue())
+            switch (value)
             {
                 case BslStringValue s:
                     return _items.FirstOrDefault(x => x.TargetNamespace.Equals((string)s));

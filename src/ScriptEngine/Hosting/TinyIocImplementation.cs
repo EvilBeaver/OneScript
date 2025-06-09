@@ -16,6 +16,8 @@ namespace ScriptEngine.Hosting
     {
         private readonly TinyIoCContainer _container;
         private readonly Dictionary<Type, List<Type>> _multiRegistrations = new Dictionary<Type, List<Type>>();
+        
+        private readonly ISet<Type> _scopedRegistrations = new HashSet<Type>();
 
         #region Registration API
 
@@ -99,6 +101,11 @@ namespace ScriptEngine.Hosting
             _container.Register<T>((t, p) => factory(this)).AsSingleton();
         }
 
+        public void RegisterScoped<T>() where T : class
+        {
+            _scopedRegistrations.Add(typeof(T));
+        }
+
         public void RegisterEnumerable<T, TImpl>() where T : class where TImpl : class, T
         {
             if (!_multiRegistrations.TryGetValue(typeof(T), out var list))
@@ -142,7 +149,13 @@ namespace ScriptEngine.Hosting
 
         public IServiceContainer CreateScope()
         {
-            return new TinyIocImplementation(_container.GetChildContainer());
+            var child = new TinyIocImplementation(_container.GetChildContainer());
+            foreach (var scopedRegistration in _scopedRegistrations)
+            {
+                child._container.Register(scopedRegistration).AsSingleton();
+            }
+
+            return child;
         }
 
         #endregion

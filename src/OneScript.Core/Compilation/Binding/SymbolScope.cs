@@ -88,33 +88,6 @@ namespace OneScript.Compilation.Binding
             return scope;
         }
 
-        public static SymbolScope FromContext(IContext target)
-        {
-            var scope = new SymbolScope();
-            
-            foreach (var info in target.GetMethods())
-            {
-                var symbol = new BslMethodSymbol
-                {
-                    Method = info
-                };
-
-                scope.Methods.Add(symbol);
-            }
-            
-            foreach (var info in target.GetProperties())
-            {
-                var symbol = new BslPropertySymbol
-                {
-                    Property = info
-                };
-
-                scope.Variables.Add(symbol);
-            }
-
-            return scope;
-        }
-
         public static SymbolScope FromMethodsAndProperties(IEnumerable<BslMethodInfo> methods,
             IEnumerable<BslPropertyInfo> properties)
         {

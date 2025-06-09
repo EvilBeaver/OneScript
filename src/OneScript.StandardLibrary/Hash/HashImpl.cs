@@ -82,10 +82,9 @@ namespace OneScript.StandardLibrary.Hash
 
 
         [ContextMethod("Добавить", "Append")]
-        public void Append(IValue toAdd, uint count = 0)
+        public void Append(BslValue toAdd, uint count = 0)
         {
-            var realValue = toAdd.GetRawValue();
-            switch (realValue)
+            switch (toAdd)
             {
                 case BslStringValue s:
                     AddStream(new MemoryStream(Encoding.UTF8.GetBytes((string)s)));

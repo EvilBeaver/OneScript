@@ -9,13 +9,13 @@ using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.Xml
 {
-    [EnumerationType("XMLTypeAssignment", "НазначениеТипаXML")]
+    [EnumerationType("НазначениеТипаXML", "XMLTypeAssignment")]
     public enum XMLTypeAssignment
     {
-        [EnumValue("Implicit", "Неявное")]
+        [EnumValue("Неявное", "Implicit")]
         Implicit,
 
-        [EnumValue("Explicit", "Явное")]
+        [EnumValue("Явное", "Explicit")]
         Explicit
     }
 }

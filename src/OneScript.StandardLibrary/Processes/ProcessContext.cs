@@ -250,8 +250,8 @@ namespace OneScript.StandardLibrary.Processes
             {
                 var source = env.Select(x => new
                 {
-                    Key = x.Key.AsString(),
-                    Value = x.Value.AsString()
+                    Key = ContextValuesMarshaller.ConvertValueStrict<string>(x.Key),
+                    Value = ContextValuesMarshaller.ConvertValueStrict<string>(x.Value)
                 }).Where(x => !string.IsNullOrWhiteSpace(x.Key));
                 
                 foreach (var kv in source)

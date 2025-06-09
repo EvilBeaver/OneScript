@@ -214,9 +214,9 @@ namespace OneScript.StandardLibrary
         }
 
         [ScriptConstructor(Name = "По имени файла")]
-        public static FileContext Constructor(IValue name)
+        public static FileContext Constructor(string name)
         {
-            return new FileContext(name.AsString());
+            return new FileContext(name);
         }
     }
 }

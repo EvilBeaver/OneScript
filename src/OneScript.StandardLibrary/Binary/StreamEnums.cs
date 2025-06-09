@@ -12,39 +12,39 @@ namespace OneScript.StandardLibrary.Binary
     [EnumerationType("РежимОткрытияФайла", "FileOpenMode")]
     public enum FileOpenModeEnum
     {
-        [EnumValue("Дописать")]
+        [EnumValue("Дописать", "Append")]
         Append,
-        [EnumValue("Обрезать")]
+        [EnumValue("Обрезать", "Truncate")]
         Truncate,
-        [EnumValue("Открыть")]
+        [EnumValue("Открыть", "Open")]
         Open,
-        [EnumValue("ОткрытьИлиСоздать")]
+        [EnumValue("ОткрытьИлиСоздать", "OpenOrCreate")]
         OpenOrCreate,
-        [EnumValue("Создать")]
+        [EnumValue("Создать", "Create")]
         Create,
-        [EnumValue("СоздатьНовый")]
+        [EnumValue("СоздатьНовый", "CreateNew")]
         CreateNew
     }
 
     [EnumerationType("ДоступКФайлу", "FileAccess")]
     public enum FileAccessEnum
     {
-        [EnumValue("Запись")]
+        [EnumValue("Запись", "Write")]
         Write,
-        [EnumValue("Чтение")]
+        [EnumValue("Чтение", "Read")]
         Read,
-        [EnumValue("ЧтениеИЗапись")]
+        [EnumValue("ЧтениеИЗапись", "ReadAndWrite")]
         ReadAndWrite
     }
 
     [EnumerationType("ПозицияВПотоке", "StreamPosition")]
     public enum StreamPositionEnum
     {
-        [EnumValue("Начало")]
+        [EnumValue("Начало", "Begin")]
         Begin,
-        [EnumValue("Конец")]
+        [EnumValue("Конец", "End")]
         End,
-        [EnumValue("Текущая")]
+        [EnumValue("Текущая", "Current")]
         Current
     }
 

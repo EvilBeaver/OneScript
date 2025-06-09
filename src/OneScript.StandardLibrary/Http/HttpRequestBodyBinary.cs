@@ -12,6 +12,8 @@ using System.Linq;
 using System.Text;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Text;
+using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.Http
@@ -32,11 +34,23 @@ namespace OneScript.StandardLibrary.Http
         public HttpRequestBodyBinary(string body, IValue encoding = null,
             ByteOrderMarkUsageEnum bomUsage = ByteOrderMarkUsageEnum.Auto)
         {
-            var utfs = new List<string> {"utf-16", "utf-32"};
-            var addBom = utfs.Contains(encoding?.AsString(), StringComparer.OrdinalIgnoreCase) &&
-                         bomUsage == ByteOrderMarkUsageEnum.Auto || bomUsage == ByteOrderMarkUsageEnum.Use;
-
-            var encoder = encoding == null ? new UTF8Encoding(addBom) : TextEncodingEnum.GetEncoding(encoding, addBom);
+            var useBom = bomUsage == ByteOrderMarkUsageEnum.Auto ||
+                         bomUsage == ByteOrderMarkUsageEnum.Use;
+            
+            Encoding encoder;
+            if (encoding == null)
+            {
+                encoder = new UTF8Encoding(useBom);
+            }
+            else if (encoding.SystemType == BasicTypes.String)
+            {
+                var utfs = new List<string> {"utf-16", "utf-32"};
+                encoder = TextEncodingEnum.GetEncoding(encoding, utfs.Contains(encoding.ToString()) && useBom);
+            }
+            else
+            {
+                encoder = TextEncodingEnum.GetEncoding(encoding);
+            }
 
             var byteArray = encoder.GetBytes(body);
             _storage.Write(byteArray, 0, byteArray.Length);

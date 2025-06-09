@@ -14,19 +14,19 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
     /// Содержит варианты использования выражения XPath.
     /// </summary>
     /// <see cref="XSXPathDefinition"/>
-    [EnumerationType("XSXPathVariety", "ВариантXPathXS")]
+    [EnumerationType("ВариантXPathXS", "XSXPathVariety")]
     public enum XSXPathVariety
     {
         /// <summary>
         /// Используется в качестве поля
         /// </summary>
-        [EnumValue("Field", "Поле")]
+        [EnumValue("Поле", "Field")]
         Field,
   
         /// <summary>
         /// Используется в качестве селектора
         /// </summary>
-        [EnumValue("Selector", "Селектор")]
+        [EnumValue("Селектор", "Selector")]
         Selector
     }
 }

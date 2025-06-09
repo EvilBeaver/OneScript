@@ -30,11 +30,11 @@ namespace ScriptEngine.Compiler
         
         public SymbolTable Symbols { get; set; }
         
-        public IExecutableModule Compile(ModuleNode parsedModule, Type classType)
+        public IExecutableModule Compile(ModuleNode parsedModule, Type classType, IBslProcess process)
         {
             _codeGen.ProduceExtraCode = GetCodeFlags();
             _codeGen.DependencyResolver = DependencyResolver;
-            return _codeGen.CreateModule(parsedModule, parsedModule.Source, Symbols);
+            return _codeGen.CreateModule(parsedModule, parsedModule.Source, Symbols, process);
         }
 
         private CodeGenerationFlags GetCodeFlags()

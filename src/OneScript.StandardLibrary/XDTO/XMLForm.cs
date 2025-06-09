@@ -9,16 +9,16 @@ using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XDTO
 {
-    [EnumerationType("XMLForm", "ФормаXML")]
+    [EnumerationType("ФормаXML", "XMLForm")]
     public enum XMLForm
     {
-        [EnumValue("Element", "Элемент")]
+        [EnumValue("Элемент", "Element")]
         Element,
 
-        [EnumValue("Text", "Текст")]
+        [EnumValue("Текст", "Text")]
         Text,
 
-        [EnumValue("Attribute", "Атрибут")]
+        [EnumValue("Атрибут", "Attribute")]
         Attribute
     }
 }

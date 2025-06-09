@@ -21,14 +21,16 @@ namespace ScriptEngine.Machine.Contexts
     public sealed class ScriptedEnumeratorWrapper : IEnumerator<BslValue>
     {
         private readonly UserScriptContextInstance _userObject;
+        private readonly IBslProcess _process;
 
         private BslScriptMethodInfo _moveNextMethod;
         private BslScriptMethodInfo _getCurrentMethod;
         private BslScriptMethodInfo _onDisposeMethod;
         
-        public ScriptedEnumeratorWrapper(UserScriptContextInstance userObject)
+        internal ScriptedEnumeratorWrapper(UserScriptContextInstance userObject, IBslProcess process)
         {
             _userObject = userObject;
+            _process = process;
             CheckAndSetMethods();
         }
 
@@ -44,7 +46,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public bool MoveNext()
         {
-            _userObject.CallAsFunction(_moveNextMethod.DispatchId, Array.Empty<IValue>(), out var result);
+            _userObject.CallAsFunction(_moveNextMethod.DispatchId, Array.Empty<IValue>(), out var result, _process);
             return result.AsBoolean();
         }
 
@@ -57,7 +59,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             get
             {
-                _userObject.CallAsFunction(_getCurrentMethod.DispatchId, Array.Empty<IValue>(), out var result);
+                _userObject.CallAsFunction(_getCurrentMethod.DispatchId, Array.Empty<IValue>(), out var result, _process);
                 return (BslValue)result;
             }
         }
@@ -67,7 +69,7 @@ namespace ScriptEngine.Machine.Contexts
         public void Dispose()
         {
             if (_onDisposeMethod != null)
-                _userObject.CallAsProcedure(_onDisposeMethod.DispatchId, Array.Empty<IValue>());
+                _userObject.CallAsProcedure(_onDisposeMethod.DispatchId, Array.Empty<IValue>(), _process);
         }
 
         public static RuntimeException IncompatibleInterfaceError()

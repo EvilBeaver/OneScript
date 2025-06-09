@@ -77,11 +77,11 @@ namespace OneScript.StandardLibrary.XMLSchema.Collections
         public bool Contains(IXSComponent value) => _items.Contains(value);
 
         [ContextMethod("Удалить", "Delete")]
-        public void Delete(IValue value)
+        public void Delete(BslValue value)
         {
             int index;
 
-            switch (value.GetRawValue())
+            switch (value)
             {
                 case BslNumericValue n:
                     index = (int)n;

@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.StandardLibrary;
 using oscript.Web;
 
@@ -250,14 +251,14 @@ namespace oscript
 			throw new NotImplementedException();
 		}
 		
-		public void CallAsProcedure(int methodNumber, IValue[] arguments)
+		public void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
 		{
-			_methods.GetCallableDelegate(methodNumber)(this, arguments);
+			_methods.GetCallableDelegate(methodNumber)(this, arguments, process);
 		}
 
-		public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+		public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process)
 		{
-			retValue = _methods.GetCallableDelegate(methodNumber)(this, arguments);
+			retValue = _methods.GetCallableDelegate(methodNumber)(this, arguments, process);
 		}
 
         public int GetPropCount()

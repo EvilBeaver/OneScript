@@ -1,0 +1,12 @@
+﻿<member name="M:OneScript.StandardLibrary.EnvironmentVariablesImpl.EnvironmentVariables(OneScript.StandardLibrary.EnvironmentVariableTargetEnum)">
+    <summary>
+        Возвращает соответствие переменных среды. Ключом является имя переменной, а значением - значение переменной
+    </summary>
+    <param name="target">Расположение переменной среды</param>
+    <example>
+        Для Каждого Переменная Из ПеременныеСреды() Цикл
+            Сообщить(Переменная.Ключ + " = " + Переменная.Значение);
+        КонецЦикла;
+    </example>
+    <returns><c>Соответствие</c> соответствие Имя-Значение переменных среды</returns>
+</member>
