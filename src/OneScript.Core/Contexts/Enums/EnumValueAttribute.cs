@@ -15,7 +15,7 @@ namespace OneScript.Contexts.Enums
     /// А также пометки свойства или поля clr-enum, как значения bsl-перечисления
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-    public class EnumValueAttribute : Attribute
+    public class EnumValueAttribute : Attribute, INameAndAliasProvider
     {
         public EnumValueAttribute (string name, string alias = null)
         {

@@ -171,7 +171,7 @@ namespace TestApp
                     cs.GenerateCodeStat = GenerateExtraCode.IsChecked;
                     cs.GenerateDebugCode = GenerateDebugCode.IsChecked;
 
-                    var moduleWriter = new ModuleDumpWriter(cs);
+                    var moduleWriter = new ModuleDumpWriter(cs, hostedScript.Engine.NewProcess());
                     moduleWriter.Write(writer, src);
                     result.Text = writer.GetStringBuilder().ToString();
                 }

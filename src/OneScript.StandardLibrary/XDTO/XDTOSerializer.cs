@@ -108,10 +108,10 @@ namespace OneScript.StandardLibrary.XDTO
         #region Methods
 
         [ContextMethod("XMLЗначение", "XMLValue")]
-        public IValue XMLValue(IValue givenType, string presentation) => _xmlGlobalFunctions.XMLValue(givenType, presentation);
+        public IValue XMLValue(BslValue givenType, string presentation) => _xmlGlobalFunctions.XMLValue(givenType, presentation);
 
         [ContextMethod("XMLСтрока", "XMLString")]
-        public string XMLString(IValue value) => _xmlGlobalFunctions.XMLString(value);
+        public string XMLString(BslValue value) => _xmlGlobalFunctions.XMLString(value);
 
         //XMLТип(XMLType)
         //XMLТипЗнч(XMLTypeOf)
@@ -121,11 +121,10 @@ namespace OneScript.StandardLibrary.XDTO
 
         [ContextMethod("ЗаписатьXML", "WriteXML")]
         public void WriteXML(XmlWriterImpl xmlWriter,
-                             IValue value,
+                             BslValue value,
                              XMLTypeAssignment typeAssigment = XMLTypeAssignment.Implicit,
                              XMLForm form = XMLForm.Element)
         {
-            value = value.GetRawValue();
             if (value.SystemType == BasicTypes.Undefined)
             {
                 WriteXML(xmlWriter, null, "Undefined", typeAssigment, form);
@@ -194,7 +193,7 @@ namespace OneScript.StandardLibrary.XDTO
 
                 if (xsiType.SystemType == BasicTypes.String)
                 {
-                    switch (xsiType.AsString())
+                    switch (xsiType.ToString())
                     {
                         case "string":
                             typeValue = new BslTypeValue(BasicTypes.String);

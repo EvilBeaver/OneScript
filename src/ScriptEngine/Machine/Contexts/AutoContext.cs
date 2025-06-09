@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Types;
+using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -18,8 +20,9 @@ namespace ScriptEngine.Machine.Contexts
         private static readonly ContextPropertyMapper<TInstance> _properties = new ContextPropertyMapper<TInstance>();
         private static readonly ContextMethodsMapper<TInstance> _methods = new ContextMethodsMapper<TInstance>();
         private static readonly HashSet<int> _warnedDeprecatedMethods = new HashSet<int>();
+        private static readonly TypeDescriptor _objectType = typeof(TInstance).GetTypeFromClassMarkup();
         
-        protected AutoContext()
+        protected AutoContext() : base(_objectType)
         {
         }
         
@@ -98,6 +101,9 @@ namespace ScriptEngine.Machine.Contexts
             return _properties.GetProperty(propertyNumber).PropertyInfo;
         }
 
+        protected ContextPropertyMapper<TInstance> PropertyMapper => _properties;
+        protected ContextMethodsMapper<TInstance> MethodMapper => _methods;
+
         private void CheckIfCallIsPossible(int methodNumber, IValue[] arguments)
         {
             var methodInfo = _methods.GetRuntimeMethod(methodNumber) as ContextMethodInfo;
@@ -120,12 +126,12 @@ namespace ScriptEngine.Machine.Contexts
             _warnedDeprecatedMethods.Add(methodNumber);
         }
 
-        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
+        public override void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
             CheckIfCallIsPossible(methodNumber, arguments);
             try
             {
-                _methods.GetCallableDelegate(methodNumber)((TInstance)this, arguments);
+                _methods.GetCallableDelegate(methodNumber)((TInstance)this, arguments, process);
             }
             catch (System.Reflection.TargetInvocationException e)
             {
@@ -134,12 +140,12 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process)
         {
             CheckIfCallIsPossible(methodNumber, arguments);
             try
             {
-                retValue = _methods.GetCallableDelegate(methodNumber)((TInstance)this, arguments);
+                retValue = _methods.GetCallableDelegate(methodNumber)((TInstance)this, arguments, process);
             }
             catch (System.Reflection.TargetInvocationException e)
             {

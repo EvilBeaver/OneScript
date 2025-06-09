@@ -21,12 +21,12 @@ namespace OneScript.DebugServices
     public class DefaultDebugController : IDebugController
     {
         private readonly ICommunicationServer _server;
-        private readonly IDebuggerService _debugger;
+        private readonly DefaultDebugService _debugger;
         private readonly IDebugEventListener _callbackService;
         private readonly ThreadManager _threadManager;
 
         public DefaultDebugController(ICommunicationServer ipcServer,
-            IDebuggerService debugger,
+            DefaultDebugService debugger,
             IDebugEventListener callbackService,
             ThreadManager threadManager, 
             IBreakpointManager breakpointManager)
@@ -69,27 +69,19 @@ namespace OneScript.DebugServices
             token.Wait();
         }
 
-        public void Wait()
-            => _threadManager.GetTokenForCurrentThread().Wait();
+        public void Wait() => _debugger.WaitForExecution();
 
         public void NotifyProcessExit(int exitCode)
         {
-            _threadManager.DetachFromCurrentThread();
+            _threadManager.ReleaseAllThreads();
             _callbackService.ProcessExited(exitCode);
             _server.Stop();
             
         }
 
-        public void AttachToThread()
-        {
-            MachineInstance.Current.SetDebugMode(BreakpointManager);
-            _threadManager.AttachToCurrentThread(); 
-        }
-        
-        public void DetachFromThread()
-            => _threadManager.DetachFromCurrentThread();
-
         public IBreakpointManager BreakpointManager { get; }
+
+        public IThreadManager ThreadManager => _threadManager;
 
         private static ThreadStopReason ConvertStopReason(MachineStopReason reason) => reason switch
         {

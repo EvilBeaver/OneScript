@@ -106,7 +106,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
             if (value.SystemType == BasicTypes.Undefined)
                 return "";
             else if(value.SystemType == BasicTypes.String)
-                return value.AsString();
+                return value.ToString();
             else if(value.SystemType == BasicTypes.Boolean)
                 return XmlConvert.ToString(value.AsBoolean());
             else if(value.SystemType == BasicTypes.Date)

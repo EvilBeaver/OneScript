@@ -15,10 +15,11 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Types;
 using System.Reflection;
+using OneScript.Execution;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    [ContextClass("COMОбъект", "COMObject", TypeUUID = "5E4FA60E-9724-494A-A5C8-5BB0A4F914E0")]
+    [ContextClass("COMОбъект", "COMObject")]
     public abstract class COMWrapperContext : PropertyNameIndexAccessor, 
         ICollectionContext<IValue>,
         IEmptyValueCheck,
@@ -279,6 +280,8 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual int Count() => 0;
 
+        public int Count(IBslProcess process) => Count();
+
         bool IEmptyValueCheck.IsEmpty => false;
 
         public virtual void Clear()
@@ -326,9 +329,9 @@ namespace ScriptEngine.Machine.Contexts
         public override bool DynamicMethodSignatures => true;
  
         [ScriptConstructor]
-        public static COMWrapperContext Constructor(IValue[] args)
+        public static COMWrapperContext Constructor(TypeActivationContext context, IValue[] args)
         {
-            return COMWrapperContext.Create(args[0].AsString(), args.Skip(1).ToArray());
+            return COMWrapperContext.Create(args[0].AsString(context.CurrentProcess), args.Skip(1).ToArray());
         }
 
     }

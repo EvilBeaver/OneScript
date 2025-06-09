@@ -5,11 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Language;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine.Machine;
@@ -84,26 +86,25 @@ namespace OneScript.StandardLibrary.Tasks
             return WorkerTask.Wait(timeout);
         }
         
-        public void ExecuteOnCurrentThread()
+        public void ExecuteOnCurrentThread(IBslProcess process)
         {
             if (State != TaskStateEnum.NotRunned)
                 throw new RuntimeException(Locale.NStr("ru = 'Неверное состояние задачи';en = 'Incorrect task status'"));
 
             var parameters = Parameters is ArrayImpl array ?
-                array.ToArray() :
-                new IValue[0];
+                array.ToArray() : Array.Empty<IValue>();
 
             try
             {
                 State = TaskStateEnum.Running;
                 if (_method.IsFunction())
                 {
-                    Target.CallAsFunction(_methIndex, parameters, out var result);
+                    Target.CallAsFunction(_methIndex, parameters, out var result, process);
                     Result = result;
                 }
                 else
                 {
-                    Target.CallAsProcedure(_methIndex, parameters);
+                    Target.CallAsProcedure(_methIndex, parameters, process);
                 }
 
                 State = TaskStateEnum.Completed;
@@ -111,7 +112,9 @@ namespace OneScript.StandardLibrary.Tasks
             catch (ScriptException exception)
             {
                 State = TaskStateEnum.CompletedWithErrors;
-                exception.RuntimeSpecificInfo = MachineInstance.Current.GetExecutionFrames();
+                exception.RuntimeSpecificInfo = process.Services
+                    .TryResolve<StackMachineProvider>()?.Machine?.GetExecutionFrames();
+                
                 ExceptionInfo = new ExceptionInfoContext(exception);
             }
         }

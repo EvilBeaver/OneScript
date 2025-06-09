@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Linq;
 using OneScript.Contexts;
+using OneScript.Execution;
 using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
@@ -101,14 +102,24 @@ namespace ScriptEngine.Machine.Contexts
             return Properties.GetProperty(propertyNumber).PropertyInfo;
         }
 
-        public virtual void CallAsProcedure(int methodNumber, IValue[] arguments)
+        public virtual void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
-            Methods.GetCallableDelegate(methodNumber)((T)this, arguments);
+            Methods.GetCallableDelegate(methodNumber)((T)this, arguments, process);
         }
 
-        public virtual void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        public virtual void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process)
         {
-            retValue = Methods.GetCallableDelegate(methodNumber)((T)this, arguments);
+            retValue = Methods.GetCallableDelegate(methodNumber)((T)this, arguments, process);
+        }
+
+        public void CallAsProcedure(int methodNumber, IValue[] arguments)
+        {
+            CallAsProcedure(methodNumber, arguments, ForbiddenBslProcess.Instance);
+        }
+
+        public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        {
+            CallAsFunction(methodNumber, arguments, out retValue, ForbiddenBslProcess.Instance);
         }
 
         #endregion

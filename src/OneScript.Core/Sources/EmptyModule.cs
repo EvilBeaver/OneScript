@@ -24,11 +24,11 @@ namespace OneScript.Sources
         }
 
         public IList<BslAnnotationAttribute> ModuleAttributes => Array.Empty<BslAnnotationAttribute>();
-        public IList<BslFieldInfo> Fields => Array.Empty<BslFieldInfo>();
+        public IList<BslScriptFieldInfo> Fields => Array.Empty<BslScriptFieldInfo>();
 
-        public IList<BslPropertyInfo> Properties => Array.Empty<BslPropertyInfo>();
-        public IList<BslMethodInfo> Methods => Array.Empty<BslMethodInfo>();
-        public BslMethodInfo ModuleBody { get; }
+        public IList<BslScriptPropertyInfo> Properties => Array.Empty<BslScriptPropertyInfo>();
+        public IList<BslScriptMethodInfo> Methods => Array.Empty<BslScriptMethodInfo>();
+        public BslScriptMethodInfo ModuleBody { get; }
         public SourceCode Source { get; }
 
         public IDictionary<Type, object> Interfaces => new ReadOnlyDictionary<Type, object>(new Dictionary<Type, object>());

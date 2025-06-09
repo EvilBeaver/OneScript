@@ -39,11 +39,11 @@ namespace ScriptEngine.Machine.Contexts
                 throw RuntimeException.InvalidArgumentType();
             }
 
-            var n = GetPropertyNumber(index.AsString());
+            var n = GetPropertyNumber(index.ToString());
             if (IsPropReadable(n))
                 return GetPropValue(n);
             else
-                throw PropertyAccessException.PropIsNotReadableException(index.AsString());
+                throw PropertyAccessException.PropIsNotReadableException(index.ToString());
         }
 
         public override void SetIndexedValue(IValue index, IValue val)
@@ -53,11 +53,11 @@ namespace ScriptEngine.Machine.Contexts
                 throw RuntimeException.InvalidArgumentType();
             }
 
-            var n = GetPropertyNumber(index.AsString());
+            var n = GetPropertyNumber(index.ToString());
             if (IsPropWritable(n))
                 SetPropValue(n, val);
             else
-                throw PropertyAccessException.PropIsNotWritableException(index.AsString());
+                throw PropertyAccessException.PropIsNotWritableException(index.ToString());
         }
     }
 }

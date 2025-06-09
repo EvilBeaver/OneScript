@@ -89,7 +89,7 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                var typeDesc = new TypeDescriptor(Guid.NewGuid(), name, alias, implementingClass);
+                var typeDesc = new TypeDescriptor(implementingClass, name, alias);
                 RegisterTypeInternal(typeDesc);
                 return typeDesc;
             }

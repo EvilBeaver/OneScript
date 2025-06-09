@@ -56,10 +56,10 @@ namespace OneScript.StandardLibrary.Xml
         /// </returns>
         ///
         [ContextMethod("XMLСтрока", "XMLString")]
-        public string XMLString(IValue value)
+        public string XMLString(BslValue value)
         {
             if (value.SystemType == BasicTypes.String)
-                return value.AsString();
+                return value.ToString();
             else if (value.SystemType == BasicTypes.Undefined || value.SystemType == BasicTypes.Null)
                 return "";
             else if(value.SystemType == BasicTypes.Boolean)
@@ -70,18 +70,17 @@ namespace OneScript.StandardLibrary.Xml
                 return XmlConvert.ToString(value.AsNumber());
             else
             {
-                var rawValue = value.GetRawValue();
-                if(rawValue is BinaryDataContext bdc)
+                if (value is BinaryDataContext bdc)
                 {
                     return Convert.ToBase64String(bdc.Buffer, Base64FormattingOptions.InsertLineBreaks);
                 }
-                if(rawValue is GuidWrapper guid)
+                if (value is GuidWrapper guid)
                 {
-                    return guid.AsString();
+                    return guid.ToString();
                 }
-                else if (_allowedEnums.ContainsKey(rawValue.GetType()))
+                else if (_allowedEnums.ContainsKey(value.GetType()))
                 {
-                    return rawValue.AsString();
+                    return value.ToString();
                 }
             }
 
@@ -106,14 +105,14 @@ namespace OneScript.StandardLibrary.Xml
         /// </returns>
         ///
         [ContextMethod("XMLЗначение", "XMLValue")]
-        public IValue XMLValue(IValue givenType, string presentation)
+        public IValue XMLValue(BslValue givenType, string presentation)
         {
-            if (givenType.GetRawValue().SystemType != BasicTypes.Type)
+            if (givenType.SystemType != BasicTypes.Type)
             {
                 throw RuntimeException.InvalidNthArgumentType(1);
             }
 
-            var dataType = givenType.GetRawValue() as BslTypeValue;
+            var dataType = givenType as BslTypeValue;
             Debug.Assert(dataType != null);
 
             var typeValue = dataType.TypeValue;

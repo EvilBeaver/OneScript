@@ -25,9 +25,9 @@ namespace OneScript.Native.Compiler
                 if (markup == null)
                     continue;
                 
-                _cache.Add(markup.GetName(), methodInfo);
-                if(markup.GetAlias() != null)
-                    _cache.Add(markup.GetAlias(), methodInfo);
+                _cache.Add(markup.Name, methodInfo);
+                if(markup.Alias != null)
+                    _cache.Add(markup.Alias, methodInfo);
             }
         }
 

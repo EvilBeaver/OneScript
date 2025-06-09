@@ -122,11 +122,13 @@ namespace OneScript.StandardLibrary.Http
         }
 
         [ScriptConstructor(Name = "По адресу ресурса и заголовкам")]
-        public static HttpRequestContext Constructor(IValue resource, IValue headers = null)
+        public static HttpRequestContext Constructor(string resource, IValue headers = null)
         {
-            var ctx = new HttpRequestContext {ResourceAddress = resource.AsString()};
-            if (headers == null) return ctx;
-            if (!(headers.GetRawValue() is MapImpl headersMap))
+            var ctx = new HttpRequestContext {ResourceAddress = resource};
+            if (headers == null) 
+                return ctx;
+
+            if (!(headers is MapImpl headersMap))
                 throw RuntimeException.InvalidArgumentType();
 
             ctx.Headers = headersMap;

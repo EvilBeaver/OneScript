@@ -11,7 +11,9 @@ using System.Linq;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Collections.Indexes;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -92,7 +94,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// Число - Индекс удаляемой строки
         /// </param>
         [ContextMethod("Удалить", "Delete")]
-        public void Delete(IValue row)
+        public void Delete(BslValue row)
         {
             var index = IndexByValue(row);
             Indexes.ElementRemoved(_rows[index]);
@@ -205,8 +207,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Индекс", "IndexOf")]
         public int IndexOf(IValue row)
         {
-            row = row.GetRawValue();
-
             if (row is ValueTableRow tableRow)
                 return _rows.IndexOf(tableRow);
 
@@ -269,9 +269,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         {
             foreach (var kv in Filter)
             {
-                var Column = Columns.FindColumnByName(kv.Key.AsString());
+                var Column = Columns.FindColumnByName(kv.Key.ToString());
                 if (Column == null)
-                    throw WrongColumnNameException(kv.Key.AsString());
+                    throw WrongColumnNameException(kv.Key.ToString());
 
                 IValue current = Row.Get(Column);
                 if (!current.StrictEquals(kv.Value))
@@ -312,7 +312,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             var result = new MapImpl();
             foreach (var kv in filter)
             {
-                var key = Columns.FindColumnByName(kv.Key.AsString());
+                var key = Columns.FindColumnByName(kv.Key.ToString());
                 result.Insert(key, kv.Value);
             }
 
@@ -349,14 +349,14 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// <param name="groupColumnNames">Строка - Имена колонок для сворачивания (изменения), разделены запятыми</param>
         /// <param name="aggregateColumnNames">Строка - Имена колонок для суммирования (ресурсы), разделены запятыми</param>
         [ContextMethod("Свернуть", "GroupBy")]
-        public void GroupBy(string groupColumnNames, string aggregateColumnNames = null)
+        public void GroupBy(IBslProcess process, string groupColumnNames, string aggregateColumnNames = null)
         {
             var GroupColumns = GetProcessingColumnList(groupColumnNames, true);
             var AggregateColumns = GetProcessingColumnList(aggregateColumnNames, true);
 
             CheckMixedColumns(GroupColumns, AggregateColumns);
 
-            var uniqueRows = new Dictionary<ValueTableRow, ValueTableRow>(new RowsByColumnsEqComparer(GroupColumns) );
+            var uniqueRows = new Dictionary<ValueTableRow, ValueTableRow>(new RowsByColumnsEqComparer(process, GroupColumns));
             int new_idx = 0;
 
             foreach (var row in _rows)
@@ -406,23 +406,24 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             {
                 var value1 = GetNumeric(source, column);
                 var value2 = GetNumeric(dest, column);
-                dest.Set(column, ValueFactory.Add(value1, value2));
+                dest.Set(column, BslNumericValue.Create(value1 + value2));
             }
         }
 
-        private static IValue GetNumeric(ValueTableRow row, ValueTableColumn column)
+        private static decimal GetNumeric(ValueTableRow row, ValueTableColumn column)
         {
             var value = row.Get(column);
-            if (value.SystemType == BasicTypes.Number) return value;
-            return ValueFactory.Create(0);
+            return value.SystemType == BasicTypes.Number ? value.AsNumber() : 0;
         }
 
         private class RowsByColumnsEqComparer : IEqualityComparer<ValueTableRow>
         {
+            private readonly IBslProcess _process;
             private List<ValueTableColumn> _columns;
 
-            public RowsByColumnsEqComparer(List<ValueTableColumn> columns)
+            public RowsByColumnsEqComparer(IBslProcess process, List<ValueTableColumn> columns)
             {
+                _process = process;
                 _columns = columns;
             }
 
@@ -440,15 +441,13 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             {
                 int hash = 0;
                 foreach (var column in _columns)
-                    hash ^= row.Get(column).AsString().GetHashCode();
+                    hash ^= row.Get(column).AsString(_process).GetHashCode();
                 return hash;
             }
         }
 
-        private int IndexByValue(IValue item)
+        private int IndexByValue(BslValue item)
         {
-            item = item.GetRawValue();
-
             int index;
 
             if (item is ValueTableRow row)
@@ -484,7 +483,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// </param>
         /// <param name="offset">Количество строк, на которое сдвигается строка. Если значение положительное - сдвиг вниз, иначе вверх</param>
         [ContextMethod("Сдвинуть", "Move")]
-        public void Move(IValue row, int offset)
+        public void Move(BslValue row, int offset)
         {
             int index_source = IndexByValue(row);
 
@@ -550,10 +549,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             }
             else
             {
-                var rowsRaw = rows.GetRawValue();
-                if (rowsRaw is StructureImpl structure)
+                if (rows is StructureImpl structure)
                     requestedRows = FindRows(structure).Select(x => x as ValueTableRow);
-                else if (rowsRaw is ArrayImpl array)
+                else if (rows is ArrayImpl array)
                     requestedRows = GetRowsEnumByArray(array);
                 else
                     throw RuntimeException.InvalidArgumentType();
@@ -578,16 +576,16 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             return Result;
         }
 
-        private IEnumerable<ValueTableRow> GetRowsEnumByArray(IValue Rows)
+        private IEnumerable<ValueTableRow> GetRowsEnumByArray(IValue rows)
         {
             IEnumerable<ValueTableRow> requestedRows;
-            var rowsArray = Rows.GetRawValue() as ArrayImpl;
+            var rowsArray = rows as ArrayImpl;
             if (rowsArray == null)
                 throw RuntimeException.InvalidArgumentType();
 
             requestedRows = rowsArray.Select(x =>
             {
-                var vtr = x.GetRawValue() as ValueTableRow;
+                var vtr = x as ValueTableRow;
                 if (vtr == null || vtr.Owner() != this)
                     throw RuntimeException.InvalidArgumentValue();
 

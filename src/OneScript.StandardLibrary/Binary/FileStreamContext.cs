@@ -303,39 +303,41 @@ namespace OneScript.StandardLibrary.Binary
         }
 
         [ScriptConstructor(Name = "С указанием режима открытия")]
-        public static FileStreamContext Constructor(IValue filename, IValue openMode, IValue param3 = null)
+        public static FileStreamContext Constructor(string filename, FileOpenModeEnum openMode, IValue bufferSizeOrAccess = default)
         {
-            if (param3 == null || param3.SystemType == BasicTypes.Number)
+            // Текущая реализация поиска конструктора смотрит только на количество параметров, но не на их типы.
+            // Поэтому здесь третий параметр это IValue и это может быть вызов конструктора как с FileAccessEnum, так и с bufferSize
+            if (bufferSizeOrAccess == null)
             {
                 return new FileStreamContext(
-                    filename.AsString(),
-                    ContextValuesMarshaller.ConvertParam<FileOpenModeEnum>(openMode),
-                    FileAccessEnum.ReadAndWrite,
-                    ContextValuesMarshaller.ConvertParam<int>(param3));
+                    filename,
+                    openMode,
+                    FileAccessEnum.ReadAndWrite);
             }
-            else
+
+            if (bufferSizeOrAccess.SystemType == BasicTypes.Number)
             {
-                if (param3 is ClrEnumValueWrapper<FileAccessEnum> access)
-                    return new FileStreamContext(
-                        filename.AsString(),
-                        ContextValuesMarshaller.ConvertParam<FileOpenModeEnum>(openMode),
-                        ContextValuesMarshaller.ConvertParam<FileAccessEnum>(access));
-                else
-                    throw RuntimeException.InvalidNthArgumentType(3);
+                return new FileStreamContext(
+                    filename,
+                    openMode,
+                    FileAccessEnum.ReadAndWrite,
+                    (int)bufferSizeOrAccess.AsNumber());
             }
+            
+            return new FileStreamContext(
+                    filename,
+                    openMode,
+                    ContextValuesMarshaller.ConvertValueStrict<FileAccessEnum>(bufferSizeOrAccess));
         }
 
         [ScriptConstructor(Name = "С указанием режима открытия и уровня доступа")]
-        public static FileStreamContext Constructor(IValue filename, IValue openMode, IValue access, IValue bufferSize = null)
+        public static FileStreamContext Constructor(string filename, FileOpenModeEnum openMode, FileAccessEnum access, int bufferSize = default)
         {
-            if ( bufferSize != null && bufferSize.SystemType != BasicTypes.Number)
-                throw RuntimeException.InvalidNthArgumentType(4);
-
             return new FileStreamContext(
-                filename.AsString(),
-                ContextValuesMarshaller.ConvertParam<FileOpenModeEnum>(openMode),
-                ContextValuesMarshaller.ConvertParam<FileAccessEnum>(access),
-                ContextValuesMarshaller.ConvertParam<int>(bufferSize));
+                filename,
+                openMode,
+                access,
+                bufferSize);
         }
     }
 }

@@ -91,20 +91,20 @@ namespace ScriptEngine
         {
             SetDefaultEnvironmentIfNeeded();
             EnableCodeStatistics();
-            UpdateContexts();
+            //UpdateContexts();
 
             _attachedScriptsFactory = new AttachedScriptsFactory(this);
             AttachedScriptsFactory.SetInstance(_attachedScriptsFactory);
         }
 
-        public void UpdateContexts()
-        {
-            lock (this)
-            {
-                ExecutionDispatcher.Current ??= Services.Resolve<ExecutionDispatcher>();
-            }
-            MachineInstance.Current.SetMemory(Services.Resolve<ExecutionContext>());
-        }
+        // public void UpdateContexts()
+        // {
+        //     lock (this)
+        //     {
+        //         ExecutionDispatcher.Current ??= Services.Resolve<ExecutionDispatcher>();
+        //     }
+        //     MachineInstance.Current.SetMemory(Services.Resolve<ExecutionContext>());
+        // }
 
         private void SetDefaultEnvironmentIfNeeded()
         {
@@ -137,15 +137,16 @@ namespace ScriptEngine
             return compiler;
         }
         
-        public IRuntimeContextInstance NewObject(IExecutableModule module, ExternalContextData externalContext = null)
+        public UserScriptContextInstance NewObject(IExecutableModule module, IBslProcess process,
+            ExternalContextData externalContext = null)
         {
             var scriptContext = CreateUninitializedSDO(module, externalContext);
-            InitializeSDO(scriptContext);
+            InitializeSDO(scriptContext, process);
 
             return scriptContext;
         }
 
-        public ScriptDrivenObject CreateUninitializedSDO(IExecutableModule module, ExternalContextData externalContext = null)
+        public UserScriptContextInstance CreateUninitializedSDO(IExecutableModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = new UserScriptContextInstance(module, true);
             if (externalContext != null)
@@ -160,16 +161,11 @@ namespace ScriptEngine
             return scriptContext;
         }
 
-        public void InitializeSDO(ScriptDrivenObject sdo)
+        public void InitializeSDO(ScriptDrivenObject sdo, IBslProcess process)
         {
-            sdo.Initialize();
+            sdo.Initialize(process);
         }
         
-        public Task InitializeSDOAsync(ScriptDrivenObject sdo)
-        {
-            return sdo.InitializeAsync();
-        }
-
         public AttachedScriptsFactory AttachedScriptsFactory => _attachedScriptsFactory;
 
         public IDebugController DebugController
@@ -181,7 +177,6 @@ namespace ScriptEngine
                 if (value != null)
                 {
                     ProduceExtraCode |= CodeGenerationFlags.DebugCode;
-                    MachineInstance.Current.SetDebugMode(_debugController.BreakpointManager);
                 }
             }
         }
@@ -204,5 +199,10 @@ namespace ScriptEngine
         }
 
         #endregion
+
+        /// <summary>
+        /// Инициализирует новый процесс
+        /// </summary>
+        public IBslProcess NewProcess() => Services.Resolve<IBslProcessFactory>().NewProcess();
     }
 }

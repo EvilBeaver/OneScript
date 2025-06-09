@@ -9,16 +9,16 @@ using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    [EnumerationType("XSWhitespaceHandling", "ОбработкаПробельныхСимволовXS")]
+    [EnumerationType("ОбработкаПробельныхСимволовXS", "XSWhitespaceHandling")]
     public enum XSWhitespaceHandling
     {
-        [EnumValue("Replace", "Заменять")]
+        [EnumValue("Заменять", "Replace")]
         Replace,
 
-        [EnumValue("Collapse", "Сворачивать")]
+        [EnumValue("Сворачивать", "Collapse")]
         Collapse,
 
-        [EnumValue("Preserve", "Сохранять")]
+        [EnumValue("Сохранять", "Preserve")]
         Preserve
     }
 }

@@ -63,7 +63,7 @@ namespace OneScript.Contexts
             return this;
         }
         
-        public BslFieldInfo Build()
+        public BslScriptFieldInfo Build()
         {
             var scriptField = _member as BslScriptFieldInfo;
             Debug.Assert(scriptField != null);

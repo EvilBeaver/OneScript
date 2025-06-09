@@ -7,6 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Contexts;
+using OneScript.Types;
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -15,17 +17,19 @@ namespace OneScript.StandardLibrary.DriveInfo
     [ContextClass("ИнформацияОДиске", "DriveInfo")]
     public class DriveInfo : AutoContext<DriveInfo>
     {
+        private readonly IGlobalsManager _globals;
         private System.IO.DriveInfo _driveInfo;
 
-        public DriveInfo(string driveName)
+        private DriveInfo(IGlobalsManager globals, string driveName)
         {
+            _globals = globals;
             SystemDriveInfo = new System.IO.DriveInfo(driveName);
         }
 
         [ScriptConstructor]
-        public static DriveInfo Constructor(IValue driveName)
+        public static DriveInfo Constructor(TypeActivationContext activation, string driveName)
         {
-            return new DriveInfo(driveName.AsString());
+            return new DriveInfo(activation.Services.Resolve<IGlobalsManager>(), driveName);
         }
 
 
@@ -56,7 +60,7 @@ namespace OneScript.StandardLibrary.DriveInfo
         {
             get
             {
-                var dte = GlobalsHelper.GetEnum<DriveTypeEnum>();
+                var dte = _globals.GetInstance<DriveTypeEnum>();
                 return dte.GetPropValue((int)_driveInfo.DriveType);
             }
         }

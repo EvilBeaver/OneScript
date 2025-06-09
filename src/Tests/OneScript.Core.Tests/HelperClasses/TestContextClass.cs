@@ -15,7 +15,7 @@ using ScriptEngine.Types;
 
 namespace OneScript.Core.Tests
 {
-	[ContextClass("ТестовыйКласс", "TestClass", TypeUUID = "65E99482-F711-4FBC-AAC7-4BF7E2A124A5")]
+	[ContextClass("ТестовыйКласс", "TestClass")]
 	public class TestContextClass : AutoContext<TestContextClass>
 	{
 		private IDictionary<BslValue, BslValue> _indexedValues = new Dictionary<BslValue, BslValue>();

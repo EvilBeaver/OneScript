@@ -8,6 +8,7 @@ using System;
 using System.Diagnostics;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Types;
 using OneScript.Values;
 
@@ -89,14 +90,14 @@ namespace ScriptEngine.Machine
             return result;
         }
 
-        public static IValue Add(IValue op1, IValue op2)
+        public static IValue Add(IValue op1, IValue op2, IBslProcess process)
         {
             // принимаем только RawValue
             Debug.Assert(!(op1 is IVariable || op2 is IVariable));
             
             if (op1 is BslStringValue s)
             {
-                return Create(s + op2.AsString());
+                return Create(s + ((BslValue)op2).ToString(process));
             }
 
             if (op1 is BslDateValue date)

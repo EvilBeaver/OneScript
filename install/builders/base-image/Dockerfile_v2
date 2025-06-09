@@ -1,6 +1,6 @@
-FROM evilbeaver/onescript:1.9.2
+FROM evilbeaver/ovm:latest
 
-# Использует в качестве системы с ovm и mono образ onescript, создаваемый из файла Dockerfile_v1 (лежит рядом в репо)
+# Использует в качестве системы с ovm и mono образ onescript, создаваемый из файла Dockerfile_ovm (лежит рядом в репо)
 # Потом копирует бинари из него в образ от Microsoft
 
 LABEL MAINTAINER="EvilBeaver <ovsiankin.aa@gmail.com>"
@@ -8,10 +8,29 @@ LABEL MAINTAINER="EvilBeaver <ovsiankin.aa@gmail.com>"
 ARG VERSION="dev"
 
 # Установка FDD двойки через ovm, имеющийся в базовом образе
-RUN mono ovm.exe install --fdd ${VERSION}
+RUN mono /var/ovm/ovm.exe install --fdd ${VERSION}
 
 # Основной образ
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
+FROM mcr.microsoft.com/dotnet/aspnet:6.0-jammy
+
+RUN apt-get update \
+    && apt-get install -y locales \
+    && apt-get clean \
+	&& rm -rf /var/lib/apt/lists/* /tmp/*
+
+# Locale
+RUN sed -i -e \
+  's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen \
+   && locale-gen
+
+ENV LANG=ru_RU.UTF-8
+ENV LANGUAGE=ru_RU:ru
+ENV LC_LANG=ru_RU.UTF-8
+ENV LC_ALL=ru_RU.UTF-8
+
+# +Timezone
+ENV TZ=Europe/Moscow
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ARG VERSION="dev"
 

@@ -10,19 +10,19 @@ using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    [EnumerationType("XSProcessContents", "ОбработкаСодержимогоXS")]
+    [EnumerationType("ОбработкаСодержимогоXS", "XSProcessContents")]
     public enum XSProcessContents
     {
-        [EnumValue("EmptyRef", "ПустаяСсылка")]
+        [EnumValue("ПустаяСсылка", "EmptyRef")]
         EmptyRef = XmlSchemaContentProcessing.None,
 
-        [EnumValue("Skip", "Пропустить")]
+        [EnumValue("Пропустить", "Skip")]
         Skip = XmlSchemaContentProcessing.Skip,
 
-        [EnumValue("Lax", "Слабая")]
+        [EnumValue("Слабая", "Lax")]
         Lax = XmlSchemaContentProcessing.Lax,
 
-        [EnumValue("Strict", "Строгая")]
+        [EnumValue("Строгая", "Strict")]
         Strict = XmlSchemaContentProcessing.Strict
     }
 }

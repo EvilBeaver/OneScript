@@ -33,6 +33,8 @@ namespace OneScript.DependencyInjection
         
         void RegisterSingleton<T>(Func<IServiceContainer, T> factory) where T : class;
         
+        void RegisterScoped<T>() where T : class;
+        
         void RegisterEnumerable<T, TImpl>() 
             where T : class 
             where TImpl : class,T;

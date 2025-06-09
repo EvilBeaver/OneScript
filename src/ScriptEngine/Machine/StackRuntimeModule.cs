@@ -34,7 +34,7 @@ namespace ScriptEngine.Machine
         
         #region IExecutableModule members
 
-        public BslMethodInfo ModuleBody
+        public BslScriptMethodInfo ModuleBody
         {
             get
             {
@@ -47,11 +47,11 @@ namespace ScriptEngine.Machine
         
         public IList<BslAnnotationAttribute> ModuleAttributes { get; } = new List<BslAnnotationAttribute>();
         
-        public IList<BslFieldInfo> Fields { get; } = new List<BslFieldInfo>();
+        public IList<BslScriptFieldInfo> Fields { get; } = new List<BslScriptFieldInfo>();
         
-        public IList<BslPropertyInfo> Properties { get; } = new List<BslPropertyInfo>();
+        public IList<BslScriptPropertyInfo> Properties { get; } = new List<BslScriptPropertyInfo>();
 
-        public IList<BslMethodInfo> Methods { get; } = new List<BslMethodInfo>();
+        public IList<BslScriptMethodInfo> Methods { get; } = new List<BslScriptMethodInfo>();
 
         public IList<Command> Code { get; } = new List<Command>(512);
 

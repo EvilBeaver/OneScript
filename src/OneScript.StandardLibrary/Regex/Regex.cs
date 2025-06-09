@@ -105,9 +105,9 @@ namespace OneScript.StandardLibrary.Regex
         /// </summary>
         /// <param name="pattern">Строка-шаблон регулярного выражения.</param>
         [ScriptConstructor(Name = "По регулярному выражению")]
-        public static RegExpImpl Constructor(IValue pattern)
+        public static RegExpImpl Constructor(string pattern)
         {
-            var regex = new RegExpImpl(pattern.AsString());
+            var regex = new RegExpImpl(pattern);
             return regex;
         }
 

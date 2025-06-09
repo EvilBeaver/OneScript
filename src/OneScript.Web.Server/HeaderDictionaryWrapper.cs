@@ -15,6 +15,8 @@ using System.Linq;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using Microsoft.Extensions.Primitives;
+using OneScript.Exceptions;
+using OneScript.Execution;
 
 namespace OneScript.Web.Server
 {
@@ -306,7 +308,10 @@ namespace OneScript.Web.Server
 
         public override StringValuesWrapper GetIndexedValue(IValue index)
         {
-            if (_items.TryGetValue(index.AsString(), out var result))
+            if (index.SystemType != BasicTypes.String)
+                throw RuntimeException.InvalidArgumentType();
+            
+            if (_items.TryGetValue(index.ToString()!, out var result))
                 return result;
             else
                 return StringValues.Empty;
@@ -314,13 +319,16 @@ namespace OneScript.Web.Server
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
+            if (index.SystemType != BasicTypes.String || val.SystemType != BasicTypes.String)
+                throw RuntimeException.InvalidArgumentType();
+            
             if (index.SystemType != BasicTypes.Undefined)
-                _items[index.AsString()] = val.AsString();
+                _items[index.ToString()!] = val.ToString();
         }
 
-        internal bool ContainsKey(IValue key)
+        internal bool ContainsKey(string key)
         {
-            return _items.ContainsKey(key.AsString());
+            return _items.ContainsKey(key);
         }
 
         public IEnumerable<IValue> Keys()
@@ -350,9 +358,9 @@ namespace OneScript.Web.Server
         }
 
         [ContextMethod("Удалить", "Delete")]
-        public void Delete(IValue key)
+        public void Delete(string key)
         {
-            _items.Remove(key.AsString());
+            _items.Remove(key);
         }
         #endregion
 
@@ -373,11 +381,11 @@ namespace OneScript.Web.Server
             => _items.Append(Key, Value);
 
         [ContextMethod("ДобавитьСписок", "AppendList")]
-        public void AppendList(string Key, ArrayImpl Values)
-            => _items.AppendList(Key, Values.Select(i => i.AsString()).ToList());
+        public void AppendList(IBslProcess process, string Key, ArrayImpl Values)
+            => _items.AppendList(Key, Values.Select(i => i.AsString(process)).ToList());
 
         [ContextMethod("ДобавитьРазделенныеЗапятымиЗначения", "AppendCommaSeparatedValues")]
-        public void AppendCommaSeparated(string Key, ArrayImpl Values)
-            => _items.AppendCommaSeparatedValues(Key, Values.Select(i => i.AsString()).ToArray());
+        public void AppendCommaSeparated(IBslProcess process, string Key, ArrayImpl Values)
+            => _items.AppendCommaSeparatedValues(Key, Values.Select(i => i.AsString(process)).ToArray());
     }
 }

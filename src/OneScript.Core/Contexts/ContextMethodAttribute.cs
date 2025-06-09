@@ -12,7 +12,7 @@ using OneScript.Commons;
 namespace OneScript.Contexts
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public class ContextMethodAttribute : Attribute
+    public class ContextMethodAttribute : Attribute, INameAndAliasProvider
     {
         private readonly string _name;
         private readonly string _alias;
@@ -35,12 +35,16 @@ namespace OneScript.Contexts
         {
         }
 
-        public string GetName() => _name;
-
-        public string GetAlias() => _alias;
-
         public bool IsDeprecated { get; set; }
 
         public bool ThrowOnUse { get; set; }
+        
+        /// <summary>
+        /// Данный метод не будет обработан генератором документации при обходе типов
+        /// </summary>
+        public bool SkipForDocumenter { get; set; }
+
+        public string Name => _name;
+        public string Alias => _alias;
     }
 }

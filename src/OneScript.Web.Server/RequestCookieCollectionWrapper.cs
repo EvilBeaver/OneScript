@@ -12,7 +12,9 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
 using System.Linq;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Collections;
+using OneScript.Types;
 
 namespace OneScript.Web.Server
 {
@@ -21,10 +23,17 @@ namespace OneScript.Web.Server
     {
         private readonly IRequestCookieCollection _items;
 
-        public IValue this[IValue key]
+        public string this[string key] => _items[key];
+
+        public override IValue GetIndexedValue(IValue index)
         {
-            get => BslStringValue.Create(_items[key.AsString()]);
+            if (index.SystemType != BasicTypes.String)
+                throw RuntimeException.InvalidArgumentType();
+            
+            return BslStringValue.Create(this[index.ToString()]);
         }
+
+        public override bool IsIndexed => true;
 
         public RequestCookieCollectionWrapper(IRequestCookieCollection headers)
         {

@@ -13,11 +13,11 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Sources;
 using OneScript.Types;
@@ -39,7 +39,8 @@ namespace ScriptEngine.Machine
         private ICodeStatCollector _codeStatCollector;
         private MachineStopManager _stopManager;
         
-        private ExecutionContext _mem;
+        private IBslProcess _process;
+        private ITypeManager _typeManager;
         private AttachedContext[] _globalContexts;
 
         // для отладчика.
@@ -50,33 +51,27 @@ namespace ScriptEngine.Machine
         // кешированный обработчик событий
         private readonly Lazy<IEventProcessor> _eventProcessor;
 
-        private MachineInstance() 
+        internal MachineInstance() 
         {
             InitCommands();
             Reset();
 
-            _eventProcessor = new Lazy<IEventProcessor>(() => _mem.Services.TryResolve<IEventProcessor>(),
+            _eventProcessor = new Lazy<IEventProcessor>(() => _process.Services.TryResolve<IEventProcessor>(),
                 LazyThreadSafetyMode.None);
         }
 
-        public event EventHandler<MachineStoppedEventArgs> MachineStopped;
-
-        public ExecutionContext Memory => _mem;
-
-        public ITypeManager TypeManager => _mem?.TypeManager;
-        
-        public IGlobalsManager Globals => _mem?.GlobalInstances;
-        
-        public void SetMemory(ExecutionContext memory)
+        public void Setup(IBslProcess process)
         {
             Cleanup();
 
-            _mem = memory;
-            _codeStatCollector = _mem.Services.TryResolve<ICodeStatCollector>();
-            _globalContexts = _mem.GlobalNamespace.AttachedContexts.Select(x => new AttachedContext(x))
+            _process = process;
+            _codeStatCollector = process.Services.TryResolve<ICodeStatCollector>();
+            _typeManager = process.Services.Resolve<ITypeManager>();
+            _globalContexts = process.Services.Resolve<IRuntimeEnvironment>().AttachedContexts.Select(x => new AttachedContext(x))
                 .ToArray();
-            
         }
+
+        internal IBslProcess Process => _process;
 
         public void UpdateGlobals() 
         {
@@ -178,9 +173,9 @@ namespace ScriptEngine.Machine
 
         #region Debug protocol methods
 
-        public void SetDebugMode(IBreakpointManager breakpointManager)
+        public void SetDebugMode(IThreadManager threadManager, IBreakpointManager breakpointManager)
         {
-            _stopManager ??= new MachineStopManager(this, breakpointManager);
+            _stopManager ??= new MachineStopManager(this, threadManager, breakpointManager);
         }
         
         public void UnsetDebugMode()
@@ -216,7 +211,7 @@ namespace ScriptEngine.Machine
         {
             var code = CompileCached(expression, CompileExpressionModule);
 
-            var localScope = new AttachedContext(new UserScriptContextInstance(code), _currentFrame.Locals);
+            var localScope = new AttachedContext(new EvalExecLocalScope(code), _currentFrame.Locals);
             
             var frame = new ExecutionFrame
             {
@@ -241,58 +236,42 @@ namespace ScriptEngine.Machine
             return _operationStack.Pop();
         }
 
-        internal IValue EvaluateInFrame(string expression, ExecutionFrame selectedFrame)
+        internal BslValue EvaluateInFrame(string expression, ExecutionFrame selectedFrame)
         {
-            MachineInstance currentMachine;
             MachineInstance runner = new MachineInstance
             {
-                _mem = this._mem,
+                _process = this._process,
                 _globalContexts = this._globalContexts,
+                _typeManager = this._typeManager,
                 _debugInfo = CurrentScript
             };
-            currentMachine = Current;
-            SetCurrentMachineInstance(runner);
-
+            
             runner.SetFrame(selectedFrame);
 
             ExecutionFrame frame;
-            try
-            {
-                var code = runner.CompileExpressionModule(expression);
 
-                var localScope = new AttachedContext(new UserScriptContextInstance(code), selectedFrame.Locals);
+            var code = runner.CompileExpressionModule(expression);
 
-                frame = new ExecutionFrame
-                {
-                    MethodName = code.Source.Name,
-                    Module = code,
-                    ThisScope = localScope,
-                    Locals = Array.Empty<IVariable>(),
-                    Scopes = CreateFrameScopes(selectedFrame.Scopes, localScope),
-                    InstructionPointer = 0,
-                    LineNumber = 1
-                };
-            }
-            catch
-            {
-                SetCurrentMachineInstance(currentMachine);
-                throw;
-            }
+            var localScope = new AttachedContext(new EvalExecLocalScope(code), selectedFrame.Locals);
 
-            try
+            frame = new ExecutionFrame
             {
-                runner.PushFrame(frame);
-                runner.MainCommandLoop();
-            }
-            finally
-            {
-                SetCurrentMachineInstance(currentMachine);
-            }
+                MethodName = code.Source.Name,
+                Module = code,
+                ThisScope = localScope,
+                Locals = Array.Empty<IVariable>(),
+                Scopes = CreateFrameScopes(selectedFrame.Scopes, localScope),
+                InstructionPointer = 0,
+                LineNumber = 1
+            };
 
-            return runner._operationStack.Pop().GetRawValue();
+            runner.PushFrame(frame);
+            runner.MainCommandLoop();
+
+            return (BslValue)runner.PopRawValue();
         }
 
-        public IValue EvaluateInFrame(string expression, int frameId)
+        public BslValue EvaluateInFrame(string expression, int frameId)
         {
             System.Diagnostics.Debug.Assert(_fullCallstackCache != null);
             if (frameId < 0 || frameId >= _fullCallstackCache.Count)
@@ -354,7 +333,8 @@ namespace ScriptEngine.Machine
             _exceptionsStack = new Stack<ExceptionJumpInfo>();
             _module = null;
             _currentFrame = null;
-            _mem = null;
+            _process = null;
+            _typeManager = null;
             _globalContexts = null;
         }
 
@@ -410,7 +390,7 @@ namespace ScriptEngine.Machine
 
                     var shouldRethrow = ShouldRethrowException(exc);
 
-                    if (MachineStopped != null && _stopManager != null)
+                    if (_stopManager != null)
                         if (_stopManager.Breakpoints.StopOnAnyException(exc.MessageWithoutCodeFragment) || 
                             shouldRethrow && _stopManager.Breakpoints.StopOnUncaughtException(exc.MessageWithoutCodeFragment))
                             EmitStopOnException();
@@ -753,102 +733,102 @@ namespace ScriptEngine.Machine
 
         private void Add(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Add(op1.GetRawValue(), op2.GetRawValue()));
+            var op2 = PopRawValue();
+            var op1 = PopRawValue();
+            _operationStack.Push(ValueFactory.Add(op1, op2, _process));
             NextInstruction();
         }
 
         private void Sub(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Sub(op1.GetRawValue(), op2.GetRawValue()));
+            var op2 = PopRawValue();
+            var op1 = PopRawValue();
+            _operationStack.Push(ValueFactory.Sub(op1, op2));
             NextInstruction();
         }
 
         private void Mul(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Mul(op1.GetRawValue(), op2.GetRawValue()));
+            var op2 = PopRawValue();
+            var op1 = PopRawValue();
+            _operationStack.Push(ValueFactory.Mul(op1, op2));
             NextInstruction();
         }
 
         private void Div(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Div(op1.GetRawValue(), op2.GetRawValue()));
+            var op2 = PopRawValue();
+            var op1 = PopRawValue();
+            _operationStack.Push(ValueFactory.Div(op1, op2));
             NextInstruction();
         }
 
         private void Mod(int arg)
         {
-            var op2 = _operationStack.Pop();
-            var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Mod(op1.GetRawValue(), op2.GetRawValue()));
+            var op2 = PopRawValue();
+            var op1 = PopRawValue();
+            _operationStack.Push(ValueFactory.Mod(op1, op2));
             NextInstruction();
         }
 
         private void Neg(int arg)
         {
-            var op1 = _operationStack.Pop();
-            _operationStack.Push(ValueFactory.Neg(op1.GetRawValue()));
+            var op1 = PopRawValue();
+            _operationStack.Push(ValueFactory.Neg(op1));
             NextInstruction();
         }
 
         private void Equals(int arg)
         {
-            var op2 = _operationStack.Pop().GetRawValue();
-            var op1 = _operationStack.Pop().GetRawValue();
+            var op2 = PopRawValue();
+            var op1 = PopRawValue();
             _operationStack.Push(ValueFactory.Create(op1.Equals(op2)));
             NextInstruction();
         }
 
         private void Less(int arg)
         {
-            var op2 = _operationStack.Pop().GetRawValue();
-            var op1 = _operationStack.Pop().GetRawValue();
+            var op2 = PopRawValue();
+            var op1 = PopRawValue();
             _operationStack.Push(ValueFactory.Create(op1.CompareTo(op2) < 0));
             NextInstruction();
         }
 
         private void Greater(int arg)
         {
-            var op2 = _operationStack.Pop().GetRawValue();
-            var op1 = _operationStack.Pop().GetRawValue();
+            var op2 = PopRawValue();
+            var op1 = PopRawValue();
             _operationStack.Push(ValueFactory.Create(op1.CompareTo(op2) > 0));
             NextInstruction();
         }
 
         private void LessOrEqual(int arg)
         {
-            var op2 = _operationStack.Pop().GetRawValue();
-            var op1 = _operationStack.Pop().GetRawValue();
+            var op2 = PopRawValue();
+            var op1 = PopRawValue();
             _operationStack.Push(ValueFactory.Create(op1.CompareTo(op2) <= 0));
             NextInstruction();
         }
 
         private void GreaterOrEqual(int arg)
         {
-            var op2 = _operationStack.Pop().GetRawValue();
-            var op1 = _operationStack.Pop().GetRawValue();
+            var op2 = PopRawValue();
+            var op1 = PopRawValue();
             _operationStack.Push(ValueFactory.Create(op1.CompareTo(op2) >= 0));
             NextInstruction();
         }
 
         private void NotEqual(int arg)
         {
-            var op2 = _operationStack.Pop().GetRawValue();
-            var op1 = _operationStack.Pop().GetRawValue();
+            var op2 = PopRawValue();
+            var op1 = PopRawValue();
             _operationStack.Push(ValueFactory.Create(!op1.Equals(op2)));
             NextInstruction();
         }
 
         private void Not(int arg)
         {
-            var op1 = _operationStack.Pop().GetRawValue();
+            var op1 = PopRawValue();
             _operationStack.Push(ValueFactory.Create(!op1.AsBoolean()));
             NextInstruction();
         }
@@ -913,7 +893,7 @@ namespace ScriptEngine.Machine
 
             IValue[] argValues = PopArguments();
 
-            var definedParameters = methodSignature.GetParameters();
+            var definedParameters = methodSignature.GetBslParameters();
             bool needsDiscarding;
 
             if (scope == _currentFrame.ThisScope) // local call
@@ -979,12 +959,12 @@ namespace ScriptEngine.Machine
  
             if (asFunc)
             {
-                instance.CallAsFunction(index, realArgs, out IValue retVal);
+                instance.CallAsFunction(index, realArgs, out IValue retVal, _process);
                 _operationStack.Push(retVal);
             }
             else
             {
-                instance.CallAsProcedure(index, realArgs);
+                instance.CallAsProcedure(index, realArgs, _process);
             }
             NextInstruction();
         }
@@ -1006,7 +986,7 @@ namespace ScriptEngine.Machine
             var objIValue = _operationStack.Pop();
             
             var context = objIValue.AsObject();
-            var propName = _module.Constants[arg].AsString();
+            var propName = _module.Constants[arg].ToString(_process);
             var propNum = context.GetPropertyNumber(propName);
 
             var propReference = Variable.CreateContextPropertyReference(context, propNum, "stackvar");
@@ -1018,7 +998,7 @@ namespace ScriptEngine.Machine
         {
             PrepareContextCallArguments(arg, out IRuntimeContextInstance context, out int methodId, out IValue[] argValues);
 
-            context.CallAsProcedure(methodId, argValues);
+            context.CallAsProcedure(methodId, argValues, _process);
             NextInstruction();
         }
 
@@ -1031,7 +1011,7 @@ namespace ScriptEngine.Machine
                 throw RuntimeException.UseProcAsAFunction();
             }
 
-            context.CallAsFunction(methodId, argValues, out IValue retVal);
+            context.CallAsFunction(methodId, argValues, out IValue retVal, _process);
             _operationStack.Push(retVal);
             NextInstruction();
         }
@@ -1043,7 +1023,7 @@ namespace ScriptEngine.Machine
  
             var objIValue = _operationStack.Pop();
             context = objIValue.AsObject();
-            var methodName = _module.Constants[arg].AsString();
+            var methodName = _module.Constants[arg].ToString(_process);
             methodId = context.GetMethodNumber(methodName);
             
             if (context.DynamicMethodSignatures)
@@ -1061,7 +1041,7 @@ namespace ScriptEngine.Machine
             else
             {
                 var methodInfo = context.GetMethodInfo(methodId);
-                var methodParams = methodInfo.GetParameters();
+                var methodParams = methodInfo.GetBslParameters();
 
                 if (argCount > methodParams.Length)
                     throw RuntimeException.TooManyArgumentsPassed();
@@ -1078,7 +1058,7 @@ namespace ScriptEngine.Machine
                             argValues[i] = argValue is IVariable? argValue : Variable.Create(argValue, "");
                         }
                         else
-                            argValues[i] = argValue.GetRawValue();
+                            argValues[i] = RawValue(argValue);
                     }
                     else if(!methodParams[i].HasDefaultValue)
                         throw RuntimeException.MissedArgument();
@@ -1138,17 +1118,18 @@ namespace ScriptEngine.Machine
             else
             {
                 PopFrame();
-                if(DebugStepInProgress())
+                if(IsSteppingOutFromHere())
                     EmitStopEventIfNecessary();
             }
         }
 
-        private bool DebugStepInProgress()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsSteppingOutFromHere()
         {
             if (_stopManager == null)
                 return false;
 
-            return _stopManager.CurrentState == DebugState.SteppingOut || _stopManager.CurrentState == DebugState.SteppingOver;
+            return _stopManager.CurrentState == DebugState.SteppingOut;
         }
 
         private void JmpCounter(int arg)
@@ -1182,22 +1163,23 @@ namespace ScriptEngine.Machine
             {
                 var argValue = _operationStack.Pop();
                 if(!argValue.IsSkippedArgument())
-                    argValues[i] = argValue.GetRawValue();
+                    argValues[i] = RawValue(argValue);
             }
 
-            var typeName = _operationStack.Pop().AsString();
-            if (!TypeManager.TryGetType(typeName, out var type))
+            var typeName = PopRawBslValue().ToString(_process);
+            if (!_typeManager.TryGetType(typeName, out var type))
             {
                 throw RuntimeException.TypeIsNotDefined(typeName);
             }
             
             // TODO убрать cast после рефакторинга ITypeFactory
-            var factory = (TypeFactory)TypeManager.GetFactoryFor(type);
+            var factory = (TypeFactory)_typeManager.GetFactoryFor(type);
             var context = new TypeActivationContext
             {
                 TypeName = typeName,
-                TypeManager = _mem.TypeManager,
-                Services = _mem.Services
+                TypeManager = _typeManager,
+                Services = _process.Services,
+                CurrentProcess = _process
             };
             
             var instance = (IValue)factory.Activate(context, argValues);
@@ -1207,15 +1189,10 @@ namespace ScriptEngine.Machine
 
         private void PushIterator(int arg)
         {
-            var collection = _operationStack.Pop().GetRawValue();
-            // TODO: возможно, можем избавиться от вызова AsObject и сразу проверять тип collection на ICollectionContext
-            // Нужно проверить, как ведет себя 1С, если в Для Каждого кидаем НеОбъект. Будет ли исключение приведения к объекту?
-            // Если "Значение не явл. значением объектного типа" 1С не выдает, а всегда выдает "Итератор не определен"
-            // то можем удалить данный вызов .AsObject, т.к. он здесь оставлен только ради исключения ValueIsNotObjectException
-            var rci = collection.AsObject();
-            if (rci is ICollectionContext<IValue> context)
+            var collection = PopRawValue();
+            if (collection is ICollectionContext<IValue> context)
             {
-                var iterator = context.GetManagedIterator();
+                var iterator = new CollectionEnumerator(context.GetEnumerator(_process));
                 _currentFrame.LocalFrameStack.Push(iterator);
                 NextInstruction();
 
@@ -1286,7 +1263,7 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                var exceptionValue = _operationStack.Pop().GetRawValue();
+                var exceptionValue = PopRawValue();
                 if (exceptionValue is ExceptionInfoContext { IsErrorTemplate: true } excTemplateInfo)
                 {
                     throw new ParametrizedRuntimeException(
@@ -1305,7 +1282,7 @@ namespace ScriptEngine.Machine
                 }
                 else
                 {
-                    throw new RuntimeException(exceptionValue.AsString());
+                    throw new RuntimeException(RawBslValue(exceptionValue).ToString(_process));
                 }
             }
         }
@@ -1325,22 +1302,21 @@ namespace ScriptEngine.Machine
 
         private void EmitStopOnException()
         {
-            if (MachineStopped != null && _stopManager != null)
+            if (_stopManager != null)
             {
                 CreateFullCallstack();
                 var args = new MachineStoppedEventArgs(MachineStopReason.Exception, Environment.CurrentManagedThreadId, "");
-                MachineStopped?.Invoke(this, args);
+                _stopManager.NotifyStop(MachineStopReason.Exception, "");
             }
         }
 
         private void EmitStopEventIfNecessary()
         {
-            if (MachineStopped != null && _stopManager != null && _stopManager.ShouldStopAtThisLine(_module.Source.Location, _currentFrame))
+            if (_stopManager != null && _stopManager.ShouldStopAtThisLine(_module.Source.Location, _currentFrame))
             {
                 CreateFullCallstack();
-                var args = new MachineStoppedEventArgs(_stopManager.LastStopReason, Environment.CurrentManagedThreadId, _stopManager.LastStopErrorMessage);
+                _stopManager.NotifyStop();
                 _stopManager.LastStopErrorMessage = string.Empty;
-                MachineStopped?.Invoke(this, args);
             }
         }
 
@@ -1383,7 +1359,7 @@ namespace ScriptEngine.Machine
 
         private void Execute(int arg)
         {
-            var code = _operationStack.Pop().AsString();
+            var code = PopRawBslValue().ToString(_process);
             var module = CompileCached(code, CompileExecutionBatchModule);
             if (!module.Methods.Any())
             {
@@ -1391,7 +1367,7 @@ namespace ScriptEngine.Machine
                 return;
             }
             
-            var localScope = new AttachedContext(new UserScriptContextInstance(module), _currentFrame.Locals);
+            var localScope = new AttachedContext(new EvalExecLocalScope(module), _currentFrame.Locals);
             var scopes = CreateFrameScopes(_currentFrame.Scopes, localScope);
             
             var mi = (MachineMethodInfo)module.Methods[0];
@@ -1421,7 +1397,7 @@ namespace ScriptEngine.Machine
 
         private void Eval(int arg)
         {
-            IValue value = Evaluate(_operationStack.Pop().AsString());
+            IValue value = Evaluate(PopRawBslValue().ToString(_process));
             _operationStack.Push(value);
             NextInstruction();
         }
@@ -1462,9 +1438,9 @@ namespace ScriptEngine.Machine
         {
             if (useExportMode)
             {
-                handlerMethod = _operationStack.Pop().AsString();
+                handlerMethod = PopRawBslValue().ToString(_process);
                 handlerTarget = _operationStack.Pop().AsObject();
-                eventName = _operationStack.Pop().AsString();
+                eventName = PopRawBslValue().ToString(_process);
                 eventSource = _operationStack.Pop().AsObject();
                 
                 // Выбросит исключение, если не найден такой метод
@@ -1472,9 +1448,9 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                handlerMethod = _operationStack.Pop().AsString();
+                handlerMethod = PopRawBslValue().ToString(_process);
                 handlerTarget = _currentFrame.ThisScope.Instance;
-                eventName = _operationStack.Pop().AsString();
+                eventName = PopRawBslValue().ToString(_process);
                 eventSource = _operationStack.Pop().AsObject();
             }
         }
@@ -1507,8 +1483,8 @@ namespace ScriptEngine.Machine
 
         private void Str(int arg)
         {
-            string value = _operationStack.Pop().AsString();
-            _operationStack.Push(ValueFactory.Create(value));
+            var value = PopRawBslValue();
+            _operationStack.Push(ValueFactory.Create(value.ToString(_process)));
             NextInstruction();
         }
 
@@ -1516,7 +1492,7 @@ namespace ScriptEngine.Machine
         {
             if (arg == 1)
             {
-                var strDate = _operationStack.Pop().AsString();
+                var strDate = PopRawBslValue().ToString(_process);
                 _operationStack.Push(ValueFactory.Parse(strDate, DataType.Date));
             }
             else if (arg >= 3 && arg <= 6)
@@ -1549,8 +1525,8 @@ namespace ScriptEngine.Machine
 
         private void Type(int arg)
         {
-            var typeName = _operationStack.Pop().AsString();
-            var type = TypeManager.GetTypeByName(typeName);
+            var typeName = PopRawBslValue().ToString(_process);
+            var type = _typeManager.GetTypeByName(typeName);
             var value = new BslTypeValue(type);
             _operationStack.Push(value);
             NextInstruction();
@@ -1566,21 +1542,21 @@ namespace ScriptEngine.Machine
 
         private void StrLen(int arg)
         {
-            var str = _operationStack.Pop().AsString();
+            var str = PopRawBslValue().ToString(_process);
             _operationStack.Push(ValueFactory.Create(str.Length));
             NextInstruction();
         }
 
         private void TrimL(int arg)
         {
-            var str = _operationStack.Pop().AsString().TrimStart();
+            var str = PopRawBslValue().ToString(_process).TrimStart();
             _operationStack.Push(ValueFactory.Create(str));
             NextInstruction();
         }
 
         private void TrimR(int arg)
         {
-            var str = _operationStack.Pop().AsString();
+            var str = PopRawBslValue().ToString(_process);
 
             int lastIdx = str.Length-1;
             for (int i = lastIdx; i >= 0; i--)
@@ -1600,7 +1576,7 @@ namespace ScriptEngine.Machine
 
         private void TrimLR(int arg)
         {
-            var str = _operationStack.Pop().AsString().Trim();
+            var str = PopRawBslValue().ToString(_process).Trim();
             _operationStack.Push(ValueFactory.Create(str));
             NextInstruction();
         }
@@ -1608,7 +1584,7 @@ namespace ScriptEngine.Machine
         private void Left(int arg)
         {
             var len = (int)_operationStack.Pop().AsNumber();
-            var str = _operationStack.Pop().AsString();
+            var str = PopRawBslValue().ToString(_process);
 
             if (len > str.Length)
                 len = str.Length;
@@ -1626,7 +1602,7 @@ namespace ScriptEngine.Machine
         private void Right(int arg)
         {
             var len = (int)_operationStack.Pop().AsNumber();
-            var str = _operationStack.Pop().AsString();
+            var str = PopRawBslValue().ToString(_process);
 
             if (len > str.Length)
                 len = str.Length;
@@ -1651,14 +1627,14 @@ namespace ScriptEngine.Machine
             if (arg == 2)
             {
                 start = (int)_operationStack.Pop().AsNumber();
-                str = _operationStack.Pop().AsString();
+                str = PopRawBslValue().ToString(_process);
                 len = str.Length-start+1;
             }
             else
             {
                 len = (int)_operationStack.Pop().AsNumber();
                 start = (int)_operationStack.Pop().AsNumber();
-                str = _operationStack.Pop().AsString();
+                str = PopRawBslValue().ToString(_process);
             }
 
             if (start < 1)
@@ -1684,8 +1660,8 @@ namespace ScriptEngine.Machine
         
         private void StrPos(int arg)
         {
-            var needle = _operationStack.Pop().AsString();
-            var haystack = _operationStack.Pop().AsString();
+            var needle = PopRawBslValue().ToString(_process);
+            var haystack = PopRawBslValue().ToString(_process);
 
             var result = haystack.IndexOf(needle, StringComparison.Ordinal) + 1;
             _operationStack.Push(ValueFactory.Create(result));
@@ -1694,21 +1670,21 @@ namespace ScriptEngine.Machine
 
         private void UCase(int arg)
         {
-            var result = _operationStack.Pop().AsString().ToUpper();
+            var result = PopRawBslValue().ToString(_process).ToUpper();
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
         }
 
         private void LCase(int arg)
         {
-            var result = _operationStack.Pop().AsString().ToLower();
+            var result = PopRawBslValue().ToString(_process).ToLower();
             _operationStack.Push(ValueFactory.Create(result));
             NextInstruction();
         }
 
         private void TCase(int arg)
         {
-            var argValue = _operationStack.Pop().AsString();
+            var argValue = PopRawBslValue().ToString(_process);
 
             char[] array = argValue.ToCharArray();
 	        // Handle the first letter in the string.
@@ -1764,11 +1740,11 @@ namespace ScriptEngine.Machine
             if(arg == 2)
             {
                 position = (int)_operationStack.Pop().AsNumber()-1;
-                strChar = _operationStack.Pop().AsString();
+                strChar = PopRawBslValue().ToString(_process);
             }
             else if(arg == 1)
             {
-                strChar = _operationStack.Pop().AsString();
+                strChar = PopRawBslValue().ToString(_process);
                 position = 0;
             }
             else
@@ -1784,7 +1760,7 @@ namespace ScriptEngine.Machine
 
         private void EmptyStr(int arg)
         {
-            var str = _operationStack.Pop().AsString();
+            var str = PopRawBslValue().ToString(_process);
 
             _operationStack.Push(ValueFactory.Create(String.IsNullOrWhiteSpace(str)));
             NextInstruction();
@@ -1792,9 +1768,9 @@ namespace ScriptEngine.Machine
 
         private void StrReplace(int arg)
         {
-            var newVal = _operationStack.Pop().AsString();
-            var searchVal = _operationStack.Pop().AsString();
-            var sourceString = _operationStack.Pop().AsString();
+            var newVal = PopRawBslValue().ToString(_process);
+            var searchVal = PopRawBslValue().ToString(_process);
+            var sourceString = PopRawBslValue().ToString(_process);
 
             var result = sourceString.Replace(searchVal, newVal);
             _operationStack.Push(ValueFactory.Create(result));
@@ -1804,7 +1780,7 @@ namespace ScriptEngine.Machine
         private void StrGetLine(int arg)
         {
             var lineNumber = (int)_operationStack.Pop().AsNumber();
-            var strArg = _operationStack.Pop().AsString();
+            var strArg =PopRawBslValue().ToString(_process);
             string result = "";
             if (lineNumber >= 1)
             {
@@ -1818,7 +1794,7 @@ namespace ScriptEngine.Machine
 
         private void StrLineCount(int arg)
         {
-            var strArg = _operationStack.Pop().AsString();
+            var strArg = PopRawBslValue().ToString(_process);
             int pos = 0;
             int lineCount = 1;
             while (pos >= 0 && pos < strArg.Length)
@@ -1837,8 +1813,8 @@ namespace ScriptEngine.Machine
 
         private void StrEntryCount(int arg)
         {
-            var what = _operationStack.Pop().AsString();
-            var where = _operationStack.Pop().AsString();
+            var what = PopRawBslValue().ToString(_process);
+            var where = PopRawBslValue().ToString(_process);
 
             var pos = where.IndexOf(what);
             var entryCount = 0;
@@ -2291,15 +2267,15 @@ namespace ScriptEngine.Machine
         {
             System.Diagnostics.Debug.Assert(argCount > 0);
 
-            IValue min = _operationStack.Pop().GetRawValue();
+            IValue min = PopRawValue();
             while (--argCount > 0)
             {
-                var current = _operationStack.Pop().GetRawValue();
+                var current = PopRawValue();
                 if (current.CompareTo(min) < 0)
                     min = current;
             }
 
-            _operationStack.Push(min.GetRawValue());
+            _operationStack.Push(min);
 
             NextInstruction();
         }
@@ -2308,22 +2284,22 @@ namespace ScriptEngine.Machine
         {
             System.Diagnostics.Debug.Assert(argCount > 0);
 
-            IValue max = _operationStack.Pop();
+            IValue max = PopRawValue();
             while (--argCount > 0)
             {
-                var current = _operationStack.Pop();
+                var current = PopRawValue();
                 if (current.CompareTo(max) > 0)
                     max = current;
             }
 
-            _operationStack.Push(max.GetRawValue());
+            _operationStack.Push(max);
             NextInstruction();
         }
 
         private void Format(int arg)
         {
-            var formatString = _operationStack.Pop().AsString();
-            var valueToFormat = _operationStack.Pop().GetRawValue();
+            var formatString = PopRawBslValue().ToString(_process);
+            var valueToFormat = PopRawValue();
 
             var formatted = ValueFormatter.Format((BslValue)valueToFormat, formatString);
 
@@ -2389,26 +2365,27 @@ namespace ScriptEngine.Machine
                 argValues = Array.Empty<IValue>();
             else
             {
-                var valueFromStack = _operationStack.Pop().GetRawValue();
+                var valueFromStack = PopRawValue();
                 if (valueFromStack is IValueArray array)
                     argValues = array.ToArray();
                 else
                     argValues = Array.Empty<IValue>();
             }
             
-            var typeName = _operationStack.Pop().AsString();
-            if (!TypeManager.TryGetType(typeName, out var type))
+            var typeName = PopRawBslValue().ToString(_process);
+            if (!_typeManager.TryGetType(typeName, out var type))
             {
                 throw RuntimeException.TypeIsNotDefined(typeName);
             }
             
             // TODO убрать cast после рефакторинга ITypeFactory
-            var factory = (TypeFactory)TypeManager.GetFactoryFor(type);
+            var factory = (TypeFactory)_typeManager.GetFactoryFor(type);
             var context = new TypeActivationContext
             {
                 TypeName = typeName,
-                TypeManager = _mem.TypeManager,
-                Services = _mem.Services
+                TypeManager = _typeManager,
+                Services = _process.Services,
+                CurrentProcess = _process
             };
 
             var instance = factory.Activate(context, argValues);
@@ -2429,7 +2406,7 @@ namespace ScriptEngine.Machine
                 .WithName($"{entryId}:<eval>")
                 .Build();
 
-            var compiler = _mem.Services.Resolve<EvalCompiler>();
+            var compiler = _process.Services.Resolve<EvalCompiler>();
             compiler.SharedSymbols = ExtractCompilerContext();
             var module = (StackRuntimeModule)compiler.CompileExpression(stringSource);
             return module;
@@ -2444,7 +2421,7 @@ namespace ScriptEngine.Machine
                 .WithName($"{entryId}:<exec>")
                 .Build();
             
-            var compiler = _mem.Services.Resolve<EvalCompiler>();
+            var compiler = _process.Services.Resolve<EvalCompiler>();
             compiler.SharedSymbols = ExtractCompilerContext();
             var module = (StackRuntimeModule)compiler.CompileBatch(stringSource);
             
@@ -2493,9 +2470,38 @@ namespace ScriptEngine.Machine
             _currentFrame.InstructionPointer++;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static IValue RawValue(IValue val)
+        {
+            if (val is IValueReference r)
+            {
+                return r.Value;
+            }
+
+            return val;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static BslValue RawBslValue(IValue val)
+        {
+            if (val is IValueReference r)
+            {
+                return r.BslValue;
+            }
+
+            return (BslValue)val;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IValue PopRawValue()
         {
-            return _operationStack.Pop().GetRawValue();
+            return RawValue(_operationStack.Pop());
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private BslValue PopRawBslValue()
+        {
+            return RawBslValue(_operationStack.Pop());
         }
 
         public IList<ExecutionFrameInfo> GetExecutionFrames()
@@ -2522,22 +2528,5 @@ namespace ScriptEngine.Machine
                 Source = module.Source.Location,
                 FrameObject = frame
             };
-
-        // multithreaded instance
-        [ThreadStatic]
-        private static MachineInstance _currentThreadWorker;
-        
-        private static void SetCurrentMachineInstance(MachineInstance current)
-            => _currentThreadWorker = current;
-
-        public static MachineInstance Current
-        {
-            get
-            {
-                _currentThreadWorker ??= new MachineInstance();
-
-                return _currentThreadWorker;
-            }
-        }
     }
 }

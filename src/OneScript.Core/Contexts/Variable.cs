@@ -34,7 +34,7 @@ namespace OneScript.Contexts
         {
             if (variable is VariableReference vref && vref._reference is IndexedValueReference iv)
             {
-                _ = iv.Value; // проверить правильность индекса
+                _ = iv.Value; // проверить правильность индекса через его чтение
             }
 
             return new VariableReference(variable, refName);
@@ -61,11 +61,6 @@ namespace OneScript.Contexts
         #region IValue Members
 
         public TypeDescriptor SystemType => Value.SystemType;
-
-        public IValue GetRawValue()
-        {
-            return Value;
-        }
 
         #endregion
 
@@ -127,11 +122,6 @@ namespace OneScript.Contexts
 
             public TypeDescriptor SystemType => Value.SystemType;
 
-            public IValue GetRawValue()
-            {
-                return Value.GetRawValue();
-            }
-
             #endregion
 
             #region IComparable<IValue> Members
@@ -167,7 +157,7 @@ namespace OneScript.Contexts
 
         public override string ToString()
         {
-            return Name;
+            return Value.ToString();
         }
     }
 }

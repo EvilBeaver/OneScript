@@ -8,7 +8,9 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Types;
@@ -18,8 +20,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
     /// <summary>
     /// Строка дерева значений.
     /// </summary>
-    [ContextClass("СтрокаДереваЗначений", "ValueTreeRow", TypeUUID = "4EE26F99-54A8-4640-B2F8-3DA1CB102113")]
-    public class ValueTreeRow : PropertyNameIndexAccessor, ICollectionContext<IValue>, IDebugPresentationAcceptor
+    [ContextClass("СтрокаДереваЗначений", "ValueTreeRow")]
+    public class ValueTreeRow : AutoContext<ValueTreeRow>, ICollectionContext<IValue>, IDebugPresentationAcceptor
     {
         private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
         private readonly ValueTreeRow _parent;
@@ -27,12 +29,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         private readonly int _level;
         private readonly ValueTreeRowCollection _rows;
         
-        private static TypeDescriptor _instanceType = typeof(ValueTreeRow).GetTypeFromClassMarkup();
-        private static readonly ContextPropertyMapper<ValueTreeRow> _properties = new ContextPropertyMapper<ValueTreeRow>();
-        private static readonly ContextMethodsMapper<ValueTreeRow> _methods = new ContextMethodsMapper<ValueTreeRow>();
-
         public ValueTreeRow(ValueTree owner, ValueTreeRow parent, int level)
-            : base(_instanceType)
         {
             _owner = owner;
             _parent = parent;
@@ -42,8 +39,10 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
 
         public int Count()
         {
-            return _properties.Count + _owner.Columns.Count();
+            return base.GetPropCount() + _owner.Columns.Count();
         }
+        
+        public int Count(IBslProcess process) => Count();
         
         [ContextProperty("Родитель", "Parent")]
         public IValue Parent
@@ -96,7 +95,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
 
         public IValue Get(IValue index)
         {
-            var column = Owner().Columns.GetColumnByIIndex(index);
+            var column = Owner().Columns.GetColumnByIIndex((BslValue)index);
             return TryValue(column);
         }
 
@@ -119,7 +118,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
 
 		public void Set(IValue index, IValue value)
 		{
-			var column = Owner().Columns.GetColumnByIIndex(index);
+			var column = Owner().Columns.GetColumnByIIndex((BslValue)index);
 			_data[column] = column.ValueType.AdjustValue(value);
 		}
 
@@ -160,22 +159,25 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         public override string GetPropName(int propNum)
         {
             if (IsOwnProp(propNum))
-                return _properties.GetProperty(propNum).Name;
+                return base.GetPropName(propNum);
             return Owner().Columns.GetPropName(GetColumnIndex(propNum));
         }
 
         public override int GetPropertyNumber(string name)
         {
-            if(_properties.ContainsProperty(name))
-                return _properties.FindProperty(name);
-
+            if (PropertyMapper.ContainsProperty(name))
+            {
+                return base.GetPropertyNumber(name);
+            }
+            
             var cols = Owner().Columns;
             var column = cols.FindColumnByName(name);
+            if (column != null)
+            {
+                return GetColumnPropIndex(cols.IndexOf(column));
+            }
             
-            if(column == null)
-                throw PropertyAccessException.PropNotFoundException(name);
-
-            return GetColumnPropIndex(cols.IndexOf(column));
+            throw PropertyAccessException.PropNotFoundException(name); 
         }
 
         public override bool IsPropReadable(int propNum)
@@ -192,9 +194,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         {
             if (IsOwnProp(propNum))
             {
-                var property = _properties.GetProperty(propNum);
-                return property.Getter(this);
+                return base.GetPropValue(propNum);
             }
+            
             var column = Owner().Columns.FindColumnByIndex(GetColumnIndex(propNum));
             return TryValue(column);
         }
@@ -203,17 +205,18 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         {
             if (IsOwnProp(propNum))
             {
-                var property = _properties.GetProperty(propNum);
-                property.Setter(this, newVal);
-                return;
+                base.SetPropValue(propNum, newVal);
             }
-            var column = Owner().Columns.FindColumnByIndex(GetColumnIndex(propNum));
-            _data[column] = column.ValueType.AdjustValue(newVal);
+            else
+            {
+                var column = Owner().Columns.FindColumnByIndex(GetColumnIndex(propNum));
+                _data[column] = column.ValueType.AdjustValue(newVal);
+            }
         }
 
         private ValueTreeColumn GetColumnByIIndex(IValue index)
         {
-            return Owner().Columns.GetColumnByIIndex(index);
+            return Owner().Columns.GetColumnByIIndex((BslValue)index);
         }
 
         public override IValue GetIndexedValue(IValue index)
@@ -228,57 +231,21 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             _data[GetColumnByIIndex(index)] = column.ValueType.AdjustValue(val);
         }
 
-        private static bool IsOwnProp(int propNum)
+        private bool IsOwnProp(int propNum)
         {
-            return _properties.Count - 1 >= propNum;
+            return propNum < base.GetPropCount();
         }
 
-        private static int GetColumnPropIndex(int index)
+        private int GetColumnPropIndex(int index)
         {
-            return _properties.Count + index;
+            return base.GetPropCount() + index;
         }
 
-        private static int GetColumnIndex(int propIndex)
+        private int GetColumnIndex(int propIndex)
         {
-            return propIndex - _properties.Count;
+            return propIndex - base.GetPropCount();
         }
 
-        public override BslMethodInfo GetMethodInfo(int methodNumber)
-        {
-            return _methods.GetRuntimeMethod(methodNumber);
-        }
-
-        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
-        {
-            var binding = _methods.GetCallableDelegate(methodNumber);
-            try
-            {
-                binding(this, arguments);
-            }
-            catch (System.Reflection.TargetInvocationException e)
-            {
-                throw e.InnerException;
-            }
-        }
-
-        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
-        {
-            var binding = _methods.GetCallableDelegate(methodNumber);
-            try
-            {
-                retValue = binding(this, arguments);
-            }
-            catch (System.Reflection.TargetInvocationException e)
-            {
-                throw e.InnerException;
-            }
-        }
-
-        public override int GetMethodNumber(string name)
-        {
-            return _methods.FindMethod(name);
-        }
-        
         void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
         {
             visitor.ShowProperties(this);

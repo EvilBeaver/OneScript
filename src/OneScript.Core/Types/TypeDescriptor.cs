@@ -13,7 +13,18 @@ namespace OneScript.Types
 {
     public sealed class TypeDescriptor : IEquatable<TypeDescriptor>
     {
+        [Obsolete("Use string id version")]
         public TypeDescriptor(Guid id, string typeName, string alias = default, Type implementingClass = default)
+            : this(id.ToString(), typeName, alias, implementingClass)
+        {
+        }
+        
+        public TypeDescriptor(Type implementingClass, string typeName, string alias = default)
+            : this($"{typeName}@{implementingClass.Name}", typeName, alias, implementingClass)
+        {
+        }
+        
+        public TypeDescriptor(String id, string typeName, string alias = default, Type implementingClass = default)
         {
             Id = id;
             Name = typeName;
@@ -25,7 +36,7 @@ namespace OneScript.Types
         
         public string Alias { get; }
 
-        public Guid Id { get; }
+        public string Id { get; }
         
         public Type ImplementingClass { get; }
 

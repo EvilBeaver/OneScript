@@ -50,7 +50,7 @@ namespace ScriptEngine.Machine.Contexts
         private static TypeDescriptor CreateEnumType(Type enumType, IEnumMetadataProvider metadata)
         {
             return new TypeDescriptor(
-                metadata.TypeUUID == default ? Guid.NewGuid() : Guid.Parse(metadata.TypeUUID),
+                metadata.TypeUUID ?? Guid.NewGuid().ToString(),
                 "Перечисление" + metadata.Name,
                 metadata.Alias != default ? "Enum" + metadata.Alias : default,
                 enumType
@@ -60,7 +60,7 @@ namespace ScriptEngine.Machine.Contexts
         private static TypeDescriptor CreateEnumValueType(Type enumValueClass, IEnumMetadataProvider metadata)
         {
             return new TypeDescriptor(
-                metadata.ValueTypeUUID == default ? Guid.NewGuid() : Guid.Parse(metadata.ValueTypeUUID),
+                metadata.ValueTypeUUID ?? Guid.NewGuid().ToString(),
                 metadata.Name,
                 metadata.Alias,
                 enumValueClass

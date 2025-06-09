@@ -18,7 +18,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
     /// <summary>
     /// Колонка таблицы значений. 
     /// </summary>
-    [ContextClass("КолонкаТаблицыЗначений", "ValueTableColumn", TypeUUID = "5B2F5C0D-8E08-4D01-A85F-9E24FCC92685")]
+    [ContextClass("КолонкаТаблицыЗначений", "ValueTableColumn")]
     public class ValueTableColumn : AutoContext<ValueTableColumn>
     {
         private string _title;
@@ -27,10 +27,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         private readonly WeakReference _owner;
         private readonly int _id;
         
-        private static TypeDescriptor _instanceType = typeof(ValueTableColumn).GetTypeFromClassMarkup();
-
         public ValueTableColumn(ValueTableColumnCollection owner, int id, string name, string title, TypeDescription type, int width)
-            : base(_instanceType)
         {
             _name = name;
             _title = title;

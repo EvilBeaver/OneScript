@@ -219,9 +219,9 @@ namespace OneScript.StandardLibrary.Net
         /// <param name="host">адрес машины</param>
         /// <param name="port">порт сокета</param>
         [ScriptConstructor]
-        public static TCPClient Constructor(IValue host, IValue port)
+        public static TCPClient Constructor(string host, int port)
         {
-            var client = new TcpClient(host.AsString(), (int)port.AsNumber());
+            var client = new TcpClient(host, port);
             return new TCPClient(client);
         }
     }

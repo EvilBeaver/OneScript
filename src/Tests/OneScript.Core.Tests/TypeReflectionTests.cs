@@ -34,7 +34,7 @@ namespace OneScript.Core.Tests
         {
             var codeSrc = host.Loader.FromString(code);
             var cmp = host.GetCompilerService();
-            return cmp.Compile(codeSrc);
+            return cmp.Compile(codeSrc, host.NewProcess());
         }
 
         [Fact]

@@ -16,13 +16,13 @@ namespace OneScript.Execution
     {
         IList<BslAnnotationAttribute> ModuleAttributes { get; }
 
-        IList<BslFieldInfo> Fields { get; }
+        IList<BslScriptFieldInfo> Fields { get; }
         
-        IList<BslPropertyInfo> Properties { get; }
+        IList<BslScriptPropertyInfo> Properties { get; }
         
-        IList<BslMethodInfo> Methods { get; }
+        IList<BslScriptMethodInfo> Methods { get; }
         
-        BslMethodInfo ModuleBody { get; }
+        BslScriptMethodInfo ModuleBody { get; }
         
         SourceCode Source { get; }
         

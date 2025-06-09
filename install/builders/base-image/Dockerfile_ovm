@@ -1,0 +1,10 @@
+FROM evilbeaver/mono-ru:6.12
+LABEL MAINTAINER="EvilBeaver <ovsiankin.aa@gmail.com>"
+
+# Файл базируется на моно с русской локалью
+# Устанавливает утилиту ovm
+# Образ предназначен для создания других образов с установленным движком
+# Использование: mono /var/ovm/ovm.exe use --install $VERSION
+
+RUN mkdir -p /var/ovm && \
+    curl -L https://github.com/oscript-library/ovm/releases/latest/download/ovm.exe > /var/ovm/ovm.exe

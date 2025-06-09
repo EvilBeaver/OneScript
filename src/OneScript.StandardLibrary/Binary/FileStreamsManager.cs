@@ -8,6 +8,9 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.IO;
 using OneScript.Contexts;
+using OneScript.Exceptions;
+using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -66,12 +69,10 @@ namespace OneScript.StandardLibrary.Binary
         /// Файл открывается в режиме разделяемого чтения.
         /// </summary>
         ///
-        /// <param name="fileName">
-        /// Имя открываемого файла. </param>
         /// <param name="openingMode">
         /// Режим открытия файла. </param>
-        /// <param name="fileAccess">
-        /// Режим доступа к файлу. </param>
+        /// <param name="fileName">
+        /// Имя открываемого файла. </param>
         /// <param name="bufferSize">
         /// Размер буфера для операций с файлом. </param>
         ///
@@ -80,16 +81,65 @@ namespace OneScript.StandardLibrary.Binary
         /// По умолчанию, все операции с файловым потоком являются буферизированными, размер буфера по умолчанию - 8 КБ.
         /// Размер буфера можно изменить, в том числе - полностью отключить буферизацию при вызове конструктора. 
         /// Следует учитывать, что помимо буферизации существует кэширование чтения и записи файлов в операционной системе, на которое невозможно повлиять программно.</returns>
-        ///
-        [ContextMethod("Открыть", "Open")]
-        public FileStreamContext Open(IValue fileName, IValue openingMode, IValue fileAccess = null, IValue bufferSize = null)
+        [DocumentedMember("Открыть", "Open")]
+        public FileStreamContext Open(FileOpenModeEnum openingMode, string fileName, int bufferSize = 0)
         {
-            if(bufferSize == null)
-                return FileStreamContext.Constructor(fileName, openingMode, fileAccess);
-            else
-                return FileStreamContext.Constructor(fileName, openingMode, fileAccess, bufferSize);
+            return new FileStreamContext(fileName, openingMode, FileAccessEnum.ReadAndWrite, bufferSize);
+        }
+        
+        /// <summary>
+        /// 
+        /// Открыть файл в выбранном режиме, с заданным уровнем доступа, с общим доступом на чтение.
+        /// </summary>
+        ///
+        /// <param name="fileAccess">
+        /// Режим доступа к файлу</param>
+        /// <param name="fileName">
+        /// Имя открываемого файла. </param>
+        /// <param name="openingMode">
+        /// Режим открытия файла. </param>
+        /// <param name="bufferSize">
+        /// Размер буфера для операций с файлом. </param>
+        ///
+        /// <returns name="FileStream">
+        /// Специализированная версия объекта Поток для работы данными, расположенными в файле на диске. Предоставляет возможность чтения из потока, записи в поток и изменения текущей позиции. 
+        /// По умолчанию, все операции с файловым потоком являются буферизированными, размер буфера по умолчанию - 8 КБ.
+        /// Размер буфера можно изменить, в том числе - полностью отключить буферизацию при вызове конструктора. 
+        /// Следует учитывать, что помимо буферизации существует кэширование чтения и записи файлов в операционной системе, на которое невозможно повлиять программно.</returns>
+        [DocumentedMember("Открыть", "Open")]
+        public FileStreamContext Open(FileAccessEnum fileAccess, string fileName, FileOpenModeEnum openingMode, int bufferSize = 0)
+        {
+            return new FileStreamContext(fileName, openingMode, fileAccess, bufferSize);
         }
 
+        [ContextMethod("Открыть", "Open", SkipForDocumenter = true)]
+        public FileStreamContext Open(IValue p1, IValue p2, IValue p3 = null, IValue p4 = null)
+        {
+            // Диспетчеризуем перегрузки по типам параметров
+            if (p1 is ClrEnumValueWrapper<FileAccessEnum> fileAccess)
+            {
+                // это вариант с 4-мя параметрами
+                return Open(
+                    fileAccess.UnderlyingValue,
+                    ContextValuesMarshaller.ConvertValueStrict<string>(p2),
+                    ContextValuesMarshaller.ConvertValueStrict<FileOpenModeEnum>(p3),
+                    ContextValuesMarshaller.ConvertValueStrict<int>(p4)
+                );
+            }
+            else if (p4 == null)
+            {
+                // это вариант с 3-мя параметрами
+                return Open(
+                    ContextValuesMarshaller.ConvertValueStrict<FileOpenModeEnum>(p1),
+                    ContextValuesMarshaller.ConvertValueStrict<string>(p2),
+                    ContextValuesMarshaller.ConvertValueStrict<int>(p3)
+                );
+            }
+            else
+            {
+                throw RuntimeException.InvalidNthArgumentType(4);
+            }
+        }
 
         /// <summary>
         /// 

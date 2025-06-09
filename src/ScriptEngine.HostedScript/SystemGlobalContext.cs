@@ -4,15 +4,17 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
 using System;
 using OneScript.Contexts;
+using OneScript.Execution;
+using OneScript.Sources;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
-using OneScript.Sources;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace ScriptEngine.HostedScript.Library
+namespace ScriptEngine.HostedScript
 {
     /// <summary>
     /// Глобальный контекст. Представляет глобально доступные свойства и методы.
@@ -158,7 +160,8 @@ namespace ScriptEngine.HostedScript.Library
         /// Каталог исполняемых файлов OneScript
         /// </summary>
         /// <returns></returns>
-        [ContextMethod("КаталогПрограммы","ProgramDirectory")]
+        [ContextMethod("ProgramDirectory", IsDeprecated = true)]
+        [ContextMethod("КаталогПрограммы","BinDir")]
         public string ProgramDirectory()
         {
             var asm = System.Reflection.Assembly.GetExecutingAssembly();
@@ -268,14 +271,14 @@ namespace ScriptEngine.HostedScript.Library
             return _methods.Count;
         }
 
-        public void CallAsProcedure(int methodNumber, IValue[] arguments)
+        public void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
-            _methods.GetCallableDelegate(methodNumber)(this, arguments);
+            _methods.GetCallableDelegate(methodNumber)(this, arguments, process);
         }
 
-        public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process)
         {
-            retValue = _methods.GetCallableDelegate(methodNumber)(this, arguments);
+            retValue = _methods.GetCallableDelegate(methodNumber)(this, arguments, process);
         }
 
 #endregion

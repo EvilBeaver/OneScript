@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Contexts;
+using OneScript.Execution;
 
 namespace ScriptEngine.Machine
 {
@@ -23,6 +24,6 @@ namespace ScriptEngine.Machine
             IRuntimeContextInstance handlerTarget,
             string handlerMethod);
 
-        void HandleEvent(IRuntimeContextInstance eventSource, string eventName, IValue[] eventArgs);
+        void HandleEvent(IRuntimeContextInstance eventSource, string eventName, IValue[] eventArgs, IBslProcess process);
     }
 }

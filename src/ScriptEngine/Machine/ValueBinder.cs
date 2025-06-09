@@ -34,9 +34,9 @@ namespace ScriptEngine.Machine
 
 		public override object ChangeType(object value, Type type, CultureInfo culture)
 		{
-			if (value is IValue)
+			if (value is IValue iValue)
 			{
-				return ContextValuesMarshaller.ConvertParam((IValue) value, type);
+				return ContextValuesMarshaller.ConvertParam(iValue, type);
 			}
 			return Type.DefaultBinder.ChangeType(value, type, culture);
 		}

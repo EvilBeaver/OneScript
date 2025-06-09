@@ -39,6 +39,8 @@ namespace ScriptEngine.Compiler
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
 
+        private IBslProcess _compilerProcess; 
+
         public StackMachineCodeGenerator(IErrorSink errorSink)
         {
             _errorSink = errorSink;
@@ -49,7 +51,8 @@ namespace ScriptEngine.Compiler
 
         public IDependencyResolver DependencyResolver { get; set; }
         
-        public StackRuntimeModule CreateModule(ModuleNode moduleNode, SourceCode source, SymbolTable context)
+        public StackRuntimeModule CreateModule(ModuleNode moduleNode, SourceCode source, SymbolTable context,
+            IBslProcess process)
         {
             if (moduleNode.Kind != NodeKind.Module)
             {
@@ -58,6 +61,7 @@ namespace ScriptEngine.Compiler
 
             _ctx = context;
             _sourceCode = source;
+            _compilerProcess = process;
 
             return CreateImageInternal(moduleNode);
         }
@@ -95,7 +99,7 @@ namespace ScriptEngine.Compiler
             
             try
             {
-                DependencyResolver.Resolve(_sourceCode, libName);
+                DependencyResolver.Resolve(_sourceCode, libName, _compilerProcess);
                 // TODO: решить проблему с импортами
                 // if(_ctx is ModuleCompilerContext moduleContext)
                 //     moduleContext.Update();
@@ -304,14 +308,22 @@ namespace ScriptEngine.Compiler
         {
             var codeStart = _module.Code.Count;
             
-            base.VisitMethodBody(methodNode);
+            foreach (var variableDefinition in methodNode.VariableDefinitions())
+            {
+                VisitMethodVariable(methodNode, variableDefinition);
+            }
+
+            VisitCodeBlock(methodNode.MethodBody);
             
             if (methodNode.Signature.IsFunction)
             {
+                // неявный возврат Undefined
                 AddCommand(OperationCode.PushUndef);
             }
             
             var codeEnd = _module.Code.Count;
+            
+            VisitBlockEnd(methodNode.EndLocation); // debug last line num
             
             AddCommand(OperationCode.Return);
 
@@ -635,7 +647,11 @@ namespace ScriptEngine.Compiler
 
         private void CheckFactArguments(BslMethodInfo method, BslSyntaxNode argList)
         {
-            CheckFactArguments(method.GetParameters(), argList);
+            var argsToCheck = method is ContextMethodInfo { InjectsProcess: true } ? 
+                method.GetParameters().Skip(1).ToArray() : 
+                method.GetParameters();
+            
+            CheckFactArguments(argsToCheck, argList);
         }
 
         private void FullCheckFactArguments(ParameterInfo[] parameters, BslSyntaxNode argList)

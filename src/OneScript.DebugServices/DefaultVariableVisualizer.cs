@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.DebugProtocol;
+using OneScript.Execution;
 using ScriptEngine.Machine;
 using Variable = OneScript.DebugProtocol.Variable;
 using MachineVariable = OneScript.Contexts.Variable;
@@ -32,7 +33,8 @@ namespace OneScript.DebugServices
 
             try
             {
-                presentation = value.AsString();
+                // FIXME: В отладочном представлении не вызываются кастомные bsl-представления
+                presentation = value.ToString();
             }
             catch (Exception e)
             {
@@ -64,7 +66,7 @@ namespace OneScript.DebugServices
         {
             var presenter = new DefaultValueVisitor();
             
-            if (value.GetRawValue() is IRuntimeContextInstance)
+            if (value is IRuntimeContextInstance)
             {
                 var objectValue = value.AsObject();
                 if (objectValue is IDebugPresentationAcceptor customPresenter)
@@ -94,14 +96,22 @@ namespace OneScript.DebugServices
 
         private bool IsStructured(IVariable variable)
         {
-            var rawValue = variable?.GetRawValue();
+            var rawValue = variable?.Value;
             return HasProperties(rawValue as IRuntimeContextInstance) 
                    || HasIndexes(rawValue as ICollectionContext<IValue>);
         }
 
         private bool HasIndexes(ICollectionContext<IValue> collection)
         {
-            return collection?.Count() > 0;
+            try
+            {
+                return collection?.Count(ForbiddenBslProcess.Instance) > 0;
+            }
+            catch (NotSupportedException)
+            {
+                // TODO разобраться с bsl-процессом для вычисления пользовательских скриптовых коллекций
+                return false;
+            }
         }
 
         private static bool HasProperties(IRuntimeContextInstance value)

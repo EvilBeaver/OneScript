@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -101,13 +102,19 @@ namespace OneScript.StandardLibrary.NativeApi
 
         public IValue GetIndexedValue(IValue index)
         {
-            var propNum = GetPropertyNumber(index.AsString());
+            if (index.SystemType != BasicTypes.String)
+                throw RuntimeException.InvalidArgumentType();
+            
+            var propNum = GetPropertyNumber(index.ToString());
             return GetPropValue(propNum);
         }
 
         public void SetIndexedValue(IValue index, IValue value)
         {
-            var propNum = GetPropertyNumber(index.AsString());
+            if (index.SystemType != BasicTypes.String)
+                throw RuntimeException.InvalidArgumentType();
+            
+            var propNum = GetPropertyNumber(index.ToString());
             SetPropValue(propNum, value);
         }
 
@@ -236,7 +243,7 @@ namespace OneScript.StandardLibrary.NativeApi
                     );
         }
 
-        public void CallAsProcedure(int methodNumber, IValue[] arguments)
+        public void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
             int paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
             using (var variant = new NativeApiVariant(paramCount))
@@ -249,7 +256,7 @@ namespace OneScript.StandardLibrary.NativeApi
             }
         }
 
-        public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        public void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process)
         {
             var result = ValueFactory.Create();
             int paramCount = NativeApiProxy.GetNParams(_object, methodNumber);

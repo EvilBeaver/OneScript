@@ -56,9 +56,9 @@ namespace OneScript.StandardLibrary.Zip
             
             if (filenameOrStream.SystemType == BasicTypes.String)
             {
-                _zip = ZipFile.Read(filenameOrStream.AsString(), new ReadOptions { Encoding = ChooseEncoding(encoding) });
+                _zip = ZipFile.Read(filenameOrStream.ToString(), new ReadOptions { Encoding = ChooseEncoding(encoding) });
             } 
-            else if (filenameOrStream.GetRawValue() is IStreamWrapper stream)
+            else if (filenameOrStream is IStreamWrapper stream)
             {
                 _zip = ZipFile.Read(stream.GetUnderlyingStream(), new ReadOptions { Encoding = ChooseEncoding(encoding) });
             } 
@@ -147,11 +147,11 @@ namespace OneScript.StandardLibrary.Zip
         }
 
         [ScriptConstructor(Name = "На основании имени файла или потока")]
-        public static ZipReader Constructor(IValue dataSource, IValue password = null)
+        public static ZipReader Constructor(IValue dataSource, string password = null)
         {
-            var dataSourceRawValue = dataSource?.GetRawValue() ?? ValueFactory.CreateInvalidValueMarker();
+            var dataSourceRawValue = dataSource ?? ValueFactory.CreateInvalidValueMarker();
 
-            return new ZipReader(dataSourceRawValue, password?.AsString());
+            return new ZipReader(dataSourceRawValue, password);
         }
 
         public void Dispose()

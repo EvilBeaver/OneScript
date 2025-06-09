@@ -12,19 +12,19 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
     /// <summary>
     /// Описывает варианты ограничения значения
     /// </summary>
-    [EnumerationType("XSConstraint", "ОграничениеЗначенияXS")]
+    [EnumerationType("ОграничениеЗначенияXS", "XSConstraint")]
     public enum XSConstraint
     {
         /// <summary>
         /// Используется ограничение по умолчанию
         /// </summary>
-        [EnumValue("Default", "ПоУмолчанию")]
+        [EnumValue("ПоУмолчанию", "Default")]
         Default,
 
         /// <summary>
         /// Используется фиксированное значение
         /// </summary>
-        [EnumValue("Fixed", "Фиксированное")]
+        [EnumValue("Фиксированное", "Fixed")]
         Fixed
     }
 }

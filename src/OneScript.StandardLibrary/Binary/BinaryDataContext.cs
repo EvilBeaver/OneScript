@@ -11,7 +11,9 @@ using System.IO;
 using System.Text;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -89,7 +91,7 @@ namespace OneScript.StandardLibrary.Binary
         {
             if(filenameOrStream.SystemType == BasicTypes.String)
             {
-                var filename = filenameOrStream.AsString();
+                var filename = filenameOrStream.ToString()!;
 
                 using(var fs = new FileStream(filename, FileMode.Create, FileAccess.Write))
                 {
@@ -140,7 +142,7 @@ namespace OneScript.StandardLibrary.Binary
             }
         }
 
-        protected override string ConvertToString()
+        public override string ToString()
         {
             const int LIMIT = 64;
             int length;
@@ -196,19 +198,19 @@ namespace OneScript.StandardLibrary.Binary
         }
 
         [ScriptConstructor(Name = "На основании файла")]
-        public static BinaryDataContext Constructor(IValue filename)
+        public static BinaryDataContext Constructor(string filename)
         {
-            return new BinaryDataContext(filename.AsString());
+            return new BinaryDataContext(filename);
         }
 
-        public override bool Equals(IValue other)
+        public override bool Equals(BslValue other)
         {
             if (other == null)
                 return false;
 
             if (other.SystemType == SystemType)
             {
-                var binData = other.GetRawValue() as BinaryDataContext;
+                var binData = other as BinaryDataContext;
                 Debug.Assert(binData != null);
 
                 if (InMemory && binData.InMemory)

@@ -15,28 +15,28 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
     /// Типы ограничения идентичности.
     /// </summary>
     /// <see cref="XSIdentityConstraintDefinition"/>
-    [EnumerationType("XSIdentityConstraintCategory", "КатегорияОграниченияИдентичностиXS")]
+    [EnumerationType("КатегорияОграниченияИдентичностиXS", "XSIdentityConstraintCategory")]
     public enum XSIdentityConstraintCategory
     {
         /// <summary>
         /// Ограничение идентичности по ключу
         /// </summary>
         /// <see cref="XmlSchemaKey"/>
-        [EnumValue("Key", "Ключ")]
+        [EnumValue("Ключ", "Key")]
         Key,
 
         /// <summary>
         /// Ограничение идентичности по ссылке
         /// </summary>
         /// <see cref="XmlSchemaKey"/>
-        [EnumValue("KeyRef", "СсылкаНаКлюч")]
+        [EnumValue("СсылкаНаКлюч", "KeyRef")]
         KeyRef,
 
         /// <summary>
         /// Ограничение идентичности по опредению уникальности
         /// </summary>
         /// <see cref="XmlSchemaUnique"/>
-        [EnumValue("Unique", "Уникальность")]
+        [EnumValue("Уникальность", "Unique")]
         Unique
     }
 }

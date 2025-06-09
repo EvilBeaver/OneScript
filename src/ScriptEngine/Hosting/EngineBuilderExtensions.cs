@@ -54,8 +54,10 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<TypeSymbolsProviderFactory>();
             services.RegisterSingleton<IErrorSink>(svc => new ThrowingErrorSink(CompilerException.FromCodeError));
             services.RegisterSingleton<IExceptionInfoFactory, ExceptionInfoFactory>();
+            services.RegisterSingleton<IBslProcessFactory, BslProcessFactory>();
+
+            services.RegisterScoped<StackMachineProvider>();
             
-            services.Register<ExecutionDispatcher>();
             services.Register<IDependencyResolver, NullDependencyResolver>();
             
             services.RegisterEnumerable<IExecutorProvider, StackMachineExecutor>();

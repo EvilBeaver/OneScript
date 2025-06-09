@@ -11,6 +11,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -111,12 +112,11 @@ namespace OneScript.StandardLibrary
         /// <summary>
         /// Проверяет заполненность значения по принципу, заложенному в 1С:Предприятии
         /// </summary>
-        /// <param name="inValue"></param>
-        /// <returns></returns>
+        /// <param name="value"></param>
+        /// <returns>Булево. Истина, если значение считается заполненным.</returns>
         [ContextMethod("ЗначениеЗаполнено","ValueIsFilled")]
-        public bool ValueIsFilled(IValue inValue)
+        public bool ValueIsFilled(IBslProcess process, BslValue value)
         {
-            var value = inValue?.GetRawValue();
             if (value == null)
             {
                 return false;
@@ -129,7 +129,7 @@ namespace OneScript.StandardLibrary
                 case BslStringValue v:
                     return !string.IsNullOrWhiteSpace(v.ToString());
                 case ICollectionContext<IValue> collection:
-                    return collection.Count() != 0;
+                    return collection.Count(process) != 0;
                 case BslNumericValue v:
                     return v != 0;
                 case BslUndefinedValue _:
@@ -162,7 +162,7 @@ namespace OneScript.StandardLibrary
             }
             else if (filledProperties.SystemType == BasicTypes.String)
             {
-                strFilled = filledProperties.AsString();
+                strFilled = filledProperties.ToString();
             }
             else
             {
@@ -175,7 +175,7 @@ namespace OneScript.StandardLibrary
             }
             else if (ignoredProperties.SystemType == BasicTypes.String)
             {
-                strIgnored = ignoredProperties.AsString();
+                strIgnored = ignoredProperties.ToString();
             }
             else
             {

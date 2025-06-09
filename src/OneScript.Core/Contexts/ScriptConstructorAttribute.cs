@@ -9,6 +9,12 @@ using System;
 
 namespace OneScript.Contexts
 {
+    /// <summary>
+    /// Помечает статический метод класса, как Bsl-конструктор.
+    /// Должен располагаться на статических методах.
+    /// Поддерживает маршаллинг аргументов, т.е. можно указывать не только IValue, но и просто типы C#
+    /// Первым параметром метода может быть указан TypeActivationContext, тогда он будет инжектиться в вызов.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class ScriptConstructorAttribute : Attribute
     {

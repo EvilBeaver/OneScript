@@ -11,11 +11,8 @@ using OneScript.Commons;
 namespace OneScript.Contexts
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class ContextClassAttribute : Attribute
+    public class ContextClassAttribute : Attribute, INameAndAliasProvider
     {
-        private readonly string _name;
-        private readonly string _alias;
-
         public ContextClassAttribute(string typeName, string typeAlias = "")
         {
             if (!Utils.IsValidIdentifier(typeName))
@@ -24,21 +21,12 @@ namespace OneScript.Contexts
             if (!string.IsNullOrEmpty(typeAlias) && !Utils.IsValidIdentifier(typeAlias))
                 throw new ArgumentException("Alias must be a valid identifier");
 
-            _name = typeName;
-            _alias = typeAlias;
+            Name = typeName;
+            Alias = typeAlias;
         }
 
-        public string GetName()
-        {
-            return _name;
-        }
+        public string Name { get; }
 
-        public string GetAlias()
-        {
-            return _alias;
-        }
-
-        public string TypeUUID { get; set; }
-
+        public string Alias { get; }
     }
 }

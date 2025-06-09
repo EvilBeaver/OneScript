@@ -18,13 +18,13 @@ namespace OneScript.Native.Compiler
     {
         public IList<BslAnnotationAttribute> ModuleAttributes { get; } = new List<BslAnnotationAttribute>();
         
-        public IList<BslFieldInfo> Fields { get; } = new List<BslFieldInfo>();
+        public IList<BslScriptFieldInfo> Fields { get; } = new List<BslScriptFieldInfo>();
 
-        public IList<BslPropertyInfo> Properties { get; } = new List<BslPropertyInfo>();
+        public IList<BslScriptPropertyInfo> Properties { get; } = new List<BslScriptPropertyInfo>();
 
-        public IList<BslMethodInfo> Methods { get; } = new List<BslMethodInfo>();
+        public IList<BslScriptMethodInfo> Methods { get; } = new List<BslScriptMethodInfo>();
 
-        public BslMethodInfo ModuleBody => Methods.FirstOrDefault(x => x.Name == IExecutableModule.BODY_METHOD_NAME);
+        public BslScriptMethodInfo ModuleBody => Methods.FirstOrDefault(x => x.Name == IExecutableModule.BODY_METHOD_NAME);
 
         public SourceCode Source { get; set; }
 

@@ -81,13 +81,9 @@ namespace OneScript.StandardLibrary.Collections
         #endregion
 
         [ScriptConstructor(Name = "Из соответствия")]
-        public static FixedMapImpl Constructor(IValue source)
+        public static FixedMapImpl Constructor(MapImpl source)
         {
-            var rawSource = source.GetRawValue() as MapImpl;
-            if (rawSource == null)
-                throw RuntimeException.InvalidArgumentType();
-
-            return new FixedMapImpl(rawSource);
+            return new FixedMapImpl(source);
         }
     }
 

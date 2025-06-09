@@ -530,7 +530,6 @@ namespace OneScript.Native.Runtime
 
         #region Other
         
-        // [ContextMethod("формат", "format")] public static object Format(object arg){}
         // [ContextMethod("текущийсценарий", "currentscript")] public static object ModuleInfo(object arg){}
 
         #endregion

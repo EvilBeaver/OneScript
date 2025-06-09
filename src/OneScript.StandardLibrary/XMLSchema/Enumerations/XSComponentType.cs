@@ -9,104 +9,104 @@ using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
-    [EnumerationType("XSComponentType", "ТипКомпонентыXS")]
+    [EnumerationType("ТипКомпонентыXS", "XSComponentType")]
     public enum XSComponentType
     {
 
-        [EnumValue("Annotation", "Аннотация")]
+        [EnumValue("Аннотация", "Annotation")]
         Annotation,
 
-        [EnumValue("Include", "Включение")]
+        [EnumValue("Включение", "Include")]
         Include,
 
-        [EnumValue("ModelGroup", "ГруппаМодели")]
+        [EnumValue("ГруппаМодели", "ModelGroup")]
         ModelGroup,
 
-        [EnumValue("Documentation", "Документация")]
+        [EnumValue("Документация", "Documentation")]
         Documentation,
 
-        [EnumValue("Import", "Импорт")]
+        [EnumValue("Импорт", "Import")]
         Import,
 
-        [EnumValue("AppInfo", "ИнформацияПриложения")]
+        [EnumValue("ИнформацияПриложения", "AppInfo")]
         AppInfo,
 
-        [EnumValue("AttributeUse", "ИспользованиеАтрибута")]
+        [EnumValue("ИспользованиеАтрибута", "AttributeUse")]
         AttributeUse,
 
-        [EnumValue("MaxInclusiveFacet", "МаксимальноВключающийФасет")]
+        [EnumValue("МаксимальноВключающийФасет", "MaxInclusiveFacet")]
         MaxInclusiveFacet,
 
-        [EnumValue("MaxExclusiveFacet", "МаксимальноИсключающийФасет")]
+        [EnumValue("МаксимальноИсключающийФасет", "MaxExclusiveFacet")]
         MaxExclusiveFacet,
 
-        [EnumValue("Wildcard", "Маска")]
+        [EnumValue("Маска", "Wildcard")]
         Wildcard,
 
-        [EnumValue("MinInclusiveFacet", "МинимальноВключающийФасет")]
+        [EnumValue("МинимальноВключающийФасет", "MinInclusiveFacet")]
         MinInclusiveFacet,
 
-        [EnumValue("MinExclusiveFacet", "МинимальноИсключающийФасет")]
+        [EnumValue("МинимальноИсключающийФасет", "MinExclusiveFacet")]
         MinExclusiveFacet,
 
-        [EnumValue("AttributeDeclaration", "ОбъявлениеАтрибута")]
+        [EnumValue("ОбъявлениеАтрибута", "AttributeDeclaration")]
         AttributeDeclaration,
 
-        [EnumValue("NotationDeclaration", "ОбъявлениеНотации")]
+        [EnumValue("ОбъявлениеНотации", "NotationDeclaration")]
         NotationDeclaration,
 
-        [EnumValue("ElementDeclaration", "ОбъявлениеЭлемента")]
+        [EnumValue("ОбъявлениеЭлемента", "ElementDeclaration")]
         ElementDeclaration,
 
-        [EnumValue("XPathDefinition", "ОпределениеXPath")]
+        [EnumValue("ОпределениеXPath", "XPathDefinition")]
         XPathDefinition,
 
-        [EnumValue("AttributeGroupDefinition", "ОпределениеГруппыАтрибутов")]
+        [EnumValue("ОпределениеГруппыАтрибутов", "AttributeGroupDefinition")]
         AttributeGroupDefinition,
 
-        [EnumValue("ModelGroupDefinition", "ОпределениеГруппыМодели")]
+        [EnumValue("ОпределениеГруппыМодели", "ModelGroupDefinition")]
         ModelGroupDefinition,
 
-        [EnumValue("IdentityConstraintDefinition", "ОпределениеОграниченияИдентичности")]
+        [EnumValue("ОпределениеОграниченияИдентичности", "IdentityConstraintDefinition")]
         IdentityConstraintDefinition,
 
-        [EnumValue("SimpleTypeDefinition", "ОпределениеПростогоТипа")]
+        [EnumValue("ОпределениеПростогоТипа", "SimpleTypeDefinition")]
         SimpleTypeDefinition,
 
-        [EnumValue("ComplexTypeDefinition", "ОпределениеСоставногоТипа")]
+        [EnumValue("ОпределениеСоставногоТипа", "ComplexTypeDefinition")]
         ComplexTypeDefinition,
 
-        [EnumValue("Redefine", "Переопределение")]
+        [EnumValue("Переопределение", "Redefine")]
         Redefine,
 
-        [EnumValue("Schema", "Схема")]
+        [EnumValue("Схема", "Schema")]
         Schema,
 
-        [EnumValue("LengthFacet", "ФасетДлины")]
+        [EnumValue("ФасетДлины", "LengthFacet")]
         LengthFacet,
 
-        [EnumValue("FractionDigitsFacet", "ФасетКоличестваРазрядовДробнойЧасти")]
+        [EnumValue("ФасетКоличестваРазрядовДробнойЧасти", "FractionDigitsFacet")]
         FractionDigitsFacet,
 
-        [EnumValue("MaxLengthFacet", "ФасетМаксимальнойДлины")]
+        [EnumValue("ФасетМаксимальнойДлины", "MaxLengthFacet")]
         MaxLengthFacet,
 
-        [EnumValue("MinLengthFacet", "ФасетМинимальнойДлины")]
+        [EnumValue("ФасетМинимальнойДлины", "MinLengthFacet")]
         MinLengthFacet,
 
-        [EnumValue("PatternFacet", "ФасетОбразца")]
+        [EnumValue("ФасетОбразца", "PatternFacet")]
         PatternFacet,
 
-        [EnumValue("TotalDigitsFacet", "ФасетОбщегоКоличестваРазрядов")]
+        [EnumValue("ФасетОбщегоКоличестваРазрядов", "TotalDigitsFacet")]
         TotalDigitsFacet,
 
-        [EnumValue("EnumerationFacet", "ФасетПеречисления")]
+        [EnumValue("ФасетПеречисления", "EnumerationFacet")]
         EnumerationFacet,
 
-        [EnumValue("WhitespaceFacet", "ФасетПробельныхСимволов")]
+        [EnumValue("ФасетПробельныхСимволов", "WhitespaceFacet")]
         WhitespaceFacet,
 
-        [EnumValue("Particle", "Фрагмент")]
+        [EnumValue("Фрагмент", "Particle")]
         Particle
     }
 }

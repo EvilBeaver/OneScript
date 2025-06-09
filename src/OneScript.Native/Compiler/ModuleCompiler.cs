@@ -12,6 +12,7 @@ using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
@@ -28,6 +29,7 @@ namespace OneScript.Native.Compiler
         private readonly ICompileTimeDependencyResolver _dependencyResolver;
         private DynamicModule _module;
         private readonly BslMethodInfoFactory<BslNativeMethodInfo> _methodsFactory;
+        private IBslProcess _compilerProcess;
 
         public ModuleCompiler(IErrorSink errors, IServiceContainer runtimeServices, ICompileTimeDependencyResolver dependencyResolver) : base(errors)
         {
@@ -37,13 +39,12 @@ namespace OneScript.Native.Compiler
             
         }
         
-        public DynamicModule Compile(
-            SourceCode moduleInfo,
+        public DynamicModule Compile(SourceCode moduleInfo,
             BslSyntaxNode moduleNode,
-            SymbolTable symbols
-            )
+            SymbolTable symbols, IBslProcess process)
         {
             InitContext(Errors, moduleInfo, symbols);
+            _compilerProcess = process;
             
             _module = new DynamicModule
             {
@@ -143,16 +144,17 @@ namespace OneScript.Native.Compiler
             }
 
             var annotations = CompilerHelpers.GetAnnotations(varNode.Annotations).ToArray();
-            var varSymbol = BslFieldBuilder.Create()
+            var field = BslFieldBuilder.Create()
                 .Name(varNode.Name)
                 .IsExported(varNode.IsExported)
                 .SetAnnotations(annotations)
                 .ValueType(typeof(BslValue))
-                .Build()
-                .ToSymbol();
+                .Build();
+
+            var varSymbol = field.ToSymbol();
 
             var id = Symbols.GetScope(Symbols.ScopeCount - 1).DefineVariable(varSymbol);
-            _module.Fields.Add(varSymbol.Field);
+            _module.Fields.Add(field);
             
             if (varNode.IsExported)
             {
@@ -228,7 +230,7 @@ namespace OneScript.Native.Compiler
             
             try
             {
-                _dependencyResolver.Resolve(_module.Source, libName);
+                _dependencyResolver.Resolve(_module.Source, libName, _compilerProcess);
             }
             catch (DependencyResolveException e)
             {

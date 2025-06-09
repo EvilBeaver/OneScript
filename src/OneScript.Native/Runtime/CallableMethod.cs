@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using OneScript.Contexts;
+using OneScript.Execution;
 using OneScript.Native.Compiler;
 using OneScript.Values;
 
@@ -26,7 +27,7 @@ namespace OneScript.Native.Runtime
     {
         private readonly BslNativeMethodInfo _method;
 
-        private delegate BslValue NativeCallable(NativeClassInstanceWrapper target, BslValue[] args);
+        private delegate BslValue NativeCallable(NativeClassInstanceWrapper target, BslValue[] args, IBslProcess process);
 
         private NativeCallable _delegate;
         
@@ -35,7 +36,7 @@ namespace OneScript.Native.Runtime
             _method = method;
         }
 
-        public BslValue Invoke(object target, BslValue[] args)
+        public BslValue Invoke(IBslProcess process, object target, BslValue[] args)
         {
             if (_delegate == default)
             {
@@ -43,7 +44,7 @@ namespace OneScript.Native.Runtime
             }
             
             var callableWrapper = GetCallableWrapper(target);
-            return _delegate.Invoke(callableWrapper, args);
+            return _delegate.Invoke(callableWrapper, args, process);
         }
         
         private NativeClassInstanceWrapper GetCallableWrapper(object obj)
@@ -91,8 +92,11 @@ namespace OneScript.Native.Runtime
 
             var targetParam = Expression.Parameter(typeof(NativeClassInstanceWrapper));
             var arrayOfValuesParam = Expression.Parameter(typeof(BslValue[]));
+            var processParam = Expression.Parameter(typeof(IBslProcess));
             var convertedAccessList = new List<Expression>();
 
+            convertedAccessList.Add(processParam);
+            
             if (method.IsInstance)
                 convertedAccessList.Add(targetParam);
             
@@ -107,7 +111,7 @@ namespace OneScript.Native.Runtime
             }
             
             var lambdaInvocation = Expression.Invoke(method.Implementation, convertedAccessList);
-            var func = Expression.Lambda<NativeCallable>(lambdaInvocation, targetParam, arrayOfValuesParam);
+            var func = Expression.Lambda<NativeCallable>(lambdaInvocation, targetParam, arrayOfValuesParam, processParam);
 
             return func.Compile();
         }

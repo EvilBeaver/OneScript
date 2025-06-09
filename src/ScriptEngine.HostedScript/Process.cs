@@ -16,12 +16,18 @@ namespace ScriptEngine.HostedScript
 
         readonly IHostApplication _host;
         readonly IExecutableModule _module;
+        private IBslProcess _bslProcess;
 
-        internal Process(IHostApplication host, IExecutableModule src, ScriptingEngine runtime)
+        internal Process(
+            IBslProcess process,
+            IHostApplication host,
+            IExecutableModule src,
+            ScriptingEngine runtime)
         {
             _host = host;
             _engine = runtime;
             _module = src;
+            _bslProcess = process;
         }
 
         public int Start()
@@ -30,8 +36,7 @@ namespace ScriptEngine.HostedScript
 
             try
             {
-                _engine.UpdateContexts();
-                _engine.NewObject(_module);
+                _engine.NewObject(_module, _bslProcess);
                 exitCode = 0;
             }
             catch (ScriptInterruptionException e)

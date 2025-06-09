@@ -14,28 +14,28 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
     /// Вид группы модели
     /// </summary>
     /// <see cref="XmlSchemaGroupBase"/>
-    [EnumerationType("XSCompositor", "ВидГруппыМоделиXS")]
+    [EnumerationType("ВидГруппыМоделиXS", "XSCompositor")]
     public enum XSCompositor
     {
         /// <summary>
         /// Требует наличия элементов группы без требования последовательности
         /// </summary>
         /// <see cref="XmlSchemaAll"/>
-        [EnumValue("All", "Все")]
+        [EnumValue("Все", "All")]
         All,
 
         /// <summary>
         /// Требует наличия только одного из элементов группы
         /// </summary>
         /// <see cref="XmlSchemaChoice"/>
-        [EnumValue("Choice", "Выбор")]
+        [EnumValue("Выбор", "Choice")]
         Choice,
 
         /// <summary>
         /// Требует чтобы элементы следовали в указанной последовательности
         /// </summary>
         /// <see cref="XmlSchemaSequence"/>
-        [EnumValue("Sequence", "Последовательность")]
+        [EnumValue("Последовательность", "Sequence")]
         Sequence
     }
 }

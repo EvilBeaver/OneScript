@@ -55,13 +55,13 @@ namespace OneScript.Compilation
         
         private SymbolScope ModuleSymbols { get; set; }
         
-        public IExecutableModule Compile(SourceCode source, Type classType = null)
+        public IExecutableModule Compile(SourceCode source, IBslProcess process, Type classType = null)
         {
             var lexer = CreatePreprocessor(source);
             var symbols = PrepareSymbols();
             var parsedModule = ParseSyntaxConstruction(lexer, source, p => p.ParseStatefulModule());
 
-            return CompileInternal(symbols, parsedModule, classType);
+            return CompileInternal(symbols, parsedModule, classType, process);
         }
 
         public IExecutableModule CompileExpression(SourceCode source)
@@ -85,7 +85,7 @@ namespace OneScript.Compilation
             return CompileBatchInternal(symbols, parsedModule);
         }
 
-        protected abstract IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType);
+        protected abstract IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType, IBslProcess process);
         
         protected abstract IExecutableModule CompileExpressionInternal(SymbolTable symbols, ModuleNode parsedModule);
         

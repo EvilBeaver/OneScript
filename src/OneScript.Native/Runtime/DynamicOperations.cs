@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Localization;
 using OneScript.Types;
@@ -88,7 +89,7 @@ namespace OneScript.Native.Runtime
         
         public static string ToString(BslValue value)
         {
-            return (string)value;
+            return value.ToString();
         }
 
         // FIXME: тут не должно быть Null, но из-за несовершенства мира они тут бывают. Когда задолбает - надо починить и убрать отсюда проверки на null
@@ -142,7 +143,7 @@ namespace OneScript.Native.Runtime
             };
         }
         
-        public static BslValue ConstructorCall(ITypeManager typeManager, IServiceContainer services, string typeName, BslValue[] args)
+        public static BslValue ConstructorCall(ITypeManager typeManager, IServiceContainer services, string typeName, IBslProcess process, BslValue[] args)
         {
             var type = typeManager.GetTypeByName(typeName);
             var factory = typeManager.GetFactoryFor(type);
@@ -150,17 +151,18 @@ namespace OneScript.Native.Runtime
             {
                 TypeManager = typeManager,
                 Services = services,
-                TypeName = type.Name
+                TypeName = type.Name,
+                CurrentProcess = process
             };
             
             return (BslValue) factory.Activate(context, args.Cast<IValue>().ToArray());
         }
         
         // TODO: Сделать прямой маппинг на статические фабрики-методы, а не через Factory.Activate
-        public static T StrictConstructorCall<T>(ITypeManager typeManager, IServiceContainer services, string typeName, BslValue[] args)
+        public static T StrictConstructorCall<T>(ITypeManager typeManager, IServiceContainer services, string typeName, IBslProcess process, BslValue[] args)
             where T : BslValue
         {
-            return (T) ConstructorCall(typeManager, services, typeName, args);
+            return (T) ConstructorCall(typeManager, services, typeName, process, args);
         }
 
         public static BslObjectValue GetExceptionInfo(IExceptionInfoFactory factory, Exception e)
@@ -203,10 +205,33 @@ namespace OneScript.Native.Runtime
             return (BslValue)context.GetPropValue(propIndex);
         }
 
-        public static BslValue CallContextMethod(IRuntimeContextInstance instance, string methodName, BslValue[] arguments)
+        public static BslValue TryCallContextMethod(BslValue instance, string methodName, IBslProcess process, BslValue[] arguments)
+        {
+            if (!(instance is IRuntimeContextInstance context))
+                throw BslExceptions.ValueIsNotObjectException();
+
+            return CallContextMethod(context, methodName, process, arguments);
+        }
+        
+        public static BslValue CallContextMethod(IRuntimeContextInstance instance, string methodName, IBslProcess process, BslValue[] arguments)
         {
             var idx = instance.GetMethodNumber(methodName);
-            instance.CallAsFunction(idx, arguments, out var result);
+            
+            var parameters = instance.GetMethodInfo(idx).GetParameters();
+            
+            if (arguments.Length > parameters.Length)
+                throw RuntimeException.TooManyArgumentsPassed();
+
+            var valueArgs = new IValue[parameters.Length];
+            for (int i = 0; i < valueArgs.Length; i++)
+            {
+                if (i < arguments.Length)
+                    valueArgs[i] = arguments[i];
+                else
+                    valueArgs[i] = BslSkippedParameterValue.Instance;
+            }
+            
+            instance.CallAsFunction(idx, valueArgs, out var result, process);
             return (BslValue)result;
         }
     }

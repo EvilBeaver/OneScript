@@ -63,30 +63,20 @@ namespace OneScript.StandardLibrary
         /// <param name="seed">Начальное число. Последовательность случайных чисел для одного и того же начального числа будет одинакова</param>
         /// <returns></returns>
         [ScriptConstructor(Name = "Конструктор по умолчанию")]
-        public static RandomNumberGenerator Constructor(IValue seed)
+        public static RandomNumberGenerator Constructor(decimal seed)
         {
-            decimal seedNum;
-            try
-            {
-                seedNum = seed.GetRawValue().AsNumber();
-            }
-            catch
-            {
-                throw RuntimeException.InvalidArgumentType();
-            }
-
-            if (seedNum == 0)
+            if (seed == 0)
                 return new RandomNumberGenerator();
 
             int seedInt;
-            if (seedNum < int.MinValue || seedNum > int.MaxValue)
+            if (seed < int.MinValue || seed > int.MaxValue)
             {
-                var bits = decimal.GetBits(seedNum);
+                var bits = decimal.GetBits(seed);
                 seedInt = bits[0];
             }
             else
             {
-                seedInt = (int)seedNum;
+                seedInt = (int)seed;
             }
 
             return new RandomNumberGenerator(seedInt);

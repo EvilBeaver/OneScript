@@ -12,6 +12,8 @@ using OneScript.StandardLibrary.Collections;
 using System.Collections.Generic;
 using OneScript.StandardLibrary.Binary;
 using Microsoft.Extensions.Primitives;
+using OneScript.Exceptions;
+using OneScript.Types;
 
 namespace OneScript.Web.Server
 {
@@ -29,15 +31,15 @@ namespace OneScript.Web.Server
 
         public override StringValuesWrapper GetIndexedValue(IValue index)
         {
-            if (_items.TryGetValue(index.AsString(), out var result))
-                return result;
-            else
-                return StringValues.Empty;
+            if (index.SystemType != BasicTypes.String)
+                throw RuntimeException.InvalidArgumentType();
+
+            return _items.TryGetValue(index.ToString()!, out var result) ? result : StringValues.Empty;
         }
 
-        internal bool ContainsKey(IValue key)
+        internal bool ContainsKey(string key)
         {
-            return _items.ContainsKey(key.AsString());
+            return _items.ContainsKey(key);
         }
 
         public IEnumerable<IValue> Keys()

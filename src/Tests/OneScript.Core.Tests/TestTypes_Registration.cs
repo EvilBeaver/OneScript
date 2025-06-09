@@ -67,7 +67,7 @@ namespace OneScript.Core.Tests
         [Fact]
         public void TypeEqualityById()
         {
-            var guid = Guid.Parse("826429B0-F662-4CCD-BF15-384A10B53611");
+            var guid = "826429B0-F662-4CCD-BF15-384A10B53611";
             var type1 = new TypeDescriptor(guid, "TheType");
             var type2 = new TypeDescriptor(guid, "TheType");
             
@@ -79,7 +79,7 @@ namespace OneScript.Core.Tests
         [Fact]
         public void TypeInequalityForNull()
         {
-            var guid = Guid.Parse("826429B0-F662-4CCD-BF15-384A10B53611");
+            var guid = "826429B0-F662-4CCD-BF15-384A10B53611";
             var type1 = new TypeDescriptor(guid, "TheType");
             TypeDescriptor type2 = null;
             

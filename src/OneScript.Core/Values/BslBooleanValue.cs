@@ -9,7 +9,6 @@ using System;
 using OneScript.Exceptions;
 using OneScript.Localization;
 using OneScript.Types;
-using ScriptEngine.Machine;
 
 namespace OneScript.Values
 {

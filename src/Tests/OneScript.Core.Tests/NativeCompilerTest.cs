@@ -10,9 +10,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using FluentAssertions;
+using Moq;
 using OneScript.Compilation.Binding;
 using OneScript.DependencyInjection;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Native.Runtime;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
@@ -48,6 +50,9 @@ namespace OneScript.Core.Tests
             var services = new TinyIocImplementation();
             services.Register(tm);
             services.Register<IExceptionInfoFactory, ExceptionInfoFactory>();
+            var factoryMock = new Mock<IBslProcessFactory>();
+            factoryMock.Setup(f => f.NewProcess()).Returns(ForbiddenBslProcess.Instance);
+            services.Register<IBslProcessFactory>(factoryMock.Object);
 
             return new CompiledBlock(services.CreateContainer());
         }
@@ -74,7 +79,7 @@ namespace OneScript.Core.Tests
             expr.Body.As<BlockExpression>().Expressions.Should().HaveCount(2); // в конце всегда неявный return
             expr.Body.As<BlockExpression>().Expressions[0].Should().BeAssignableTo<BinaryExpression>();
 
-            expr.Parameters.Should().HaveCount(1);
+            expr.Parameters.Should().HaveCount(2);
         }
 
         [Fact]
@@ -165,7 +170,7 @@ namespace OneScript.Core.Tests
         {
             var blockOfCode = new CompiledBlock(default);
             var func = blockOfCode.CreateDelegate();
-            var result = func(default);
+            var result = func(ForbiddenBslProcess.Instance, default);
             Assert.Equal(BslUndefinedValue.Instance, result);
         }
         
@@ -177,7 +182,7 @@ namespace OneScript.Core.Tests
             blockOfCode.Parameters.Insert("Б", new BslTypeValue(BasicTypes.String));
             
             var func = blockOfCode.CreateDelegate();
-            var result = func(new BslValue[]{ BslNumericValue.Create(1), BslStringValue.Create("hello") });
+            var result = func(ForbiddenBslProcess.Instance, new BslValue[]{ BslNumericValue.Create(1), BslStringValue.Create("hello") });
             
             Assert.Equal(BslUndefinedValue.Instance, result);
         }
@@ -341,7 +346,7 @@ namespace OneScript.Core.Tests
             yield return new object[] { VariantType(), typeof(MethodCallExpression) };
         }
         
-        private static TypeDescriptor VariantType() => new TypeDescriptor(Guid.NewGuid(), "BslValue", null, typeof(BslValue));
+        private static TypeDescriptor VariantType() => new("TestValueType", "BslValue", null, typeof(BslValue));
         
         [Theory]
         [MemberData(nameof(TypesForTestEqualityOperators))]
@@ -474,7 +479,7 @@ namespace OneScript.Core.Tests
 
             var proc = expr.Compile();
             var array = new ArrayImpl(new IValue[6]);
-            proc.DynamicInvoke(array);
+            proc.DynamicInvoke(ForbiddenBslProcess.Instance, array);
 
             array.Get(5).AsNumber().Should().Be(15M);
 
@@ -520,7 +525,7 @@ namespace OneScript.Core.Tests
                               "Возврат Результат;";
             var func = block.MakeExpression().Compile();
             
-            var args = new object[] { decimal.One };
+            var args = new object[] { ForbiddenBslProcess.Instance, decimal.One };
             var result = (decimal)(BslNumericValue)func.DynamicInvoke(args);
             result.Should().Be(4);
         }
@@ -574,7 +579,7 @@ namespace OneScript.Core.Tests
 
             for (decimal i = 0; i < 4; i++)
             {
-                var args = new object[] {i, (decimal)0};
+                var args = new object[] {ForbiddenBslProcess.Instance, i, (decimal)0};
                 var result = (BslNumericValue)func.DynamicInvoke(args);
                 ((decimal)result).Should().Be(i);
             }
@@ -603,7 +608,7 @@ namespace OneScript.Core.Tests
 
             for (decimal i = 0; i < 4; i++)
             {
-                var args = new object[] {i, 0M};
+                var args = new object[] {ForbiddenBslProcess.Instance, i, 0M};
                 var result = (BslNumericValue)func.DynamicInvoke(args);
                 ((decimal)result).Should().Be(i);
             }
@@ -623,7 +628,7 @@ namespace OneScript.Core.Tests
                 "Возврат Результат;";
             var expression = block.MakeExpression();
             var func = expression.Compile();
-            var args = new object[] { decimal.Zero };
+            var args = new object[] { ForbiddenBslProcess.Instance, decimal.Zero };
             var result = (decimal)(BslNumericValue)func.DynamicInvoke(args);
             result.Should().Be(6);
         }
@@ -656,7 +661,7 @@ namespace OneScript.Core.Tests
             inArray.Add(ValueFactory.Create(4));
             inArray.Add(ValueFactory.Create(5));
             
-            var args = new object[] { decimal.Zero, inArray };
+            var args = new object[] { ForbiddenBslProcess.Instance, decimal.Zero, inArray };
             var result = (decimal)(BslNumericValue)func.DynamicInvoke(args);
             result.Should().Be(6);
         }
@@ -666,6 +671,10 @@ namespace OneScript.Core.Tests
         {
             var services = new TinyIocImplementation();
             services.Register<IExceptionInfoFactory, ExceptionInfoFactory>();
+            var factoryMock = new Mock<IBslProcessFactory>();
+            factoryMock.Setup(f => f.NewProcess()).Returns(ForbiddenBslProcess.Instance);
+            services.Register<IBslProcessFactory>(factoryMock.Object);
+            
             var block = new CompiledBlock(services);
             block.Parameters.Insert("Ф", new BslTypeValue(BasicTypes.Number));
             block.CodeBlock = 
@@ -678,8 +687,8 @@ namespace OneScript.Core.Tests
             
             var func = expression.Compile();
             
-            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { decimal.One })).Should().Be(1);
-            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { decimal.Zero })).Should().Be(2);
+            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { ForbiddenBslProcess.Instance, decimal.One })).Should().Be(1);
+            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { ForbiddenBslProcess.Instance, decimal.Zero })).Should().Be(2);
         }
 
         [Fact]
@@ -931,7 +940,7 @@ namespace OneScript.Core.Tests
             testData.Columns.Add("Колонка1");
             testData.Columns.Add("Колонка2");
 
-            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { testData })).Should().Be(2M);
+            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { ForbiddenBslProcess.Instance, testData })).Should().Be(2M);
         }
 
         [Fact]
@@ -954,7 +963,7 @@ namespace OneScript.Core.Tests
             var testData = new StructureImpl();
             testData.Insert("Свойство1", innerTestData);
 
-            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { testData })).Should().Be(2M);
+            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { ForbiddenBslProcess.Instance, testData })).Should().Be(2M);
         }
 
         [Fact]
@@ -981,7 +990,7 @@ namespace OneScript.Core.Tests
             var testData = new StructureImpl();
             testData.Insert("Свойство1", innerTestData);
 
-            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] { testData, innerTestData, 2M })).Should().Be(2M);
+            ((decimal)(BslNumericValue)func.DynamicInvoke(new object[] {ForbiddenBslProcess.Instance, testData, innerTestData, 2M })).Should().Be(2M);
         }
         
         [Fact]
@@ -1005,7 +1014,7 @@ namespace OneScript.Core.Tests
 
             var testData = testStructure.FirstOrDefault();
 
-            ((decimal) (BslNumericValue) func.DynamicInvoke(new object[] {testData, 2M}))
+            ((decimal) (BslNumericValue) func.DynamicInvoke(new object[] {ForbiddenBslProcess.Instance, testData, 2M}))
                 .Should().Be(2M);
         }
 
@@ -1051,7 +1060,7 @@ namespace OneScript.Core.Tests
 
             var testData = new StructureImpl();
 
-            ((bool)(BslBooleanValue)func.DynamicInvoke(new object[] { testData })).Should().Be(true);
+            ((bool)(BslBooleanValue)func.DynamicInvoke(new object[] { ForbiddenBslProcess.Instance, testData })).Should().Be(true);
         }
         
         [Fact]
@@ -1068,7 +1077,7 @@ namespace OneScript.Core.Tests
 
             var testData = new StructureImpl();
 
-            ((bool)(BslBooleanValue)func.DynamicInvoke(new object[] { testData })).Should().Be(false);
+            ((bool)(BslBooleanValue)func.DynamicInvoke(new object[] { ForbiddenBslProcess.Instance, testData })).Should().Be(false);
         }
         
         [Fact]
@@ -1083,7 +1092,7 @@ namespace OneScript.Core.Tests
             var func = lambda.Compile();
 
             var testType = new BslTypeValue(objectType);
-            var result = func.DynamicInvoke();
+            var result = func.DynamicInvoke(ForbiddenBslProcess.Instance);
 
             result.Should().BeOfType<BslTypeValue>().And.Be(testType);
         }
@@ -1098,7 +1107,7 @@ namespace OneScript.Core.Tests
             var func = lambda.Compile();
 
             var testType = new BslTypeValue(BasicTypes.Number);
-            var result = func.DynamicInvoke();
+            var result = func.DynamicInvoke(ForbiddenBslProcess.Instance);
 
             result.Should().BeOfType<BslTypeValue>().And.Be(testType);
         }

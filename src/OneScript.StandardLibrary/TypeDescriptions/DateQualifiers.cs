@@ -7,7 +7,9 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Contexts;
+using OneScript.Execution;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -26,16 +28,15 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 
 		public override bool Equals(object obj)
 		{
-			var asThis = obj as DateQualifiers;
-			if (asThis == null)
+			if (!(obj is DateQualifiers asThis))
 				return false;
 
 			return DateFractions == asThis.DateFractions;
 		}
 
-		public override bool Equals(IValue other)
+		public override bool Equals(BslValue other)
 		{
-			return object.Equals(this, other?.GetRawValue());
+			return Equals((object)other);
 		}
 
 		public override int GetHashCode()
@@ -68,10 +69,9 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 		}
 
 		[ScriptConstructor(Name = "На основании описания даты")]
-		public static DateQualifiers Constructor(IValue dateFractions = null)
+		public static DateQualifiers Constructor(DateFractionsEnum dateFractions = DateFractionsEnum.DateTime)
 		{
-			var paramDateFractions = ContextValuesMarshaller.ConvertParam(dateFractions, DateFractionsEnum.DateTime);
-			return new DateQualifiers(paramDateFractions);
+			return new DateQualifiers(dateFractions);
 		}
 	}
 }

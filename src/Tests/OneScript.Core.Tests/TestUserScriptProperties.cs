@@ -69,9 +69,9 @@ namespace OneScript.Core.Tests
 
             var source = engine.Loader.FromString(code);
             engine.Initialize();
-            var module = engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, context);
+            var module = engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, context, engine.NewProcess());
             
-            var instance = engine.NewObject(module, context);
+            var instance = engine.NewObject(module, engine.NewProcess(), context);
             return instance;
         }
     }

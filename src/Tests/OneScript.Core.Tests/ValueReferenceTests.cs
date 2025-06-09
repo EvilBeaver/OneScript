@@ -17,10 +17,10 @@ namespace OneScript.Core.Tests
         public void TestCanReferenceSimpleValue()
         {
             var context = new TestContextClass();
-            var reference = new ValueReference(() => BslStringValue.Create(context.BslProp), v => context.BslProp = v.AsString());
+            var reference = new ValueReference(() => BslStringValue.Create(context.BslProp), v => context.BslProp = v.ToString());
 
             context.BslProp = "HELLO";
-            reference.Value.AsString().Should().Be("HELLO");
+            reference.Value.ToString().Should().Be("HELLO");
             reference.Value = BslStringValue.Create("NEWVAL");
             context.BslProp.Should().Be("NEWVAL");
         }
@@ -33,8 +33,8 @@ namespace OneScript.Core.Tests
             var referenceRu = new PropertyValueReference(context, "СвойствоBsl");
 
             context.BslProp = "HELLO";
-            referenceEn.Value.AsString().Should().Be("HELLO");
-            referenceRu.Value.AsString().Should().Be("HELLO");
+            referenceEn.Value.ToString().Should().Be("HELLO");
+            referenceRu.Value.ToString().Should().Be("HELLO");
 
             // ссылки эквивалентны только если ссылаются на тот же объект
             referenceRu.Should().Be(referenceEn);
@@ -42,7 +42,7 @@ namespace OneScript.Core.Tests
             referenceEn.Should().NotBe(simpleReference);
 
             referenceEn.Value = BslStringValue.Create("NEWVAL");
-            referenceRu.Value.AsString().Should().Be("NEWVAL");
+            referenceRu.Value.ToString().Should().Be("NEWVAL");
             context.BslProp.Should().Be("NEWVAL");
         }
 

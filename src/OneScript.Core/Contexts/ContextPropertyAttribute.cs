@@ -11,7 +11,7 @@ using OneScript.Commons;
 namespace OneScript.Contexts
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class ContextPropertyAttribute : Attribute
+    public class ContextPropertyAttribute : Attribute, INameAndAliasProvider
     {
         private readonly string _name;
         private readonly string _alias;
@@ -33,15 +33,12 @@ namespace OneScript.Contexts
         public bool CanRead { get; set; }
         public bool CanWrite { get; set; }
 
-        public string GetName()
-        {
-            return _name;
-        }
+        /// <summary>
+        /// Данное свойство не будет обработано генератором документации при обходе типов
+        /// </summary>
+        public bool SkipForDocumenter { get; set; }
 
-        public string GetAlias()
-        {
-            return _alias;
-        }
-        
+        public string Name => _name;
+        public string Alias => _alias;
     }
 }

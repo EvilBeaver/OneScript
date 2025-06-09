@@ -197,9 +197,9 @@ namespace OneScript.StandardLibrary.Collections
         [ScriptConstructor(Name = "По количеству элементов")]
         public static ArrayImpl Constructor(IValue[] dimensions)
         {
-            if (dimensions.Length == 1 && dimensions[0].GetRawValue() is FixedArrayImpl)
+            if (dimensions.Length == 1 && dimensions[0] is FixedArrayImpl fa)
             {
-                return Constructor(dimensions[0]);
+                return Constructor(fa);
             }
             
             ArrayImpl cloneable = null;
@@ -230,12 +230,9 @@ namespace OneScript.StandardLibrary.Collections
         }
 
         [ScriptConstructor(Name = "На основании фиксированного массива")]
-        public static ArrayImpl Constructor(IValue fixedArray)
+        public static ArrayImpl Constructor(FixedArrayImpl fixedArray)
         {
-            if (!(fixedArray.GetRawValue() is FixedArrayImpl val))
-                throw RuntimeException.InvalidArgumentType();
-            
-            return new ArrayImpl(val);
+            return new ArrayImpl(fixedArray);
         }
 
         private static RuntimeException IndexOutOfBoundsException()

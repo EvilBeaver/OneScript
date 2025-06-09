@@ -14,6 +14,7 @@ using OneScript.Exceptions;
 using OneScript.Rcw;
 using OneScript.Values;
 using System.Reflection;
+using OneScript.Execution;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -181,7 +182,7 @@ namespace ScriptEngine.Machine.Contexts
                 .Build();
         }
 
-        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
+        public override void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
             var method = _methods[methodNumber];
 
@@ -208,7 +209,7 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process)
         {
             var method = _methods[methodNumber];
 

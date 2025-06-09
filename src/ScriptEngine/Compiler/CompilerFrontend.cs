@@ -5,7 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Collections.Generic;
 using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
@@ -33,8 +32,7 @@ namespace ScriptEngine.Compiler
             IErrorSink errorSink,
             IServiceContainer services,
             IDependencyResolver dependencyResolver,
-            PredefinedInterfaceResolver interfaceResolver,
-            IEnumerable<IPredefinedInterfaceChecker> checkers) : base(handlers, errorSink, services)
+            PredefinedInterfaceResolver interfaceResolver) : base(handlers, errorSink, services)
         {
             _dependencyResolver = dependencyResolver;
             _interfaceResolver = interfaceResolver;
@@ -68,12 +66,12 @@ namespace ScriptEngine.Compiler
             backend.GenerateDebugCode = GenerateDebugCode;
         }
 
-        protected override IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType)
+        protected override IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType, IBslProcess process)
         {
             var backend = _backendSelector.Select(parsedModule);
             backend.Symbols = symbols;
             
-            var module = backend.Compile(parsedModule, classType);
+            var module = backend.Compile(parsedModule, classType, process);
 
             _interfaceResolver.Resolve(module);
 
@@ -84,14 +82,14 @@ namespace ScriptEngine.Compiler
         {
             var backend = _backendSelector.Select(parsedModule);
             backend.Symbols = symbols;
-            return backend.Compile(parsedModule, typeof(UserScriptContextInstance));
+            return backend.Compile(parsedModule, typeof(UserScriptContextInstance), ForbiddenBslProcess.Instance);
         }
 
         protected override IExecutableModule CompileBatchInternal(SymbolTable symbols, ModuleNode parsedModule)
         {
             var backend = _backendSelector.Select(parsedModule);
             backend.Symbols = symbols;
-            return backend.Compile(parsedModule, typeof(UserScriptContextInstance));
+            return backend.Compile(parsedModule, typeof(UserScriptContextInstance), ForbiddenBslProcess.Instance);
         }
     }
 }

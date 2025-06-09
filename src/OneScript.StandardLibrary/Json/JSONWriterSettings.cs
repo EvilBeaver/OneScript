@@ -87,17 +87,26 @@ namespace OneScript.StandardLibrary.Json
         /// Определяет, будет ли экранироваться слеш (косая черта) при записи значения.
         /// Значение по умолчанию: Ложь. </param>
         [ScriptConstructor(Name = "По описанию параметров записи")]
-        public static JSONWriterSettings ParametrizedConstructor(IValue newLines = null, IValue paddingSymbols = null, IValue useDoubleQuotes = null, IValue escapeCharacters = null, IValue escapeAngleBrackets = null, IValue escapeLineTerminators = null, IValue escapeAmpersand = null, IValue escapeSingleQuotes = null, IValue escapeSlash = null)
+        public static JSONWriterSettings ParametrizedConstructor(
+            JSONLineBreakEnum newLines = JSONLineBreakEnum.None,
+            string paddingSymbols = null,
+            bool useDoubleQuotes = true,
+            JSONCharactersEscapeModeEnum escapeCharacters = JSONCharactersEscapeModeEnum.None,
+            bool escapeAngleBrackets = false,
+            bool escapeLineTerminators = true,
+            bool escapeAmpersand = false,
+            bool escapeSingleQuotes = false,
+            bool escapeSlash = false)
         {
-            return new JSONWriterSettings((newLines as ClrEnumValueWrapper<JSONLineBreakEnum>)?.UnderlyingValue ?? JSONLineBreakEnum.None,
-                                          paddingSymbols?.AsString(),
-                                          useDoubleQuotes?.AsBoolean() ?? true,
-                                          (escapeCharacters as ClrEnumValueWrapper<JSONCharactersEscapeModeEnum>)?.UnderlyingValue ?? JSONCharactersEscapeModeEnum.None,
-                                          escapeAngleBrackets?.AsBoolean() ?? false,
-                                          (escapeLineTerminators == null || escapeLineTerminators.AsBoolean()),
-                                          escapeAmpersand?.AsBoolean() ?? false,
-                                          escapeSingleQuotes?.AsBoolean() ?? false,
-                                          escapeSlash?.AsBoolean() ?? false);
+            return new JSONWriterSettings(newLines,
+                                          paddingSymbols,
+                                          useDoubleQuotes,
+                                          escapeCharacters,
+                                          escapeAngleBrackets,
+                                          escapeLineTerminators,
+                                          escapeAmpersand,
+                                          escapeSingleQuotes,
+                                          escapeSlash);
         }
 
         /// <summary>

@@ -21,6 +21,6 @@ namespace OneScript.Compilation
         
         public SymbolTable Symbols { get; set; }
         
-        IExecutableModule Compile(ModuleNode parsedModule, Type classType);
+        IExecutableModule Compile(ModuleNode parsedModule, Type classType, IBslProcess process);
     }
 }

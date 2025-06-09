@@ -22,21 +22,21 @@ namespace OneScript.Web.Server
         }
 
         [ContextMethod("Добавить", "Append")]
-        public void Append(IValue key, IValue value, CookieOptionsWrapper cookieOptions = null)
+        public void Append(string key, string value, CookieOptionsWrapper cookieOptions = null)
         {
             if (cookieOptions is null)
-                _items.Append(key.AsString(), value.AsString());
+                _items.Append(key, value);
             else
-                _items.Append(key.AsString(), value.AsString(), cookieOptions._cookieOptions);
+                _items.Append(key, value, cookieOptions._cookieOptions);
         }
 
         [ContextMethod("Удалить", "Delete")]
-        public void Delete(IValue key, CookieOptionsWrapper cookieOptions = null)
+        public void Delete(string key, CookieOptionsWrapper cookieOptions = null)
         {
             if (cookieOptions is null)
-                _items.Delete(key.AsString());
+                _items.Delete(key);
             else
-                _items.Delete(key.AsString(), cookieOptions._cookieOptions);
+                _items.Delete(key, cookieOptions._cookieOptions);
         }
     }
 }

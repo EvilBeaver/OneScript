@@ -50,8 +50,8 @@ namespace OneScript.Native.Compiler
                     .Where(x => x.Markup != null)
                     .Select(x => new CacheRecord
                     {
-                        Name = x.Markup.GetName(),
-                        Alias = x.Markup.GetAlias(),
+                        Name = x.Markup.Name,
+                        Alias = x.Markup.Alias,
                         Method = x.Method
                     }).ToArray();
                 

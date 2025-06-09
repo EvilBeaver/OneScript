@@ -11,6 +11,7 @@ using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Contexts.Enums;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using ScriptEngine.Machine;
@@ -109,9 +110,9 @@ namespace OneScript.StandardLibrary
         /// <param name="input">Массив - соединяемые строки</param>
         /// <param name="delimiter">Разделитель. Если не указан, строки объединяются слитно</param>
         [ContextMethod("СтрСоединить", "StrConcat")]
-        public string StrConcat(ArrayImpl input, string delimiter = null)
+        public string StrConcat(IBslProcess process, ArrayImpl input, string delimiter = null)
         {
-            var strings = input.Select(x => x.AsString());
+            var strings = input.Select(x => x.AsString(process));
             
             return String.Join(delimiter, strings);
         }
@@ -205,15 +206,15 @@ namespace OneScript.StandardLibrary
         /// <param name="p1-p10">Параметры, строковые представления которых должны быть подставлены в шаблон</param>
         /// <returns>Строка шаблона с подставленными параметрами</returns>
         [ContextMethod("СтрШаблон", "StrTemplate")]
-        public string StrTemplate(IValue template,
-            IValue p1=null, IValue p2=null, IValue p3=null, IValue p4=null, IValue p5=null,
-            IValue p6=null, IValue p7=null, IValue p8=null, IValue p9=null, IValue p10=null)
+        public string StrTemplate(string template,
+            string p1=null, string p2=null, string p3=null, string p4=null, string p5=null,
+            string p6=null, string p7=null, string p8=null, string p9=null, string p10=null)
         {
-            var srcFormat = template?.AsString() ?? "";
+            var srcFormat = template ?? "";
 
-            var arguments = new IValue[] { p10,p9,p8,p7,p6,p5,p4,p3,p2,p1 };
+            var arguments = new [] { p10,p9,p8,p7,p6,p5,p4,p3,p2,p1 };
             int passedArgsCount = arguments
-                .SkipWhile(x => x == null || x.IsSkippedArgument() || x.SystemType == BasicTypes.Undefined)
+                .SkipWhile(x => x == null)
                 .Count();
 
             var re = new System.Text.RegularExpressions.Regex(@"(%%)|%(\d+)|%\((\d+)\)|%");
@@ -237,11 +238,7 @@ namespace OneScript.StandardLibrary
                     if (number > maxNumber)
                         maxNumber = number;
 
-                    var arg = arguments[10-number];
-                    if ( arg!= null && !arg.IsSkippedArgument())
-                        return arg.AsString();
-                    else
-                        return "";
+                    return arguments[10-number] ?? "";
                 }
 
                 throw new RuntimeException("Ошибка синтаксиса шаблона в позиции " + (m.Index + 2));
@@ -263,9 +260,9 @@ namespace OneScript.StandardLibrary
     [EnumerationType("НаправлениеПоиска", "SearchDirection")]
     public enum SearchDirection
     {
-        [EnumValue("СНачала")]
+        [EnumValue("СНачала", "FromBegin")]
         FromBegin,
-        [EnumValue("СКонца")]
+        [EnumValue("СКонца", "FromEnd")]
         FromEnd
     }
 

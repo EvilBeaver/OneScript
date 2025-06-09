@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using OneScript.Values;
@@ -50,17 +51,8 @@ namespace OneScript.StandardLibrary.Tasks
             var taskCreationOptions = longRunning ? TaskCreationOptions.LongRunning : TaskCreationOptions.None;
             var worker = new Task(() =>
             {
-                MachineInstance.Current.SetMemory(_runtimeContext);
-                var debugger = _runtimeContext.Services.TryResolve<IDebugController>();
-                debugger?.AttachToThread();
-                try
-                {
-                    task.ExecuteOnCurrentThread();
-                }
-                finally
-                {
-                    debugger?.DetachFromThread();
-                }
+                var process = _runtimeContext.Services.Resolve<IBslProcessFactory>().NewProcess();
+                task.ExecuteOnCurrentThread(process);
 
             }, taskCreationOptions);
 
@@ -151,7 +143,7 @@ namespace OneScript.StandardLibrary.Tasks
                 var result = true;
                 foreach (var filterItem in filter)
                 {
-                    switch (filterItem.Key.AsString().ToLower())
+                    switch (filterItem.Key.ToString()!.ToLower())
                     {
                         case "состояние":
                         case "state":
@@ -164,7 +156,7 @@ namespace OneScript.StandardLibrary.Tasks
                         
                         case "имяметода":
                         case "methodname":
-                            result = result && task.MethodName.ToLower() == filterItem.Value.AsString();
+                            result = result && task.MethodName.ToLower() == filterItem.Value.ToString();
                             break;
                         
                         case "объект":

@@ -33,19 +33,24 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual ClrEnumValueWrapper<T> FromNativeValue(T native)
         {
-            /* TODO: benchmark 
-             return ((List<ClrEnumValueWrapper<T>>)ValuesInternal)
-                .Find(x => x.UnderlyingValue.Equals(native))
-                ?? throw new InvalidOperationException($"Item '{native}' not found");
-             */
+            var result = TryGetFromNativeValue(native);
+            if (result == null)
+                throw new InvalidOperationException($"Item '{native}' not found");
+
+            return result;
+        }
+
+        public ClrEnumValueWrapper<T> TryGetFromNativeValue(T native)
+        {
+            ClrEnumValueWrapper<T> wrapper = null;
             foreach (var value in ValuesInternal)
             {
-                var wrapper = (ClrEnumValueWrapper<T>) value;
+                wrapper = (ClrEnumValueWrapper<T>) value;
                 if (wrapper.UnderlyingValue.Equals(native))
                     return wrapper;
             }
 
-            throw new InvalidOperationException($"Item '{native}' not found");
+            return wrapper;
         }
 
         private void Autoregister(TypeDescriptor valuesType)

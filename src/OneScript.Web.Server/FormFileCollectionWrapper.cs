@@ -9,8 +9,10 @@ using OneScript.Contexts;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
+using OneScript.Exceptions;
 using OneScript.Values;
 using OneScript.StandardLibrary.Collections;
+using OneScript.Types;
 
 namespace OneScript.Web.Server
 {
@@ -28,7 +30,10 @@ namespace OneScript.Web.Server
 
         public override IValue GetIndexedValue(IValue index)
         {
-            var result = _items.GetFile(index.AsString());
+            if (index.SystemType != BasicTypes.String)
+                throw RuntimeException.InvalidArgumentType();
+            
+            var result = _items.GetFile(index.ToString()!);
 
             if (result == null)
                 return BslUndefinedValue.Instance;

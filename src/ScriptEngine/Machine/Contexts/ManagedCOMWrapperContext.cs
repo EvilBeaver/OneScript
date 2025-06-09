@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reflection;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
@@ -157,13 +158,13 @@ namespace ScriptEngine.Machine.Contexts
             return GetReflectableProperty(propertyNumber, info);
         }
 
-        public override void CallAsProcedure(int methodNumber, IValue[] arguments)
+        public override void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
             var method = _nameMapper.GetMethod(methodNumber);
             method.Invoke(arguments);
         }
 
-        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process)
         {
             var method = _nameMapper.GetMethod(methodNumber);
             var result = method.Invoke(arguments);

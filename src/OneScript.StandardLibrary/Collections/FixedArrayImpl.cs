@@ -80,13 +80,9 @@ namespace OneScript.StandardLibrary.Collections
         }
 
         [ScriptConstructor(Name = "На основании обычного массива")]
-        public static FixedArrayImpl Constructor(IValue source)
+        public static FixedArrayImpl Constructor(ArrayImpl source)
         {
-            var rawSource = source.GetRawValue() as ArrayImpl;
-            if (rawSource == null)
-                throw RuntimeException.InvalidArgumentType();
-
-            return new FixedArrayImpl(rawSource);
+            return new FixedArrayImpl(source);
         }
     }
 }

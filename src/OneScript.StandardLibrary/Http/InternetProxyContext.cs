@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -145,7 +146,7 @@ namespace OneScript.StandardLibrary.Http
                GetBasicCredential(builderServer.Uri, username, password);
 
             _proxies[protocol] = new WebProxy(builderServer.Uri, _bypassLocal,
-                _bypassProxyOnAddresses?.Select(x => x.AsString()).ToArray() ?? new string[] {}, proxyCredentials);
+                _bypassProxyOnAddresses?.Select(x => x.ToString()).ToArray() ?? new string[] {}, proxyCredentials);
         }
 
         [ContextProperty("НеИспользоватьПроксиДляАдресов","BypassProxyOnAddresses")]
@@ -155,7 +156,7 @@ namespace OneScript.StandardLibrary.Http
             set
             {
                 _bypassProxyOnAddresses = value;
-                var bypassList = _bypassProxyOnAddresses?.Select(x => x.AsString()).ToArray() ?? new string[] {};
+                var bypassList = _bypassProxyOnAddresses?.Select(x => x.ToString()).ToArray() ?? new string[] {};
                 foreach (var kv in _proxies)
                     if (kv.Value is WebProxy proxy)
                         proxy.BypassList = bypassList;

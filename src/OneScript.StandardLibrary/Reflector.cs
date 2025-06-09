@@ -46,7 +46,7 @@ namespace OneScript.StandardLibrary
         /// <param name="arguments">Массив аргументов, передаваемых методу. Следует учесть, что все параметры нужно передавать явно, в том числе необязательные.</param>
         /// <returns>Если вызывается функция, то возвращается ее результат. В противном случае возвращается Неопределено.</returns>
         [ContextMethod("ВызватьМетод", "CallMethod")]
-        public IValue CallMethod(IRuntimeContextInstance target, string methodName, ArrayImpl arguments = null)
+        public IValue CallMethod(IBslProcess process, IRuntimeContextInstance target, string methodName, ArrayImpl arguments = null)
         {
             var methodIdx = target.GetMethodNumber(methodName);
             var methInfo = target.GetMethodInfo(methodIdx);
@@ -55,16 +55,16 @@ namespace OneScript.StandardLibrary
             if (target.DynamicMethodSignatures)
                 argsToPass = arguments?.ToArray() ?? Array.Empty<IValue>();
             else
-                argsToPass = GetArgsToPass(arguments, methInfo.GetParameters());
+                argsToPass = GetArgsToPass(arguments, methInfo.GetBslParameters());
  
             IValue retValue = ValueFactory.Create();
             if (methInfo.IsFunction())
             {
-                target.CallAsFunction(methodIdx, argsToPass, out retValue);
+                target.CallAsFunction(methodIdx, argsToPass, out retValue, process);
             }
             else
             {
-                target.CallAsProcedure(methodIdx, argsToPass);
+                target.CallAsProcedure(methodIdx, argsToPass, process);
             }
 
             if (arguments != null)
@@ -73,7 +73,7 @@ namespace OneScript.StandardLibrary
                 {
                     if (i < arguments.Count())
                     {
-                        arguments.Set(i, argsToPass[i]?.GetRawValue());
+                        arguments.Set(i, argsToPass[i] is IValueReference r ? r.Value : argsToPass[i]);
                     }
                 }
             }
@@ -117,13 +117,13 @@ namespace OneScript.StandardLibrary
         /// <param name="methodName">Имя метода для вызова</param>
         /// <returns>Истина, если метод существует, и Ложь в обратном случае. </returns>
         [ContextMethod("МетодСуществует", "MethodExists")]
-        public bool MethodExists(IValue target, string methodName)
+        public bool MethodExists(BslValue target, string methodName)
         {
-            if(target.GetRawValue() is BslObjectValue)
+            if(target is BslObjectValue)
                 return MethodExistsForObject(target.AsObject(), methodName);
 
             if (target.SystemType == BasicTypes.Type)
-                return MethodExistsForType(target.GetRawValue() as BslTypeValue, methodName);
+                return MethodExistsForType(target as BslTypeValue, methodName);
 
             throw RuntimeException.InvalidArgumentType("target");
         }
@@ -220,13 +220,13 @@ namespace OneScript.StandardLibrary
         /// <param name="target">Объект, из которого получаем таблицу методов.</param>
         /// <returns>Таблица значений с колонками: Имя, Количество, ЭтоФункция, Аннотации, Параметры, Экспорт</returns>
         [ContextMethod("ПолучитьТаблицуМетодов", "GetMethodsTable")]
-        public ValueTable GetMethodsTable(IValue target)
+        public ValueTable GetMethodsTable(BslValue target)
         {
             var result = new ValueTable();
-            if(target.GetRawValue() is BslObjectValue)
+            if(target is BslObjectValue)
                 FillMethodsTableForObject(target.AsObject(), result);
             else if (target.SystemType == BasicTypes.Type)
-                FillMethodsTableForType(target.GetRawValue() as BslTypeValue, result);
+                FillMethodsTableForType(target as BslTypeValue, result);
             else
                 throw RuntimeException.InvalidArgumentType();
 
@@ -340,7 +340,7 @@ namespace OneScript.StandardLibrary
             foreach (var methInfo in methods)
             {
                 var annotations = methInfo.GetAnnotations();
-                var parameters = methInfo.GetParameters();
+                var parameters = methInfo.GetBslParameters();
                 
                 ValueTableRow new_row = result.Add();
                 new_row.Set(nameColumn, ValueFactory.Create(methInfo.Name));
@@ -383,15 +383,15 @@ namespace OneScript.StandardLibrary
         /// <param name="withPrivate">Включить в результат приватные поля</param>
         /// <returns>Таблица значений с колонками - Имя, Аннотации, Экспорт</returns>
         [ContextMethod("ПолучитьТаблицуСвойств", "GetPropertiesTable")]
-        public ValueTable GetPropertiesTable(IValue target, bool withPrivate = false)
+        public ValueTable GetPropertiesTable(BslValue target, bool withPrivate = false)
         {
             var result = new ValueTable();
 
-            if(target.GetRawValue() is BslObjectValue)
+            if(target is BslObjectValue)
                 FillPropertiesTableForObject(result, target, withPrivate);
             else if (target.SystemType == BasicTypes.Type)
             {
-                var type = target.GetRawValue() as BslTypeValue;
+                var type = target as BslTypeValue;
                 FillPropertiesTableForType(type, result, withPrivate);
             }
             else
@@ -496,7 +496,7 @@ namespace OneScript.StandardLibrary
 
             var builder = new ClassBuilder(clrType);
 
-            return builder.SetTypeName(attrib.GetName())
+            return builder.SetTypeName(attrib.Name)
                    .ExportDefaults()
                    .Build();
         }

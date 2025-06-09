@@ -14,7 +14,7 @@ using ScriptEngine.Machine;
 
 namespace OneScript.DebugServices
 {
-    public class ThreadManager : IDisposable
+    public class ThreadManager : IThreadManager
     {
         private readonly IDictionary<int, MachineWaitToken> _machinesOnThreads = new ConcurrentDictionary<int, MachineWaitToken>();
 
@@ -28,63 +28,26 @@ namespace OneScript.DebugServices
             throw new ArgumentOutOfRangeException($"Thread {threadId} is unregistered");
         }
         
-        public MachineWaitToken GetTokenForCurrentThread()
-        {
-            return GetTokenForThread(Thread.CurrentThread.ManagedThreadId);
-        }
-
         public event EventHandler<ThreadStoppedEventArgs> ThreadStopped;
-
-        public void AttachToCurrentThread()
-        {
-            var machine = MachineInstance.Current;
-            _machinesOnThreads[Thread.CurrentThread.ManagedThreadId] = new MachineWaitToken()
-            {
-                Machine = machine
-            };
-
-            machine.MachineStopped += Machine_MachineStopped;
-        }
-        
-        public void DetachFromCurrentThread()
-        {
-            var threadId = Thread.CurrentThread.ManagedThreadId;
-            DetachFromThread(threadId);
-        }
-        
-        public void DetachFromThread(int threadId)
-        {
-            if (_machinesOnThreads.TryGetValue(threadId, out var t))
-            {
-                t.Machine.MachineStopped -= Machine_MachineStopped;
-                _machinesOnThreads.Remove(threadId);
-                // Если машина была остановлена - продолжаем её уже без остановок
-                t.Machine.UnsetDebugMode();
-                t.Set();
-            }
-        }
         
         public MachineWaitToken[] GetAllTokens()
         {
             return _machinesOnThreads.Values.ToArray();
         }
 
-        private void Machine_MachineStopped(object sender, MachineStoppedEventArgs e)
+        private void EmitThreadStopped(int threadId, MachineStopReason reason, string errMessage)
         {
+            var machine = GetTokenForThread(threadId).Machine;
+            
             var args = new ThreadStoppedEventArgs
             {
-                Machine = (MachineInstance)sender,
-                ThreadId = e.ThreadId,
-                StopReason = e.Reason,
-                ErrorMessage = e.ErrorMessage
+                Machine = machine,
+                ThreadId = threadId,
+                StopReason = reason,
+                ErrorMessage = errMessage
             };
             
             ThreadStopped?.Invoke(this, args);
-        }
-        
-        public int[] GetAllThreadIds()
-        {
-            return _machinesOnThreads.Keys.ToArray();
         }
 
         public void ReleaseAllThreads()
@@ -92,16 +55,49 @@ namespace OneScript.DebugServices
             var tokens = GetAllTokens();
             foreach (var machineWaitToken in tokens)
             {
-                machineWaitToken.Machine.MachineStopped -= Machine_MachineStopped;
+                machineWaitToken.Machine.UnsetDebugMode();
                 machineWaitToken.Dispose();
             }
 
             _machinesOnThreads.Clear();
         }
         
+        public void Detach(int threadId)
+        {
+            if (_machinesOnThreads.Remove(threadId, out var t))
+            {
+                // Если машина была остановлена - продолжаем её уже без остановок
+                t.Machine.UnsetDebugMode();
+                t.Set();
+            }
+        }
+        
         public void Dispose()
         {
             ReleaseAllThreads();
+        }
+
+        public void ThreadStarted(int threadId, MachineInstance machine)
+        {
+            _machinesOnThreads[threadId] = new MachineWaitToken
+            {
+                Machine = machine
+            };
+        }
+
+        void IThreadManager.ThreadStopped(int threadId, MachineStopReason reason, string errorMessage)
+        {
+            EmitThreadStopped(threadId, reason, errorMessage);
+        }
+
+        public void ThreadExited(int threadId)
+        {
+            _machinesOnThreads.Remove(threadId);
+        }
+
+        public IEnumerable<int> GetThreadIds()
+        {
+            return _machinesOnThreads.Keys.ToList();
         }
     }
 }

@@ -27,7 +27,7 @@ namespace OneScript.Compilation
         
         IErrorSink ErrorSink { get; }
         
-        IExecutableModule Compile(SourceCode source, Type classType = null);
+        IExecutableModule Compile(SourceCode source, IBslProcess process, Type classType = null);
         
         IExecutableModule CompileExpression(SourceCode source);
         

@@ -33,7 +33,7 @@ namespace OneScript.Web.Server.WebSockets
             }
             set
             {
-                _context.SubProtocol = value is BslUndefinedValue ? null : value.AsString();
+                _context.SubProtocol = value is BslUndefinedValue ? null : value.ToString();
             }
         }
 

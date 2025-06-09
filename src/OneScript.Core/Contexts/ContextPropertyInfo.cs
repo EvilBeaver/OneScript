@@ -50,9 +50,9 @@ namespace OneScript.Contexts
         public override Type DeclaringType => _realProperty.DeclaringType;
         public override Type ReflectedType => _realProperty.ReflectedType;
         
-        public override string Name => _scriptMark.GetName();
+        public override string Name => _scriptMark.Name;
         
-        public override string Alias => _scriptMark.GetAlias();
+        public override string Alias => _scriptMark.Alias;
         
         public override MethodInfo[] GetAccessors(bool nonPublic)
         {

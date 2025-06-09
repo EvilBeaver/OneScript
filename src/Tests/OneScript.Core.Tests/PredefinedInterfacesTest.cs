@@ -35,9 +35,9 @@ public class PredefinedInterfacesTest
                 new BslAnnotationAttribute("MyAnno")
             });
 
-            mock.SetupGet(x => x.Methods).Returns(Array.Empty<BslMethodInfo>());
+            mock.SetupGet(x => x.Methods).Returns(Array.Empty<BslScriptMethodInfo>());
         });
-        
+
         checker.Setup(x => x.Validate(module)).Callback<IExecutableModule>((m) =>
         {
             m.Interfaces.Add(typeof(string), "Registered");
@@ -48,7 +48,7 @@ public class PredefinedInterfacesTest
 
         module.Interfaces.Should().Contain(KeyValuePair.Create(typeof(string), (object)"Registered"));
     }
-    
+
     [Fact]
     public void Test_CheckerDoesNotReactsOnModuleAnnotations()
     {
@@ -62,9 +62,9 @@ public class PredefinedInterfacesTest
         var module = MockModule(mock =>
         {
             mock.SetupGet(x => x.ModuleAttributes).Returns(Array.Empty<BslAnnotationAttribute>());
-            mock.SetupGet(x => x.Methods).Returns(Array.Empty<BslMethodInfo>());
+            mock.SetupGet(x => x.Methods).Returns(Array.Empty<BslScriptMethodInfo>());
         });
-        
+
         checker.Setup(x => x.Validate(module)).Callback<IExecutableModule>((m) =>
         {
             m.Interfaces.Add(typeof(string), "Registered");
@@ -75,7 +75,7 @@ public class PredefinedInterfacesTest
 
         module.Interfaces.Should().BeEmpty();
     }
-    
+
     [Fact]
     public void Test_CheckerReactsOnlyOnceOnManyAnnotations()
     {
@@ -98,10 +98,10 @@ public class PredefinedInterfacesTest
                 .Name("MyMethod")
                 .SetAnnotations(new[] { new BslAnnotationAttribute("MyAnno") })
                 .Build();
-            
-            mock.SetupGet(x => x.Methods).Returns(new BslMethodInfo[] { method });
+
+            mock.SetupGet(x => x.Methods).Returns(new[] { method });
         });
-        
+
         checker.Setup(x => x.Validate(module)).Verifiable();
 
         var resolver = new PredefinedInterfaceResolver(new[] { checker.Object });
@@ -109,7 +109,7 @@ public class PredefinedInterfacesTest
 
         checker.Verify(x => x.Validate(It.IsAny<IExecutableModule>()), Times.Once);
     }
-    
+
     [Fact]
     public void Test_CheckerReactsOnlyOnMethodAnnotations()
     {
@@ -126,10 +126,10 @@ public class PredefinedInterfacesTest
                 .Name("MyMethod")
                 .SetAnnotations(new[] { new BslAnnotationAttribute("MyAnno") })
                 .Build();
-            
-            mock.SetupGet(x => x.Methods).Returns(new BslMethodInfo[] { method });
+
+            mock.SetupGet(x => x.Methods).Returns(new[] { method });
         });
-        
+
         checker.Setup(x => x.Validate(module)).Callback<IExecutableModule>((m) =>
         {
             m.Interfaces.Add(typeof(string), "Registered");
@@ -140,7 +140,7 @@ public class PredefinedInterfacesTest
 
         module.Interfaces.Should().Contain(KeyValuePair.Create(typeof(string), (object)"Registered"));
     }
-    
+
     private static IExecutableModule MockModule(Action<Mock<IExecutableModule>> setup)
     {
         var dict = new Dictionary<Type, object>();
@@ -148,8 +148,7 @@ public class PredefinedInterfacesTest
         moduleMock.SetupGet(x => x.Interfaces).Returns(dict);
 
         setup(moduleMock);
-        
+
         return moduleMock.Object;
     }
-        
 }

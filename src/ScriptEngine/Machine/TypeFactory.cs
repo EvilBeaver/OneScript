@@ -26,20 +26,11 @@ namespace ScriptEngine.Machine
         private readonly TypeDescriptor _systemType;
 
         private Dictionary<int, InstanceConstructor> _constructorsCache = new Dictionary<int, InstanceConstructor>();
+        private static readonly Refl.MethodInfo CopyMethod = typeof(TypeFactory)
+            .GetMethod(nameof(CaptureVariantArgs), Refl.BindingFlags.Static | Refl.BindingFlags.InvokeMethod | Refl.BindingFlags.NonPublic);
 
-        private static readonly Refl.MethodInfo _typeCast =
-            typeof(ContextValuesMarshaller).GetMethods()
-            .First(x => x.Name == "ConvertParam" && x.GetGenericArguments().Length == 0);
-
-        private static readonly Refl.MethodInfo _genTypeCast =
-            typeof(ContextValuesMarshaller).GetMethods()
-            .First(x => x.Name == "ConvertParamDef" && x.GetGenericArguments().Length == 1);
-        
         public TypeFactory(TypeDescriptor type)
         {
-            System.Diagnostics.Debug.Assert(_typeCast != null);
-            System.Diagnostics.Debug.Assert(_genTypeCast != null);
-            
             _systemType = type;
         }
         
@@ -112,39 +103,42 @@ namespace ScriptEngine.Machine
                 ++paramIndex;
             }
 
+            var bslProcessParameter =
+                Expression.PropertyOrField(contextParam, nameof(TypeActivationContext.CurrentProcess));
+            
             for (int i = 0; i < arguments.Length; i++)
             {
                 if (parameters[paramIndex].ParameterType.IsArray)
                 {
                     // capture all
-
-                    var copyMethod = typeof(TypeFactory).GetMethod("CaptureVariantArgs", Refl.BindingFlags.Static | Refl.BindingFlags.InvokeMethod | Refl.BindingFlags.NonPublic);
-                    System.Diagnostics.Debug.Assert(copyMethod != null);
-
-                    argsToPass.Add(Expression.Call(copyMethod, argsParam, Expression.Constant(i)));
+                    argsToPass.Add(Expression.Call(CopyMethod, argsParam, Expression.Constant(i)));
                     ++paramIndex;
                     break;
                 }
-
                 
                 if (parameters[paramIndex].ParameterType == typeof(IValue))
                     argsToPass.Add(Expression.ArrayIndex(argsParam, Expression.Constant(i)));
                 else
                 {
                     var conversionArg = Expression.ArrayIndex(argsParam, Expression.Constant(i));
-                    if (parameters[i].HasDefaultValue)
-                    {
-                        var convertMethod = _genTypeCast.MakeGenericMethod(parameters[i].ParameterType);
-                        var defaultArg = Expression.Constant(parameters[i].DefaultValue);
+                    var targetType = parameters[paramIndex].ParameterType;
+                    var convertMethod = ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType);
 
-                        var marshalledArg = Expression.Call(convertMethod, conversionArg, defaultArg);
-                        argsToPass.Add(marshalledArg);
+                    Expression marshalledArg;
+                    if (parameters[paramIndex].HasDefaultValue)
+                    {
+                        var defaultArg = Expression.Constant(parameters[paramIndex].DefaultValue, targetType);
+                        marshalledArg = Expression.Call(convertMethod, conversionArg, defaultArg, bslProcessParameter);
                     }
                     else
                     {
-                        var marshalledArg = Expression.Call(_typeCast, conversionArg, Expression.Constant(parameters[paramIndex].ParameterType));
-                        argsToPass.Add(Expression.Convert(marshalledArg, parameters[paramIndex].ParameterType));
+                        marshalledArg = Expression.Call(
+                            convertMethod,
+                            conversionArg,
+                            ContextValuesMarshaller.GetDefaultBslValueConstant(targetType),
+                            bslProcessParameter);
                     }
+                    argsToPass.Add(Expression.Convert(marshalledArg, targetType));
                 }
 
                 ++paramIndex;
@@ -195,7 +189,6 @@ namespace ScriptEngine.Machine
             };
         }
 
-        // ReSharper disable once UnusedMember.Global
         internal static IValue[] CaptureVariantArgs(IValue[] sourceArgs, int startingFrom)
         {
             var newArray = new IValue[sourceArgs.Length - startingFrom];

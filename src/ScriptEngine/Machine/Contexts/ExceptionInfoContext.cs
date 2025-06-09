@@ -20,20 +20,18 @@ namespace ScriptEngine.Machine.Contexts
     /// <summary>
     /// Класс позволяет узнать информацию о произошедшем исключении.
     /// </summary>
-    [ContextClass("ИнформацияОбОшибке", "ErrorInfo", TypeUUID = "E0EDED59-D37A-42E7-9796-D6C061934B5D")]
+    [ContextClass("ИнформацияОбОшибке", "ErrorInfo")]
     public class ExceptionInfoContext : AutoContext<ExceptionInfoContext>
     {
-        private static readonly TypeDescriptor ObjectType = typeof(ExceptionInfoContext).GetTypeFromClassMarkup();
-        
         private ScriptException _exc;
         private IValue _innerException;
 
-        public ExceptionInfoContext(ScriptException source) : base(ObjectType)
+        public ExceptionInfoContext(ScriptException source)
         {
             SetActualException(source);
         }
 
-        private ExceptionInfoContext(string message, IValue parameters, ExceptionInfoContext cause) : base(ObjectType)
+        private ExceptionInfoContext(string message, IValue parameters, ExceptionInfoContext cause)
         {
             Description = message;
             Parameters = parameters;
@@ -203,9 +201,9 @@ namespace ScriptEngine.Machine.Contexts
         /// <param name="cause">ИнформацияОбОшибке - Причина, по которой произошло текущее исключение</param>
         /// <returns></returns>
         [ScriptConstructor(Name = "С возможностью передачи параметров")]
-        public static ExceptionInfoContext Create(IValue msg, IValue parameter, ExceptionInfoContext cause = null)
+        public static ExceptionInfoContext Create(string msg, IValue parameter, ExceptionInfoContext cause = null)
         {
-            return new ExceptionInfoContext(msg.AsString(), parameter, cause);
+            return new ExceptionInfoContext(msg, parameter, cause);
         }
 
         public static ExceptionInfoContext EmptyExceptionInfo()

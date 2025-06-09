@@ -9,6 +9,7 @@ using System.Dynamic;
 using System.Linq;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.Types;
 using OneScript.Values;
 
@@ -39,10 +40,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override string ToString()
         {
-            if (_type == BasicTypes.UnknownType)
-                TryDetermineOwnType();
-            
-            return _type.Name;
+            return SystemType.Name;
         }
         
         #region IValue Members
@@ -51,35 +49,18 @@ namespace ScriptEngine.Machine.Contexts
         {
             get
             {
-                if (_type != BasicTypes.UnknownType) 
+                if (_type != BasicTypes.UnknownType)
                     return _type;
                 
-                if (!TryDetermineOwnType())
-                {
-                    throw new InvalidOperationException($"Type {GetType()} is not defined");
-                }
-
-                return _type;
+                throw new InvalidOperationException($"Type {GetType()} is not defined");
             }
         }
 
-        private bool TryDetermineOwnType()
-        {
-            var mgr = MachineInstance.Current?.TypeManager;
-            if (mgr?.IsKnownType(GetType()) ?? false)
-            {
-                _type = mgr.GetTypeByFrameworkType(GetType());
-                return true;
-            }
-
-            return false;
-        }
-        
         #endregion
 
         #region IComparable<IValue> Members
 
-        public override int CompareTo(IValue other)
+        public override int CompareTo(BslValue other)
         {
             throw RuntimeException.ComparisonNotSupportedException();
         }
@@ -88,7 +69,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IEquatable<IValue> Members
 
-        public override bool Equals(IValue other)
+        public override bool Equals(BslValue other)
         {
             if (!(other is BslObjectValue _))
                 return false;
@@ -160,11 +141,11 @@ namespace ScriptEngine.Machine.Contexts
             throw new NotImplementedException();
         }
         
-        public virtual void CallAsProcedure(int methodNumber, IValue[] arguments)
+        public virtual void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
             throw new NotImplementedException();
         }
-        public virtual void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
+        public virtual void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process)
         {
             throw new NotImplementedException();
         }
@@ -275,40 +256,13 @@ namespace ScriptEngine.Machine.Contexts
                     valueArgs[i] = ValueFactory.CreateInvalidValueMarker();
             }
 
-            CallAsFunction(methIdx, valueArgs, out IValue methResult);
+            CallAsFunction(methIdx, valueArgs, out IValue methResult, ForbiddenBslProcess.Instance);
             result = methResult == null ? null : ContextValuesMarshaller.ConvertToClrObject(methResult);
 
             return true;
         }
 
         #endregion
-        
-        public override int CompareTo(BslValue other)
-        {
-            if (other.GetType() == GetType())
-            {
-                if (this.Equals(other))
-                {
-                    return 0;
-                }
-                else
-                {
-                    throw RuntimeException.ComparisonNotSupportedException();
-                }
-            }
-            else
-            {
-                return this.GetType().ToString().CompareTo(other.GetType().ToString());
-            }
-        }
-
-        public override bool Equals(BslValue other)
-        {
-            if (other == null)
-                return false;
-
-            return ReferenceEquals(this, other);
-        }
     }
 
 }

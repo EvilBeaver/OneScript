@@ -21,6 +21,7 @@ using OneScript.StandardLibrary.Binary;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneScript.Exceptions;
+using OneScript.Execution;
 
 namespace OneScript.StandardLibrary.Json
 {
@@ -156,7 +157,7 @@ namespace OneScript.StandardLibrary.Json
         /// Ложь - Объекты будут возвращены в виде соответствия.</param>
         /// <returns>Строка - Выбранные данные</returns>
         [ContextMethod("Выбрать", "Select")]
-        public IValue Select(string path, bool extractSingleValue = true, bool getObjectAsJSON = true)
+        public IValue Select(IBslProcess p, string path, bool extractSingleValue = true, bool getObjectAsJSON = true)
         {
             IValue result;
 
@@ -197,7 +198,7 @@ namespace OneScript.StandardLibrary.Json
 
             if ((result is ArrayImpl || result is MapImpl) && getObjectAsJSON)
             {
-                result = ValueFactory.Create(DataStructureToJSON(result));
+                result = ValueFactory.Create(DataStructureToJSON(p, result));
             }
 
             return result;
@@ -223,12 +224,12 @@ namespace OneScript.StandardLibrary.Json
         /// </summary>
         /// <param name="inputStruct">Соответствие, Массив. Соответствие или массив для преобразования в строку JSON.</param>
         /// <returns>Строка - Результат преобразования соответствия или массива в строку JSON</returns>
-        private string DataStructureToJSON(IValue inputStruct)
+        private string DataStructureToJSON(IBslProcess p, IValue inputStruct)
         {
             JSONWriter writer = new JSONWriter();
             writer.SetString();
 
-            ((GlobalJsonFunctions)GlobalJsonFunctions.CreateInstance()).WriteJSON(writer, inputStruct);
+            ((GlobalJsonFunctions)GlobalJsonFunctions.CreateInstance()).WriteJSON(p, writer, inputStruct);
 
             return writer.Close();
         }

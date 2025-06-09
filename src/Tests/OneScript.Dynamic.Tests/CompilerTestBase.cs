@@ -6,7 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using Moq;
 using OneScript.Compilation.Binding;
+using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Native.Compiler;
 
@@ -18,7 +20,7 @@ public class CompilerTestBase
     {
         var helper = new CompileHelper();
         helper.ParseModule(code);
-        var result = helper.Compile(new SymbolTable());
+        var result = helper.Compile(new SymbolTable(), Mock.Of<IBslProcess>());
         helper.ThrowOnErrors();
         return result;
     }
@@ -27,7 +29,7 @@ public class CompilerTestBase
     {
         var helper = new CompileHelper();
         helper.ParseModule(code);
-        var result = helper.Compile(new SymbolTable());
+        var result = helper.Compile(new SymbolTable(), Mock.Of<IBslProcess>());
         errors.AddRange(helper.Errors);
         return result;
     }

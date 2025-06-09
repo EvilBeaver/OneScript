@@ -34,8 +34,18 @@ namespace OneScript.StandardLibrary.Binary
 
         MemoryStreamContext(BinaryDataBuffer bytes)
         {
-            _underlyingStream = new MemoryStream(bytes.Bytes);
+            // Буфер только для чтения не должен копироваться
             _shouldBeCopiedOnClose = !bytes.ReadOnly;
+            if (bytes.ReadOnly && bytes.Size < int.MaxValue)
+            {
+                // Используем конструктор с publicly visible буфером
+                // Иначе метод GetBuffer упадет в методе ЗакрытьИПолучитьДвоичныеДанные
+                _underlyingStream = new MemoryStream(bytes.Bytes, 0, (int)bytes.Size, false, true);
+            }
+            else
+            {
+                _underlyingStream = new MemoryStream(bytes.Bytes);
+            }
             _commonImpl = new GenericStreamImpl(_underlyingStream);
         }
 
@@ -57,12 +67,12 @@ namespace OneScript.StandardLibrary.Binary
         [ScriptConstructor(Name = "По буферу или начальной емкости")]
         public static MemoryStreamContext Constructor(IValue bufferOrCapacity)
         {
-            if (bufferOrCapacity.GetRawValue() is BslNumericValue n)
+            if (bufferOrCapacity is BslNumericValue n)
             {
                 return new MemoryStreamContext((int)n);
             }
 
-            var memBuf = ContextValuesMarshaller.ConvertParam<BinaryDataBuffer>(bufferOrCapacity);
+            var memBuf = ContextValuesMarshaller.ConvertValueStrict<BinaryDataBuffer>(bufferOrCapacity);
             return new MemoryStreamContext(memBuf);
         }
 
@@ -306,7 +316,7 @@ namespace OneScript.StandardLibrary.Binary
         /// закрывает поток и возвращает результат в виде двоичных данных
         /// </summary>
         /// <returns></returns>
-        [ContextMethod("ЗакрытьИПолучитьДвоичныеДанные")]
+        [ContextMethod("ЗакрытьИПолучитьДвоичныеДанные", "CloseAndGetBinaryData")]
         public BinaryDataContext CloseAndGetBinaryData()
         {
             byte[] bytes;

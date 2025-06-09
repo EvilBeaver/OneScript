@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using OneScript.Execution;
 
 namespace ScriptEngine.Libraries
 {
@@ -15,6 +16,6 @@ namespace ScriptEngine.Libraries
     public interface ILibraryManager
     {
         IEnumerable<ExternalLibraryDef> GetLibraries();
-        void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library);
+        void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library, IBslProcess process);
     }
 }

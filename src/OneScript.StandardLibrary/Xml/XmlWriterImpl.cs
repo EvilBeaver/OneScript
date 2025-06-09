@@ -14,6 +14,7 @@ using System.Xml;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -236,17 +237,20 @@ namespace OneScript.StandardLibrary.Xml
 
         }
 
-        private void ApplySettings(IValue encodingOrSettings)
+        private void ApplySettings(BslValue encodingOrSettings)
         {
-            var rawEncoding = encodingOrSettings?.GetRawValue();
-            if (rawEncoding is XmlWriterSettingsImpl)
+            if (encodingOrSettings is XmlWriterSettingsImpl settings)
             {
-                _settings = rawEncoding as XmlWriterSettingsImpl;
+                _settings = settings;
             }
             else if ((encodingOrSettings?.SystemType ?? BasicTypes.String) == BasicTypes.String)
             {
-                _settings = (XmlWriterSettingsImpl) XmlWriterSettingsImpl.Constructor(encodingOrSettings, null,
-                    ValueFactory.Create(Indent), null, ValueFactory.Create(DEFAULT_INDENT_STRING));
+                _settings = XmlWriterSettingsImpl.Constructor(
+                    encodingOrSettings?.ToString(),
+                    null,
+                    Indent,
+                    false,
+                    DEFAULT_INDENT_STRING);
             }
             else
             {
@@ -255,7 +259,7 @@ namespace OneScript.StandardLibrary.Xml
         }
 
         [ContextMethod("ОткрытьФайл","OpenFile")]
-        public void OpenFile(string path, IValue encodingOrSettings = null, IValue addBOM = null)
+        public void OpenFile(string path, BslValue encodingOrSettings = null, IValue addBOM = null)
         {
             ApplySettings(encodingOrSettings);
             var fs = new FileStream(path, FileMode.Create, FileAccess.Write);
@@ -266,7 +270,7 @@ namespace OneScript.StandardLibrary.Xml
         }
 
         [ContextMethod("УстановитьСтроку","SetString")]
-        public void SetString(IValue encodingOrSettings = null)
+        public void SetString(BslValue encodingOrSettings = null)
         {
             ApplySettings(encodingOrSettings);
             _stringBuffer = new StringBuilder();

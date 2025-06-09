@@ -9,6 +9,7 @@ using OneScript.Commons;
 using OneScript.Contexts;
 using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
+using OneScript.Execution;
 
 namespace ScriptEngine.Libraries
 {
@@ -31,7 +32,7 @@ namespace ScriptEngine.Libraries
             return _externalLibs.ToArray();
         }
 
-        public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library)
+        public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library, IBslProcess process)
         {
             var loadedObjects = new ScriptDrivenObject[library.Modules.Count];
             int i = 0;
@@ -45,7 +46,7 @@ namespace ScriptEngine.Libraries
             }
 
             _externalLibs.Add(library);
-            loadedObjects.ForEach(runtime.InitializeSDO);
+            loadedObjects.ForEach(sdo => runtime.InitializeSDO(sdo, process));
         }
     }
 }
