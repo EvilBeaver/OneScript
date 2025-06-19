@@ -24,6 +24,7 @@ namespace ScriptEngine
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IDebugController _debugController;
         private IRuntimeEnvironment _runtimeEnvironment;
+        private readonly OneScriptCoreOptions _options;
         
         private readonly ILibraryManager _libraryManager;
 
@@ -39,6 +40,7 @@ namespace ScriptEngine
             GlobalsManager = globals;
             _runtimeEnvironment = env;
             _libraryManager = env;
+            _options = options;
             
             Loader = new ScriptSourceFactory();
             Services = services;
@@ -94,6 +96,8 @@ namespace ScriptEngine
             //UpdateContexts();
 
             _attachedScriptsFactory = new AttachedScriptsFactory(this);
+            // Настраиваем кэширование из конфигурации
+            _attachedScriptsFactory.SetCachingEnabled(_options.ScriptCachingEnabled);
             AttachedScriptsFactory.SetInstance(_attachedScriptsFactory);
         }
 

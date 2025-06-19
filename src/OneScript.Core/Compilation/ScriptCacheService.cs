@@ -106,8 +106,7 @@ namespace OneScript.Compilation
                 var fileInfo = new FileInfo(sourceFile);
                 if (!fileInfo.Exists)
                 {
-                    LogOperation($"Исходный файл не существует: {sourceFile}");
-                    return;
+                    throw new FileNotFoundException($"Исходный файл не существует: {sourceFile}", sourceFile);
                 }
 
                 var metadata = new CacheMetadata
@@ -125,13 +124,55 @@ namespace OneScript.Compilation
                     WriteIndented = true 
                 });
                 
-                File.WriteAllText(metadataFile, metadataJson);
+                try
+                {
+                    File.WriteAllText(metadataFile, metadataJson);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    LogOperation($"Нет прав для записи метаданных кэша в {metadataFile}. Кэширование отключено для данного расположения.");
+                    return;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    LogOperation($"Директория для кэша не найдена: {Path.GetDirectoryName(metadataFile)}. Кэширование отключено для данного расположения.");
+                    return;
+                }
+                catch (IOException ex)
+                {
+                    LogOperation($"Ошибка ввода-вывода при записи метаданных {metadataFile}: {ex.Message}. Кэширование отключено для данного расположения.");
+                    return;
+                }
 
                 // Сериализуем модуль
                 var cacheFile = GetCacheFilePath(sourceFile);
-                using (var stream = File.Create(cacheFile))
+                try
                 {
-                    _moduleSerializer.Serialize(module, stream);
+                    using (var stream = File.Create(cacheFile))
+                    {
+                        _moduleSerializer.Serialize(module, stream);
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    LogOperation($"Нет прав для записи кэша в {cacheFile}. Кэширование отключено для данного расположения.");
+                    // Удаляем метаданные, если основной файл кэша не удалось создать
+                    try { File.Delete(metadataFile); } catch { }
+                    return;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    LogOperation($"Директория для кэша не найдена: {Path.GetDirectoryName(cacheFile)}. Кэширование отключено для данного расположения.");
+                    // Удаляем метаданные, если основной файл кэша не удалось создать
+                    try { File.Delete(metadataFile); } catch { }
+                    return;
+                }
+                catch (IOException ex)
+                {
+                    LogOperation($"Ошибка ввода-вывода при записи кэша {cacheFile}: {ex.Message}. Кэширование отключено для данного расположения.");
+                    // Удаляем метаданные, если основной файл кэша не удалось создать  
+                    try { File.Delete(metadataFile); } catch { }
+                    return;
                 }
 
                 LogOperation($"Модуль успешно сохранен в кэш: {sourceFile}");

@@ -33,6 +33,8 @@ namespace OneScript.Sources
         
         public string Name { get; }
 
+        public ICodeSource Origin => _source;
+
         public string GetSourceCode() => _source.GetSourceCode();
 
         public string GetCodeLine(int lineNumber)
