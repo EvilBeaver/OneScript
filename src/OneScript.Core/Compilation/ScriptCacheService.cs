@@ -114,7 +114,7 @@ namespace OneScript.Compilation
                     SourceModifiedTime = fileInfo.LastWriteTime,
                     SourceSize = fileInfo.Length,
                     SourcePath = sourceFile,
-                    CacheCreatedTime = DateTime.Now,
+                    CacheCreatedTime = DateTime.UtcNow,
                     RuntimeVersion = GetRuntimeVersion()
                 };
 

@@ -39,10 +39,9 @@ namespace ScriptEngine.Machine.Contexts
             _cacheService = engine.Services.TryResolve<IScriptCacheService>() ?? new ScriptCacheService();
             
             // Устанавливаем сериализатор модулей
-            var cache = (ScriptCacheService)_cacheService;
-            cache.SetModuleSerializer(new ScriptEngine.Compilation.StackRuntimeModuleSerializer());
+            _cacheService.SetModuleSerializer(new ScriptEngine.Compilation.StackRuntimeModuleSerializer());
             
-            cache.CacheOperationLogged += (message) => 
+            _cacheService.CacheOperationLogged += (message) => 
             {
                 // Логируем операции кэша, если включен режим отладки
                 if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
@@ -60,7 +59,7 @@ namespace ScriptEngine.Machine.Contexts
         /// <param name="enabled">true для включения кэширования</param>
         public void SetCachingEnabled(bool enabled)
         {
-            ((ScriptCacheService)_cacheService).CachingEnabled = enabled;
+            _cacheService.CachingEnabled = enabled;
         }
 
         /// <summary>

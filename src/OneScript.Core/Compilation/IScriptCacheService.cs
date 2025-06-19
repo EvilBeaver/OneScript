@@ -14,6 +14,21 @@ namespace OneScript.Compilation
     public interface IScriptCacheService
     {
         /// <summary>
+        /// Включено ли кэширование
+        /// </summary>
+        bool CachingEnabled { get; set; }
+
+        /// <summary>
+        /// Событие для логирования операций кэша
+        /// </summary>
+        event System.Action<string> CacheOperationLogged;
+
+        /// <summary>
+        /// Установить сериализатор модулей
+        /// </summary>
+        void SetModuleSerializer(IModuleSerializer serializer);
+
+        /// <summary>
         /// Попытаться загрузить предкомпилированный модуль из кэша
         /// </summary>
         /// <param name="sourceFile">Путь к исходному файлу сценария</param>
