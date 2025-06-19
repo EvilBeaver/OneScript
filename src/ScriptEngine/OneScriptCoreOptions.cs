@@ -64,9 +64,10 @@ namespace ScriptEngine
         
         private static bool SetupScriptCaching(string scriptCaching)
         {
-            // По умолчанию кеширование включено, отключается только если явно указано "false"
+            // Временно отключено по умолчанию для устранения проблем сериализации
+            // TODO: Включить обратно после исправления ArgumentOutOfRangeException в MessagePack
             if (string.IsNullOrWhiteSpace(scriptCaching))
-                return true;
+                return false;
             
             return !StringComparer.InvariantCultureIgnoreCase.Equals(scriptCaching.Trim(), "false");
         }
