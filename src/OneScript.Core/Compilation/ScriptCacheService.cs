@@ -25,30 +25,47 @@ namespace OneScript.Compilation
         /// </summary>
         public bool CachingEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Событие для логирования операций кэша
+        /// </summary>
+        public event Action<string> CacheOperationLogged;
+
         public bool TryLoadFromCache(string sourceFile, out IExecutableModule module)
         {
             module = null;
 
             if (!CachingEnabled)
+            {
+                LogOperation($"Кэширование отключено для {sourceFile}");
                 return false;
+            }
 
             try
             {
                 if (!IsCacheValid(sourceFile))
+                {
+                    LogOperation($"Кэш недействителен для {sourceFile}");
                     return false;
+                }
 
                 var cacheFile = GetCacheFilePath(sourceFile);
                 if (!File.Exists(cacheFile))
+                {
+                    LogOperation($"Файл кэша не найден: {cacheFile}");
                     return false;
+                }
 
+                LogOperation($"Кэш найден и валиден для {sourceFile}, но загрузка модуля пока не реализована");
+                
                 // Для простоты сейчас не будем загружать из кэша,
                 // так как это требует глубокой сериализации IExecutableModule
                 // Пока просто возвращаем false - реализация кэшированной загрузки
                 // потребует дополнительной работы с сериализацией
                 return false;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogOperation($"Ошибка при загрузке из кэша {sourceFile}: {ex.Message}");
                 // В случае ошибки загрузки из кэша, компилируем заново
                 return false;
             }
@@ -57,13 +74,19 @@ namespace OneScript.Compilation
         public void SaveToCache(string sourceFile, IExecutableModule module)
         {
             if (!CachingEnabled)
+            {
+                LogOperation($"Кэширование отключено, не сохраняем {sourceFile}");
                 return;
+            }
 
             try
             {
                 var fileInfo = new FileInfo(sourceFile);
                 if (!fileInfo.Exists)
+                {
+                    LogOperation($"Исходный файл не существует: {sourceFile}");
                     return;
+                }
 
                 var metadata = new CacheMetadata
                 {
@@ -86,9 +109,12 @@ namespace OneScript.Compilation
                 // Полная реализация сериализации IExecutableModule потребует больше времени
                 var cacheFile = GetCacheFilePath(sourceFile);
                 File.WriteAllText(cacheFile, ""); // пустой файл-маркер
+
+                LogOperation($"Кэш сохранен для {sourceFile}");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogOperation($"Ошибка сохранения кэша для {sourceFile}: {ex.Message}");
                 // Ошибки кэширования не должны прерывать работу
                 // Просто игнорируем и продолжаем без кэша
             }
@@ -165,6 +191,11 @@ namespace OneScript.Compilation
         private string GetRuntimeVersion()
         {
             return typeof(IExecutableModule).Assembly.GetName().Version?.ToString() ?? "unknown";
+        }
+
+        private void LogOperation(string message)
+        {
+            CacheOperationLogged?.Invoke(message);
         }
     }
 }
