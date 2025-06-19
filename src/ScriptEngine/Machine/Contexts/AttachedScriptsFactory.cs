@@ -34,7 +34,9 @@ namespace ScriptEngine.Machine.Contexts
             _loadedModules = new Dictionary<string, IExecutableModule>(StringComparer.InvariantCultureIgnoreCase);
             _fileHashes = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             _engine = engine;
-            _cacheService = new ScriptCacheService();
+            
+            // Получаем сервис кэширования через IoC, либо создаем по умолчанию
+            _cacheService = engine.Services.TryResolve<IScriptCacheService>() ?? new ScriptCacheService();
             
             // Устанавливаем сериализатор модулей
             if (_cacheService is ScriptCacheService cache)
@@ -60,10 +62,7 @@ namespace ScriptEngine.Machine.Contexts
         /// <param name="enabled">true для включения кэширования</param>
         public void SetCachingEnabled(bool enabled)
         {
-            if (_cacheService is ScriptCacheService cache)
-            {
-                cache.CachingEnabled = enabled;
-            }
+            ((ScriptCacheService)_cacheService).CachingEnabled = enabled;
         }
 
         /// <summary>
