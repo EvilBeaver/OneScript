@@ -64,8 +64,8 @@ namespace ScriptEngine
         
         private static bool SetupScriptCaching(string scriptCaching)
         {
-            // Временно отключено по умолчанию для устранения проблем сериализации
-            // TODO: Включить обратно после исправления ArgumentOutOfRangeException в MessagePack
+            // По умолчанию кеширование отключено для стабильности
+            // Можно включить, установив lib.caching=true в oscript.cfg
             if (string.IsNullOrWhiteSpace(scriptCaching))
                 return false;
             
