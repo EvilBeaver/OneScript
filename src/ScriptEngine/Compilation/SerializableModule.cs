@@ -254,19 +254,43 @@ namespace ScriptEngine.Compilation
         public string Name { get; set; }
         [Key(1)]
         public string Value { get; set; }
+        [Key(2)]
+        public int ValueIndex { get; set; }
 
         public static SerializableAnnotationParameter FromParameter(BslAnnotationParameter parameter)
         {
             return new SerializableAnnotationParameter
             {
                 Name = parameter.Name,
-                Value = parameter.Value?.ToString() ?? ""
+                Value = parameter.Value?.ToString() ?? "",
+                ValueIndex = parameter.ConstantValueIndex
+            };
+        }
+
+        public static SerializableAnnotationParameter FromAnnotationParameter(AnnotationParameter parameter)
+        {
+            return new SerializableAnnotationParameter
+            {
+                Name = parameter.Name,
+                ValueIndex = parameter.ValueIndex
             };
         }
 
         public BslAnnotationParameter ToParameter()
         {
-            return new BslAnnotationParameter(Name, BslStringValue.Create(Value ?? ""));
+            return new BslAnnotationParameter(Name, BslStringValue.Create(Value ?? ""))
+            {
+                ConstantValueIndex = ValueIndex
+            };
+        }
+
+        public AnnotationParameter ToAnnotationParameter()
+        {
+            return new AnnotationParameter
+            {
+                Name = Name,
+                ValueIndex = ValueIndex
+            };
         }
     }
 
@@ -368,9 +392,36 @@ namespace ScriptEngine.Compilation
         public int DispatchId { get; set; }
         [Key(4)]
         public SerializableParameterInfo[] Parameters { get; set; }
+        [Key(5)]
+        public int EntryPoint { get; set; }
+        [Key(6)]
+        public string[] LocalVariables { get; set; }
+        [Key(7)]
+        public SerializableAnnotationDefinition[] Annotations { get; set; }
+        [Key(8)]
+        public int Flags { get; set; }
 
         public static SerializableMethodInfo FromMethodInfo(BslScriptMethodInfo method)
         {
+            // Для правильной сериализации используем MachineMethodInfo напрямую
+            if (method is MachineMethodInfo machineMethod)
+            {
+                var runtimeMethod = machineMethod.GetRuntimeMethod();
+                return new SerializableMethodInfo
+                {
+                    Name = runtimeMethod.Signature.Name,
+                    Alias = runtimeMethod.Signature.Alias,
+                    IsExport = runtimeMethod.Signature.IsExport,
+                    DispatchId = method.DispatchId,
+                    Parameters = runtimeMethod.Signature.Params?.Select(SerializableParameterInfo.FromParameterDefinition).ToArray() ?? new SerializableParameterInfo[0],
+                    EntryPoint = runtimeMethod.EntryPoint,
+                    LocalVariables = runtimeMethod.LocalVariables ?? new string[0],
+                    Annotations = runtimeMethod.Signature.Annotations?.Select(SerializableAnnotationDefinition.FromAnnotationDefinition).ToArray() ?? new SerializableAnnotationDefinition[0],
+                    Flags = (int)runtimeMethod.Signature.Flags
+                };
+            }
+            
+            // Fallback для других типов методов (для совместимости)
             return new SerializableMethodInfo
             {
                 Name = method.Name,
@@ -383,13 +434,14 @@ namespace ScriptEngine.Compilation
 
         public BslScriptMethodInfo ToMethodInfo()
         {
+            // Используем BslMethodBuilder для создания правильной структуры
             var builder = BslMethodBuilder.Create()
                 .Name(Name)
                 .Alias(Alias)
                 .IsExported(IsExport)
                 .SetDispatchingIndex(DispatchId);
             
-            // Добавляем параметры
+            // Добавляем параметры с полной информацией
             foreach (var param in Parameters ?? new SerializableParameterInfo[0])
             {
                 var paramBuilder = builder.NewParameter()
@@ -400,9 +452,19 @@ namespace ScriptEngine.Compilation
                 {
                     paramBuilder.DefaultValue(BslStringValue.Create(param.DefaultValue ?? ""));
                 }
+                
+                // TODO: Добавление аннотаций параметров пока не поддерживается в BslParameterBuilder
             }
             
-            return builder.Build();
+            var bslMethod = builder.Build();
+            
+            // Если это MachineMethodInfo, устанавливаем runtime параметры
+            if (bslMethod is MachineMethodInfo machineMethod)
+            {
+                machineMethod.SetRuntimeParameters(EntryPoint, LocalVariables ?? new string[0]);
+            }
+            
+            return bslMethod;
         }
     }
 
@@ -420,6 +482,34 @@ namespace ScriptEngine.Compilation
         public string DefaultValue { get; set; }
         [Key(3)]
         public bool IsByRef { get; set; }
+        [Key(4)]
+        public int DefaultValueIndex { get; set; }
+        [Key(5)]
+        public SerializableAnnotationDefinition[] Annotations { get; set; }
+
+        public static SerializableParameterInfo FromParameterDefinition(ParameterDefinition param)
+        {
+            return new SerializableParameterInfo
+            {
+                Name = param.Name,
+                HasDefaultValue = param.HasDefaultValue,
+                DefaultValueIndex = param.DefaultValueIndex,
+                IsByRef = !param.IsByValue,
+                Annotations = param.Annotations?.Select(SerializableAnnotationDefinition.FromAnnotationDefinition).ToArray() ?? new SerializableAnnotationDefinition[0]
+            };
+        }
+
+        public ParameterDefinition ToParameterDefinition()
+        {
+            return new ParameterDefinition
+            {
+                Name = Name,
+                HasDefaultValue = HasDefaultValue,
+                DefaultValueIndex = DefaultValueIndex,
+                IsByValue = !IsByRef,
+                Annotations = Annotations?.Select(a => a.ToAnnotationDefinition()).ToArray() ?? new AnnotationDefinition[0]
+            };
+        }
 
         public static SerializableParameterInfo FromParameterInfo(BslParameterInfo param)
         {
@@ -444,6 +534,42 @@ namespace ScriptEngine.Compilation
             }
             
             return builder.Build();
+        }
+    }
+
+    /// <summary>
+    /// Сериализуемое определение аннотации
+    /// </summary>
+    [MessagePackObject]
+    public class SerializableAnnotationDefinition
+    {
+        [Key(0)]
+        public string Name { get; set; }
+        [Key(1)]
+        public SerializableAnnotationParameter[] Parameters { get; set; }
+
+        public static SerializableAnnotationDefinition FromAnnotationDefinition(AnnotationDefinition annotation)
+        {
+            return new SerializableAnnotationDefinition
+            {
+                Name = annotation.Name,
+                Parameters = annotation.Parameters?.Select(SerializableAnnotationParameter.FromAnnotationParameter).ToArray() ?? new SerializableAnnotationParameter[0]
+            };
+        }
+
+        public AnnotationDefinition ToAnnotationDefinition()
+        {
+            return new AnnotationDefinition
+            {
+                Name = Name,
+                Parameters = Parameters?.Select(p => p.ToAnnotationParameter()).ToArray() ?? new AnnotationParameter[0]
+            };
+        }
+
+        public BslAnnotationAttribute ToBslAnnotation()
+        {
+            var bslParams = Parameters?.Select(p => p.ToParameter()).ToArray() ?? new BslAnnotationParameter[0];
+            return new BslAnnotationAttribute(Name, bslParams);
         }
     }
 }
