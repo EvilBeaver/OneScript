@@ -419,16 +419,10 @@ namespace ScriptEngine.Compilation
                     Flags = (int)runtimeMethod.Signature.Flags
                 };
             }
-            
-            // Fallback для других типов методов (для совместимости)
-            return new SerializableMethodInfo
+            else
             {
-                Name = method.Name,
-                Alias = method.Alias,
-                IsExport = (method.Attributes & MethodAttributes.Public) == MethodAttributes.Public,
-                DispatchId = method.DispatchId,
-                Parameters = method.GetBslParameters()?.Select(SerializableParameterInfo.FromParameterInfo).ToArray() ?? new SerializableParameterInfo[0]
-            };
+                throw new ArgumentException($"Unsupported method type: {method.GetType().Name}. Only MachineMethodInfo is supported for serialization.");
+            }
         }
 
         public BslScriptMethodInfo ToMethodInfo()
@@ -497,16 +491,7 @@ namespace ScriptEngine.Compilation
             };
         }
 
-        public static SerializableParameterInfo FromParameterInfo(BslParameterInfo param)
-        {
-            return new SerializableParameterInfo
-            {
-                Name = param.Name,
-                HasDefaultValue = param.HasDefaultValue,
-                DefaultValue = param.DefaultValue?.ToString(),
-                IsByRef = !param.ExplicitByVal // ExplicitByVal означает по значению, поэтому IsByRef противоположен
-            };
-        }
+
     }
 
     /// <summary>
