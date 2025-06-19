@@ -47,6 +47,10 @@
   </ItemGroup>
   
   <ItemGroup>
+    <PackageReference Include="MessagePack" Version="2.5.187" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="CustomMarshalers" Condition="'$(TargetFramework)' == 'net452'" />
   </ItemGroup>
   

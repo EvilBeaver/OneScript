@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using MessagePack;
 using OneScript.Compilation;
 using OneScript.Execution;
 using ScriptEngine.Machine;
@@ -22,14 +22,12 @@ namespace ScriptEngine.Compilation
         public void Serialize(IExecutableModule module, Stream stream)
         {
             var serializableModule = SerializableModule.FromExecutableModule(module);
-            var formatter = new BinaryFormatter();
-            formatter.Serialize(stream, serializableModule);
+            MessagePackSerializer.Serialize(stream, serializableModule);
         }
 
         public IExecutableModule Deserialize(Stream stream)
         {
-            var formatter = new BinaryFormatter();
-            var serializableModule = (SerializableModule)formatter.Deserialize(stream);
+            var serializableModule = MessagePackSerializer.Deserialize<SerializableModule>(stream);
             return serializableModule.ToExecutableModule();
         }
 

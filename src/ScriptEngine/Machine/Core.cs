@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using MessagePack;
 
 namespace ScriptEngine.Machine
 {
@@ -142,9 +143,12 @@ namespace ScriptEngine.Machine
     }
 
     [Serializable]
+    [MessagePackObject]
     public struct Command
     {
+        [Key(0)]
         public OperationCode Code;
+        [Key(1)]
         public int Argument;
 
         public override string ToString()
