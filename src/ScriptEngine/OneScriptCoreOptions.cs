@@ -64,12 +64,12 @@ namespace ScriptEngine
         
         private static bool SetupScriptCaching(string scriptCaching)
         {
-            // По умолчанию кеширование включено
-            // Можно отключить, установив lib.caching=false в oscript.cfg
+            // По умолчанию кеширование отключено для стабильности
+            // Можно включить, установив lib.caching=true в oscript.cfg
             if (string.IsNullOrWhiteSpace(scriptCaching))
-                return true;
+                return false;
             
-            return !StringComparer.InvariantCultureIgnoreCase.Equals(scriptCaching.Trim(), "false");
+            return StringComparer.InvariantCultureIgnoreCase.Equals(scriptCaching.Trim(), "true");
         }
     }
 }
