@@ -204,5 +204,14 @@ namespace ScriptEngine
         /// Инициализирует новый процесс
         /// </summary>
         public IBslProcess NewProcess() => Services.Resolve<IBslProcessFactory>().NewProcess();
+
+        /// <summary>
+        /// Включить или отключить кэширование предкомпилированных сценариев
+        /// </summary>
+        /// <param name="enabled">true для включения кэширования</param>
+        public void SetScriptCachingEnabled(bool enabled)
+        {
+            AttachedScriptsFactory?.SetCachingEnabled(enabled);
+        }
     }
 }
