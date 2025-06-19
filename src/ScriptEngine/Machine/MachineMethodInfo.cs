@@ -14,6 +14,17 @@ namespace ScriptEngine.Machine
     {
         private MachineMethod _method;
         
+        // Внутренний конструктор для десериализации из кэша
+        internal MachineMethodInfo(MachineMethod method) : base()
+        {
+            _method = method;
+        }
+        
+        public MachineMethodInfo() : base()
+        {
+            // Конструктор по умолчанию для обычного создания
+        }
+        
         internal void SetRuntimeParameters(int entryPoint, string[] locals)
         {
             _method = new MachineMethod
