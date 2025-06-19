@@ -35,6 +35,19 @@ namespace ScriptEngine.Machine.Contexts
             _fileHashes = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             _engine = engine;
             _cacheService = new ScriptCacheService();
+            
+            // Подписываемся на события кэширования для логирования
+            if (_cacheService is ScriptCacheService cache)
+            {
+                cache.CacheOperationLogged += (message) => 
+                {
+                    // Логируем операции кэша, если включен режим отладки
+                    if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
+                    {
+                        Console.WriteLine($"[CACHE] {message}");
+                    }
+                };
+            }
         }
 
         private ITypeManager TypeManager => _engine.TypeManager;
