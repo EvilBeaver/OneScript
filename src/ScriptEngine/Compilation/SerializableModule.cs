@@ -173,7 +173,7 @@ namespace ScriptEngine.Compilation
                 case nameof(BslStringValue):
                     return BslStringValue.Create(Value ?? "");
                 case nameof(BslNumericValue):
-                    return BslNumericValue.Create(decimal.TryParse(Value, NumberFormatInfo.InvariantInfo, out var num) ? num : 0);
+                    return BslNumericValue.Create(decimal.TryParse(Value, NumberStyles.Number, NumberFormatInfo.InvariantInfo, out var num) ? num : 0);
                 case nameof(BslBooleanValue):
                     // Обработка локализованных строк для булевых значений
                     if (string.IsNullOrEmpty(Value)) return BslBooleanValue.False;
@@ -181,7 +181,7 @@ namespace ScriptEngine.Compilation
                     var isTrue = StringComparer.OrdinalIgnoreCase.Equals(trimmedValue, "true") ||
                                 StringComparer.OrdinalIgnoreCase.Equals(trimmedValue, "да") ||
                                 StringComparer.OrdinalIgnoreCase.Equals(trimmedValue, "yes");
-                    return BslBooleanValue.Create(isTrue);
+                    return (BslPrimitiveValue)BslBooleanValue.Create(isTrue);
                 case nameof(BslUndefinedValue):
                     return BslUndefinedValue.Instance;
                 case nameof(BslNullValue):
