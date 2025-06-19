@@ -46,7 +46,7 @@ namespace ScriptEngine.Machine.Contexts
                     // Логируем операции кэша, если включен режим отладки
                     if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
                     {
-                        Console.WriteLine($"[CACHE] {message}");
+                        SystemLogger.Write($"[CACHE] {message}");
                     }
                 };
             }
@@ -210,7 +210,8 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             // Попытка загрузки из кэша только для файловых источников
-            if (IsFileBasedSource(code) && externalContext == null)
+            bool isFileBasedSource = IsFileBasedSource(code);
+            if (isFileBasedSource && externalContext == null)
             {
                 if (_cacheService.TryLoadFromCache(code.Location, out var cachedModule))
                 {
@@ -222,7 +223,7 @@ namespace ScriptEngine.Machine.Contexts
             var module = compiler.Compile(code, process);
 
             // Сохраняем в кэш только для файловых источников без внешнего контекста
-            if (IsFileBasedSource(code) && externalContext == null)
+            if (isFileBasedSource && externalContext == null)
             {
                 _cacheService.SaveToCache(code.Location, module);
             }
@@ -233,10 +234,7 @@ namespace ScriptEngine.Machine.Contexts
         private bool IsFileBasedSource(SourceCode code)
         {
             // Проверяем, что это файловый источник (не строка)
-            // Файловые источники имеют путь в Location
-            return !string.IsNullOrEmpty(code.Location) && 
-                   !code.Location.Equals("<string>", StringComparison.OrdinalIgnoreCase) &&
-                   System.IO.File.Exists(code.Location);
+            return code.Origin is FileCodeSource && System.IO.File.Exists(code.Location);
         }
         
         private static AttachedScriptsFactory _instance;

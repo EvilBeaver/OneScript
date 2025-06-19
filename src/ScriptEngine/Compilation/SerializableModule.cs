@@ -16,6 +16,7 @@ using OneScript.Execution;
 using OneScript.Sources;
 using OneScript.Values;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Compilation
 {
@@ -87,7 +88,7 @@ namespace ScriptEngine.Compilation
         /// </summary>
         public StackRuntimeModule ToExecutableModule()
         {
-            var module = new StackRuntimeModule(typeof(object)) // TODO: Determine proper type
+            var module = new StackRuntimeModule(typeof(IRuntimeContextInstance))
             {
                 EntryMethodIndex = this.EntryMethodIndex,
                 Source = this.Source?.ToSourceCode()
@@ -206,9 +207,12 @@ namespace ScriptEngine.Compilation
 
         public SourceCode ToSourceCode()
         {
-            // Для кэширования нам не нужно полностью восстанавливать SourceCode,
-            // поскольку восстановленный модуль будет использоваться в контексте,
-            // где исходный Source уже не так важен
+            // Для кэширования восстанавливаем исходный код из файла
+            if (!string.IsNullOrEmpty(Location) && System.IO.File.Exists(Location))
+            {
+                return SourceCodeBuilder.Create().FromFile(Location).Build();
+            }
+            
             return null;
         }
     }
