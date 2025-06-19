@@ -55,18 +55,15 @@ namespace OneScript.Compilation
                     return false;
                 }
 
-                LogOperation($"Кэш найден и валиден для {sourceFile}, но загрузка модуля пока не реализована");
+                LogOperation($"Кэш найден и валиден для {sourceFile}");
                 
-                // Для простоты сейчас не будем загружать из кэша,
-                // так как это требует глубокой сериализации IExecutableModule
-                // Пока просто возвращаем false - реализация кэшированной загрузки
-                // потребует дополнительной работы с сериализацией
+                // Кэш валиден, но полная загрузка модуля требует сериализации IExecutableModule
+                // Пока возвращаем false для перекомпиляции, но факт наличия валидного кэша логируется
                 return false;
             }
             catch (Exception ex)
             {
                 LogOperation($"Ошибка при загрузке из кэша {sourceFile}: {ex.Message}");
-                // В случае ошибки загрузки из кэша, компилируем заново
                 return false;
             }
         }
@@ -105,18 +102,28 @@ namespace OneScript.Compilation
                 
                 File.WriteAllText(metadataFile, metadataJson);
 
-                // Создаем пустой .obj файл как маркер того, что кэш был создан
-                // Полная реализация сериализации IExecutableModule потребует больше времени
+                // Создаем объектный файл с базовой информацией о модуле
                 var cacheFile = GetCacheFilePath(sourceFile);
-                File.WriteAllText(cacheFile, ""); // пустой файл-маркер
+                var moduleInfo = new
+                {
+                    SourceLocation = module.Source?.Location ?? "",
+                    MethodsCount = module.Methods?.Count ?? 0,
+                    FieldsCount = module.Fields?.Count ?? 0,
+                    PropertiesCount = module.Properties?.Count ?? 0,
+                    ModuleBodyExists = module.ModuleBody != null,
+                    CachedAt = DateTime.UtcNow,
+                    // Полная сериализация байт-кода будет добавлена в будущем
+                    Note = "Metadata cache - full module serialization pending"
+                };
+                
+                var moduleJson = JsonSerializer.Serialize(moduleInfo, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(cacheFile, moduleJson);
 
-                LogOperation($"Кэш сохранен для {sourceFile}");
+                LogOperation($"Кэш (метаданные) сохранен для {sourceFile}");
             }
             catch (Exception ex)
             {
                 LogOperation($"Ошибка сохранения кэша для {sourceFile}: {ex.Message}");
-                // Ошибки кэширования не должны прерывать работу
-                // Просто игнорируем и продолжаем без кэша
             }
         }
 
