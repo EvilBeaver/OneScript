@@ -31,6 +31,7 @@ namespace OneScript.Language.Tests
                     BinaryOperationNode binary => binary.Operation.ToString(),
                     UnaryOperationNode unary => unary.Operation.ToString(),
                     PreprocessorDirectiveNode preproc => preproc.DirectiveName,
+                    AnnotationParameterNode annParam => annParam.Value.Content,
                     _ => nonTerm.ToString()
                 };
             }

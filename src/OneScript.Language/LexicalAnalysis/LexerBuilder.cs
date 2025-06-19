@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading;
 
 namespace OneScript.Language.LexicalAnalysis
 {
@@ -15,6 +16,14 @@ namespace OneScript.Language.LexicalAnalysis
     {
         private List<LexerDetectorBuilder> _detectors = new List<LexerDetectorBuilder>();
         private static Expression nullState = Expression.Constant(default, typeof(LexerState));
+
+        private readonly Lazy<LexerStateSelector> _selectorFunction;
+
+        public LexerBuilder()
+        {
+            _selectorFunction =
+                new Lazy<LexerStateSelector>(MakeSelectorFunction, LazyThreadSafetyMode.PublicationOnly);
+        }
 
         public LexerDetectorBuilder Detect(Expression<Func<char, SourceCodeIterator, bool>> detectExpression)
         {
@@ -24,6 +33,11 @@ namespace OneScript.Language.LexicalAnalysis
         }
 
         public ILexer Build()
+        {
+            return new ExpressionBasedLexer(_selectorFunction.Value);
+        }
+        
+        private LexerStateSelector MakeSelectorFunction()
         {
             Expression expr;
             var charParam = Expression.Parameter(typeof(char), "cs");
@@ -41,10 +55,9 @@ namespace OneScript.Language.LexicalAnalysis
             }
 
 
-            var lambda = Expression.Lambda<Func<char, LexerState>>(expr, charParam);  
-            var func = lambda.Compile();
-            
-            return new ExpressionBasedLexer(func);
+            var lambda = Expression.Lambda<LexerStateSelector>(expr, iteratorParam, charParam);  
+            var selectorFunction = lambda.Compile();
+            return selectorFunction;
         }
 
         private Expression BuildNode(IEnumerator<LexerDetectorBuilder> iterator, ParameterRemapper parameterRemapper)

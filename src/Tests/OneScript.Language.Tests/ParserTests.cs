@@ -958,6 +958,46 @@ namespace OneScript.Language.Tests
             batch.NoMoreChildren();
         }
 
+        [Fact]
+        public void CanHaveCommentAfterUseStatement()
+        {
+            var code = @"
+            #Использовать Библиотека // Подключаем библиотеку
+            #Использовать ""Библиотека с кавычками"" // Подключаем библиотеку с кавычками
+            ";
+            
+            var defaultLex = new DefaultLexer();
+            defaultLex.Iterator = SourceCodeHelper.FromString(code).CreateIterator();
+            
+            var lexer = new PreprocessingLexer(defaultLex);
+            
+            lexer.Handlers = new PreprocessorHandlers(
+                new[] {new ImportDirectivesHandler(new ThrowingErrorSink())});
+            
+            var parser = new DefaultBslParser(
+                lexer,
+                new ListErrorSink(),
+                lexer.Handlers);
+
+            var moduleNode = parser.ParseStatefulModule();
+            moduleNode.Should().NotBeNull();
+            parser.Errors.Should().BeEmpty("the valid code is passed");
+            var firstChild = new SyntaxTreeValidator(new TestAstNode(moduleNode.Children.First()));
+            
+            var batch = new SyntaxTreeValidator(new TestAstNode(firstChild.CurrentNode.RealNode.Parent));
+            
+            var node = batch.NextChild();
+            node.Is(NodeKind.Import)
+                .Equal("Использовать");
+            node.NextChild().Is(NodeKind.AnnotationParameter)
+                .Equal("Библиотека");
+            
+            node = batch.NextChild();
+            node.Is(NodeKind.Import)
+                .Equal("Использовать");
+            node.NextChild().Is(NodeKind.AnnotationParameter)
+                .Equal("\"Библиотека с кавычками\"");
+        }
 
         [Fact]
         public void Check_No_Semicolon_In_If()

@@ -259,7 +259,7 @@ pipeline {
                 
                 dir('markdownContent') {
                     script {
-                        def version="${env.VersionPrefix}-${env.VersionSuffix}".replaceAll("\.", "_")
+                        def version="${env.VersionPrefix}-${env.VersionSuffix}".replaceAll("\\.", "_")
                         def targetDir='/var/www/oscript.io/markdown/versions'
                         
                         sh """
