@@ -180,8 +180,7 @@ namespace ScriptEngine.Compilation
                 case nameof(BslNullValue):
                     return BslNullValue.Instance;
                 default:
-                    // Fallback to string for unknown types
-                    return BslStringValue.Create(Value ?? "");
+                    throw new InvalidOperationException($"Неподдерживаемый тип значения для десериализации: {Type}");
             }
         }
     }
@@ -434,37 +433,24 @@ namespace ScriptEngine.Compilation
 
         public BslScriptMethodInfo ToMethodInfo()
         {
-            // Используем BslMethodBuilder для создания правильной структуры
-            var builder = BslMethodBuilder.Create()
-                .Name(Name)
-                .Alias(Alias)
-                .IsExported(IsExport)
-                .SetDispatchingIndex(DispatchId);
-            
-            // Добавляем параметры с полной информацией
-            foreach (var param in Parameters ?? new SerializableParameterInfo[0])
+            // Создаем MachineMethod напрямую
+            var signature = new MethodSignature
             {
-                var paramBuilder = builder.NewParameter()
-                    .Name(param.Name)
-                    .ByValue(!param.IsByRef);
-                
-                if (param.HasDefaultValue)
-                {
-                    paramBuilder.DefaultValue(BslStringValue.Create(param.DefaultValue ?? ""));
-                }
-                
-                // TODO: Добавление аннотаций параметров пока не поддерживается в BslParameterBuilder
-            }
+                Name = Name,
+                Alias = Alias,
+                Flags = (MethodFlags)Flags,
+                Params = Parameters?.Select(p => p.ToParameterDefinition()).ToArray() ?? new ParameterDefinition[0],
+                Annotations = Annotations?.Select(a => a.ToAnnotationDefinition()).ToArray() ?? new AnnotationDefinition[0]
+            };
             
-            var bslMethod = builder.Build();
-            
-            // Если это MachineMethodInfo, устанавливаем runtime параметры
-            if (bslMethod is MachineMethodInfo machineMethod)
+            var machineMethod = new MachineMethod
             {
-                machineMethod.SetRuntimeParameters(EntryPoint, LocalVariables ?? new string[0]);
-            }
+                Signature = signature,
+                EntryPoint = EntryPoint,
+                LocalVariables = LocalVariables ?? new string[0]
+            };
             
-            return bslMethod;
+            return new MachineMethodInfo(machineMethod);
         }
     }
 
@@ -520,20 +506,6 @@ namespace ScriptEngine.Compilation
                 DefaultValue = param.DefaultValue?.ToString(),
                 IsByRef = !param.ExplicitByVal // ExplicitByVal означает по значению, поэтому IsByRef противоположен
             };
-        }
-
-        public BslParameterInfo ToParameterInfo()
-        {
-            var builder = new BslParameterBuilder()
-                .Name(Name)
-                .ByValue(!IsByRef);
-                
-            if (HasDefaultValue)
-            {
-                builder.DefaultValue(BslStringValue.Create(DefaultValue ?? ""));
-            }
-            
-            return builder.Build();
         }
     }
 
