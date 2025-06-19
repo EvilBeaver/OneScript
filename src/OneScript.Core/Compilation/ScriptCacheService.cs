@@ -20,6 +20,8 @@ namespace OneScript.Compilation
         private const string CACHE_EXTENSION = ".obj";
         private const string METADATA_EXTENSION = ".metadata.json";
 
+        private IModuleSerializer _moduleSerializer;
+
         /// <summary>
         /// Включено ли кэширование
         /// </summary>
@@ -30,6 +32,14 @@ namespace OneScript.Compilation
         /// </summary>
         public event Action<string> CacheOperationLogged;
 
+        /// <summary>
+        /// Установить сериализатор модулей
+        /// </summary>
+        public void SetModuleSerializer(IModuleSerializer serializer)
+        {
+            _moduleSerializer = serializer;
+        }
+
         public bool TryLoadFromCache(string sourceFile, out IExecutableModule module)
         {
             module = null;
@@ -37,6 +47,12 @@ namespace OneScript.Compilation
             if (!CachingEnabled)
             {
                 LogOperation($"Кэширование отключено для {sourceFile}");
+                return false;
+            }
+
+            if (_moduleSerializer == null)
+            {
+                LogOperation($"Сериализатор модулей не установлен для {sourceFile}");
                 return false;
             }
 
@@ -55,11 +71,14 @@ namespace OneScript.Compilation
                     return false;
                 }
 
-                LogOperation($"Кэш найден и валиден для {sourceFile}");
-                
-                // Кэш валиден, но полная загрузка модуля требует сериализации IExecutableModule
-                // Пока возвращаем false для перекомпиляции, но факт наличия валидного кэша логируется
-                return false;
+                // Загружаем сериализованный модуль
+                using (var stream = File.OpenRead(cacheFile))
+                {
+                    module = _moduleSerializer.Deserialize(stream);
+                }
+
+                LogOperation($"Модуль успешно загружен из кэша: {sourceFile}");
+                return true;
             }
             catch (Exception ex)
             {
@@ -73,6 +92,12 @@ namespace OneScript.Compilation
             if (!CachingEnabled)
             {
                 LogOperation($"Кэширование отключено, не сохраняем {sourceFile}");
+                return;
+            }
+
+            if (_moduleSerializer == null || !_moduleSerializer.CanSerialize(module))
+            {
+                LogOperation($"Сериализатор недоступен или не поддерживает модуль {sourceFile}");
                 return;
             }
 
@@ -102,24 +127,14 @@ namespace OneScript.Compilation
                 
                 File.WriteAllText(metadataFile, metadataJson);
 
-                // Создаем объектный файл с базовой информацией о модуле
+                // Сериализуем модуль
                 var cacheFile = GetCacheFilePath(sourceFile);
-                var moduleInfo = new
+                using (var stream = File.Create(cacheFile))
                 {
-                    SourceLocation = module.Source?.Location ?? "",
-                    MethodsCount = module.Methods?.Count ?? 0,
-                    FieldsCount = module.Fields?.Count ?? 0,
-                    PropertiesCount = module.Properties?.Count ?? 0,
-                    ModuleBodyExists = module.ModuleBody != null,
-                    CachedAt = DateTime.UtcNow,
-                    // Полная сериализация байт-кода будет добавлена в будущем
-                    Note = "Metadata cache - full module serialization pending"
-                };
-                
-                var moduleJson = JsonSerializer.Serialize(moduleInfo, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(cacheFile, moduleJson);
+                    _moduleSerializer.Serialize(module, stream);
+                }
 
-                LogOperation($"Кэш (метаданные) сохранен для {sourceFile}");
+                LogOperation($"Модуль успешно сохранен в кэш: {sourceFile}");
             }
             catch (Exception ex)
             {

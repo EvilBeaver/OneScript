@@ -36,9 +36,11 @@ namespace ScriptEngine.Machine.Contexts
             _engine = engine;
             _cacheService = new ScriptCacheService();
             
-            // Подписываемся на события кэширования для логирования
+            // Устанавливаем сериализатор модулей
             if (_cacheService is ScriptCacheService cache)
             {
+                cache.SetModuleSerializer(new ScriptEngine.Compilation.StackRuntimeModuleSerializer());
+                
                 cache.CacheOperationLogged += (message) => 
                 {
                     // Логируем операции кэша, если включен режим отладки
