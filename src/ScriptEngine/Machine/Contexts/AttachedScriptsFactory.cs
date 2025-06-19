@@ -27,15 +27,29 @@ namespace ScriptEngine.Machine.Contexts
         private readonly Dictionary<string, string> _fileHashes;
         
         private readonly ScriptingEngine _engine;
+        private readonly IScriptCacheService _cacheService;
 
         internal AttachedScriptsFactory(ScriptingEngine engine)
         {
             _loadedModules = new Dictionary<string, IExecutableModule>(StringComparer.InvariantCultureIgnoreCase);
             _fileHashes = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             _engine = engine;
+            _cacheService = new ScriptCacheService();
         }
 
         private ITypeManager TypeManager => _engine.TypeManager;
+        
+        /// <summary>
+        /// Включить или отключить кэширование скомпилированных модулей
+        /// </summary>
+        /// <param name="enabled">true для включения кэширования</param>
+        public void SetCachingEnabled(bool enabled)
+        {
+            if (_cacheService is ScriptCacheService cache)
+            {
+                cache.CachingEnabled = enabled;
+            }
+        }
         
         static string GetMd5Hash(MD5 md5Hash, string input)
         {
@@ -172,7 +186,34 @@ namespace ScriptEngine.Machine.Contexts
                 }
             }
 
-            return compiler.Compile(code, process);
+            // Попытка загрузки из кэша только для файловых источников
+            if (IsFileBasedSource(code) && externalContext == null)
+            {
+                if (_cacheService.TryLoadFromCache(code.Location, out var cachedModule))
+                {
+                    return cachedModule;
+                }
+            }
+
+            // Компилируем обычным способом
+            var module = compiler.Compile(code, process);
+
+            // Сохраняем в кэш только для файловых источников без внешнего контекста
+            if (IsFileBasedSource(code) && externalContext == null)
+            {
+                _cacheService.SaveToCache(code.Location, module);
+            }
+
+            return module;
+        }
+
+        private bool IsFileBasedSource(SourceCode code)
+        {
+            // Проверяем, что это файловый источник (не строка)
+            // Файловые источники имеют путь в Location
+            return !string.IsNullOrEmpty(code.Location) && 
+                   !code.Location.Equals("<string>", StringComparison.OrdinalIgnoreCase) &&
+                   System.IO.File.Exists(code.Location);
         }
         
         private static AttachedScriptsFactory _instance;
