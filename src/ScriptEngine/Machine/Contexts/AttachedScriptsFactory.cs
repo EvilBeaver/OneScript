@@ -50,6 +50,14 @@ namespace ScriptEngine.Machine.Contexts
                 cache.CachingEnabled = enabled;
             }
         }
+
+        /// <summary>
+        /// Получить сервис кэширования для настройки (например, подписки на события)
+        /// </summary>
+        public IScriptCacheService GetCacheService()
+        {
+            return _cacheService;
+        }
         
         static string GetMd5Hash(MD5 md5Hash, string input)
         {
