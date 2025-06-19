@@ -7,6 +7,9 @@
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
     <ItemGroup>
+      <PackageReference Include="MessagePack" Version="2.5.187" />
+    </ItemGroup>
+    <ItemGroup>
       <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
     </ItemGroup>
 

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using MessagePack;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Execution;
@@ -21,25 +22,36 @@ namespace ScriptEngine.Compilation
     /// <summary>
     /// Сериализуемая версия IExecutableModule для кэширования
     /// </summary>
-    [Serializable]
+    [MessagePackObject]
     public class SerializableModule
     {
+        [Key(0)]
         public int FormatVersion { get; set; } = 1;
         
         // Основные компоненты модуля
+        [Key(1)]
         public SerializableConstant[] Constants { get; set; }
+        [Key(2)]
         public SymbolBinding[] VariableRefs { get; set; }
+        [Key(3)]
         public SymbolBinding[] MethodRefs { get; set; }
+        [Key(4)]
         public Command[] Code { get; set; }
         
         // Метаданные модуля  
+        [Key(5)]
         public int EntryMethodIndex { get; set; } = -1;
+        [Key(6)]
         public SerializableSourceCode Source { get; set; }
         
         // Члены модуля
+        [Key(7)]
         public SerializableAnnotation[] ModuleAttributes { get; set; }
+        [Key(8)]
         public SerializableFieldInfo[] Fields { get; set; }
+        [Key(9)]
         public SerializablePropertyInfo[] Properties { get; set; }
+        [Key(10)]
         public SerializableMethodInfo[] Methods { get; set; }
 
         /// <summary>
@@ -135,10 +147,12 @@ namespace ScriptEngine.Compilation
     /// <summary>
     /// Сериализуемая константа
     /// </summary>
-    [Serializable]
+    [MessagePackObject]
     public class SerializableConstant
     {
+        [Key(0)]
         public string Type { get; set; }
+        [Key(1)]
         public string Value { get; set; }
 
         public static SerializableConstant FromBslValue(BslPrimitiveValue value)
@@ -174,9 +188,10 @@ namespace ScriptEngine.Compilation
     /// <summary>
     /// Сериализуемый исходный код
     /// </summary>
-    [Serializable]
+    [MessagePackObject]
     public class SerializableSourceCode
     {
+        [Key(0)]
         public string Location { get; set; }
 
         public static SerializableSourceCode FromSourceCode(SourceCode source)
@@ -201,10 +216,12 @@ namespace ScriptEngine.Compilation
     /// <summary>
     /// Сериализуемая аннотация
     /// </summary>
-    [Serializable]
+    [MessagePackObject]
     public class SerializableAnnotation
     {
+        [Key(0)]
         public string Name { get; set; }
+        [Key(1)]
         public SerializableAnnotationParameter[] Parameters { get; set; }
 
         public static SerializableAnnotation FromAnnotation(BslAnnotationAttribute annotation)
@@ -226,10 +243,12 @@ namespace ScriptEngine.Compilation
     /// <summary>
     /// Сериализуемый параметр аннотации
     /// </summary>
-    [Serializable]
+    [MessagePackObject]
     public class SerializableAnnotationParameter
     {
+        [Key(0)]
         public string Name { get; set; }
+        [Key(1)]
         public string Value { get; set; }
 
         public static SerializableAnnotationParameter FromParameter(BslAnnotationParameter parameter)
@@ -250,12 +269,16 @@ namespace ScriptEngine.Compilation
     /// <summary>
     /// Сериализуемая информация о поле
     /// </summary>
-    [Serializable]
+    [MessagePackObject]
     public class SerializableFieldInfo
     {
+        [Key(0)]
         public string Name { get; set; }
+        [Key(1)]
         public string Alias { get; set; }
+        [Key(2)]
         public bool IsExport { get; set; }
+        [Key(3)]
         public int DispatchId { get; set; }
 
         public static SerializableFieldInfo FromFieldInfo(BslScriptFieldInfo field)
@@ -283,14 +306,20 @@ namespace ScriptEngine.Compilation
     /// <summary>
     /// Сериализуемая информация о свойстве
     /// </summary>
-    [Serializable]
+    [MessagePackObject]
     public class SerializablePropertyInfo
     {
+        [Key(0)]
         public string Name { get; set; }
+        [Key(1)]
         public string Alias { get; set; }
+        [Key(2)]
         public bool IsExport { get; set; }
+        [Key(3)]
         public int DispatchId { get; set; }
+        [Key(4)]
         public bool CanRead { get; set; }
+        [Key(5)]
         public bool CanWrite { get; set; }
 
         public static SerializablePropertyInfo FromPropertyInfo(BslScriptPropertyInfo prop)
@@ -322,13 +351,18 @@ namespace ScriptEngine.Compilation
     /// <summary>
     /// Сериализуемая информация о методе
     /// </summary>
-    [Serializable]
+    [MessagePackObject]
     public class SerializableMethodInfo
     {
+        [Key(0)]
         public string Name { get; set; }
+        [Key(1)]
         public string Alias { get; set; }
+        [Key(2)]
         public bool IsExport { get; set; }
+        [Key(3)]
         public int DispatchId { get; set; }
+        [Key(4)]
         public SerializableParameterInfo[] Parameters { get; set; }
 
         public static SerializableMethodInfo FromMethodInfo(BslScriptMethodInfo method)
@@ -371,12 +405,16 @@ namespace ScriptEngine.Compilation
     /// <summary>
     /// Сериализуемая информация о параметре
     /// </summary>
-    [Serializable]
+    [MessagePackObject]
     public class SerializableParameterInfo
     {
+        [Key(0)]
         public string Name { get; set; }
+        [Key(1)]
         public bool HasDefaultValue { get; set; }
+        [Key(2)]
         public string DefaultValue { get; set; }
+        [Key(3)]
         public bool IsByRef { get; set; }
 
         public static SerializableParameterInfo FromParameterInfo(BslParameterInfo param)
