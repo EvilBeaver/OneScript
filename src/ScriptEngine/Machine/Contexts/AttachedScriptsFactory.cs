@@ -211,6 +211,12 @@ namespace ScriptEngine.Machine.Contexts
             {
                 if (_cacheService.TryLoadFromCache(code.Location, out var cachedModule))
                 {
+                    // Важно: сохраняем оригинальный контекст исходного кода
+                    // Десериализованный модуль может иметь неправильный контекст пути
+                    if (cachedModule is StackRuntimeModule stackModule)
+                    {
+                        stackModule.Source = code;
+                    }
                     return cachedModule;
                 }
             }
