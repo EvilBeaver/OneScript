@@ -39,19 +39,17 @@ namespace ScriptEngine.Machine.Contexts
             _cacheService = engine.Services.TryResolve<IScriptCacheService>() ?? new ScriptCacheService();
             
             // Устанавливаем сериализатор модулей
-            if (_cacheService is ScriptCacheService cache)
+            var cache = (ScriptCacheService)_cacheService;
+            cache.SetModuleSerializer(new ScriptEngine.Compilation.StackRuntimeModuleSerializer());
+            
+            cache.CacheOperationLogged += (message) => 
             {
-                cache.SetModuleSerializer(new ScriptEngine.Compilation.StackRuntimeModuleSerializer());
-                
-                cache.CacheOperationLogged += (message) => 
+                // Логируем операции кэша, если включен режим отладки
+                if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
                 {
-                    // Логируем операции кэша, если включен режим отладки
-                    if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
-                    {
-                        SystemLogger.Write($"[CACHE] {message}");
-                    }
-                };
-            }
+                    SystemLogger.Write($"[CACHE] {message}");
+                }
+            };
         }
 
         private ITypeManager TypeManager => _engine.TypeManager;
