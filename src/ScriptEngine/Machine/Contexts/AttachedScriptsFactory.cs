@@ -221,8 +221,19 @@ namespace ScriptEngine.Machine.Contexts
             bool isFileBasedSource = IsFileBasedSource(code);
             if (isFileBasedSource && externalContext == null)
             {
+                // Отладочная информация для диагностики проблем с кэшированием
+                if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
+                {
+                    SystemLogger.Write($"[CACHE] Attempting to load from cache: {code.Location}, enabled: {_cacheService.CachingEnabled}");
+                }
+                
                 if (_cacheService.TryLoadFromCache(code.Location, out var cachedModule))
                 {
+                    if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
+                    {
+                        SystemLogger.Write($"[CACHE] Successfully loaded from cache: {code.Location}");
+                    }
+                    
                     // Критически важно: всегда сохраняем оригинальный контекст исходного кода
                     // для корректной работы относительных путей при загрузке зависимостей
                     if (cachedModule is StackRuntimeModule stackModule)
@@ -230,6 +241,10 @@ namespace ScriptEngine.Machine.Contexts
                         stackModule.Source = code;
                     }
                     return cachedModule;
+                }
+                else if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
+                {
+                    SystemLogger.Write($"[CACHE] No cache hit for: {code.Location}");
                 }
             }
 
