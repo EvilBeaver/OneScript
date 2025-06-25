@@ -236,10 +236,11 @@ namespace ScriptEngine.Machine.Contexts
                     
                     // Критически важно: всегда сохраняем оригинальный контекст исходного кода
                     // для корректной работы относительных путей при загрузке зависимостей
-                    if (cachedModule is StackRuntimeModule stackModule)
+                    // TEMPORARILY DISABLED TO DEBUG
+                    /*if (cachedModule is StackRuntimeModule stackModule)
                     {
                         stackModule.Source = code;
-                    }
+                    }*/
                     return cachedModule;
                 }
                 else if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
