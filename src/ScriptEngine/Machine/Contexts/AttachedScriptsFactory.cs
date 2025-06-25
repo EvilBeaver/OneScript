@@ -49,6 +49,12 @@ namespace ScriptEngine.Machine.Contexts
                     SystemLogger.Write($"[CACHE] {message}");
                 }
             };
+            
+            // Отладочная информация о состоянии кэширования
+            if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
+            {
+                SystemLogger.Write($"[CACHE] Cache service initialized, enabled: {_cacheService.CachingEnabled}");
+            }
         }
 
         private ITypeManager TypeManager => _engine.TypeManager;
@@ -60,6 +66,12 @@ namespace ScriptEngine.Machine.Contexts
         public void SetCachingEnabled(bool enabled)
         {
             _cacheService.CachingEnabled = enabled;
+            
+            // Отладочная информация о состоянии кэширования
+            if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
+            {
+                SystemLogger.Write($"[CACHE] Caching enabled set to: {enabled}");
+            }
         }
 
         /// <summary>
@@ -211,8 +223,8 @@ namespace ScriptEngine.Machine.Contexts
             {
                 if (_cacheService.TryLoadFromCache(code.Location, out var cachedModule))
                 {
-                    // Важно: сохраняем оригинальный контекст исходного кода
-                    // Десериализованный модуль может иметь неправильный контекст пути
+                    // Критически важно: всегда сохраняем оригинальный контекст исходного кода
+                    // для корректной работы относительных путей при загрузке зависимостей
                     if (cachedModule is StackRuntimeModule stackModule)
                     {
                         stackModule.Source = code;
