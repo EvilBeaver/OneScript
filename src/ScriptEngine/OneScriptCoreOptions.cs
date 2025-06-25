@@ -66,10 +66,22 @@ namespace ScriptEngine
         {
             // По умолчанию кеширование включено
             // Можно отключить, установив lib.caching=false в oscript.cfg
+            if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
+            {
+                Console.WriteLine($"[CONFIG DEBUG] lib.caching value: '{scriptCaching ?? "null"}'");
+            }
+            
             if (string.IsNullOrWhiteSpace(scriptCaching))
                 return true;
             
-            return !StringComparer.InvariantCultureIgnoreCase.Equals(scriptCaching.Trim(), "false");
+            var result = !StringComparer.InvariantCultureIgnoreCase.Equals(scriptCaching.Trim(), "false");
+            
+            if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
+            {
+                Console.WriteLine($"[CONFIG DEBUG] Caching enabled result: {result}");
+            }
+            
+            return result;
         }
     }
 }
