@@ -30,6 +30,23 @@ namespace OneScript.Contexts
         {
         }
 
+        /// <summary>
+        /// Защищенный конструктор для восстановления объекта при десериализации
+        /// </summary>
+        protected BslScriptMethodInfo(string name, string alias, Type declaringType, Type returnType, bool isExport, int dispatchId, BslParameterInfo[] parameters, IEnumerable<object> annotations)
+        {
+            _name = name;
+            _declaringType = declaringType;
+            _returnType = returnType ?? typeof(void);
+            _isPrivate = !isExport;
+            DispatchId = dispatchId;
+            _parameters = parameters ?? Array.Empty<BslParameterInfo>();
+            if (annotations != null)
+            {
+                SetAnnotations(new AnnotationHolder(annotations.ToArray()));
+            }
+        }
+
         internal static BslScriptMethodInfo Create()
         {
             return new BslScriptMethodInfo();
