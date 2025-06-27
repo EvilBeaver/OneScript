@@ -1,0 +1,22 @@
+<testsuites>
+  <testsuite name="OneScript.DebugProtocol.Test.dll" tests="8" skipped="0" failures="0" errors="0" time="0.1398093" timestamp="2025-06-27T22:17:52" hostname="pkrvmbietmlfzoi" id="0" package="OneScript.DebugProtocol.Test.dll">
+    <properties />
+    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="ObjectPresentation" time="0.0244466" />
+    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="MapPresentation" time="0.0066388" />
+    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="ValueTreePresentation" time="0.0067988" />
+    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="SimpleValuePresentation" time="0.0004697" />
+    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="StructurePresentation" time="0.0029776" />
+    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="ArrayPresentation" time="0.0014760" />
+    <testcase classname="OneScript.DebugProtocol.Test.MethodDispatcherTest" name="TestFunctionCallOfInterface" time="0.0870080" />
+    <testcase classname="OneScript.DebugProtocol.Test.MethodDispatcherTest" name="TestVoidCallOfInterface" time="0.0099938" />
+    <system-out>
+Test Framework Informational Messages:
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.0 (64-bit .NET 6.0.36)
+[xUnit.net 00:00:00.46]   Discovering: OneScript.DebugProtocol.Test
+[xUnit.net 00:00:00.49]   Discovered:  OneScript.DebugProtocol.Test
+[xUnit.net 00:00:00.50]   Starting:    OneScript.DebugProtocol.Test
+[xUnit.net 00:00:00.65]   Finished:    OneScript.DebugProtocol.Test
+</system-out>
+    <system-err></system-err>
+  </testsuite>
+</testsuites>
