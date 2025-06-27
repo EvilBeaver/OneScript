@@ -1,0 +1,66 @@
+<testsuites>
+  <testsuite name="OneScript.Dynamic.Tests.dll" tests="42" skipped="2" failures="0" errors="0" time="0.4803933999999999" timestamp="2025-06-27T22:18:06" hostname="pkrvmbietmlfzoi" id="0" package="OneScript.Dynamic.Tests.dll">
+    <properties />
+    <testcase classname="OneScript.Dynamic.Tests.DynamicOperationsTest" name="DynamicEquality(left: True, right: True, expected: True)" time="0.0043015" />
+    <testcase classname="OneScript.Dynamic.Tests.DynamicOperationsTest" name="DynamicEquality(left: True, right: null, expected: False)" time="0.0000153" />
+    <testcase classname="OneScript.Dynamic.Tests.DynamicOperationsTest" name="DynamicEquality(left: null, right: True, expected: False)" time="0.0000094" />
+    <testcase classname="OneScript.Dynamic.Tests.DynamicOperationsTest" name="DynamicEquality(left: True, right: , expected: False)" time="0.0001494" />
+    <testcase classname="OneScript.Dynamic.Tests.DynamicOperationsTest" name="DynamicAdditionForNulls" time="0.0018755" />
+    <testcase classname="OneScript.Dynamic.Tests.DynamicOperationsTest" name="DynamicSubtractionForNulls" time="0.0005515" />
+    <testcase classname="OneScript.Dynamic.Tests.DefaultDlrBehaviorsTest" name="Test_BinaryOperation_EqualityTest_OfBoth" time="0.0520538" />
+    <testcase classname="OneScript.Dynamic.Tests.DefaultDlrBehaviorsTest" name="Test_BinaryOperation_Binding_RightSide" time="0.0198979" />
+    <testcase classname="OneScript.Dynamic.Tests.DefaultDlrBehaviorsTest" name="Test_BinaryOperation_Binding_LeftSide" time="0.0033876" />
+    <testcase classname="OneScript.Dynamic.Tests.DefaultDlrBehaviorsTest" name="Test_BinaryOperation_ComparisonTest" time="0.0016591" />
+    <testcase classname="OneScript.Dynamic.Tests.DefaultDlrBehaviorsTest" name="Test_BinaryOperation_EqualityTest" time="0.0013237" />
+    <testcase classname="OneScript.Dynamic.Tests.Compiler_Api_Tests" name="CanCompile_Empty_Module" time="0.0971067" />
+    <testcase classname="OneScript.Dynamic.Tests.Compiler_Api_Tests" name="CanCompile_Module_With_AllSections" time="0.0300963" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="CanSelectNativeCompiler" time="0.1326298" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="NativeSdoToStringOverride" time="0.0010000">
+      <skipped />
+    </testcase>
+    <testcase classname="OneScript.Dynamic.Tests.Compiler_Api_Tests" name="CanCompile_Proc_With_Return" time="0.0130600" />
+    <testcase classname="OneScript.Dynamic.Tests.Compiler_Api_Tests" name="CanCompile_Func" time="0.0036852" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Conditional_Expression_With_Different_Types" time="0.0160759" />
+    <testcase classname="OneScript.Dynamic.Tests.Compiler_Api_Tests" name="Detects_DuplicateMethods_InModule" time="0.0058618" />
+    <testcase classname="OneScript.Dynamic.Tests.Compiler_Api_Tests" name="Detects_Proc_As_Func_Invoke" time="0.0021474" />
+    <testcase classname="OneScript.Dynamic.Tests.Compiler_Api_Tests" name="CanCompile_ModuleBody" time="0.0010161" />
+    <testcase classname="OneScript.Dynamic.Tests.Compiler_Api_Tests" name="CanCompile_Module_With_SeveralMethods" time="0.0027379" />
+    <testcase classname="OneScript.Dynamic.Tests.Compiler_Api_Tests" name="Detects_DuplicateVars_InModule" time="0.0005769" />
+    <testcase classname="OneScript.Dynamic.Tests.Compiler_Api_Tests" name="Test_Conversion_To_Boolean_For_Decimals_In_BooleanExpressions" time="0.0028898" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Can_Read_From_BslDictionary" time="0.0168160" />
+    <testcase classname="OneScript.Dynamic.Tests.Compiler_Api_Tests" name="Test_Min_Max_Functions" time="0.0029032" />
+    <testcase classname="OneScript.Dynamic.Tests.Compiler_Api_Tests" name="Test_Variant_Conversions" time="0.0065354" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Test_Can_Call_ForwardedDeclarationCall" time="0.0103662" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Integer_To_Variant_assignment_In_Loop" time="0.0051677" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Test_Local_Method_Can_Be_Called_and_Field_Set" time="0.0039566" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Conditional_Expression" time="0.0013679" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Can_Instantiate_Native_Class_With_Args" time="0.0157870" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Conditional_Expression_With_Arbitrary_Value" time="0.0031084" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Pass_Nullable_as_Optional_Args" time="0.0017175" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Test_Can_Read_Module_Variables" time="0.0018565" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Integer_To_ClassField_assignment_In_Loop" time="0.0017346" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Can_Assign_To_BslDictionary" time="0.0015110" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Test_Can_Instantiate_Sdo_With_NativeModule" time="0.0018600" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="NativeSdoConcatenationWithToStringOverride" time="0.0010000">
+      <skipped />
+    </testcase>
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Call_Proc_On_Variants_Chain" time="0.0029969" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="Test_Can_Pass_Arguments_To_Local_Method" time="0.0053855" />
+    <testcase classname="OneScript.Dynamic.Tests.NativeSdoTests" name="NRE_At_Runtime_On_Method_Var_Issue1206" time="0.0022145" />
+    <system-out>Выходные параметры не поддерживаются нативной средой
+Выходные параметры не поддерживаются нативной средой
+
+Test Framework Informational Messages:
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.3+1b45f5407b (64-bit .NET 6.0.36)
+[xUnit.net 00:00:00.46]   Discovering: OneScript.Dynamic.Tests
+[xUnit.net 00:00:00.51]   Discovered:  OneScript.Dynamic.Tests
+[xUnit.net 00:00:00.51]   Starting:    OneScript.Dynamic.Tests
+[xUnit.net 00:00:00.70]       Выходные параметры не поддерживаются нативной средой
+[xUnit.net 00:00:00.78]       Выходные параметры не поддерживаются нативной средой
+[xUnit.net 00:00:00.79]   Finished:    OneScript.Dynamic.Tests
+</system-out>
+    <system-err>Warning - [xUnit.net 00:00:00.70]     OneScript.Dynamic.Tests.NativeSdoTests.NativeSdoToStringOverride [SKIP]
+Warning - [xUnit.net 00:00:00.78]     OneScript.Dynamic.Tests.NativeSdoTests.NativeSdoConcatenationWithToStringOverride [SKIP]
+</system-err>
+  </testsuite>
+</testsuites>
