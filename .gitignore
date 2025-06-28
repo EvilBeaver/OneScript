@@ -60,8 +60,10 @@ src/DebugServer/node_modules/
 # Visual Studio OpenCover and Test result
 src/OpenCover
 TestResult.xml
+TestResults/
 tests/component/Component.dll
 tests/tests.xml
+tests/*.xml
 
 src/oscript/Properties/launchSettings\.json
 
