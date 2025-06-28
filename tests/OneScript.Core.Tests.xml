@@ -1,201 +1,201 @@
 <testsuites>
-  <testsuite name="OneScript.Core.Tests.dll" tests="172" skipped="1" failures="1" errors="0" time="1.1392255000000007" timestamp="2025-06-27T22:17:24" hostname="pkrvmbietmlfzoi" id="0" package="OneScript.Core.Tests.dll">
+  <testsuite name="OneScript.Core.Tests.dll" tests="172" skipped="1" failures="1" errors="0" time="1.1006261000000004" timestamp="2025-06-28T06:52:53" hostname="pkrvmbietmlfzoi" id="0" package="OneScript.Core.Tests.dll">
     <properties />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Type_Value_Test" time="0.0045347">
+    <testcase classname="OneScript.Core.Tests.ConstructionTests" name="CanCreate_With_ContextInjection" time="0.0134282" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Type_Value_Test" time="0.0047495">
       <failure type="failure" message="Assert.Equal() Failure&#xA;          ↓ (pos 0)&#xA;Expected: Строка&#xA;Actual:   String&#xA;          ↑ (pos 0)">at OneScript.Core.Tests.ValuesTest.Type_Value_Test() in /home/runner/work/OneScript/OneScript/src/Tests/OneScript.Core.Tests/ValuesTest.cs:line 151</failure>
     </testcase>
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Invalid_Comparison_Undefined" time="0.0036718" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFilledTest(value: 1)" time="0.0019543" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFilledTest(value: hello)" time="0.0000105" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFilledTest(value: 06/27/2025 22:17:25)" time="0.0000659" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFilledTest(value: True)" time="0.0000098" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFilledTest(value: False)" time="0.0000082" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFilledTest(value: 8aa3040c-07f1-4e7c-8863-23cc53b657a5)" time="0.0001112" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;True&quot;, type: Boolean, implementation: typeof(OneScript.Values.BslBooleanValue))" time="0.0007799" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;20140105010101&quot;, type: Date, implementation: typeof(OneScript.Values.BslDateValue))" time="0.0005180" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;Истина&quot;, type: Boolean, implementation: typeof(OneScript.Values.BslBooleanValue))" time="0.0000112" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;Undefined&quot;, type: Undefined, implementation: typeof(OneScript.Values.BslUndefinedValue))" time="0.0000124" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;False&quot;, type: Boolean, implementation: typeof(OneScript.Values.BslBooleanValue))" time="0.0000056" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;Неопределено&quot;, type: Undefined, implementation: typeof(OneScript.Values.BslUndefinedValue))" time="0.0000041" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;Ложь&quot;, type: Boolean, implementation: typeof(OneScript.Values.BslBooleanValue))" time="0.0000044" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;20140105&quot;, type: Date, implementation: typeof(OneScript.Values.BslDateValue))" time="0.0000170" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;Null&quot;, type: Null, implementation: typeof(OneScript.Values.BslNullValue))" time="0.0000664" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="BooleanStringLocales(locale: &quot;en&quot;, trueString: &quot;True&quot;, falseString: &quot;False&quot;)" time="0.0005334" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="BooleanStringLocales(locale: &quot;ru&quot;, trueString: &quot;Да&quot;, falseString: &quot;Нет&quot;)" time="0.0001610" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="BooleanStringLocales(locale: &quot;jp&quot;, trueString: &quot;True&quot;, falseString: &quot;False&quot;)" time="0.0000206" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Invalid_Comparison_Num_And_String" time="0.0009266" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Undefined_Value_Test" time="0.0021678" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="StringValueTests" time="0.0015806" />
-    <testcase classname="OneScript.Core.Tests.PredefinedInterfacesTest" name="Test_CheckerDoesNotReactsOnModuleAnnotations" time="0.1190811" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="TypeEqualityOnCreationTest" time="0.0870310" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value: 0)" time="0.0001114" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value: )" time="0.0000092" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value: 01/01/0001 00:00:00)" time="0.0000043" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value: )" time="0.0000037" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value: )" time="0.0000036" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value:     )" time="0.0000033" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value: 00000000-0000-0000-0000-000000000000)" time="0.0000129" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Boolean_Comparison" time="0.0007928" />
-    <testcase classname="OneScript.Core.Tests.PredefinedInterfacesTest" name="Test_CheckerReactsOnlyOnceOnManyAnnotations" time="0.0154955" />
-    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="SaveToCache_CreatesObjFile" time="0.1420832" />
-    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="TryLoadFromCache_WhenCachingDisabled_ReturnsFalse" time="0.0018596" />
-    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="IsCacheValid_NewFile_ReturnsFalse" time="0.0013540" />
-    <testcase classname="OneScript.Core.Tests.PredefinedInterfacesTest" name="Test_CheckerReactsOnModuleAnnotations" time="0.0067549" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="NumbersEquality" time="0.0077000" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="String_To_String_Comparison" time="0.0009393" />
-    <testcase classname="OneScript.Core.Tests.PredefinedInterfacesTest" name="Test_CheckerReactsOnlyOnMethodAnnotations" time="0.0028813" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Boolean_Equality" time="0.0015939" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Number_To_Number_Comparison" time="0.0001653" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Null_Value_Test" time="0.0007038" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="PopularNumbersReferenceEquality" time="0.0001425" />
-    <testcase classname="OneScript.Core.Tests.ValuesTest" name="BooleanEquality" time="0.0011201" />
-    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="IsCacheValid_AfterFileModification_ReturnsFalse" time="0.0103173" />
-    <testcase classname="OneScript.Core.Tests.IocResolutionTests" name="Scoped_Gets_Same_Instance_As_Global" time="0.0026790" />
-    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="ClearCache_RemovesCacheFiles" time="0.0027224" />
-    <testcase classname="OneScript.Core.Tests.SymbolsRegistrationTests" name="GlobalProperty_In_Separate_InjectedContext_IsSettable" time="0.1546296" />
-    <testcase classname="OneScript.Core.Tests.SymbolsRegistrationTests" name="GlobalProperty_In_Shared_PropertyBag_IsSettable" time="0.0003684" />
-    <testcase classname="OneScript.Core.Tests.TestUserScriptProperties" name="ExportVariables_And_Properties_Are_Accessible" time="0.0049848" />
-    <testcase classname="OneScript.Core.Tests.ValueReferenceTests" name="TestCanReferenceSimpleValue" time="0.0028080" />
-    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="CachingEnabled_WhenDisabled_DoesNotCreateFiles" time="0.0052214" />
-    <testcase classname="OneScript.Core.Tests.TestUserScriptProperties" name="ExternalVariables_And_Properties_Are_Accessible" time="0.0067080" />
-    <testcase classname="OneScript.Core.Tests.ValueReferenceTests" name="TestCanReferenceContextProperties" time="0.0120074" />
-    <testcase classname="OneScript.Core.Tests.ValueReferenceTests" name="TestCanReferenceIndexedValues" time="0.0015805" />
-    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="SaveToCache_CreatesMetadataFile" time="0.0159503" />
-    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="IsCacheValid_AfterSave_ReturnsTrue" time="0.0025392" />
-    <testcase classname="OneScript.Core.Tests.CodeGenerationTests" name="Methods_Are_Registered_In_Image" time="0.0265429" />
-    <testcase classname="OneScript.Core.Tests.CodeGenerationTests" name="Variables_Are_Registered_In_Image" time="0.0006563" />
-    <testcase classname="OneScript.Core.Tests.ArgumentParserTests" name="Should_Parse_Arguments(input: &quot;-c \&quot;'oscript' -version\&quot;&quot;, expected: [&quot;-c&quot;, &quot;'oscript' -version&quot;])" time="0.0110608" />
-    <testcase classname="OneScript.Core.Tests.ArgumentParserTests" name="Should_Parse_Arguments(input: &quot;-c 'oscript -version'&quot;, expected: [&quot;-c&quot;, &quot;oscript -version&quot;])" time="0.0000294" />
-    <testcase classname="OneScript.Core.Tests.ArgumentParserTests" name="Should_Parse_Arguments(input: &quot;-c oscript -version&quot;, expected: [&quot;-c&quot;, &quot;oscript&quot;, &quot;-version&quot;])" time="0.0000219" />
-    <testcase classname="OneScript.Core.Tests.ArgumentParserTests" name="Should_Parse_Arguments(input: &quot;'aaa\&quot;&quot;, expected: [&quot;aaa\&quot;&quot;])" time="0.0000199" />
-    <testcase classname="OneScript.Core.Tests.ArgumentParserTests" name="Should_Parse_Arguments(input: &quot; &quot;, expected: [])" time="0.0000247" />
-    <testcase classname="OneScript.Core.Tests.ArgumentParserTests" name="Should_Parse_Arguments(input: &quot;-c '\&quot;oscript\&quot; -version'&quot;, expected: [&quot;-c&quot;, &quot;\&quot;oscript\&quot; -version&quot;])" time="0.0000215" />
-    <testcase classname="OneScript.Core.Tests.CodeGenerationTests" name="EmptyImageIsReturnedWithNoCode" time="0.0024972" />
-    <testcase classname="OneScript.Core.Tests.ConstructionTests" name="CanCreate_With_ContextInjection" time="0.0053146" />
-    <testcase classname="OneScript.Core.Tests.TestTypesRegistration" name="TypeInequalityForNull" time="0.0002432" />
-    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckNonExportVarsArePrivateFields" time="0.0105291" />
-    <testcase classname="OneScript.Core.Tests.TestTypesRegistration" name="All_Classes_Have_Unique_Types" time="0.0063227" />
-    <testcase classname="OneScript.Core.Tests.TestTypesRegistration" name="TypeEqualityById" time="0.0001966" />
-    <testcase classname="OneScript.Core.Tests.TestTypesRegistration" name="TypeEqualityForNull" time="0.0001009" />
-    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckMethodAnnotationsReflected" time="0.0086275" />
-    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckDefaultGetMethodsArePublic" time="0.0020455" />
-    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckExplicitPublicMethodsCanBeRetrieved" time="0.0016024" />
-    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="ClassCanExposeNativeMethodDirectly" time="0.0020611" />
-    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckParametersAnnotationsReflected" time="0.0037786" />
-    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="ClassCanBeCreatedViaConstructor" time="0.0027247" />
-    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="ClassCanExposeNativeMethodByName" time="0.0016393" />
-    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckAllMethodsCanBeRetrieved" time="0.0014790" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_IfThenElse" time="0.0231926" />
-    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckExportVarsArePublicFields" time="0.0015590" />
-    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckPrivateMethodsCanBeRetrieved" time="0.0015278" />
-    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckIfTypeHasReflectedWithName" time="0.0010443" />
-    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckMethodBodyIsNotReflected" time="0.0009246" />
-    <testcase classname="OneScript.Core.Tests.ObsoleteMethodAttributeTest" name="CallGoodMethodsHasNoWarnings" time="0.0686059" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Parameter_Passing_And_Return_Is_Available" time="0.0135702" />
-    <testcase classname="OneScript.Core.Tests.DynamicObjectTest" name="CanCallMethodsOfStruct" time="0.0552476" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Empty_Body" time="0.0023689" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Date_Seconds_Addition_Is_Availiable" time="0.0027002" />
-    <testcase classname="OneScript.Core.Tests.TestNullConversions" name="CheckDefinedValueIsNotNullOnPassingArg" time="0.0173861" />
-    <testcase classname="OneScript.Core.Tests.TestNullConversions" name="CheckUndefinedIsNullOnPassingArg" time="0.0051354" />
-    <testcase classname="OneScript.Core.Tests.DynamicObjectTest" name="CanAccessIndexOfStruct" time="0.0125893" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="TypeFuncValue_Is_BslTypeValue" time="0.0089999" />
-    <testcase classname="OneScript.Core.Tests.ThisObjectPropertyTest" name="ThisObjectCanBeFoundForUserScript" time="0.0031846" />
-    <testcase classname="OneScript.Core.Tests.ObsoleteMethodAttributeTest" name="TestLoggingOfObsoleteCall" time="0.0201018" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="ExceptionInfo_ReturnsClass_InCatch" time="0.0041998" />
-    <testcase classname="OneScript.Core.Tests.ObsoleteMethodAttributeTest" name="TestICallDeprecatedAliasAndHaveException" time="0.0021035" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="LazyBoolAnd" time="0.0025615" />
-    <testcase classname="OneScript.Core.Tests.ObsoleteMethodAttributeTest" name="TestICallDeprecatedAliasAndHaveWarning" time="0.0028262" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_ElseIf_WithoutElse" time="0.0040378" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Numeric_Unary_Expressions(argType: Number, expectedNodeType: typeof(System.Linq.Expressions.UnaryExpression))" time="0.0018560" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Numeric_Unary_Expressions(argType: BslValue, expectedNodeType: typeof(System.Linq.Expressions.MethodCallExpression))" time="0.0009136" />
-    <testcase classname="OneScript.Core.Tests.DynamicObjectTest" name="CanAccessArraysByIndex" time="0.0199872" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Member_Procedures" time="0.0084422" />
-    <testcase classname="OneScript.Core.Tests.DynamicObjectTest" name="CanAccessPropertiesOfStruct" time="0.0034190" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="DateDiff_Available" time="0.0013620" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_IfThen" time="0.0008664" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_TryExcept" time="0.0032224" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Undefined_To_Object_Makes_NullObject" time="0.0012949" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_String_Additons" time="0.0013319" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Member_Functions" time="0.0021476" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="LazyBoolOr" time="0.0011050" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: Undefined)" time="0.0024842" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: String)" time="0.0010896" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: Boolean)" time="0.0009623" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: Date)" time="0.0010273" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: Number)" time="0.0010755" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: Null)" time="0.0009935" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: Type)" time="0.0009711" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Boolean_Unary_Expressions(argType: Boolean, expectedNodeType: typeof(System.Linq.Expressions.UnaryExpression))" time="0.0010697" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Boolean_Unary_Expressions(argType: BslValue, expectedNodeType: typeof(System.Linq.Expressions.MethodCallExpression))" time="0.0007094" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="TypeOfFuncValue_Is_BslTypeValue" time="0.0118773" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_ElseIfElse" time="0.0027318" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Number_To_Number_Operations_Are_Available" time="0.0013062" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_Eratosthenes" time="0.0187043" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_PropRead_Dynamic" time="0.0023758" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_AcceptParameters_In_Array" time="0.0013391" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Parameterized_Constructor_With_SkippedArgs" time="0.0065587" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_PropWrite_Dynamic" time="0.0066882" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: Undefined)" time="0.0011517" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: String)" time="0.0008608" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: Boolean)" time="0.0008646" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: Date)" time="0.0011885" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: Number)" time="0.0011352" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: Null)" time="0.0009886" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: Type)" time="0.0009600" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Assign_To_Indexer" time="0.0019347" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="CanCallGlobalFunctions" time="0.0014328" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Member_Procedures_With_Defaults" time="0.0013159" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Invalid_Comparison_Undefined" time="0.0035908" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFilledTest(value: 1)" time="0.0013860" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFilledTest(value: hello)" time="0.0000101" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFilledTest(value: 6/28/2025 6:52:54AM)" time="0.0000669" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFilledTest(value: True)" time="0.0000092" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFilledTest(value: False)" time="0.0000047" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFilledTest(value: c1d00046-a7c8-4ccd-bdc1-ba3bda1b1e81)" time="0.0001093" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;True&quot;, type: Boolean, implementation: typeof(OneScript.Values.BslBooleanValue))" time="0.0006596" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;20140105010101&quot;, type: Date, implementation: typeof(OneScript.Values.BslDateValue))" time="0.0004585" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;Истина&quot;, type: Boolean, implementation: typeof(OneScript.Values.BslBooleanValue))" time="0.0000125" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;Undefined&quot;, type: Undefined, implementation: typeof(OneScript.Values.BslUndefinedValue))" time="0.0000160" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;False&quot;, type: Boolean, implementation: typeof(OneScript.Values.BslBooleanValue))" time="0.0000086" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;Неопределено&quot;, type: Undefined, implementation: typeof(OneScript.Values.BslUndefinedValue))" time="0.0000068" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;Ложь&quot;, type: Boolean, implementation: typeof(OneScript.Values.BslBooleanValue))" time="0.0000082" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;20140105&quot;, type: Date, implementation: typeof(OneScript.Values.BslDateValue))" time="0.0000174" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueFactory_Parse(literal: &quot;Null&quot;, type: Null, implementation: typeof(OneScript.Values.BslNullValue))" time="0.0002036" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="BooleanStringLocales(locale: &quot;en&quot;, trueString: &quot;True&quot;, falseString: &quot;False&quot;)" time="0.0004516" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="BooleanStringLocales(locale: &quot;ru&quot;, trueString: &quot;Да&quot;, falseString: &quot;Нет&quot;)" time="0.0001412" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="BooleanStringLocales(locale: &quot;jp&quot;, trueString: &quot;True&quot;, falseString: &quot;False&quot;)" time="0.0000197" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Invalid_Comparison_Num_And_String" time="0.0008470" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Undefined_Value_Test" time="0.0030060" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="StringValueTests" time="0.0018330" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="TypeEqualityOnCreationTest" time="0.0845587" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value: 0)" time="0.0001099" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value: )" time="0.0000093" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value: 1/1/0001 12:00:00AM)" time="0.0000045" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value: )" time="0.0000041" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value: )" time="0.0000045" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value:     )" time="0.0000037" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="ValueEmptyTest(value: 00000000-0000-0000-0000-000000000000)" time="0.0000127" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Boolean_Comparison" time="0.0004844" />
+    <testcase classname="OneScript.Core.Tests.TestUserScriptProperties" name="ExportVariables_And_Properties_Are_Accessible" time="0.1122585" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="NumbersEquality" time="0.0078712" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="String_To_String_Comparison" time="0.0007771" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Boolean_Equality" time="0.0006138" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Number_To_Number_Comparison" time="0.0009741" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="Null_Value_Test" time="0.0008074" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="PopularNumbersReferenceEquality" time="0.0003106" />
+    <testcase classname="OneScript.Core.Tests.TestUserScriptProperties" name="ExternalVariables_And_Properties_Are_Accessible" time="0.0100736" />
+    <testcase classname="OneScript.Core.Tests.ValuesTest" name="BooleanEquality" time="0.0009893" />
+    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="SaveToCache_CreatesObjFile" time="0.1519761" />
+    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="TryLoadFromCache_WhenCachingDisabled_ReturnsFalse" time="0.0019265" />
+    <testcase classname="OneScript.Core.Tests.ThisObjectPropertyTest" name="ThisObjectCanBeFoundForUserScript" time="0.0076991" />
+    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="IsCacheValid_NewFile_ReturnsFalse" time="0.0015625" />
+    <testcase classname="OneScript.Core.Tests.SymbolsRegistrationTests" name="GlobalProperty_In_Separate_InjectedContext_IsSettable" time="0.1544350" />
+    <testcase classname="OneScript.Core.Tests.SymbolsRegistrationTests" name="GlobalProperty_In_Shared_PropertyBag_IsSettable" time="0.0002831" />
+    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="IsCacheValid_AfterFileModification_ReturnsFalse" time="0.0094077" />
+    <testcase classname="OneScript.Core.Tests.ArgumentParserTests" name="Should_Parse_Arguments(input: &quot;-c \&quot;'oscript' -version\&quot;&quot;, expected: [&quot;-c&quot;, &quot;'oscript' -version&quot;])" time="0.0111676" />
+    <testcase classname="OneScript.Core.Tests.ArgumentParserTests" name="Should_Parse_Arguments(input: &quot;-c 'oscript -version'&quot;, expected: [&quot;-c&quot;, &quot;oscript -version&quot;])" time="0.0000240" />
+    <testcase classname="OneScript.Core.Tests.ArgumentParserTests" name="Should_Parse_Arguments(input: &quot;-c oscript -version&quot;, expected: [&quot;-c&quot;, &quot;oscript&quot;, &quot;-version&quot;])" time="0.0000213" />
+    <testcase classname="OneScript.Core.Tests.ArgumentParserTests" name="Should_Parse_Arguments(input: &quot;'aaa\&quot;&quot;, expected: [&quot;aaa\&quot;&quot;])" time="0.0000177" />
+    <testcase classname="OneScript.Core.Tests.ArgumentParserTests" name="Should_Parse_Arguments(input: &quot; &quot;, expected: [])" time="0.0000226" />
+    <testcase classname="OneScript.Core.Tests.ArgumentParserTests" name="Should_Parse_Arguments(input: &quot;-c '\&quot;oscript\&quot; -version'&quot;, expected: [&quot;-c&quot;, &quot;\&quot;oscript\&quot; -version&quot;])" time="0.0000206" />
+    <testcase classname="OneScript.Core.Tests.IocResolutionTests" name="Scoped_Gets_Same_Instance_As_Global" time="0.0014956" />
+    <testcase classname="OneScript.Core.Tests.ValueReferenceTests" name="TestCanReferenceSimpleValue" time="0.0008629" />
+    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="ClearCache_RemovesCacheFiles" time="0.0101317" />
+    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="CachingEnabled_WhenDisabled_DoesNotCreateFiles" time="0.0010416" />
+    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="SaveToCache_CreatesMetadataFile" time="0.0033897" />
+    <testcase classname="OneScript.Core.Tests.CodeGenerationTests" name="Methods_Are_Registered_In_Image" time="0.0224642" />
+    <testcase classname="OneScript.Core.Tests.CodeGenerationTests" name="Variables_Are_Registered_In_Image" time="0.0004682" />
+    <testcase classname="OneScript.Core.Tests.ScriptCacheServiceTests" name="IsCacheValid_AfterSave_ReturnsTrue" time="0.0028149" />
+    <testcase classname="OneScript.Core.Tests.ValueReferenceTests" name="TestCanReferenceContextProperties" time="0.0137368" />
+    <testcase classname="OneScript.Core.Tests.TestTypesRegistration" name="TypeInequalityForNull" time="0.0002614" />
+    <testcase classname="OneScript.Core.Tests.CodeGenerationTests" name="EmptyImageIsReturnedWithNoCode" time="0.0024928" />
+    <testcase classname="OneScript.Core.Tests.ValueReferenceTests" name="TestCanReferenceIndexedValues" time="0.0018739" />
+    <testcase classname="OneScript.Core.Tests.TestTypesRegistration" name="All_Classes_Have_Unique_Types" time="0.0086612" />
+    <testcase classname="OneScript.Core.Tests.TestTypesRegistration" name="TypeEqualityById" time="0.0001525" />
+    <testcase classname="OneScript.Core.Tests.TestTypesRegistration" name="TypeEqualityForNull" time="0.0002147" />
+    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckNonExportVarsArePrivateFields" time="0.0078059" />
+    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckMethodAnnotationsReflected" time="0.0076309" />
+    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckDefaultGetMethodsArePublic" time="0.0019906" />
+    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckExplicitPublicMethodsCanBeRetrieved" time="0.0015498" />
+    <testcase classname="OneScript.Core.Tests.PredefinedInterfacesTest" name="Test_CheckerDoesNotReactsOnModuleAnnotations" time="0.0119960" />
+    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="ClassCanExposeNativeMethodDirectly" time="0.0018773" />
+    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckParametersAnnotationsReflected" time="0.0039755" />
+    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="ClassCanBeCreatedViaConstructor" time="0.0023241" />
+    <testcase classname="OneScript.Core.Tests.PredefinedInterfacesTest" name="Test_CheckerReactsOnlyOnceOnManyAnnotations" time="0.0084400" />
+    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="ClassCanExposeNativeMethodByName" time="0.0010696" />
+    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckAllMethodsCanBeRetrieved" time="0.0015597" />
+    <testcase classname="OneScript.Core.Tests.ObsoleteMethodAttributeTest" name="CallGoodMethodsHasNoWarnings" time="0.0319156" />
+    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckExportVarsArePublicFields" time="0.0015535" />
+    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckPrivateMethodsCanBeRetrieved" time="0.0015482" />
+    <testcase classname="OneScript.Core.Tests.PredefinedInterfacesTest" name="Test_CheckerReactsOnModuleAnnotations" time="0.0056197" />
+    <testcase classname="OneScript.Core.Tests.TestNullConversions" name="CheckDefinedValueIsNotNullOnPassingArg" time="0.0726585" />
+    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckIfTypeHasReflectedWithName" time="0.0016703" />
+    <testcase classname="OneScript.Core.Tests.PredefinedInterfacesTest" name="Test_CheckerReactsOnlyOnMethodAnnotations" time="0.0023397" />
+    <testcase classname="OneScript.Core.Tests.TypeReflectionTests" name="CheckMethodBodyIsNotReflected" time="0.0015851" />
+    <testcase classname="OneScript.Core.Tests.TestNullConversions" name="CheckUndefinedIsNullOnPassingArg" time="0.0073658" />
+    <testcase classname="OneScript.Core.Tests.DynamicObjectTest" name="CanCallMethodsOfStruct" time="0.0093443" />
+    <testcase classname="OneScript.Core.Tests.ObsoleteMethodAttributeTest" name="TestLoggingOfObsoleteCall" time="0.0214277" />
+    <testcase classname="OneScript.Core.Tests.ObsoleteMethodAttributeTest" name="TestICallDeprecatedAliasAndHaveException" time="0.0021154" />
+    <testcase classname="OneScript.Core.Tests.DynamicObjectTest" name="CanAccessIndexOfStruct" time="0.0099839" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_IfThenElse" time="0.0206110" />
+    <testcase classname="OneScript.Core.Tests.ObsoleteMethodAttributeTest" name="TestICallDeprecatedAliasAndHaveWarning" time="0.0028225" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Parameter_Passing_And_Return_Is_Available" time="0.0092815" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Empty_Body" time="0.0015454" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Date_Seconds_Addition_Is_Availiable" time="0.0017400" />
+    <testcase classname="OneScript.Core.Tests.DynamicObjectTest" name="CanAccessArraysByIndex" time="0.0175808" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="TypeFuncValue_Is_BslTypeValue" time="0.0057687" />
+    <testcase classname="OneScript.Core.Tests.DynamicObjectTest" name="CanAccessPropertiesOfStruct" time="0.0027387" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="ExceptionInfo_ReturnsClass_InCatch" time="0.0031857" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="LazyBoolAnd" time="0.0017504" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_ElseIf_WithoutElse" time="0.0038793" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Numeric_Unary_Expressions(argType: Number, expectedNodeType: typeof(System.Linq.Expressions.UnaryExpression))" time="0.0026712" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Numeric_Unary_Expressions(argType: BslValue, expectedNodeType: typeof(System.Linq.Expressions.MethodCallExpression))" time="0.0014134" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Member_Procedures" time="0.0113615" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="DateDiff_Available" time="0.0013536" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_IfThen" time="0.0009808" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_TryExcept" time="0.0038752" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Undefined_To_Object_Makes_NullObject" time="0.0013075" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_String_Additons" time="0.0013117" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Member_Functions" time="0.0021836" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="LazyBoolOr" time="0.0012028" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: Undefined)" time="0.0023991" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: String)" time="0.0011046" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: Boolean)" time="0.0009614" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: Date)" time="0.0010739" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: Number)" time="0.0011442" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: Null)" time="0.0015539" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_Available(type: Type)" time="0.0011224" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Boolean_Unary_Expressions(argType: Boolean, expectedNodeType: typeof(System.Linq.Expressions.UnaryExpression))" time="0.0010686" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Boolean_Unary_Expressions(argType: BslValue, expectedNodeType: typeof(System.Linq.Expressions.MethodCallExpression))" time="0.0103297" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="TypeOfFuncValue_Is_BslTypeValue" time="0.0015008" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_ElseIfElse" time="0.0023247" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Number_To_Number_Operations_Are_Available" time="0.0012294" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_Eratosthenes" time="0.0186669" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_PropRead_Dynamic" time="0.0023255" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_AcceptParameters_In_Array" time="0.0014878" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Parameterized_Constructor_With_SkippedArgs" time="0.0067301" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_PropWrite_Dynamic" time="0.0066646" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: Undefined)" time="0.0011189" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: String)" time="0.0008578" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: Boolean)" time="0.0009288" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: Date)" time="0.0009283" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: Number)" time="0.0008942" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: Null)" time="0.0009006" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Right(type: Type)" time="0.0008447" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Assign_To_Indexer" time="0.0022875" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="CanCallGlobalFunctions" time="0.0014809" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Member_Procedures_With_Defaults" time="0.0013377" />
     <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Read_Special_StaticIndexer" time="0.0010000">
       <skipped />
     </testcase>
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_TypeConversions" time="0.0015221" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Member_Procedures_On_Dynamics" time="0.0046678" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: Undefined)" time="0.0011070" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: String)" time="0.0008465" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: Boolean)" time="0.0008184" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: Date)" time="0.0008739" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: Number)" time="0.0008691" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: Null)" time="0.0008580" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: Type)" time="0.0008612" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="ExceptionInfo_ReturnsUndefined_OutsideOfCatch" time="0.0013456" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="StaticComparison_Available(argType: Number, literal: &quot;14&quot;)" time="0.0018200" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="StaticComparison_Available(argType: Date, literal: &quot;'20010205'&quot;)" time="0.0010355" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="StaticComparison_Available(argType: String, literal: &quot;\&quot;20010205\&quot;&quot;)" time="0.0011320" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Binary_Expressions" time="0.0010370" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_ForLoop" time="0.0027366" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_PropWrite_Static" time="0.0028794" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="CanInjectContext_As_Symbols" time="0.0005530" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Parameterless_Constructor" time="0.0016583" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_While" time="0.0024486" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_AcceptParameters" time="0.0013920" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Date_Seconds_Substraction_Is_Availiable" time="0.0014639" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_ForEachLoop" time="0.0039064" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_String_Additons_With_No_String_at_Right" time="0.0010764" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="ClrIntegers_Can_Be_Used_As_Bsl_Numbers" time="0.0017042" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Number_To_IValue_Operations_Are_Available" time="0.0013848" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_ParameterlessFunctions" time="0.0008211" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Parameterized_Constructor_With_AllArgs" time="0.0022808" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Assignment" time="0.0011872" />
-    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_PropRead_Static" time="0.0032485" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_TypeConversions" time="0.0018684" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Member_Procedures_On_Dynamics" time="0.0043821" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: Undefined)" time="0.0011049" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: String)" time="0.0008643" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: Boolean)" time="0.0008626" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: Date)" time="0.0009017" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: Number)" time="0.0014178" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: Null)" time="0.0009102" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="EqualityOperators_With_BslValue_On_Left(type: Type)" time="0.0008854" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="ExceptionInfo_ReturnsUndefined_OutsideOfCatch" time="0.0011823" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="StaticComparison_Available(argType: Number, literal: &quot;14&quot;)" time="0.0019075" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="StaticComparison_Available(argType: Date, literal: &quot;'20010205'&quot;)" time="0.0010468" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="StaticComparison_Available(argType: String, literal: &quot;\&quot;20010205\&quot;&quot;)" time="0.0010853" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Binary_Expressions" time="0.0010918" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_ForLoop" time="0.0028467" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_PropWrite_Static" time="0.0034966" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="CanInjectContext_As_Symbols" time="0.0005518" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Parameterless_Constructor" time="0.0016806" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_While" time="0.0021658" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_AcceptParameters" time="0.0012277" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Date_Seconds_Substraction_Is_Availiable" time="0.0013322" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_ForEachLoop" time="0.0039252" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_String_Additons_With_No_String_at_Right" time="0.0010579" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="ClrIntegers_Can_Be_Used_As_Bsl_Numbers" time="0.0017139" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Number_To_IValue_Operations_Are_Available" time="0.0020419" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_ParameterlessFunctions" time="0.0008748" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Call_Parameterized_Constructor_With_AllArgs" time="0.0022249" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Compile_Assignment" time="0.0010614" />
+    <testcase classname="OneScript.Core.Tests.NativeCompilerTest" name="Can_Do_PropRead_Static" time="0.0031965" />
     <system-out>Будет переделываться на индексатор this
 
 Test Framework Informational Messages:
 [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.0 (64-bit .NET 6.0.36)
-[xUnit.net 00:00:00.48]   Discovering: OneScript.Core.Tests
-[xUnit.net 00:00:00.56]   Discovered:  OneScript.Core.Tests
-[xUnit.net 00:00:00.57]   Starting:    OneScript.Core.Tests
-[xUnit.net 00:00:00.65]       Assert.Equal() Failure
-[xUnit.net 00:00:00.65]                 ↓ (pos 0)
-[xUnit.net 00:00:00.65]       Expected: Строка
-[xUnit.net 00:00:00.65]       Actual:   String
-[xUnit.net 00:00:00.65]                 ↑ (pos 0)
-[xUnit.net 00:00:00.65]       Stack Trace:
-[xUnit.net 00:00:00.65]         /home/runner/work/OneScript/OneScript/src/Tests/OneScript.Core.Tests/ValuesTest.cs(151,0): at OneScript.Core.Tests.ValuesTest.Type_Value_Test()
-[xUnit.net 00:00:00.98]       Будет переделываться на индексатор this
-[xUnit.net 00:00:01.03]   Finished:    OneScript.Core.Tests
+[xUnit.net 00:00:00.46]   Discovering: OneScript.Core.Tests
+[xUnit.net 00:00:00.54]   Discovered:  OneScript.Core.Tests
+[xUnit.net 00:00:00.54]   Starting:    OneScript.Core.Tests
+[xUnit.net 00:00:00.63]       Assert.Equal() Failure
+[xUnit.net 00:00:00.63]                 ↓ (pos 0)
+[xUnit.net 00:00:00.63]       Expected: Строка
+[xUnit.net 00:00:00.63]       Actual:   String
+[xUnit.net 00:00:00.63]                 ↑ (pos 0)
+[xUnit.net 00:00:00.63]       Stack Trace:
+[xUnit.net 00:00:00.63]         /home/runner/work/OneScript/OneScript/src/Tests/OneScript.Core.Tests/ValuesTest.cs(151,0): at OneScript.Core.Tests.ValuesTest.Type_Value_Test()
+[xUnit.net 00:00:00.97]       Будет переделываться на индексатор this
+[xUnit.net 00:00:01.02]   Finished:    OneScript.Core.Tests
 </system-out>
-    <system-err>Error - [xUnit.net 00:00:00.65]     OneScript.Core.Tests.ValuesTest.Type_Value_Test [FAIL]
-Warning - [xUnit.net 00:00:00.98]     OneScript.Core.Tests.NativeCompilerTest.Can_Read_Special_StaticIndexer [SKIP]
+    <system-err>Error - [xUnit.net 00:00:00.63]     OneScript.Core.Tests.ValuesTest.Type_Value_Test [FAIL]
+Warning - [xUnit.net 00:00:00.97]     OneScript.Core.Tests.NativeCompilerTest.Can_Read_Special_StaticIndexer [SKIP]
 </system-err>
   </testsuite>
 </testsuites>
