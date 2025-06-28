@@ -1,112 +1,112 @@
 <testsuites>
-  <testsuite name="OneScript.Language.Tests.dll" tests="161" skipped="0" failures="1" errors="0" time="0.47825520000000005" timestamp="2025-06-28T06:53:08" hostname="pkrvmbietmlfzoi" id="0" package="OneScript.Language.Tests.dll">
+  <testsuite name="OneScript.Language.Tests.dll" tests="161" skipped="0" failures="1" errors="0" time="0.5042196999999998" timestamp="2025-06-28T07:10:31" hostname="pkrvmbietmlfzoi" id="0" package="OneScript.Language.Tests.dll">
     <properties />
-    <testcase classname="OneScript.Language.Tests.TrieTests" name="IdentifiersTrieAdd" time="0.0064754" />
-    <testcase classname="OneScript.Language.Tests.TrieTests" name="Tokens" time="0.0001363" />
-    <testcase classname="OneScript.Language.Tests.TrieTests" name="IdentifiersTrie_Inclusive_Test_ContainsKey" time="0.0006232" />
-    <testcase classname="OneScript.Language.Tests.TrieTests" name="IdentifiersTrie_Inclusive_Test_TryGetValue" time="0.0003027" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Word_Literals_Processed_Correctly" time="0.0149226" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="StringLiteral_LexerState_WorksFine" time="0.0007977" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="SourceCode_Iterator_Basics" time="0.0004464" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Code_Walkthrough" time="0.0030448" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Empty_Lexer_Position_Is_Negative" time="0.0002084" />
-    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="IsBuiltIn_Function" time="0.0005365" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Lexer_Ignores_Comments" time="0.0004489" />
-    <testcase classname="OneScript.Language.Tests.ErrorRecoveryTests" name="NextStatement_Strategy_Rewinds_Through_Errors" time="0.0203332" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Retrieve_Line_Of_Code" time="0.0002197" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Preprocessor_Lexem_ProcessedCorrectly" time="0.0026987" />
-    <testcase classname="OneScript.Language.Tests.ErrorRecoveryTests" name="Successfully_Goes_To_Next_Line" time="0.0028971" />
-    <testcase classname="OneScript.Language.Tests.LexerBuilderTest" name="Can_Build_SelectorClause" time="0.0309727" />
-    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="All_Tokens" time="0.0109669" />
-    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="IsValidIdentifier" time="0.0003163" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Wrong_Number_Literal" time="0.0084860" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Date_LexerState_Works_With_14_Numbers" time="0.0001651" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Unclosed_String_Literal" time="0.0003170" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Comments_Are_Retrieved_Correctly" time="0.0003120" />
-    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="Empty_Lexem_Is_Empty" time="0.0014655" />
-    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="Keywords_Which_Begins_New_Statement" time="0.0000992" />
-    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="Special_Characters" time="0.0001621" />
-    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="EndOfText_Lexem_Is_Correct" time="0.0002050" />
-    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="IteratorReturnsCorrectLine" time="0.0030548" />
-    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="UndefinesLiteralsAreCaseIgnorant" time="0.0001187" />
-    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="Operation_Priority" time="0.0012262" />
-    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="BooleanLiteralsAreCaseIgnorant" time="0.0001711" />
-    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="LogicalOperatorsAreCaseIgnorant" time="0.0001822" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="NonWhiteSpaceLexer_Reads_UnquotedStrings" time="0.0073680" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="NumberLiteral_State_Works_Fine" time="0.0002198" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PriorityOperators_WithParenthesis" time="0.0089008" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Word_Lexer_State_BuiltIn_Tokens_As_Usual_Words" time="0.0002861" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Identifier_LexerState_Works_Fine" time="0.0001736" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_Unclosed_IfBlock" time="0.0012562" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="ParsingFirstNot" time="0.0001753" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Syntax_Error_Handling" time="0.0010855" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Incorrect_NewLine_InString" time="0.0003998" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_DirectiveNotOnNewLine" time="0.0010502" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_DirectiveNotOnSingleLine" time="0.0005932" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="NonWhiteSpaceLexer_Discards_Comments" time="0.0012064" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="New_Exception_Shows_Negative_Line_And_Column" time="0.0001654" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_Endif_Without_If" time="0.0005059" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Lexer_Extracts_Labels" time="0.0004986" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Whitespace_Skipping" time="0.0001620" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_NoRegionName" time="0.0015511" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="NonWhiteSpaceLexer_Reads_QuotedStrings" time="0.0012143" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Date_LexerState_Works_With_8_Numbers" time="0.0001430" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_Extra_Endif" time="0.0005509" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="Operators_Lexer_State" time="0.0005972" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_IfElse_Without_If" time="0.0005377" />
-    <testcase classname="OneScript.Language.Tests.LexerTests" name="CurrentColumn_Calculation" time="0.0001654" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_IfElse" time="0.0002397" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_DirectiveAfterLineBreak" time="0.0004242" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_Branching" time="0.0005558" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_SimpleRegion" time="0.0005293" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_ExcludedLines" time="0.0001854" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_If_True" time="0.0002252" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_NoEndRegion" time="0.0005983" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="Folded_PreprocessingLexer_Items" time="0.0004507" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_ExpressionInterrupted" time="0.0005503" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PriorityOperators" time="0.0001600" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_MultipleNestedRegions" time="0.0001985" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_CompositeTest" time="0.0004577" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="Definitions_Are_Defined" time="0.0569277" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_NoRegionNameWithComment" time="0.0004676" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_BadRegionName" time="0.0006311" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_LF_LineEnding" time="0.0002364" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_SymbolsAfterName" time="0.0003343" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="ConditionalsCompiler_ExcludedLines" time="0.0004667" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_If_False" time="0.0002025" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_Unclosed_ElseBlock" time="0.0003747" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_Else_Without_If" time="0.0003947" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_ExtraEndRegion" time="0.0003587" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_SymbolsAfterEndRegion" time="0.0003471" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_ExpressionUnexpected" time="0.0004057" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_No_Semicolon_In_Try" time="0.0910318" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="AdditionPriority_For_Strings" time="0.0037961" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Labels_Can_Appear_In_CodeBlocks" time="0.0007785" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Explicit_Parameter_Skipping" time="0.0020891" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_No_Semicolon_Before_EndProcedure" time="0.0006561" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Goto_Can_Appear_In_CodeBlocks" time="0.0007980" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Logical_Priority_Direct" time="0.0006543" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Annotation_Parameters" time="0.0024917" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Binary_Expressions_Priority" time="0.0006847" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Assignment_OnVariable" time="0.0005759" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Binary_Division" time="0.0008569" />
-    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="ConditionalsCompiler_DirectiveNotOnSingleLine" time="0.0235353" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_No_Semicolon_Between_Procedures" time="0.0029606" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_ModuleVariable" time="0.0011338" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Semicolon_After_Locals" time="0.0007164" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="CheckBuild_Of_VariablesSection" time="0.0028458" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_If_With_Else_Alternative" time="0.0013475" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_EndProcedure_Does_Not_End_Function" time="0.0005903" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Method_Parameters" time="0.0011207" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Assignment_OnIndex" time="0.0008469" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Throws_When_Single_Indexed" time="0.0013670" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Throws_When_Single_Identifier" time="0.0007579" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_PropertyName" time="0.0006724" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="DoubleAwaitIsForbidden" time="0.0014080" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_EndFunction_Does_Not_End_Procedure" time="0.0006389" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Throws_When_Last_ParameterDefinition_IsMissing" time="0.0008011" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_VariableFor" time="0.0005890" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="TestLocalExportVar" time="0.0809906">
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Word_Literals_Processed_Correctly" time="0.0206866" />
+    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="IsBuiltIn_Function" time="0.0180148" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PriorityOperators_WithParenthesis" time="0.0236106" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="StringLiteral_LexerState_WorksFine" time="0.0019935" />
+    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="All_Tokens" time="0.0027986" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="SourceCode_Iterator_Basics" time="0.0006362" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_Unclosed_IfBlock" time="0.0026051" />
+    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="IsValidIdentifier" time="0.0010192" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="ParsingFirstNot" time="0.0001720" />
+    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="Empty_Lexem_Is_Empty" time="0.0002094" />
+    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="Keywords_Which_Begins_New_Statement" time="0.0008140" />
+    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="Special_Characters" time="0.0001555" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_DirectiveNotOnNewLine" time="0.0012655" />
+    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="EndOfText_Lexem_Is_Correct" time="0.0000906" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_DirectiveNotOnSingleLine" time="0.0005496" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_Endif_Without_If" time="0.0005335" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Code_Walkthrough" time="0.0034684" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Empty_Lexer_Position_Is_Negative" time="0.0001357" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Lexer_Ignores_Comments" time="0.0003558" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Retrieve_Line_Of_Code" time="0.0002315" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Preprocessor_Lexem_ProcessedCorrectly" time="0.0002250" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_NoRegionName" time="0.0013718" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Wrong_Number_Literal" time="0.0005091" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_Extra_Endif" time="0.0004617" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Date_LexerState_Works_With_14_Numbers" time="0.0001519" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Unclosed_String_Literal" time="0.0004857" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_IfElse_Without_If" time="0.0007927" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Comments_Are_Retrieved_Correctly" time="0.0002617" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_IfElse" time="0.0002281" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_DirectiveAfterLineBreak" time="0.0003914" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_Branching" time="0.0005365" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_SimpleRegion" time="0.0004569" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_ExcludedLines" time="0.0001818" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_If_True" time="0.0002234" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_NoEndRegion" time="0.0006008" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="Folded_PreprocessingLexer_Items" time="0.0004052" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_ExpressionInterrupted" time="0.0005483" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PriorityOperators" time="0.0001580" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_MultipleNestedRegions" time="0.0001642" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_CompositeTest" time="0.0004684" />
+    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="IteratorReturnsCorrectLine" time="0.0103722" />
+    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="UndefinesLiteralsAreCaseIgnorant" time="0.0001532" />
+    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="Operation_Priority" time="0.0011452" />
+    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="BooleanLiteralsAreCaseIgnorant" time="0.0001796" />
+    <testcase classname="OneScript.Language.Tests.LexerBasicsTests" name="LogicalOperatorsAreCaseIgnorant" time="0.0002422" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="NonWhiteSpaceLexer_Reads_UnquotedStrings" time="0.0151191" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="NumberLiteral_State_Works_Fine" time="0.0001874" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Word_Lexer_State_BuiltIn_Tokens_As_Usual_Words" time="0.0001901" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Identifier_LexerState_Works_Fine" time="0.0001053" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Syntax_Error_Handling" time="0.0006255" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Incorrect_NewLine_InString" time="0.0002584" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="NonWhiteSpaceLexer_Discards_Comments" time="0.0009846" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="New_Exception_Shows_Negative_Line_And_Column" time="0.0002753" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Lexer_Extracts_Labels" time="0.0005016" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Whitespace_Skipping" time="0.0001741" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="NonWhiteSpaceLexer_Reads_QuotedStrings" time="0.0011114" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Date_LexerState_Works_With_8_Numbers" time="0.0001405" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="Operators_Lexer_State" time="0.0005611" />
+    <testcase classname="OneScript.Language.Tests.LexerTests" name="CurrentColumn_Calculation" time="0.0001512" />
+    <testcase classname="OneScript.Language.Tests.TrieTests" name="IdentifiersTrieAdd" time="0.0011971" />
+    <testcase classname="OneScript.Language.Tests.TrieTests" name="Tokens" time="0.0001468" />
+    <testcase classname="OneScript.Language.Tests.TrieTests" name="IdentifiersTrie_Inclusive_Test_ContainsKey" time="0.0003479" />
+    <testcase classname="OneScript.Language.Tests.TrieTests" name="IdentifiersTrie_Inclusive_Test_TryGetValue" time="0.0002858" />
+    <testcase classname="OneScript.Language.Tests.ErrorRecoveryTests" name="NextStatement_Strategy_Rewinds_Through_Errors" time="0.0039075" />
+    <testcase classname="OneScript.Language.Tests.ErrorRecoveryTests" name="Successfully_Goes_To_Next_Line" time="0.0026319" />
+    <testcase classname="OneScript.Language.Tests.LexerBuilderTest" name="Can_Build_SelectorClause" time="0.0164142" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="Definitions_Are_Defined" time="0.0571111" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_NoRegionNameWithComment" time="0.0004346" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_BadRegionName" time="0.0005122" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_LF_LineEnding" time="0.0002044" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_SymbolsAfterName" time="0.0003278" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="ConditionalsCompiler_ExcludedLines" time="0.0004008" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_If_False" time="0.0006133" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_Unclosed_ElseBlock" time="0.0003806" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_Else_Without_If" time="0.0004145" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_ExtraEndRegion" time="0.0003334" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_SymbolsAfterEndRegion" time="0.0003362" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="PreprocessingLexer_ExpressionUnexpected" time="0.0004288" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_No_Semicolon_In_Try" time="0.1129940" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="AdditionPriority_For_Strings" time="0.0045787" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Labels_Can_Appear_In_CodeBlocks" time="0.0010162" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Explicit_Parameter_Skipping" time="0.0028632" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_No_Semicolon_Before_EndProcedure" time="0.0008240" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Goto_Can_Appear_In_CodeBlocks" time="0.0009558" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Logical_Priority_Direct" time="0.0008384" />
+    <testcase classname="OneScript.Language.Tests.PreprocessorTests" name="ConditionalsCompiler_DirectiveNotOnSingleLine" time="0.0252520" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Annotation_Parameters" time="0.0033372" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Binary_Expressions_Priority" time="0.0006786" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Assignment_OnVariable" time="0.0005614" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Binary_Division" time="0.0006045" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_No_Semicolon_Between_Procedures" time="0.0028728" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_ModuleVariable" time="0.0011359" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Semicolon_After_Locals" time="0.0007019" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="CheckBuild_Of_VariablesSection" time="0.0028359" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_If_With_Else_Alternative" time="0.0013185" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_EndProcedure_Does_Not_End_Function" time="0.0005681" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Method_Parameters" time="0.0010903" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Assignment_OnIndex" time="0.0005699" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Throws_When_Single_Indexed" time="0.0013008" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Throws_When_Single_Identifier" time="0.0008150" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_PropertyName" time="0.0006493" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="DoubleAwaitIsForbidden" time="0.0013468" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_EndFunction_Does_Not_End_Procedure" time="0.0006300" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Throws_When_Last_ParameterDefinition_IsMissing" time="0.0007181" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_VariableFor" time="0.0005568" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="TestLocalExportVar" time="0.0816915">
       <failure type="failure" message="Expected errors[0].Description &quot;Local variable can't be exported (Переменная)&quot; to contain &quot;Локальная переменная не может быть экспортирована&quot;.">at FluentAssertions.Execution.XUnit2TestFramework.Throw(String message)
    at FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)
    at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
@@ -118,82 +118,82 @@
    at OneScript.Language.Tests.ParserTests.CatchParsingError(String code, Action`1 validator) in /home/runner/work/OneScript/OneScript/src/Tests/OneScript.Language.Tests/ParserTests.cs:line 1533
    at OneScript.Language.Tests.ParserTests.TestLocalExportVar() in /home/runner/work/OneScript/OneScript/src/Tests/OneScript.Language.Tests/ParserTests.cs:line 1233</failure>
     </testcase>
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_While_Statement" time="0.0013181" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Semicolon_Between_Statements" time="0.0007461" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="TestAwaitMustBeInAsyncOnly" time="0.0009940" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_If_With_ElseIf_Alternatives" time="0.0007889" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_If_With_No_Alternatives" time="0.0008141" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Async_And_Await_Are_Ordinary_Identifiers_In_NonAsync_Scope" time="0.0009001" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_Method" time="0.0008171" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Binary_Modulo" time="0.0008268" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Statement_GlobalFunctionCall" time="0.0008213" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Foreach_Statement" time="0.0019060" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="CanHaveCommentAfterUseStatement" time="0.0031034" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_EqualExpression_Is_Comparison_But_Not_Assignment" time="0.0006859" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="CheckHandler_Expression_And_EventName" time="0.0009006" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Throws_When_Single_Property" time="0.0007854" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Semicolon_Before_Procedures" time="0.0006239" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="TestAsyncFunction" time="0.0009459" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Method_Variables" time="0.0011227" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Test_Positive_And_Negative_Literals_And_Priority(code: &quot;-1 / 1 * 2&quot;)" time="0.0006931" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Test_Positive_And_Negative_Literals_And_Priority(code: &quot;1 / 1 * 2&quot;)" time="0.0004746" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Logical_Expressions" time="0.0010544" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Assignment_OnProperty" time="0.0005462" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Binary_And_Unary_Expressions" time="0.0006571" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_If_With_ElseIf_And_Else_Alternatives" time="0.0011523" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Assignment_OnComplex_Chain" time="0.0010079" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_Variable" time="0.0005867" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_No_Semicolon_Before_EndDo" time="0.0005673" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_No_Semicolon_Before_EndFunction" time="0.0005771" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Argument_Passing" time="0.0010608" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Can_Create_DynamicNew_With_No_Args" time="0.0012581" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Can_Dereference_After_Construction" time="0.0007117" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Test_Positive_And_Negative_Expressions_And_Priority(code: &quot;-Variable / 1 * 2&quot;, findUnary: True)" time="0.0006761" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Test_Positive_And_Negative_Expressions_And_Priority(code: &quot;Variable / 1 * 2&quot;, findUnary: False)" time="0.0004601" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Statement_ObjectMethod_Call" time="0.0006041" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Elseif_Does_Not_Delimit_AddHandler" time="0.0005509" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_MemberMethodName" time="0.0005398" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_ElseIf_Does_Not_End_Procedure" time="0.0005530" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitRequiresExpression" time="0.0008364" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="CheckHandler_Expression_And_ProcedureName" time="0.0007627" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="CheckHandler_Expression_And_EventName_As_Indexer" time="0.0005515" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Test_Non_Numeric_For_Unary_Minus" time="0.0005287" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Await_In_NonAsync_Expression_Fails" time="0.0008148" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_VariableForEach" time="0.0005354" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Throws_When_Assignment_To_Function" time="0.0006879" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="TestAwaitPriority" time="0.0006839" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_MethodName" time="0.0005237" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Logical_Priority_Parenthesis" time="0.0006010" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Binary_Expressions_Chain" time="0.0008624" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Keywords_As_PropertyNames" time="0.0005800" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_AstDirectives_Creation" time="0.0011622" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_EndTry_Does_Not_End_Procedure" time="0.0005158" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="CheckHandler_Expression_And_HandlerName_As_Indexer" time="0.0005752" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="TestAsyncProcedure" time="0.0006017" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_No_Semicolon_In_If" time="0.0005666" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="CheckBuild_Of_Methods_Section" time="0.0007375" />
-    <testcase classname="OneScript.Language.Tests.ParserTests" name="Can_Create_DynamicNew_With_One_Arg" time="0.0007198" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_While_Statement" time="0.0010019" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Semicolon_Between_Statements" time="0.0006138" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="TestAwaitMustBeInAsyncOnly" time="0.0007826" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_If_With_ElseIf_Alternatives" time="0.0006349" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_If_With_No_Alternatives" time="0.0005599" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Async_And_Await_Are_Ordinary_Identifiers_In_NonAsync_Scope" time="0.0008199" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_Method" time="0.0007718" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Binary_Modulo" time="0.0006634" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Statement_GlobalFunctionCall" time="0.0007115" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Foreach_Statement" time="0.0017173" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="CanHaveCommentAfterUseStatement" time="0.0031885" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_EqualExpression_Is_Comparison_But_Not_Assignment" time="0.0008388" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="CheckHandler_Expression_And_EventName" time="0.0011485" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Throws_When_Single_Property" time="0.0007508" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Semicolon_Before_Procedures" time="0.0005791" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="TestAsyncFunction" time="0.0009205" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Method_Variables" time="0.0011230" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Test_Positive_And_Negative_Literals_And_Priority(code: &quot;-1 / 1 * 2&quot;)" time="0.0007218" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Test_Positive_And_Negative_Literals_And_Priority(code: &quot;1 / 1 * 2&quot;)" time="0.0004801" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Logical_Expressions" time="0.0007855" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Assignment_OnProperty" time="0.0008017" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Binary_And_Unary_Expressions" time="0.0007144" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_If_With_ElseIf_And_Else_Alternatives" time="0.0012307" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Assignment_OnComplex_Chain" time="0.0009805" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_Variable" time="0.0005993" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_No_Semicolon_Before_EndDo" time="0.0005542" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_No_Semicolon_Before_EndFunction" time="0.0005659" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Argument_Passing" time="0.0009069" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Can_Create_DynamicNew_With_No_Args" time="0.0011874" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Can_Dereference_After_Construction" time="0.0008003" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Test_Positive_And_Negative_Expressions_And_Priority(code: &quot;-Variable / 1 * 2&quot;, findUnary: True)" time="0.0008981" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Test_Positive_And_Negative_Expressions_And_Priority(code: &quot;Variable / 1 * 2&quot;, findUnary: False)" time="0.0004738" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Statement_ObjectMethod_Call" time="0.0006405" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Elseif_Does_Not_Delimit_AddHandler" time="0.0005564" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_MemberMethodName" time="0.0005493" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_ElseIf_Does_Not_End_Procedure" time="0.0005388" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitRequiresExpression" time="0.0007676" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="CheckHandler_Expression_And_ProcedureName" time="0.0005771" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="CheckHandler_Expression_And_EventName_As_Indexer" time="0.0008073" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Test_Non_Numeric_For_Unary_Minus" time="0.0005830" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Await_In_NonAsync_Expression_Fails" time="0.0008606" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_VariableForEach" time="0.0005522" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Throws_When_Assignment_To_Function" time="0.0007281" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="TestAwaitPriority" time="0.0006796" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="AwaitIsNotKeywordInNonAsyncContext_MethodName" time="0.0005639" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Logical_Priority_Parenthesis" time="0.0005583" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Binary_Expressions_Chain" time="0.0006371" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_Keywords_As_PropertyNames" time="0.0007855" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_AstDirectives_Creation" time="0.0013045" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_EndTry_Does_Not_End_Procedure" time="0.0005620" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="CheckHandler_Expression_And_HandlerName_As_Indexer" time="0.0005818" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="TestAsyncProcedure" time="0.0006255" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Check_No_Semicolon_In_If" time="0.0006298" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="CheckBuild_Of_Methods_Section" time="0.0007253" />
+    <testcase classname="OneScript.Language.Tests.ParserTests" name="Can_Create_DynamicNew_With_One_Arg" time="0.0006975" />
     <system-out>
 Test Framework Informational Messages:
 [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.0 (64-bit .NET 6.0.36)
-[xUnit.net 00:00:00.41]   Discovering: OneScript.Language.Tests
-[xUnit.net 00:00:00.47]   Discovered:  OneScript.Language.Tests
-[xUnit.net 00:00:00.47]   Starting:    OneScript.Language.Tests
-[xUnit.net 00:00:00.77]       Expected errors[0].Description "Local variable can't be exported (Переменная)" to contain "Локальная переменная не может быть экспортирована".
-[xUnit.net 00:00:00.77]       Stack Trace:
-[xUnit.net 00:00:00.77]            at FluentAssertions.Execution.XUnit2TestFramework.Throw(String message)
-[xUnit.net 00:00:00.77]            at FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)
-[xUnit.net 00:00:00.77]            at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
-[xUnit.net 00:00:00.77]            at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
-[xUnit.net 00:00:00.77]            at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
-[xUnit.net 00:00:00.77]            at FluentAssertions.Execution.AssertionScope.FailWith(String message, Object[] args)
-[xUnit.net 00:00:00.77]            at FluentAssertions.Primitives.StringAssertions.Contain(String expected, String because, Object[] becauseArgs)
-[xUnit.net 00:00:00.77]         /home/runner/work/OneScript/OneScript/src/Tests/OneScript.Language.Tests/ParserTests.cs(1237,0): at OneScript.Language.Tests.ParserTests.&lt;&gt;c.&lt;TestLocalExportVar&gt;b__61_0(IEnumerable`1 err)
-[xUnit.net 00:00:00.77]         /home/runner/work/OneScript/OneScript/src/Tests/OneScript.Language.Tests/ParserTests.cs(1533,0): at OneScript.Language.Tests.ParserTests.CatchParsingError(String code, Action`1 validator)
-[xUnit.net 00:00:00.77]         /home/runner/work/OneScript/OneScript/src/Tests/OneScript.Language.Tests/ParserTests.cs(1233,0): at OneScript.Language.Tests.ParserTests.TestLocalExportVar()
-[xUnit.net 00:00:00.81]   Finished:    OneScript.Language.Tests
+[xUnit.net 00:00:00.43]   Discovering: OneScript.Language.Tests
+[xUnit.net 00:00:00.49]   Discovered:  OneScript.Language.Tests
+[xUnit.net 00:00:00.49]   Starting:    OneScript.Language.Tests
+[xUnit.net 00:00:00.78]       Expected errors[0].Description "Local variable can't be exported (Переменная)" to contain "Локальная переменная не может быть экспортирована".
+[xUnit.net 00:00:00.78]       Stack Trace:
+[xUnit.net 00:00:00.78]            at FluentAssertions.Execution.XUnit2TestFramework.Throw(String message)
+[xUnit.net 00:00:00.78]            at FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)
+[xUnit.net 00:00:00.78]            at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
+[xUnit.net 00:00:00.78]            at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+[xUnit.net 00:00:00.78]            at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+[xUnit.net 00:00:00.78]            at FluentAssertions.Execution.AssertionScope.FailWith(String message, Object[] args)
+[xUnit.net 00:00:00.78]            at FluentAssertions.Primitives.StringAssertions.Contain(String expected, String because, Object[] becauseArgs)
+[xUnit.net 00:00:00.78]         /home/runner/work/OneScript/OneScript/src/Tests/OneScript.Language.Tests/ParserTests.cs(1237,0): at OneScript.Language.Tests.ParserTests.&lt;&gt;c.&lt;TestLocalExportVar&gt;b__61_0(IEnumerable`1 err)
+[xUnit.net 00:00:00.78]         /home/runner/work/OneScript/OneScript/src/Tests/OneScript.Language.Tests/ParserTests.cs(1533,0): at OneScript.Language.Tests.ParserTests.CatchParsingError(String code, Action`1 validator)
+[xUnit.net 00:00:00.78]         /home/runner/work/OneScript/OneScript/src/Tests/OneScript.Language.Tests/ParserTests.cs(1233,0): at OneScript.Language.Tests.ParserTests.TestLocalExportVar()
+[xUnit.net 00:00:00.82]   Finished:    OneScript.Language.Tests
 </system-out>
-    <system-err>Error - [xUnit.net 00:00:00.77]     OneScript.Language.Tests.ParserTests.TestLocalExportVar [FAIL]
+    <system-err>Error - [xUnit.net 00:00:00.78]     OneScript.Language.Tests.ParserTests.TestLocalExportVar [FAIL]
 </system-err>
   </testsuite>
 </testsuites>

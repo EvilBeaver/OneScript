@@ -1,21 +1,21 @@
 <testsuites>
-  <testsuite name="OneScript.DebugProtocol.Test.dll" tests="8" skipped="0" failures="0" errors="0" time="0.15026389999999998" timestamp="2025-06-28T06:52:59" hostname="pkrvmbietmlfzoi" id="0" package="OneScript.DebugProtocol.Test.dll">
+  <testsuite name="OneScript.DebugProtocol.Test.dll" tests="8" skipped="0" failures="0" errors="0" time="0.14395539999999998" timestamp="2025-06-28T07:10:23" hostname="pkrvmbietmlfzoi" id="0" package="OneScript.DebugProtocol.Test.dll">
     <properties />
-    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="ObjectPresentation" time="0.0287633" />
-    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="MapPresentation" time="0.0050613" />
-    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="ValueTreePresentation" time="0.0068235" />
-    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="SimpleValuePresentation" time="0.0004774" />
-    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="StructurePresentation" time="0.0030415" />
-    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="ArrayPresentation" time="0.0015176" />
-    <testcase classname="OneScript.DebugProtocol.Test.MethodDispatcherTest" name="TestFunctionCallOfInterface" time="0.0941987" />
-    <testcase classname="OneScript.DebugProtocol.Test.MethodDispatcherTest" name="TestVoidCallOfInterface" time="0.0103806" />
+    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="ObjectPresentation" time="0.0251229" />
+    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="MapPresentation" time="0.0068680" />
+    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="ValueTreePresentation" time="0.0068769" />
+    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="SimpleValuePresentation" time="0.0005993" />
+    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="StructurePresentation" time="0.0031123" />
+    <testcase classname="OneScript.DebugProtocol.Test.DebugVariablesTest" name="ArrayPresentation" time="0.0015976" />
+    <testcase classname="OneScript.DebugProtocol.Test.MethodDispatcherTest" name="TestFunctionCallOfInterface" time="0.0892376" />
+    <testcase classname="OneScript.DebugProtocol.Test.MethodDispatcherTest" name="TestVoidCallOfInterface" time="0.0105408" />
     <system-out>
 Test Framework Informational Messages:
 [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.0 (64-bit .NET 6.0.36)
-[xUnit.net 00:00:00.55]   Discovering: OneScript.DebugProtocol.Test
-[xUnit.net 00:00:00.58]   Discovered:  OneScript.DebugProtocol.Test
-[xUnit.net 00:00:00.59]   Starting:    OneScript.DebugProtocol.Test
-[xUnit.net 00:00:00.75]   Finished:    OneScript.DebugProtocol.Test
+[xUnit.net 00:00:00.78]   Discovering: OneScript.DebugProtocol.Test
+[xUnit.net 00:00:00.82]   Discovered:  OneScript.DebugProtocol.Test
+[xUnit.net 00:00:00.82]   Starting:    OneScript.DebugProtocol.Test
+[xUnit.net 00:00:00.97]   Finished:    OneScript.DebugProtocol.Test
 </system-out>
     <system-err></system-err>
   </testsuite>
