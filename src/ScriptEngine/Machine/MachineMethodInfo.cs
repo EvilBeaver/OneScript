@@ -24,7 +24,7 @@ namespace ScriptEngine.Machine
             method.Signature.IsFunction ? typeof(BslValue) : typeof(void),
             method.Signature.IsExport,
             -1, // dispatchId - будет установлен позже  
-            ConvertParameters(method.Signature.Params),
+            ConvertParametersForCache(method.Signature.Params),
             ConvertAnnotations(method.Signature.Annotations))
         {
             _method = method;
@@ -47,6 +47,38 @@ namespace ScriptEngine.Machine
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal MachineMethod GetRuntimeMethod() => _method;
+
+        /// <summary>
+        /// Конвертирует ParameterDefinition[] в BslParameterInfo[] для десериализации из кэша
+        /// Пропускает индексы значений по умолчанию для избежания IndexOutOfRangeException
+        /// </summary>
+        private static BslParameterInfo[] ConvertParametersForCache(ParameterDefinition[] parameters)
+        {
+            if (parameters == null || parameters.Length == 0)
+                return new BslParameterInfo[0];
+
+            var result = new BslParameterInfo[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var param = parameters[i];
+                var builder = new BslParameterBuilder()
+                    .Name(param.Name)
+                    .ByValue(!param.IsByValue)
+                    .ParameterType(typeof(BslValue));
+                
+                // Пропускаем значения по умолчанию при загрузке из кэша
+                // так как они будут восстановлены из сериализованных данных позже
+                
+                if (param.Annotations != null && param.Annotations.Length > 0)
+                {
+                    var annotations = param.Annotations.Select(a => a.MakeBslAttribute()).ToArray();
+                    builder.SetAnnotations(annotations);
+                }
+                
+                result[i] = builder.Build();
+            }
+            return result;
+        }
 
         /// <summary>
         /// Конвертирует ParameterDefinition[] в BslParameterInfo[]
