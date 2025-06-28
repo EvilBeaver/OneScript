@@ -37,24 +37,6 @@ namespace ScriptEngine.Machine.Contexts
             
             // Получаем сервис кэширования через IoC, либо создаем по умолчанию
             _cacheService = engine.Services.TryResolve<IScriptCacheService>() ?? new ScriptCacheService();
-            
-            // Устанавливаем сериализатор модулей
-            _cacheService.SetModuleSerializer(new ScriptEngine.Compilation.StackRuntimeModuleSerializer());
-            
-            _cacheService.CacheOperationLogged += (message) => 
-            {
-                // Логируем операции кэша, если включен режим отладки
-                if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
-                {
-                    SystemLogger.Write($"[CACHE] {message}");
-                }
-            };
-            
-            // Отладочная информация о состоянии кэширования
-            if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
-            {
-                SystemLogger.Write($"[CACHE] Cache service initialized, enabled: {_cacheService.CachingEnabled}");
-            }
         }
 
         private ITypeManager TypeManager => _engine.TypeManager;
