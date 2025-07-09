@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using OneScript.Contexts;
 using OneScript.Native.Extensions;
+using ScriptEngine.HostedScript.LibraryCache;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 
@@ -101,6 +102,9 @@ namespace ScriptEngine.HostedScript.Extensions
 
                 return resolver;
             });
+            
+            b.Services.RegisterSingleton<IScriptCacheService, DefaultScriptCacheService>();
+            b.Services.RegisterSingleton<IScriptCacheStorage, FileSystemScriptCache>();
             
             return b;
         }

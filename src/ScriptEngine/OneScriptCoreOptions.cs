@@ -20,15 +20,13 @@ namespace ScriptEngine
         private const string SYSTEM_LANGUAGE_KEY = "SystemLanguage";
         private const string PREPROCESSOR_DEFINITIONS_KEY = "preprocessor.define";
         private const string DEFAULT_RUNTIME_KEY = "runtime.default";
-        private const string SCRIPT_CACHING_KEY = "lib.caching";
-
+        
         public OneScriptCoreOptions(KeyValueConfig config)
         {
             SystemLanguage = config[SYSTEM_LANGUAGE_KEY];
             FileReaderEncoding = SetupEncoding(config[FILE_READER_ENCODING]);
             PreprocessorDefinitions = SetupDefinitions(config[PREPROCESSOR_DEFINITIONS_KEY]);
             UseNativeAsDefaultRuntime = SetupDefaultRuntime(config[DEFAULT_RUNTIME_KEY]);
-            ScriptCachingEnabled = SetupScriptCaching(config[SCRIPT_CACHING_KEY]);
         }
 
         public string SystemLanguage { get; }
@@ -36,8 +34,6 @@ namespace ScriptEngine
         public Encoding FileReaderEncoding { get; }
 
         public bool UseNativeAsDefaultRuntime { get; }
-        
-        public bool ScriptCachingEnabled { get; }
         
         public IEnumerable<string> PreprocessorDefinitions { get; set; }
 
@@ -60,28 +56,6 @@ namespace ScriptEngine
         private static bool SetupDefaultRuntime(string runtimeId)
         {
             return runtimeId == NativeRuntimeAnnotationHandler.NativeDirectiveName;
-        }
-        
-        private static bool SetupScriptCaching(string scriptCaching)
-        {
-            // По умолчанию кеширование включено
-            // Можно отключить, установив lib.caching=false в oscript.cfg
-            if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
-            {
-                Console.WriteLine($"[CONFIG DEBUG] lib.caching value: '{scriptCaching ?? "null"}'");
-            }
-            
-            if (string.IsNullOrWhiteSpace(scriptCaching))
-                return true;
-            
-            var result = !StringComparer.InvariantCultureIgnoreCase.Equals(scriptCaching.Trim(), "false");
-            
-            if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
-            {
-                Console.WriteLine($"[CONFIG DEBUG] Caching enabled result: {result}");
-            }
-            
-            return result;
         }
     }
 }

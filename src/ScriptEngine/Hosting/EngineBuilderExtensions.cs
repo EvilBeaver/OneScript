@@ -15,6 +15,7 @@ using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Types;
+using ScriptEngine.Compilation;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Interfaces;
@@ -55,6 +56,7 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<IErrorSink>(svc => new ThrowingErrorSink(CompilerException.FromCodeError));
             services.RegisterSingleton<IExceptionInfoFactory, ExceptionInfoFactory>();
             services.RegisterSingleton<IBslProcessFactory, BslProcessFactory>();
+            services.Register<IModuleSerializer, StackRuntimeModuleSerializer>();
 
             services.RegisterScoped<StackMachineProvider>();
             

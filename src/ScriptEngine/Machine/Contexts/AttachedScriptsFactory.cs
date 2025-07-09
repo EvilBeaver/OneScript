@@ -27,42 +27,15 @@ namespace ScriptEngine.Machine.Contexts
         private readonly Dictionary<string, string> _fileHashes;
         
         private readonly ScriptingEngine _engine;
-        private readonly IScriptCacheService _cacheService;
-
+        
         internal AttachedScriptsFactory(ScriptingEngine engine)
         {
             _loadedModules = new Dictionary<string, IExecutableModule>(StringComparer.InvariantCultureIgnoreCase);
             _fileHashes = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             _engine = engine;
-            
-            // Получаем сервис кэширования через IoC, либо создаем по умолчанию
-            _cacheService = engine.Services.TryResolve<IScriptCacheService>() ?? new ScriptCacheService();
         }
 
         private ITypeManager TypeManager => _engine.TypeManager;
-        
-        /// <summary>
-        /// Включить или отключить кэширование скомпилированных модулей
-        /// </summary>
-        /// <param name="enabled">true для включения кэширования</param>
-        public void SetCachingEnabled(bool enabled)
-        {
-            _cacheService.CachingEnabled = enabled;
-            
-            // Отладочная информация о состоянии кэширования
-            if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
-            {
-                SystemLogger.Write($"[CACHE] Caching enabled set to: {enabled}");
-            }
-        }
-
-        /// <summary>
-        /// Получить сервис кэширования для настройки (например, подписки на события)
-        /// </summary>
-        public IScriptCacheService GetCacheService()
-        {
-            return _cacheService;
-        }
         
         static string GetMd5Hash(MD5 md5Hash, string input)
         {
@@ -199,46 +172,46 @@ namespace ScriptEngine.Machine.Contexts
                 }
             }
 
-            // Попытка загрузки из кэша только для файловых источников
-            bool isFileBasedSource = IsFileBasedSource(code);
-            if (isFileBasedSource && externalContext == null)
-            {
-                // Отладочная информация для диагностики проблем с кэшированием
-                if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
-                {
-                    SystemLogger.Write($"[CACHE] Attempting to load from cache: {code.Location}, enabled: {_cacheService.CachingEnabled}");
-                }
-                
-                if (_cacheService.TryLoadFromCache(code.Location, out var cachedModule))
-                {
-                    if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
-                    {
-                        SystemLogger.Write($"[CACHE] Successfully loaded from cache: {code.Location}");
-                    }
-                    
-                    // Критически важно: всегда сохраняем оригинальный контекст исходного кода
-                    // для корректной работы относительных путей при загрузке зависимостей
-                    // TEMPORARILY DISABLED TO DEBUG
-                    /*if (cachedModule is StackRuntimeModule stackModule)
-                    {
-                        stackModule.Source = code;
-                    }*/
-                    return cachedModule;
-                }
-                else if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
-                {
-                    SystemLogger.Write($"[CACHE] No cache hit for: {code.Location}");
-                }
-            }
+            // // Попытка загрузки из кэша только для файловых источников
+            // bool isFileBasedSource = IsFileBasedSource(code);
+            // if (isFileBasedSource && externalContext == null)
+            // {
+            //     // Отладочная информация для диагностики проблем с кэшированием
+            //     if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
+            //     {
+            //         SystemLogger.Write($"[CACHE] Attempting to load from cache: {code.Location}, enabled: {_cacheService.CachingEnabled}");
+            //     }
+            //     
+            //     if (_cacheService.TryLoadFromCache(code.Location, out var cachedModule))
+            //     {
+            //         if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
+            //         {
+            //             SystemLogger.Write($"[CACHE] Successfully loaded from cache: {code.Location}");
+            //         }
+            //         
+            //         // Критически важно: всегда сохраняем оригинальный контекст исходного кода
+            //         // для корректной работы относительных путей при загрузке зависимостей
+            //         // TEMPORARILY DISABLED TO DEBUG
+            //         /*if (cachedModule is StackRuntimeModule stackModule)
+            //         {
+            //             stackModule.Source = code;
+            //         }*/
+            //         return cachedModule;
+            //     }
+            //     else if (System.Environment.GetEnvironmentVariable("OS_CACHE_DEBUG") == "1")
+            //     {
+            //         SystemLogger.Write($"[CACHE] No cache hit for: {code.Location}");
+            //     }
+            // }
 
             // Компилируем обычным способом
             var module = compiler.Compile(code, process);
 
             // Сохраняем в кэш только для файловых источников без внешнего контекста
-            if (isFileBasedSource && externalContext == null)
-            {
-                _cacheService.SaveToCache(code.Location, module);
-            }
+            // if (isFileBasedSource && externalContext == null)
+            // {
+            //     _cacheService.SaveToCache(code.Location, module);
+            // }
 
             return module;
         }
