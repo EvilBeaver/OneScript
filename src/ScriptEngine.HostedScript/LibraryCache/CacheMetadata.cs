@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 
-namespace OneScript.Compilation
+namespace ScriptEngine.HostedScript.LibraryCache
 {
     /// <summary>
     /// Метаданные кэшированного модуля

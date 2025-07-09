@@ -12,9 +12,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
+using ScriptEngine.HostedScript.LibraryCache;
 using ScriptEngine.Libraries;
 
 namespace ScriptEngine.HostedScript
@@ -24,6 +26,7 @@ namespace ScriptEngine.HostedScript
         private readonly IRuntimeEnvironment _env;
         private readonly ILibraryManager _libManager;
         private readonly ScriptingEngine _engine;
+        private readonly IScriptCacheService _cacheService;
 
         readonly bool _customized;
 
@@ -39,25 +42,31 @@ namespace ScriptEngine.HostedScript
         private LibraryLoader(IExecutableModule moduleHandle,
             IRuntimeEnvironment env,
             ILibraryManager libManager,
-            ScriptingEngine engine, IBslProcess process): base(moduleHandle)
+            ScriptingEngine engine,
+            IScriptCacheService cacheService,
+            IBslProcess process): base(moduleHandle)
         {
             _env = env;
             _libManager = libManager;
             _engine = engine;
+            _cacheService = cacheService;
             _customized = true;
-            
+            // Получаем сервис кэширования через IoC, либо создаем по умолчанию
+            //_cacheService = engine.Services.TryResolve<IScriptCacheService>() ?? new ScriptCacheService();
             _engine.InitializeSDO(this, process);
 
         }
 
         private LibraryLoader(IRuntimeEnvironment env,
             ILibraryManager libManager,
-            ScriptingEngine engine)
+            ScriptingEngine engine,
+            IScriptCacheService cacheService)
         {
             _env = env;
             _libManager = libManager;
             _engine = engine;
             _customized = false;
+            _cacheService = cacheService;
         }
         
         #region Static part
@@ -67,14 +76,21 @@ namespace ScriptEngine.HostedScript
             var compiler = engine.GetCompilerService();
             var code = engine.Loader.FromFile(processingScript);
             var module = CompileModule(compiler, code, typeof(LibraryLoader), process);
+            var cacheService = engine.Services.Resolve<IScriptCacheService>();
             
-            return new LibraryLoader(module, engine.Environment, engine.LibraryManager, engine, process);
+            return new LibraryLoader(module, 
+                engine.Environment,
+                engine.LibraryManager,
+                engine,
+                cacheService,
+                process);
 
         }
 
         public static LibraryLoader Create(ScriptingEngine engine, IBslProcess process)
         {
-            return new LibraryLoader(engine.Environment, engine.LibraryManager, engine);
+            var cacheService = engine.Services.Resolve<IScriptCacheService>();
+            return new LibraryLoader(engine.Environment, engine.LibraryManager, engine, cacheService);
         }
 
         #endregion
@@ -254,11 +270,17 @@ namespace ScriptEngine.HostedScript
 
         private IExecutableModule CompileFile(string path, IBslProcess process)
         {
+            if (_cacheService.TryLoadFromCache(path, out var module))
+            {
+                return module;
+            }
+            
             var compiler = _engine.GetCompilerService();
             
             var source = _engine.Loader.FromFile(path);
-            var module = _engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, null, process);
-
+            module = _engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, null, process);
+            _cacheService.SaveToCache(module);
+            
             return module;
         }
 

@@ -24,8 +24,7 @@ namespace ScriptEngine
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IDebugController _debugController;
         private IRuntimeEnvironment _runtimeEnvironment;
-        private readonly OneScriptCoreOptions _options;
-        
+
         private readonly ILibraryManager _libraryManager;
 
         public ScriptingEngine(ITypeManager types,
@@ -40,8 +39,7 @@ namespace ScriptEngine
             GlobalsManager = globals;
             _runtimeEnvironment = env;
             _libraryManager = env;
-            _options = options;
-            
+
             Loader = new ScriptSourceFactory();
             Services = services;
             ContextDiscoverer = new ContextDiscoverer(types, globals, services);
@@ -96,8 +94,6 @@ namespace ScriptEngine
             //UpdateContexts();
 
             _attachedScriptsFactory = new AttachedScriptsFactory(this);
-            // Настраиваем кэширование из конфигурации
-            _attachedScriptsFactory.SetCachingEnabled(_options.ScriptCachingEnabled);
             AttachedScriptsFactory.SetInstance(_attachedScriptsFactory);
         }
 
@@ -208,14 +204,5 @@ namespace ScriptEngine
         /// Инициализирует новый процесс
         /// </summary>
         public IBslProcess NewProcess() => Services.Resolve<IBslProcessFactory>().NewProcess();
-
-        /// <summary>
-        /// Включить или отключить кэширование предкомпилированных сценариев
-        /// </summary>
-        /// <param name="enabled">true для включения кэширования</param>
-        public void SetScriptCachingEnabled(bool enabled)
-        {
-            AttachedScriptsFactory?.SetCachingEnabled(enabled);
-        }
     }
 }
