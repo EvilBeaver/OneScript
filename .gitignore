@@ -68,3 +68,7 @@ tests/*.xml
 src/oscript/Properties/launchSettings\.json
 
 *.DotSettings
+
+# Script caching system generated files
+*.metadata.json
+*.obj
