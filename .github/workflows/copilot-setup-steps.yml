@@ -24,4 +24,14 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '6.0.x'
+
+      - name: Установка OneScript
+        uses: otymko/setup-onescript@v1.5
+        with:
+          version: stable
+
+      - name: Установка зависимостей
+        run: |
+          opm install opm
+          opm update --all
  
