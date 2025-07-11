@@ -32,7 +32,7 @@
             <ProjectFile>oscript.csproj</ProjectFile>
             <Framework>net6.0</Framework>
         </PublishProjects>
-        <PublishProjects Include="TestApp" Condition="!$(Configuration.Contains('Linux'))">
+        <PublishProjects Include="TestApp" Condition="!$([MSBuild]::Contains('$(Configuration)', 'Linux'))">
             <ProjectFile>TestApp.csproj</ProjectFile>
             <Framework>net6.0-windows</Framework>
         </PublishProjects>
