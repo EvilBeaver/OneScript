@@ -24,7 +24,7 @@ namespace ScriptEngine
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IDebugController _debugController;
         private IRuntimeEnvironment _runtimeEnvironment;
-        
+
         private readonly ILibraryManager _libraryManager;
 
         public ScriptingEngine(ITypeManager types,
@@ -39,7 +39,7 @@ namespace ScriptEngine
             GlobalsManager = globals;
             _runtimeEnvironment = env;
             _libraryManager = env;
-            
+
             Loader = new ScriptSourceFactory();
             Services = services;
             ContextDiscoverer = new ContextDiscoverer(types, globals, services);

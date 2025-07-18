@@ -6,14 +6,18 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using MessagePack;
 
 namespace OneScript.Compilation.Binding
 {
     [Serializable]
+    [MessagePackObject]
     public struct SymbolBinding : IEquatable<SymbolBinding>
     {
+        [Key(0)]
         public int ScopeNumber { get; set; }
         
+        [Key(1)]
         public int MemberNumber { get; set; }
 
         public bool Equals(SymbolBinding other)

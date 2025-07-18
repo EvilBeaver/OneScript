@@ -35,6 +35,8 @@ namespace OneScript.Sources
         
         public string Name { get; }
 
+        public ICodeSource Origin => _source;
+
         public string GetSourceCode()
         {
             // Однократное считывание того, что отдано на компиляцию

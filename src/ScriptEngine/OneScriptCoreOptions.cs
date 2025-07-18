@@ -20,7 +20,7 @@ namespace ScriptEngine
         private const string SYSTEM_LANGUAGE_KEY = "SystemLanguage";
         private const string PREPROCESSOR_DEFINITIONS_KEY = "preprocessor.define";
         private const string DEFAULT_RUNTIME_KEY = "runtime.default";
-
+        
         public OneScriptCoreOptions(KeyValueConfig config)
         {
             SystemLanguage = config[SYSTEM_LANGUAGE_KEY];
