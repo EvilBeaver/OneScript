@@ -26,7 +26,7 @@
   <ItemGroup>
     <EmbeddedResource Include="ScriptEngine.dll" />
     <EmbeddedResource Include="ScriptEngine.HostedScript.dll" />
-    <EmbeddedResource Include="DotNetZip.dll" />
+    <EmbeddedResource Include="ProDotNetZip.dll" />
     <EmbeddedResource Include="Newtonsoft.Json.dll" />
     <EmbeddedResource Include="OneScript.Language.dll" />
   </ItemGroup>
