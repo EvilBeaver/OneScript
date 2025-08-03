@@ -279,7 +279,7 @@ def publishRelease(codename, isNumbered) {
             
             sh """
             TARGET="/var/www/oscript.io/download/versions/${version}/"
-            mkdir -p \$TARGET
+            sudo mkdir -p \$TARGET
             sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
             """.stripIndent()
         }
