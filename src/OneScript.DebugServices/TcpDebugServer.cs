@@ -7,15 +7,16 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Net.Sockets;
 using OneScript.DebugProtocol.TcpServer;
+using OneScript.DebugServices.Internal;
 using ScriptEngine.Machine;
 
 namespace OneScript.DebugServices
 {
-    public class BinaryTcpDebugServer
+    public class TcpDebugServer
     {
         private readonly int _port;
 
-        public BinaryTcpDebugServer(int port)
+        public TcpDebugServer(int port)
         {
             _port = port;
         }

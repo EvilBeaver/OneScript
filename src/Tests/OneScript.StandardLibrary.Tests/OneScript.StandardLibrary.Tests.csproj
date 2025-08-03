@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
+    <Import Project="$(MSBuildProjectDirectory)/../../oscommon.targets" />
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <TargetFramework>$(TargetFrameworkVersion)</TargetFramework>
         <Nullable>enable</Nullable>
 
         <IsPackable>false</IsPackable>

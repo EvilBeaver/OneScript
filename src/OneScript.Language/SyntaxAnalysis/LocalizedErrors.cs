@@ -52,9 +52,17 @@ namespace OneScript.Language.SyntaxAnalysis
         
         public static CodeError TokenExpected(params Token[] expected)
         {
-            var names = String.Join("/", expected.Select(x => Enum.GetName(typeof(Token), x)));
+            if (expected.Length == 1)
+            {
+                return Create($"Ожидается символ: {LanguageDef.GetTokenName(expected[0])}",
+                    $"Expecting symbol: {LanguageDef.GetTokenAlias(expected[0])}");
+            }
+
+            var names = String.Join("/", expected.Select(x => LanguageDef.GetTokenName(x)));
+            var aliases = String.Join("/", expected.Select(x => LanguageDef.GetTokenAlias(x)));
+           
+            return Create($"Ожидается один из символов: {names}", $"Expecting  one of symbols: {aliases}");
             
-            return Create($"Ожидается символ: {names}", $"Expecting symbol: {names}");
         }
 
         public static CodeError ExportedLocalVar(string varName)

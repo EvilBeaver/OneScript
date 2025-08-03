@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+
 namespace OneScript.DebugProtocol
 {
     /// <summary>
@@ -19,10 +21,17 @@ namespace OneScript.DebugProtocol
         void Execute(int threadId);
 
         /// <summary>
-        /// Добавление фильтров точек останова для исплючений
+        /// Добавление фильтров точек останова для исключений
         /// </summary>
         /// <param name="filters"></param>
+        [Obsolete("Используется только для совместимости нового адаптера со старыми binary версиями движка")]
         void SetMachineExceptionBreakpoints((string Id, string Condition)[] filters);
+        
+        /// <summary>
+        /// Добавление фильтров точек останова для исключений
+        /// </summary>
+        /// <param name="filters"></param>
+        void SetExceptionBreakpoints(ExceptionBreakpointFilter[] filters);
 
         /// <summary>
         /// Установка точек остановки

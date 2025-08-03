@@ -1366,12 +1366,7 @@ namespace OneScript.Language.SyntaxAnalysis
                 }
                 else
                 {
-                    SkipToNextStatement(new []{stopToken});
-                    AddError(LocalizedErrors.ExpressionSyntax(), false);
-                    if (_lastExtractedLexem.Token == stopToken)
-                    {
-                        NextLexem();
-                    }
+                    AddError(LocalizedErrors.TokenExpected(stopToken), false);
                 }
 
                 node = default;
@@ -1640,6 +1635,7 @@ namespace OneScript.Language.SyntaxAnalysis
         private void AddError(CodeError err, bool doFastForward = true)
         {
             err.Position = _lexer.GetErrorPosition();
+            err.Position.ColumnNumber -= _lastExtractedLexem.Content?.Length ?? 1;
             ErrorSink.AddError(err);
 
             if (doFastForward)
@@ -1654,9 +1650,9 @@ namespace OneScript.Language.SyntaxAnalysis
                 throw new InternalParseException(err);
         }
 
-        private static bool IsUserSymbol(in Lexem lex)
+        private bool IsUserSymbol(in Lexem lex)
         {
-            return LanguageDef.IsUserSymbol(in lex);
+            return LanguageDef.IsUserSymbol(in lex) || (!_isInAsyncMethod && lex.Token == Token.Await);
         }
 
         private void PushStructureToken(params Token[] tok)

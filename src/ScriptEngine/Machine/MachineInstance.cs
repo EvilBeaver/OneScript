@@ -38,6 +38,8 @@ namespace ScriptEngine.Machine
         private StackRuntimeModule _module;
         private ICodeStatCollector _codeStatCollector;
         private MachineStopManager _stopManager;
+
+        private volatile bool _debugEnabled;
         
         private IBslProcess _process;
         private ITypeManager _typeManager;
@@ -173,19 +175,25 @@ namespace ScriptEngine.Machine
 
         #region Debug protocol methods
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void SetDebugMode(IThreadManager threadManager, IBreakpointManager breakpointManager)
         {
-            _stopManager ??= new MachineStopManager(this, threadManager, breakpointManager);
+            if (!_debugEnabled)
+            {
+                _stopManager = new MachineStopManager(this, threadManager, breakpointManager);
+                _debugEnabled = true;
+            }
         }
         
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void UnsetDebugMode()
         {
-            _stopManager = null;
+            _debugEnabled = false;
         }
 
         public void StepOver()
         {
-            if (_stopManager == null)
+            if (!_debugEnabled)
                 throw new InvalidOperationException("Machine is not in debug mode");
 
             _stopManager.StepOver();
@@ -193,7 +201,7 @@ namespace ScriptEngine.Machine
 
         public void StepIn()
         {
-            if (_stopManager == null)
+            if (!_debugEnabled)
                 throw new InvalidOperationException("Machine is not in debug mode");
 
             _stopManager.StepIn();
@@ -201,7 +209,7 @@ namespace ScriptEngine.Machine
 
         public void StepOut()
         {
-            if (_stopManager == null)
+            if (!_debugEnabled)
                 throw new InvalidOperationException("Machine is not in debug mode");
 
             _stopManager.StepOut();
@@ -390,10 +398,12 @@ namespace ScriptEngine.Machine
 
                     var shouldRethrow = ShouldRethrowException(exc);
 
-                    if (_stopManager != null)
+                    if (_debugEnabled)
+                    {
                         if (_stopManager.Breakpoints.StopOnAnyException(exc.MessageWithoutCodeFragment) || 
-                            shouldRethrow && _stopManager.Breakpoints.StopOnUncaughtException(exc.MessageWithoutCodeFragment))
+                         shouldRethrow && _stopManager.Breakpoints.StopOnUncaughtException(exc.MessageWithoutCodeFragment))
                             EmitStopOnException();
+                    }
 
                     if (shouldRethrow)
                         throw;
@@ -1126,7 +1136,7 @@ namespace ScriptEngine.Machine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsSteppingOutFromHere()
         {
-            if (_stopManager == null)
+            if (!_debugEnabled)
                 return false;
 
             return _stopManager.CurrentState == DebugState.SteppingOut;
@@ -1302,17 +1312,16 @@ namespace ScriptEngine.Machine
 
         private void EmitStopOnException()
         {
-            if (_stopManager != null)
+            if (_debugEnabled)
             {
                 CreateFullCallstack();
-                var args = new MachineStoppedEventArgs(MachineStopReason.Exception, Environment.CurrentManagedThreadId, "");
                 _stopManager.NotifyStop(MachineStopReason.Exception, "");
             }
         }
 
         private void EmitStopEventIfNecessary()
         {
-            if (_stopManager != null && _stopManager.ShouldStopAtThisLine(_module.Source.Location, _currentFrame))
+            if (_debugEnabled && _stopManager.ShouldStopAtThisLine(_module.Source.Location, _currentFrame))
             {
                 CreateFullCallstack();
                 _stopManager.NotifyStop();

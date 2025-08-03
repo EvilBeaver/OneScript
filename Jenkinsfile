@@ -5,7 +5,7 @@ pipeline {
 
     environment {
         VersionPrefix = '2.0.0'
-        VersionSuffix = 'rc.7'
+        VersionSuffix = 'rc.8'
         outputEnc = '65001'
     }
 
@@ -190,16 +190,8 @@ pipeline {
                     xcopy output\\na-proxy\\*64.so built\\linux-x64\\bin\\ /F
                     '''.stripIndent()
                     
-                    script
-                    {
-                        if (env.BRANCH_NAME == "preview") {
-                            echo 'Building preview'
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PackDistributions /p:Suffix=-pre%BUILD_NUMBER%"
-                        }
-                        else{
-                            bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PackDistributions"
-                        }
-                    }
+                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PackDistributions"
+                    
                     archiveArtifacts artifacts: 'built/**', fingerprint: true
                     stash includes: 'built/**', name: 'dist'
                 }
@@ -220,17 +212,7 @@ pipeline {
                 unstash 'dist'
                 unstash 'vsix'
 
-                dir('targetContent') {
-                    sh '''
-                    ZIPS=../built
-                    VSIX=../built/vscode
-                    mv $ZIPS/*.zip ./
-                    mv $VSIX/*.vsix ./
-                    
-                    TARGET="/var/www/oscript.io/download/versions/night-build/"
-                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
-                    '''.stripIndent()
-                }
+                publishRelease('night-build', false)
             }
         }
 
@@ -242,64 +224,17 @@ pipeline {
             agent { label 'master' }
             options { skipDefaultCheckout() }
             
-            environment {
-                CODENAME = 'preview'
-            }
-            
             steps {
-                checkout scm
-                unstash 'dist'
-                unstash 'vsix'
-
-                dir('targetContent') {
-                    sh '''
-                    ZIPS=../built
-                    NUGET=../built/nuget
-                    VSIX=../built/vscode
-                    mv $ZIPS/*.zip ./
-                    mv $VSIX/*.vsix ./
-                    
-                    TARGET="/var/www/oscript.io/download/versions/${CODENAME}/"
-                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
-                    '''.stripIndent()
-                }
-                
-                sh '''
-                TARGET_DIR="/var/www/oscript.io/markdown/versions/"
-                cp install/release-notes.md "${TARGET_DIR}/${CODENAME}.md"
-                cp install/release-notes.md "${TARGET_DIR}/${VersionPrefix}.md"
-                '''.stripIndent()
-            }
-        }
-        
-        stage ('Publishing latest') {
-            when { anyOf {
-                    branch 'release/latest';
-                }
-            }
-            agent { label 'master' }
-            options { skipDefaultCheckout() }
-                        
-            environment {
-                CODENAME = 'preview'
-            }
-            
-            steps {
-                checkout scm
+                cleanWs()
+                checkout scm // чтобы получить файл release-notes
                 unstash 'dist'
                 unstash 'vsix'
                 
-                dir('targetContent') {
-                    sh '''
-                    ZIPS=../built
-                    VSIX=../built/vscode
-                    mv $ZIPS/*.zip ./
-                    mv $VSIX/*.vsix ./
-                    
-                    TARGET="/var/www/oscript.io/download/versions/latest/"
-                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
-                    '''.stripIndent()
-                }
+                // Положит описание для сайта
+                publishReleaseNotes('preview')
+                
+                // Положит файлы дистрибутива в целевую папку
+                publishRelease('preview', true)
             }
         }
         
@@ -314,7 +249,9 @@ pipeline {
             agent { label 'windows' }
 
             steps{
-                unstash 'dist'
+                
+                unstash 'buildResults'
+                
                 withCredentials([string(credentialsId: 'NuGetToken', variable: 'NUGET_TOKEN')]) {
                     bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PublishNuget /p:NugetToken=$NUGET_TOKEN"
                 }
@@ -322,3 +259,44 @@ pipeline {
         }
     }
 }
+
+def publishRelease(codename, isNumbered) {
+    dir('targetContent') {
+        sh """
+        ZIPS=../built
+        NUGET=../built/nuget
+        VSIX=../built/vscode
+        mv \$ZIPS/*.zip ./
+        mv \$VSIX/*.vsix ./
+        
+        TARGET="/var/www/oscript.io/download/versions/${codename}/"
+        mkdir -p \$TARGET
+        sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
+        """.stripIndent()
+        
+        if (isNumbered) {
+            def version="${env.VersionPrefix}-${env.VersionSuffix}".replaceAll("\\.", "_")
+            
+            sh """
+            TARGET="/var/www/oscript.io/download/versions/${version}/"
+            mkdir -p \$TARGET
+            sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . \$TARGET
+            """.stripIndent()
+        }
+    }
+}
+
+def publishReleaseNotes(codename) {
+    dir('markdownContent') {
+        def version="${env.VersionPrefix}-${env.VersionSuffix}".replaceAll("\\.", "_")
+        def targetDir='/var/www/oscript.io/markdown/versions'
+        
+        sh """
+        cp ../install/release-notes.md "./${codename}.md"
+        cp ../install/release-notes.md "./${version}.md"
+        
+        sudo rsync -rv . ${targetDir}
+        """.stripIndent()        
+    }
+}
+

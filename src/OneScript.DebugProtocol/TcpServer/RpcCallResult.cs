@@ -6,10 +6,12 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using Newtonsoft.Json;
 
 namespace OneScript.DebugProtocol.TcpServer
 {
     [Serializable]
+    [JsonConverter(typeof(JsonDtoConverter))]
     public class RpcCallResult : TcpProtocolDtoBase
     {
         public object ReturnValue { get; set; }

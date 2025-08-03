@@ -10,7 +10,7 @@ namespace OneScript.Language
     public class ErrorPositionInfo
     {
         public const int OUT_OF_TEXT = -1;
-
+        
         public ErrorPositionInfo()
         {
             LineNumber = OUT_OF_TEXT;

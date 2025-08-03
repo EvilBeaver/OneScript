@@ -81,6 +81,15 @@ namespace OneScript.DebugProtocol.TcpServer
                         // свойство в исключении может быть уcтановлено в обработчике евента
                         _serverStopped = e.StopChannel;
                     }
+                    catch (ObjectDisposedException)
+                    {
+                        _serverStopped = true;
+                    }
+                    catch (ThreadInterruptedException)
+                    {
+                        // Сервер принудительно остановлен
+                        _serverStopped = true;
+                    }
                     catch (Exception e)
                     {
                         var eventData = new CommunicationEventArgs
@@ -93,6 +102,8 @@ namespace OneScript.DebugProtocol.TcpServer
                         OnError?.Invoke(this, eventData);
                     }
                 }
+                
+                _protocolChannel.Dispose();
             });
             
             _messageThread.IsBackground = true;
@@ -113,8 +124,8 @@ namespace OneScript.DebugProtocol.TcpServer
 
             if (_messageThread?.IsAlive == true)
             {
-                _protocolChannel.Dispose();
                 _messageThread.Interrupt();
+                _protocolChannel.Dispose();
             }
         }
 

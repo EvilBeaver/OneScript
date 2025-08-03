@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using VSCode.DebugAdapter.Transport;
 
 namespace VSCode.DebugAdapter
 {
@@ -108,7 +109,6 @@ namespace VSCode.DebugAdapter
             WorkingDirectory = options.AppDir;
             DebugPort = options.DebugPort;
             Environment = options.Env;
-            DebugProtocol = "tcp";
             WaitOnStart = options.WaitOnStart;
         }
     }

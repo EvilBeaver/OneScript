@@ -24,8 +24,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetZip" Version="1.13.3" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+        <PackageReference Include="ProDotNetZip" Version="1.20.0" />
     </ItemGroup>
     
     <ItemGroup>

@@ -363,22 +363,14 @@
     
     </Target>
 
-    <Target Name="PublishNuget" DependsOnTargets="CreateNuget">
+    <Target Name="PublishNuget">
         <ItemGroup>
-            <NugetAbleProject Include="ScriptEngine"/>
-            <NugetAbleProject Include="ScriptEngine.HostedScript"/>
-            <NugetAbleProject Include="OneScript.StandardLibrary"/>
-            <NugetAbleProject Include="OneScript.Web.Server"/>
-            <NugetAbleProject Include="OneScript.Core"/>
-            <NugetAbleProject Include="OneScript.Native"/>
-            <NugetAbleProject Include="OneScript.Language"/>
-            <NugetAbleProject Include="OneScript.DebugServices"/>
-            <NugetAbleProject Include="OneScript.DebugProtocol"/>
+            <NugetAbleProject Include="$(MSBuildProjectDirectory)\built\nuget\*.nupkg"/>
         </ItemGroup>
         
         <Error Text="No nuget token (/p:NugetToken=) specified" Condition="'$(NugetToken)' == ''" />
         <Exec WorkingDirectory="$(MSBuildProjectDirectory)\built\nuget"
-            Command="dotnet nuget push %(NugetAbleProject.Identity).$(ReleaseNumber).nupkg -k $(NugetToken) -s https://api.nuget.org/v3/index.json" UseUtf8Encoding="Always"/>
+            Command="dotnet nuget push %(NugetAbleProject.Identity) -k $(NugetToken) -s https://api.nuget.org/v3/index.json" UseUtf8Encoding="Always"/>
         
     </Target>
     

@@ -13,14 +13,23 @@ namespace OneScript.Language.SyntaxAnalysis
     public class ImportDirectivesHandler : ModuleAnnotationDirectiveHandler
     {
         private readonly ILexer _importClauseLexer;
+        
+        private static readonly LexerBuilder InstanceBuilder = SetupLexerBuilder();
 
         public ImportDirectivesHandler(IErrorSink errorSink) : base(errorSink)
         {
+            _importClauseLexer = InstanceBuilder.Build();
+        }
+        
+        private static LexerBuilder SetupLexerBuilder()
+        {
             var builder = new LexerBuilder();
-            builder.Detect((cs, i) => !char.IsWhiteSpace(cs))
-                .HandleWith(new NonWhitespaceLexerState());
-
-            _importClauseLexer = builder.Build();
+            builder
+                .DetectComments()
+                .Detect((cs, i) => !char.IsWhiteSpace(cs))
+                    .HandleWith(new NonWhitespaceLexerState());
+            
+            return builder;
         }
 
         protected override void ParseAnnotationInternal(
@@ -46,7 +55,7 @@ namespace OneScript.Language.SyntaxAnalysis
             parserContext.AddChild(node);
 
             lex = _importClauseLexer.NextLexemOnSameLine();
-            if (lex.Type != LexemType.EndOfText)
+            if (lex.Type != LexemType.EndOfText && lex.Type != LexemType.Comment)
             {
                 ErrorSink.AddError(LocalizedErrors.UnexpectedOperation());
                 return;

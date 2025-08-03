@@ -15,6 +15,8 @@ namespace OneScript.Sources
         private readonly ICodeSource _source;
         private ISourceCodeIndexer _indexer;
 
+        private string _code = null;
+
         internal SourceCode(string sourceName, ICodeSource source)
         {
             _source = source;
@@ -33,7 +35,12 @@ namespace OneScript.Sources
         
         public string Name { get; }
 
-        public string GetSourceCode() => _source.GetSourceCode();
+        public string GetSourceCode()
+        {
+            // Однократное считывание того, что отдано на компиляцию
+            // При изменении источника (напр. файла) в любом случае потребуется перекомпиляция и смена номеров строк.
+            return _code ??= _source.GetSourceCode();
+        }
 
         public string GetCodeLine(int lineNumber)
         {

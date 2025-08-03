@@ -55,10 +55,10 @@ namespace OneScript.StandardLibrary.Text
 
         public EnumerationValue GetValue(Encoding encoding)
         {
-            if (encoding.Equals(Encoding.GetEncoding(866)))
+            if (encoding.Equals(Encoding.GetEncoding(866)) || encoding.CodePage == 866)
                 return Oem;
 
-            if (encoding.Equals(Encoding.GetEncoding(1251)))
+            if (encoding.Equals(Encoding.GetEncoding(1251)) || encoding.CodePage == 1251)
                 return Ansi;
             
             if (encoding.Equals(new UnicodeEncoding(false, true)))
@@ -72,8 +72,8 @@ namespace OneScript.StandardLibrary.Text
 
             if (encoding.Equals(Encoding.Default))
                 return System;
-
-            throw RuntimeException.InvalidArgumentValue();
+            
+            throw RuntimeException.InvalidArgumentValue(encoding);
         }
 
         public static TextEncodingEnum CreateInstance(ITypeManager typeManager)

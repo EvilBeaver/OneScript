@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Serilog;
+using VSCode.DebugAdapter.Transport;
 
 namespace VSCode.DebugAdapter
 {
@@ -96,7 +97,6 @@ namespace VSCode.DebugAdapter
             RuntimeArguments = Utilities.ConcatArguments(options.RuntimeArgs);
             StartupScript = options.Program;
             ScriptArguments = Utilities.ConcatArguments(options.Args);
-            DebugProtocol = options.Protocol;
             DebugPort = options.DebugPort;
             Environment = options.Env;
         }
@@ -107,10 +107,6 @@ namespace VSCode.DebugAdapter
             if (DebugPort != 0)
             {
                 dbgArgs.Add($"-port={DebugPort}");
-            }
-            if (!string.IsNullOrEmpty(DebugProtocol))
-            {
-                dbgArgs.Add($"-protocol={DebugProtocol}");
             }
             
             var debugArguments = string.Join(" ", dbgArgs);
