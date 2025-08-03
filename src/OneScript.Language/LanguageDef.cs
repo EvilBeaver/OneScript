@@ -17,6 +17,8 @@ namespace OneScript.Language
         static readonly Dictionary<Token, int> _priority = new Dictionary<Token, int>();
         public const int MAX_OPERATION_PRIORITY = 8;
 
+        private static readonly Dictionary<Token, (string, string)> _keywords = new Dictionary<Token, (string, string)>();
+        
         private static readonly IdentifiersTrie<Token> _stringToToken = new IdentifiersTrie<Token>();
 
         private static readonly IdentifiersTrie<bool> _undefined = new IdentifiersTrie<bool>();
@@ -72,42 +74,42 @@ namespace OneScript.Language
 
             #region Ключевые слова
 
-            AddToken(Token.If, "если", "if");
-            AddToken(Token.Then, "тогда", "then");
-            AddToken(Token.Else, "иначе", "else");
-            AddToken(Token.ElseIf, "иначеесли", "elsif");
-            AddToken(Token.EndIf, "конецесли", "endif");
-            AddToken(Token.VarDef, "перем", "var");
-            AddToken(Token.ByValParam, "знач", "val");
-            AddToken(Token.Procedure, "процедура", "procedure");
-            AddToken(Token.EndProcedure, "конецпроцедуры", "endprocedure");
-            AddToken(Token.Function, "функция", "function");
-            AddToken(Token.EndFunction, "конецфункции", "endfunction");
-            AddToken(Token.For, "для", "for");
-            AddToken(Token.Each, "каждого", "each");
-            AddToken(Token.In, "из", "in");
-            AddToken(Token.To, "по", "to");
-            AddToken(Token.While, "пока", "while");
-            AddToken(Token.Loop, "цикл", "do");
-            AddToken(Token.EndLoop, "конеццикла", "enddo");
-            AddToken(Token.Return, "возврат", "return");
-            AddToken(Token.Continue, "продолжить", "continue");
-            AddToken(Token.Break, "прервать", "break");
-            AddToken(Token.Try, "попытка", "try");
-            AddToken(Token.Exception, "исключение", "except");
-            AddToken(Token.Execute, "выполнить", "execute");
-            AddToken(Token.RaiseException, "вызватьисключение", "raise");
-            AddToken(Token.EndTry, "конецпопытки", "endtry");
-            AddToken(Token.NewObject, "новый", "new");
-            AddToken(Token.Export, "экспорт", "export");
-            AddToken(Token.And, "и", "and");
-            AddToken(Token.Or, "или", "or");
-            AddToken(Token.Not, "не", "not");
-            AddToken(Token.AddHandler, "ДобавитьОбработчик", "AddHandler");
-            AddToken(Token.RemoveHandler, "УдалитьОбработчик", "RemoveHandler");
-            AddToken(Token.Async, "Асинх", "Async");
-            AddToken(Token.Await, "Ждать", "Await");
-            AddToken(Token.Goto, "Перейти", "Goto");
+            AddKeyword(Token.If, "Если", "If");
+            AddKeyword(Token.Then, "Тогда", "Then");
+            AddKeyword(Token.Else, "Иначе", "Else");
+            AddKeyword(Token.ElseIf, "ИначеЕсли", "ElsIf");
+            AddKeyword(Token.EndIf, "КонецЕсли", "EndIf");
+            AddKeyword(Token.VarDef, "Перем", "Var");
+            AddKeyword(Token.ByValParam, "Знач", "Val");
+            AddKeyword(Token.Procedure, "Процедура", "Procedure");
+            AddKeyword(Token.EndProcedure, "КонецПроцедуры", "EndProcedure");
+            AddKeyword(Token.Function, "Функция", "Function");
+            AddKeyword(Token.EndFunction, "КонецФункции", "EndFunction");
+            AddKeyword(Token.For, "Для", "For");
+            AddKeyword(Token.Each, "Каждого", "Each");
+            AddKeyword(Token.In, "Из", "In");
+            AddKeyword(Token.To, "По", "To");
+            AddKeyword(Token.While, "Пока", "While");
+            AddKeyword(Token.Loop, "Цикл", "Do");
+            AddKeyword(Token.EndLoop, "КонецЦикла", "EndDo");
+            AddKeyword(Token.Return, "Возврат", "Return");
+            AddKeyword(Token.Continue, "Продолжить", "Continue");
+            AddKeyword(Token.Break, "Прервать", "Break");
+            AddKeyword(Token.Try, "Попытка", "Try");
+            AddKeyword(Token.Exception, "Исключение", "Except");
+            AddKeyword(Token.Execute, "Выполнить", "Execute");
+            AddKeyword(Token.RaiseException, "ВызватьИсключение", "Raise");
+            AddKeyword(Token.EndTry, "КонецПопытки", "EndTry");
+            AddKeyword(Token.NewObject, "Новый", "New");
+            AddKeyword(Token.Export, "Экспорт", "Export");
+            AddKeyword(Token.And, "И", "And");
+            AddKeyword(Token.Or, "Или", "Or");
+            AddKeyword(Token.Not, "Не", "Not");
+            AddKeyword(Token.AddHandler, "ДобавитьОбработчик", "AddHandler");
+            AddKeyword(Token.RemoveHandler, "УдалитьОбработчик", "RemoveHandler");
+            AddKeyword(Token.Async, "Асинх", "Async");
+            AddKeyword(Token.Await, "Ждать", "Await");
+            AddKeyword(Token.Goto, "Перейти", "Goto");
 
             #endregion
 
@@ -229,6 +231,33 @@ namespace OneScript.Language
             _stringToToken.Add(alias, token);
         }
 
+        private static void AddKeyword(Token token, string name, string alias)
+        {
+            _keywords.Add(token, (name,alias));
+            _stringToToken.Add(name, token);
+            _stringToToken.Add(alias, token);
+        }
+
+        public static string GetTokenName(Token token)
+        {
+            if (_keywords.TryGetValue(token,out var strings))
+            {
+                return strings.Item1;
+            }
+
+            return Enum.GetName(typeof(Token), token);
+        }
+        public static string GetTokenAlias(Token token)
+        {
+            if (_keywords.TryGetValue(token,out var strings))
+            {
+                return strings.Item2;
+            }
+
+            return Enum.GetName(typeof(Token), token);
+        }
+
+
         public static Token GetToken(string tokText)
         {
             Token result;
@@ -263,7 +292,6 @@ namespace OneScript.Language
                    || token == Token.Modulo
                    || token == Token.And
                    || token == Token.Or
-                   || token == Token.Not
                    || token == Token.LessThan
                    || token == Token.LessOrEqual
                    || token == Token.MoreThan

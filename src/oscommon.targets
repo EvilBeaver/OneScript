@@ -10,6 +10,7 @@
         <TargetFrameworkVersion>net6.0</TargetFrameworkVersion>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
         <IncludeSourceRevisionInInformationalVersion>False</IncludeSourceRevisionInInformationalVersion>
+        <ImplicitUsings>disable</ImplicitUsings>
     </PropertyGroup>
 	
     <PropertyGroup>

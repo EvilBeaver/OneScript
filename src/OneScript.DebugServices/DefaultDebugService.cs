@@ -70,6 +70,11 @@ namespace OneScript.DebugServices
                 machine.SetDebugMode(_threadManager, _breakpointManager);
         }
 
+        public void SetExceptionBreakpoints(ExceptionBreakpointFilter[] filters)
+        {
+            SetMachineExceptionBreakpoints(filters.Select(f => (f.Id, f.Condition)).ToArray());
+        }
+
         public Breakpoint[] SetMachineBreakpoints(Breakpoint[] breaksToSet)
         {
             var confirmedBreakpoints = new List<Breakpoint>();

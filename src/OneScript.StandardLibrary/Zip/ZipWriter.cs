@@ -52,7 +52,7 @@ namespace OneScript.StandardLibrary.Zip
             ZipEncryptionMethod? encryptionMethod = default,
             FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
-            ZipFile.DefaultEncoding = Encoding.GetEncoding(866); // fuck non-russian encodings on non-ascii files
+            DotNetZipEncoding.SetDefault(Encoding.GetEncoding(866)); // fuck non-russian encodings on non-ascii files
             _filename = filename;
             _zip = new ZipFile();
             _zip.AlternateEncoding = Encoding.UTF8;

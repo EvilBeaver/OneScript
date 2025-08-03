@@ -7,10 +7,12 @@ at http://mozilla.org/MPL/2.0/.
 
 
 using System;
+using Newtonsoft.Json;
 
 namespace OneScript.DebugProtocol.TcpServer
 {
     [Serializable]
+    [JsonConverter(typeof(JsonDtoConverter))]
     public abstract class TcpProtocolDtoBase
     {
         public string Id { get; set; }

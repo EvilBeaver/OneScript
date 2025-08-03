@@ -14,7 +14,7 @@ namespace OneScript.Language
 
         }
 
-        internal SyntaxErrorException(CodeError error) : base(error.Position, error.Description)
+        internal SyntaxErrorException(CodeError error) : base(error.Position ?? new ErrorPositionInfo(), error.Description)
         {
             
         }

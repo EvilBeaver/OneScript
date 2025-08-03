@@ -21,7 +21,7 @@ namespace oscript
 
         public override int Execute()
         {
-            var tcpDebugServer = new BinaryTcpDebugServer(_port);
+            var tcpDebugServer = new TcpDebugServer(_port);
                     
             DebugController = tcpDebugServer.CreateDebugController();
             
@@ -56,6 +56,7 @@ namespace oscript
                 }
                 else if (parsedArg.Name == "-protocol")
                 {
+                    // Обратная совместимость, не используется в реальности
                     continue;
                 }
                 else

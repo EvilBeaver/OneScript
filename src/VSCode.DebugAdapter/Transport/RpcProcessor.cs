@@ -13,7 +13,7 @@ using OneScript.DebugProtocol.Abstractions;
 using OneScript.DebugProtocol.TcpServer;
 using Serilog;
 
-namespace VSCode.DebugAdapter
+namespace VSCode.DebugAdapter.Transport
 {
     public class RpcProcessor
     {
@@ -21,6 +21,8 @@ namespace VSCode.DebugAdapter
         private readonly Dictionary<string, ChannelRecord> _dispatchers = new Dictionary<string, ChannelRecord>();
         private readonly Queue<RpcCallResult> _responses = new Queue<RpcCallResult>();
         private readonly AutoResetEvent _responseAvailable = new AutoResetEvent(false);
+
+        private readonly ILogger Log = Serilog.Log.ForContext<RpcProcessor>();
         
         private struct ChannelRecord
         {
@@ -57,7 +59,7 @@ namespace VSCode.DebugAdapter
         {
             if (e.Exception == null)
             {
-                Log.Debug("Data received {@Data}", (TcpProtocolDtoBase)e.Data);
+                Log.Verbose("Data received {@Data}", (TcpProtocolDtoBase)e.Data);
                 DispatchMessage((TcpProtocolDtoBase)e.Data, e.Channel);
             }
             else
@@ -80,19 +82,19 @@ namespace VSCode.DebugAdapter
 
             if (data is RpcCall rpcCall)
             {
-                Log.Debug("Processing call to {Id}", rpcCall.Id);
+                Log.Verbose("Processing call to {Id}", rpcCall.Id);
                 var result = serviceRecord.Dispatcher.Dispatch(serviceRecord.ServiceInstance, rpcCall.Id, rpcCall.Parameters);
-                Log.Debug("Completed call to {Id}", rpcCall.Id);
+                Log.Verbose("Completed call to {Id}", rpcCall.Id);
                 if (result != null)
                 {
                     var callResult = RpcCallResult.Respond(rpcCall, result);
-                    Log.Debug("Sending response {Result}", callResult.ReturnValue);
+                    Log.Verbose("Sending response {Result}", callResult.ReturnValue);
                     responseChannel.Write(callResult);
                 }
             }
             else if(data is RpcCallResult result)
             {
-                Log.Debug("Enque response to {Id}. Value {Value}", result.Id, result.ReturnValue);
+                Log.Verbose("Enque response to {Id}. Value {Value}", result.Id, result.ReturnValue);
                 lock (_responses)
                 {
                     _responses.Enqueue(result);

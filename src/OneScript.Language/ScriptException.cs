@@ -97,13 +97,24 @@ namespace OneScript.Language
             get
             {
                 var sb = new StringBuilder(MessageWithoutCodeFragment);
-                sb.AppendLine("    ");
-                sb.Append(Code);
+                sb.AppendLine();
+                var codeLine = Code?.Replace('\t', ' ').TrimEnd();
+
+                if (ColumnNumber != ErrorPositionInfo.OUT_OF_TEXT)
+                {
+                    sb.Append(codeLine[..ColumnNumber]);
+                    sb.Append("<<?>>");
+                    sb.AppendLine(codeLine[ColumnNumber..]);
+                }
+                else
+                {
+                    sb.AppendLine(codeLine);
+                }
 
                 return sb.ToString();
             }
         }
-        
+
         public object RuntimeSpecificInfo { get; set; }
         
         public void SetPositionIfEmpty(ErrorPositionInfo newPosition)

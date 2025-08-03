@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using Serilog;
-using VSCode.DebugAdapter.OscriptProtocols;
+using VSCode.DebugAdapter.Transport;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 
 namespace VSCode.DebugAdapter
@@ -29,18 +29,18 @@ namespace VSCode.DebugAdapter
         
         private Encoding _dapEncoding;
 
-        private TcpDebugServerClient _debugger;
+        private OneScriptDebuggerClient _debugger;
 
         private readonly PathHandlingStrategy _strategy;
 
         private int _activeProtocolVersion;
 
+        private ILogger Log { get; } = Serilog.Log.ForContext<DebugeeProcess>();
+
         public DebugeeProcess(PathHandlingStrategy pathHandling)
         {
             _strategy = pathHandling;
         }
-        
-        public string DebugProtocol { get; protected set; }
         
         public bool HasExited => _process?.HasExited ?? true;
         public int ExitCode => _process.ExitCode;
@@ -52,8 +52,8 @@ namespace VSCode.DebugAdapter
             get => _activeProtocolVersion;
             set
             {
+                ValidateProtocolVersion(value);
                 _activeProtocolVersion = value;
-                SetupSupportedProtocolVersion();
             }
         }
 
@@ -135,9 +135,10 @@ namespace VSCode.DebugAdapter
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? null : Encoding.UTF8;
         }
 
-        public void SetConnection(TcpDebugServerClient service)
+        public void SetClient(OneScriptDebuggerClient service)
         {
             _debugger = service;
+            ProtocolVersion = service.ProtocolVersion;
         }
         
         public event EventHandler<DebugeeOutputEventArgs> OutputReceived;
@@ -145,7 +146,7 @@ namespace VSCode.DebugAdapter
         
         private void Process_Exited(object sender, EventArgs e)
         {
-            _debugger?.Disconnect();
+            _debugger?.Stop();
             Terminate();
             ProcessExited?.Invoke(this, new EventArgs());
         }
@@ -159,27 +160,11 @@ namespace VSCode.DebugAdapter
             RaiseOutputReceivedEvent("stdout", e.Data);
         }
 
-        private void SetupSupportedProtocolVersion()
+        private void ValidateProtocolVersion(int value)
         {
-            if (!ProtocolVersions.IsValid(_activeProtocolVersion))
+            if (!ProtocolVersions.IsValid(value))
             {
-                _activeProtocolVersion = ProtocolVersions.SafestVersion;
-                return;
-            }
-
-            if (_activeProtocolVersion != ProtocolVersions.UnknownVersion)
-            {
-                // Задали вручную корректное значение. Ничего не запрашиваем
-                return;
-            }
-
-            try
-            {
-                _activeProtocolVersion = _debugger.GetProtocolVersion();
-            }
-            catch (Exception e)
-            {
-                Log.Error(e, "Unknown error while checking version");
+                throw new ArgumentOutOfRangeException($"Protocol version {value} is unknown.");
             }
         }
 
@@ -227,9 +212,19 @@ namespace VSCode.DebugAdapter
             
             if (mustKill && _process != null && !_process.HasExited)
             {
-                if (!_process.WaitForExit(2000))
+                Log.Debug("Stopping child process...");
+                if (_process.WaitForExit(2000))
+                {
+                    Log.Debug("Process stopped");
+                }
+                else
+                {
                     _process.Kill();
+                    Log.Debug("Process killed");
+                }
             }
+            
+            Log.Debug("Debuggee disconnected");
         }
 
         public void Kill()
@@ -240,8 +235,24 @@ namespace VSCode.DebugAdapter
 
         public void SetExceptionsBreakpoints((string Id, string Condition)[] filters)
         {
-            if (ProtocolVersion > ProtocolVersions.Version1)
-                _debugger.SetMachineExceptionBreakpoints(filters);
+            switch (ProtocolVersion)
+            {
+                case ProtocolVersions.UnknownVersion:
+                case ProtocolVersions.Version1:
+                    // Version 1 doesn't support exception breakpoints
+                    Log.Warning("Exception breakpoints not supported in protocol version {Version}", ProtocolVersion);
+                    break;
+                case ProtocolVersions.Version2:
+                    _debugger.SetMachineExceptionBreakpoints(filters);
+                    break;
+                default: // Version 3 and higher
+                    _debugger.SetExceptionBreakpoints(filters.Select(t => new ExceptionBreakpointFilter
+                    {
+                        Id = t.Id,
+                        Condition = t.Condition
+                    }).ToArray());
+                    break;
+            }
         }
 
         public Breakpoint[] SetBreakpoints(IEnumerable<Breakpoint> breakpoints)

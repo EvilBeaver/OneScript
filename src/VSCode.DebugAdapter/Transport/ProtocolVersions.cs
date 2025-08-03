@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace VSCode.DebugAdapter.OscriptProtocols
+namespace VSCode.DebugAdapter.Transport
 {
     public static class ProtocolVersions
     {
@@ -16,7 +16,7 @@ namespace VSCode.DebugAdapter.OscriptProtocols
 
         public static int Adjust(int valueToAdjust)
         {
-            if (valueToAdjust < 0 || valueToAdjust > LatestKnownVersion)
+            if (valueToAdjust <= 0 || valueToAdjust > LatestKnownVersion)
                 return SafestVersion;
 
             return valueToAdjust;
@@ -33,12 +33,12 @@ namespace VSCode.DebugAdapter.OscriptProtocols
         public const int Version1 = 1;
  
         /// <summary>
-        /// После появления условных брейкпоинтов, но до появления метода GetVersion
+        /// После появления условных брейкпоинтов 
         /// </summary>
         public const int Version2 = 2;
-
+        
         /// <summary>
-        /// После появления метода GetVersion, который запрашивает Debuggee
+        /// Выделенный тип для параметра в SetExceptionBreakpoints 
         /// </summary>
         public const int Version3 = 3;
 

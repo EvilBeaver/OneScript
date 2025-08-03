@@ -24,6 +24,7 @@ namespace OneScript.DebugProtocol
         [DataMember]
         public string TypeName { get; set; }
 
+        [DataMember]
         public int ChildrenHandleID { get; set; }
     }
 }

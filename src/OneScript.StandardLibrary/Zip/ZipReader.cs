@@ -52,7 +52,7 @@ namespace OneScript.StandardLibrary.Zip
         public void Open(IValue filenameOrStream, string password = null, FileNamesEncodingInZipFile encoding = FileNamesEncodingInZipFile.Auto)
         {
             // fuck non-russian encodings on non-ascii files
-            ZipFile.DefaultEncoding = Encoding.GetEncoding(866);
+            DotNetZipEncoding.SetDefault(Encoding.GetEncoding(866));
             
             if (filenameOrStream.SystemType == BasicTypes.String)
             {
@@ -104,6 +104,13 @@ namespace OneScript.StandardLibrary.Zip
         public void Extract(ZipFileEntryContext entry, string destination, ZipRestoreFilePathsMode restorePaths = default, string password = null)
         {
             CheckIfOpened();
+            if (entry == null)
+            {
+                // Передали Неопределено
+                // TODO сделать более строгий маршалинг с учетом всех тыщ особенностей для строк и прочего
+                throw RuntimeException.InvalidNthArgumentType(1);
+            }
+            
             var realEntry = entry.GetZipEntry();
             _zip.FlattenFoldersOnExtract = restorePaths == ZipRestoreFilePathsMode.DontRestore;
             realEntry.Password = password;

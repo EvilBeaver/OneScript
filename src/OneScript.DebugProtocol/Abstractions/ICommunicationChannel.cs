@@ -17,5 +17,7 @@ namespace OneScript.DebugProtocol.Abstractions
         
         object Read();
         
+        bool Connected { get; }
+        
     }
 }

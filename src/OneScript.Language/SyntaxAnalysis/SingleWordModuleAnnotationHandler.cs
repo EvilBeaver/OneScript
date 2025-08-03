@@ -21,29 +21,34 @@ namespace OneScript.Language.SyntaxAnalysis
         private readonly ILexer _allLineContentLexer;
         private readonly ISet<string> _knownNames = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
 
+        private static readonly LexerBuilder InstanceBuilder = SetupLexerBuilder();
+        
         public SingleWordModuleAnnotationHandler(ISet<string> knownNames, IErrorSink errorSink) : base(errorSink)
         {
-            var builder = new LexerBuilder();
-            builder.Detect((cs, i) => !char.IsWhiteSpace(cs))
-                .HandleWith(new WordLexerState());
-
-            _allLineContentLexer = builder.Build();
+            _allLineContentLexer = InstanceBuilder.Build();
             _knownNames = knownNames;
         }
-        
+
         public SingleWordModuleAnnotationHandler(ISet<BilingualString> knownNames, IErrorSink errorSink) : base(errorSink)
         {
-            var builder = new LexerBuilder();
-            builder.Detect((cs, i) => !char.IsWhiteSpace(cs))
-                .HandleWith(new WordLexerState());
-
-            _allLineContentLexer = builder.Build();
+            _allLineContentLexer = InstanceBuilder.Build();
 
             foreach (var twoNames in knownNames)
             {
                 _knownNames.Add(twoNames.Russian);
                 _knownNames.Add(twoNames.English);
             }
+        }
+        
+        private static LexerBuilder SetupLexerBuilder()
+        {
+            var builder = new LexerBuilder();
+            builder
+                .DetectComments()
+                .Detect((cs, i) => !char.IsWhiteSpace(cs))
+                    .HandleWith(new WordLexerState());
+            
+            return builder;
         }
 
         protected override bool DirectiveSupported(string directive)
@@ -61,7 +66,7 @@ namespace OneScript.Language.SyntaxAnalysis
             // после ничего не должно находиться
             var nextLexem = _allLineContentLexer.NextLexemOnSameLine();
             lastExtractedLexem = lexer.NextLexem(); // сдвиг основного лексера
-            if (nextLexem.Type != LexemType.EndOfText)
+            if (nextLexem.Type != LexemType.EndOfText && nextLexem.Type != LexemType.Comment)
             {
                 var err = LocalizedErrors.ExpressionSyntax();
                 err.Position = new ErrorPositionInfo

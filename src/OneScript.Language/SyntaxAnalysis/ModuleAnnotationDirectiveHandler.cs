@@ -41,7 +41,9 @@ namespace OneScript.Language.SyntaxAnalysis
 
             if (!_enabled)
             {
-                ErrorSink.AddError(LocalizedErrors.DirectiveNotSupported(lastExtractedLexem.Content));
+                var err = LocalizedErrors.DirectiveNotSupported(lastExtractedLexem.Content);
+                err.Position = lexer.GetErrorPosition();
+                ErrorSink.AddError(err);
                 return true;
             }
 
