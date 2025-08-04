@@ -8,9 +8,12 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
+#if NET48
 using System.Runtime.Serialization.Formatters.Binary;
+#endif
 using OneScript.DebugProtocol.Abstractions;
 
+// ReSharper disable once CheckNamespace
 namespace OneScript.DebugProtocol
 {
     /// <summary>

@@ -30,11 +30,11 @@
     <ItemGroup>
         <PublishProjects Include="oscript">
             <ProjectFile>oscript.csproj</ProjectFile>
-            <Framework>net6.0</Framework>
+            <Framework>net8.0</Framework>
         </PublishProjects>
         <PublishProjects Include="TestApp">
             <ProjectFile>TestApp.csproj</ProjectFile>
-            <Framework>net6.0-windows</Framework>
+            <Framework>net8.0-windows</Framework>
         </PublishProjects>
     </ItemGroup>
     
