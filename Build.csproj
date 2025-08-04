@@ -14,6 +14,8 @@
         <Configuration>Release</Configuration>
         <Solution>$(MSBuildProjectDirectory)/src/1Script.sln</Solution>
         
+        <ActiveFramework>net8.0</ActiveFramework>
+        
     </PropertyGroup>
     
     <ItemGroup>
@@ -30,11 +32,11 @@
     <ItemGroup>
         <PublishProjects Include="oscript">
             <ProjectFile>oscript.csproj</ProjectFile>
-            <Framework>net8.0</Framework>
+            <Framework>$(ActiveFramework)</Framework>
         </PublishProjects>
         <PublishProjects Include="TestApp">
             <ProjectFile>TestApp.csproj</ProjectFile>
-            <Framework>net8.0-windows</Framework>
+            <Framework>$(ActiveFramework)-windows</Framework>
         </PublishProjects>
     </ItemGroup>
     
@@ -106,7 +108,7 @@
         </ItemGroup>
         
         <Exec Command="dotnet publish &quot;src/oscript/oscript.csproj&quot; -r %(RuntimeID.Identity) --self-contained -c $(Configuration) -o &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/bin&quot;" UseUtf8Encoding="Always"/>
-        <Exec Command="dotnet publish &quot;src/TestApp/TestApp.csproj&quot; -f net6.0-windows -c $(Configuration) -p:Platform=%(PlatformItem.MSBuildName) -p:UseAppHost=true -o &quot;$(ArtifactsRoot)/win-%(PlatformItem.Identity)/bin&quot;" UseUtf8Encoding="Always"/>
+        <Exec Command="dotnet publish &quot;src/TestApp/TestApp.csproj&quot; -f $(ActiveFramework)-windows -c $(Configuration) -p:Platform=%(PlatformItem.MSBuildName) -p:UseAppHost=true -o &quot;$(ArtifactsRoot)/win-%(PlatformItem.Identity)/bin&quot;" UseUtf8Encoding="Always"/>
 
         <PropertyGroup>
             <CppBinPrefix>$(MSBuildProjectDirectory)/src/ScriptEngine.NativeApi/bin/$(Configuration)</CppBinPrefix>
