@@ -18,7 +18,7 @@ namespace ScriptEngine.Machine
         private readonly Dictionary<int, ContextPropertyInfo> _properties = new Dictionary<int, ContextPropertyInfo>();
         private readonly Dictionary<int, ContextMethodInfo> _methods = new Dictionary<int, ContextMethodInfo>();
 
-        private object UnderlyingObject { get; }
+        public object UnderlyingObject { get; }
 
         public NotBslValueWrapper(object obj)
         {
@@ -86,6 +86,10 @@ namespace ScriptEngine.Machine
             }
             else
                 val = ContextValuesMarshaller.ConvertToClrObject(newVal);
+            
+            var propType = prop.PropertyType;
+            if (val is NotBslValueWrapper wrapper && wrapper.UnderlyingObject.GetType() == propType)
+                val = wrapper.UnderlyingObject;
             
             prop.SetMethod!.Invoke(UnderlyingObject, new [] { val });
         }

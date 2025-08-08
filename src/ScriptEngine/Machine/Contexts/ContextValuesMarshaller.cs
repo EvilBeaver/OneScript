@@ -249,6 +249,8 @@ namespace ScriptEngine.Machine.Contexts
             {
                 valueObj = value;
             }
+            else if (value is NotBslValueWrapper wrapper && wrapper.UnderlyingObject.GetType() == type)
+                valueObj = wrapper.UnderlyingObject;
             else
             {
                 if (value is IObjectWrapper wrapped)

@@ -115,6 +115,9 @@ namespace ScriptEngine.Machine.Contexts
 
         private T ConvertValue<T>(IValue value)
         {
+            if (value is NotBslValueWrapper wrapper && wrapper.UnderlyingObject.GetType() == _propertyInfo.PropertyType)
+                return (T)wrapper.UnderlyingObject;
+            
             if (_propertyInfo.ConverterType == null)
                 return ContextValuesMarshaller.ConvertValueStrict<T>(value);
             
@@ -125,7 +128,7 @@ namespace ScriptEngine.Machine.Contexts
         private IValue ConvertReturnValue<TRet>(TRet param)
         {
             if (_propertyInfo.ConverterType == null)
-                ContextValuesMarshaller.ConvertReturnValue(param);
+                return ContextValuesMarshaller.ConvertReturnValue(param);
             
             var converter = Activator.CreateInstance(_propertyInfo.ConverterType!) as ContextValueConverter<TRet>;
             return converter!.ToIValue(param);
