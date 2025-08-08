@@ -370,6 +370,7 @@ namespace ScriptEngine.Machine.Contexts
                 BslNullValue _ => null,
                 BslTypeValue type => type.SystemType.ImplementingClass,
                 IObjectWrapper wrapper => wrapper.UnderlyingObject,
+                NotBslValueWrapper notBsl => notBsl.UnderlyingObject,
                 BslObjectValue obj => obj,
                 _ => throw ValueMarshallingException.NoConversionToCLR(value.GetType())
             };
