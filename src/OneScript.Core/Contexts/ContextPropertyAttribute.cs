@@ -40,5 +40,10 @@ namespace OneScript.Contexts
 
         public string Name => _name;
         public string Alias => _alias;
+        
+        /// <summary>
+        /// Конвертер значения свойства
+        /// </summary>
+        public Type Converter { get; set; }
     }
 }

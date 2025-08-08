@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using OneScript.Commons;
+using ScriptEngine.Machine;
 
 namespace OneScript.Contexts
 {
@@ -20,11 +21,12 @@ namespace OneScript.Contexts
     {
         private readonly PropertyInfo _realProperty;
         private readonly ContextPropertyAttribute _scriptMark;
-        
+
         public ContextPropertyInfo(PropertyInfo wrappedInfo)
         {
             _realProperty = wrappedInfo;
             _scriptMark = (ContextPropertyAttribute)_realProperty.GetCustomAttributes(typeof(ContextPropertyAttribute), false).First();
+            ConverterType = _scriptMark.Converter;
         }
         
         public override object[] GetCustomAttributes(bool inherit)
@@ -53,6 +55,32 @@ namespace OneScript.Contexts
         public override string Name => _scriptMark.Name;
         
         public override string Alias => _scriptMark.Alias;
+        
+        public Type ConverterType { get; private set; }
+
+        public bool TryGetConverter(out object converter)
+        {
+            if (ConverterType == null)
+            {
+                converter = null;
+                return false;
+            }
+            
+            converter = Activator.CreateInstance(ConverterType);
+            return true;
+        }
+
+        public bool TryGetStrictConverter<T>(out ContextValueConverter<T> converter)
+        {
+            var result = TryGetConverter(out var c);
+            
+            if (result)
+                converter = c as ContextValueConverter<T>;
+            else
+                converter = null;
+            
+            return result;
+        }
         
         public override MethodInfo[] GetAccessors(bool nonPublic)
         {

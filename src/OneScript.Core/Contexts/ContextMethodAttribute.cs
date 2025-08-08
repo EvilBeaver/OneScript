@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+#nullable enable
 using System;
 using System.Runtime.CompilerServices;
 using OneScript.Commons;
@@ -46,5 +47,10 @@ namespace OneScript.Contexts
 
         public string Name => _name;
         public string Alias => _alias;
+        
+        /// <summary>
+        /// Конвертер возвращаемого значения функции, необходим для неподдерживаемых маршаллингом типов 
+        /// </summary>
+        public Type? Converter { get; set; }
     }
 }
