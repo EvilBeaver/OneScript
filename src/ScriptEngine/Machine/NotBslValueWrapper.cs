@@ -19,7 +19,7 @@ using TinyIoC;
 
 namespace ScriptEngine.Machine
 {
-    internal class NotBslValueWrapper : ContextIValueImpl
+    public class NotBslValueWrapper : ContextIValueImpl
     {
         private readonly Dictionary<int, ContextPropertyInfo> _properties = new Dictionary<int, ContextPropertyInfo>();
         private readonly Dictionary<int, ContextMethodInfo> _methods = new Dictionary<int, ContextMethodInfo>();
@@ -132,8 +132,17 @@ namespace ScriptEngine.Machine
             
             var args = arguments.Select(c => ContextValuesMarshaller.ConvertParam(c, method.ReturnType, process)).ToArray();
             var result = method.Invoke(UnderlyingObject, args);
-
-            retValue = ContextValuesMarshaller.ConvertDynamicValue(result);
+            
+            if (method.TryGetConverter(out var converter))
+            {
+                var type = converter.GetType();
+                var convertMethod = type
+                    .GetMethod("ToIValue", new [] { method.ReturnType });
+                
+                retValue = (IValue)convertMethod!.Invoke(converter, new[] { result });
+            }
+            else
+                retValue = ContextValuesMarshaller.ConvertDynamicValue(result);
         }
 
         private static int GetMemberNumberByName<T>(Dictionary<int, T> items, string name) where T : INameAndAliasProvider

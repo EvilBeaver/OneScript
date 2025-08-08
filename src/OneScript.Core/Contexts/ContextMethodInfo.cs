@@ -99,6 +99,18 @@ namespace OneScript.Contexts
         {
             return _realMethod.GetBaseDefinition();
         }
+        
+        public bool TryGetConverter(out object converter)
+        {
+            if (ConverterType == null)
+            {
+                converter = null;
+                return false;
+            }
+            
+            converter = Activator.CreateInstance(ConverterType);
+            return true;
+        }
 
         public override ICustomAttributeProvider ReturnTypeCustomAttributes => _realMethod.ReturnTypeCustomAttributes;
 
