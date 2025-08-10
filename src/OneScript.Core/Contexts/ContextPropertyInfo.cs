@@ -26,7 +26,6 @@ namespace OneScript.Contexts
         {
             _realProperty = wrappedInfo;
             _scriptMark = (ContextPropertyAttribute)_realProperty.GetCustomAttributes(typeof(ContextPropertyAttribute), false).First();
-            ConverterType = _scriptMark.Converter;
         }
         
         public override object[] GetCustomAttributes(bool inherit)
@@ -56,7 +55,7 @@ namespace OneScript.Contexts
         
         public override string Alias => _scriptMark.Alias;
         
-        public Type ConverterType { get; private set; }
+        public Type ConverterType => _scriptMark.Converter;
 
         public bool TryGetConverter(out object converter)
         {
@@ -70,12 +69,12 @@ namespace OneScript.Contexts
             return true;
         }
 
-        public bool TryGetStrictConverter<T>(out ContextValueConverter<T> converter)
+        public bool TryGetStrictConverter<T>(out IContextValueConverter<T> converter)
         {
             var result = TryGetConverter(out var c);
             
             if (result)
-                converter = c as ContextValueConverter<T>;
+                converter = c as IContextValueConverter<T>;
             else
                 converter = null;
             

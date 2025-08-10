@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Types;
 using OneScript.Values;
@@ -19,9 +20,12 @@ using TinyIoC;
 
 namespace ScriptEngine.Machine
 {
-    public class NotBslValueWrapper : ContextIValueImpl
+    public class NotBslValueWrapper : ContextIValueImpl, IObjectWrapper
     {
+        private readonly IndexedNamesCollection _propertiesCache = new IndexedNamesCollection();
         private readonly Dictionary<int, ContextPropertyInfo> _properties = new Dictionary<int, ContextPropertyInfo>();
+
+        private readonly IndexedNamesCollection _methodsCache = new IndexedNamesCollection();
         private readonly Dictionary<int, ContextMethodInfo> _methods = new Dictionary<int, ContextMethodInfo>();
 
         public object UnderlyingObject { get; }
@@ -30,7 +34,7 @@ namespace ScriptEngine.Machine
         {
             UnderlyingObject = obj;
             DefineType(obj.GetType().GetTypeFromClassMarkup());
-            
+
             InitMethodsProperties();
         }
 
@@ -41,20 +45,30 @@ namespace ScriptEngine.Machine
             var props = objType.GetProperties()
                 .Where(x => x.GetCustomAttributes(typeof(ContextPropertyAttribute), false).Length != 0)
                 .ToList();
-            
+
             for (var i = 0; i < props.Count; i++)
-                _properties.Add(i, new ContextPropertyInfo(props[i]));
-            
+            {
+                var contextInfo = new ContextPropertyInfo(props[i]);
+                
+                _properties.Add(i, contextInfo);
+                _propertiesCache.RegisterName(contextInfo.Name, contextInfo.Alias);
+            }
+
             var methods = objType.GetMethods()
                 .Where(x => x.GetCustomAttributes(typeof(ContextMethodAttribute), false).Length != 0)
                 .ToList();
 
             for (var i = 0; i < methods.Count; i++)
-                _methods.Add(i, new ContextMethodInfo(methods[i]));
+            {
+                var contextInfo = new ContextMethodInfo(methods[i]);
+                
+                _methods.Add(i, contextInfo);
+                _methodsCache.RegisterName(contextInfo.Name, contextInfo.Alias);
+            }
         }
 
         public override int GetPropertyNumber(string name)
-            => GetMemberNumberByName(_properties, name);
+            => _propertiesCache.TryGetIdOfName(name, out var id) ? id : GetMemberNumberByName(_properties, name);
 
         public override bool IsPropReadable(int propNum)
             => _properties[propNum].CanRead;
@@ -65,20 +79,25 @@ namespace ScriptEngine.Machine
         public override IValue GetPropValue(int propNum)
         {
             var prop = _properties[propNum];
-            var value = prop.GetMethod?.Invoke(UnderlyingObject, Array.Empty<object>());
+            var getter = prop.GetGetMethod(true);
+            if (getter == null)
+                    throw PropertyAccessException.PropIsNotReadableException(prop.Name);
+            var value = getter.Invoke(UnderlyingObject, Array.Empty<object>());
 
             if (!prop.TryGetConverter(out var converter)) 
                 return ContextValuesMarshaller.ConvertDynamicValue(value);
             
-            var type = converter.GetType();
-            var toClrMethod = type.GetMethod("ToIValue", new [] { prop.PropertyType });
-                
-            return (IValue)toClrMethod!.Invoke(converter, new[] { value });
+            var toIValue = converter.GetType().GetMethod("ToIValue");
+            return (IValue)toIValue!.Invoke(converter, new[] { value });
         }
 
         public override void SetPropValue(int propNum, IValue newVal)
         {
             var prop = _properties[propNum];
+            
+            var setter = prop.GetSetMethod(true);
+            if (setter == null) 
+                throw PropertyAccessException.PropIsNotWritableException(prop.Name);
 
             object val;
             
@@ -97,7 +116,7 @@ namespace ScriptEngine.Machine
             if (val is NotBslValueWrapper wrapper && wrapper.UnderlyingObject.GetType() == propType)
                 val = wrapper.UnderlyingObject;
             
-            prop.SetMethod!.Invoke(UnderlyingObject, new [] { val });
+            setter.Invoke(UnderlyingObject, new [] { val });
         }
 
         public override int GetPropCount()
@@ -107,7 +126,7 @@ namespace ScriptEngine.Machine
             => _properties[propNum].Name;
 
         public override int GetMethodNumber(string name)
-            => GetMemberNumberByName(_methods, name);
+            => _methodsCache.TryGetIdOfName(name, out var id) ? id : GetMemberNumberByName(_methods, name);
 
         public override int GetMethodsCount()
             => _methods.Count;
@@ -145,9 +164,14 @@ namespace ScriptEngine.Machine
                 retValue = ContextValuesMarshaller.ConvertDynamicValue(result);
         }
 
-        private static int GetMemberNumberByName<T>(Dictionary<int, T> items, string name) where T : INameAndAliasProvider
-            => items.First(c => 
-                c.Value.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) ||
-                c.Value.Alias.Equals(name, StringComparison.InvariantCultureIgnoreCase)).Key;
+        private static int GetMemberNumberByName<T>(Dictionary<int, T> items, string name)
+            where T : INameAndAliasProvider
+        {
+            foreach (var kvp in items.Where(kvp => string.Equals(kvp.Value.Name,  name, StringComparison.InvariantCultureIgnoreCase) ||
+                                                   string.Equals(kvp.Value.Alias, name, StringComparison.InvariantCultureIgnoreCase)))
+                return kvp.Key;
+
+            return -1;
+        }
     }
 }

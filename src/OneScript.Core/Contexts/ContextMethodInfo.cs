@@ -31,8 +31,6 @@ namespace OneScript.Contexts
             {
                 _scriptMark =
                     (ContextMethodAttribute) GetCustomAttributes(typeof(ContextMethodAttribute), false).First();
-                
-                InitConverter();
             }
             catch (InvalidOperationException e)
             {
@@ -45,10 +43,8 @@ namespace OneScript.Contexts
             _realMethod = realMethod;
             
             _scriptMark = binding;
-            InitConverter();
             
             InjectsProcess = _realMethod.GetParameters().FirstOrDefault()?.ParameterType == typeof(IBslProcess);
-            HasReturnConverter = binding.Converter != null;
         }
 
         private void InitConverter()
@@ -102,13 +98,13 @@ namespace OneScript.Contexts
         
         public bool TryGetConverter(out object converter)
         {
-            if (ConverterType == null)
+            if (_scriptMark.Converter == null)
             {
                 converter = null;
                 return false;
             }
             
-            converter = Activator.CreateInstance(ConverterType);
+            converter = Activator.CreateInstance(_scriptMark.Converter);
             return true;
         }
 
@@ -130,8 +126,6 @@ namespace OneScript.Contexts
         public object UnderlyingObject => _realMethod;
 
         public bool InjectsProcess { get; }
-        
-        public bool HasReturnConverter { get; }
 
         public MethodInfo GetWrappedMethod() => _realMethod;
     }
