@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -22,19 +23,27 @@ namespace ScriptEngine.Machine
 {
     public class NotBslValueWrapper : ContextIValueImpl, IObjectWrapper
     {
-        private readonly IndexedNamesCollection _propertiesCache = new IndexedNamesCollection();
-        private readonly Dictionary<int, ContextPropertyInfo> _properties = new Dictionary<int, ContextPropertyInfo>();
+        private readonly object _initLocker = new object();
+        private readonly Type _underlyingType;
+        
+        private static readonly Dictionary<Type, IndexedNamesCollection> PropertiesIndexers = 
+            new Dictionary<Type, IndexedNamesCollection>();
+        private static readonly Dictionary<Type, IndexedNamesCollection> MethodsIndexers = 
+            new Dictionary<Type, IndexedNamesCollection>();
 
-        private readonly IndexedNamesCollection _methodsCache = new IndexedNamesCollection();
-        private readonly Dictionary<int, ContextMethodInfo> _methods = new Dictionary<int, ContextMethodInfo>();
+        private static readonly Dictionary<Type, Dictionary<int, ContextPropertyInfo>> PropertiesCaches =
+            new Dictionary<Type, Dictionary<int, ContextPropertyInfo>>();
+        private static readonly Dictionary<Type, Dictionary<int, ContextMethodInfo>> MethodsCaches =
+            new Dictionary<Type, Dictionary<int, ContextMethodInfo>>();
 
         public object UnderlyingObject { get; }
 
         public NotBslValueWrapper(object obj)
         {
             UnderlyingObject = obj;
+            _underlyingType = UnderlyingObject.GetType();
+            
             DefineType(obj.GetType().GetTypeFromClassMarkup());
-
             InitMethodsProperties();
         }
 
@@ -42,43 +51,63 @@ namespace ScriptEngine.Machine
         {
             var objType = UnderlyingObject.GetType();
 
-            var props = objType.GetProperties()
-                .Where(x => x.GetCustomAttributes(typeof(ContextPropertyAttribute), false).Length != 0)
-                .ToList();
-
-            for (var i = 0; i < props.Count; i++)
+            lock (_initLocker)
             {
-                var contextInfo = new ContextPropertyInfo(props[i]);
+                // Свойства и методы уже были закешированы
+                if (PropertiesIndexers.ContainsKey(objType))
+                    return;
                 
-                _properties.Add(i, contextInfo);
-                _propertiesCache.RegisterName(contextInfo.Name, contextInfo.Alias);
-            }
-
-            var methods = objType.GetMethods()
-                .Where(x => x.GetCustomAttributes(typeof(ContextMethodAttribute), false).Length != 0)
-                .ToList();
-
-            for (var i = 0; i < methods.Count; i++)
-            {
-                var contextInfo = new ContextMethodInfo(methods[i]);
+                var propertiesIndex = new IndexedNamesCollection();
+                var propertiesCache = new Dictionary<int, ContextPropertyInfo>();
                 
-                _methods.Add(i, contextInfo);
-                _methodsCache.RegisterName(contextInfo.Name, contextInfo.Alias);
+                var methodsIndex = new IndexedNamesCollection();
+                var methodsCache = new Dictionary<int, ContextMethodInfo>();
+                
+                
+                var props = objType.GetProperties()
+                    .Where(x => x.GetCustomAttributes(typeof(ContextPropertyAttribute), false).Length != 0)
+                    .ToList();
+
+                foreach (var property in props)
+                {
+                    var info = new ContextPropertyInfo(property);
+                    var id = propertiesIndex.RegisterName(info.Name, info.Alias);
+                    
+                    propertiesCache.Add(id, info);
+                }
+
+                var methods = objType.GetMethods()
+                    .Where(x => x.GetCustomAttributes(typeof(ContextMethodAttribute), false).Length != 0)
+                    .ToList();
+                
+                foreach (var method in methods)
+                {
+                    var info = new ContextMethodInfo(method);
+                    var id = methodsIndex.RegisterName(info.Name, info.Alias);
+                    
+                    methodsCache.Add(id, info);
+                }
+                
+                PropertiesIndexers.Add(objType, propertiesIndex);
+                PropertiesCaches.Add(objType, propertiesCache);
+                
+                MethodsIndexers.Add(objType, methodsIndex);
+                MethodsCaches.Add(objType, methodsCache);
             }
         }
 
         public override int GetPropertyNumber(string name)
-            => _propertiesCache.TryGetIdOfName(name, out var id) ? id : GetMemberNumberByName(_properties, name);
+            => GetPropertiesIndexer().TryGetIdOfName(name, out var id) ? id : -1;
 
         public override bool IsPropReadable(int propNum)
-            => _properties[propNum].CanRead;
+            => GetPropertiesCache()[propNum].CanRead;
 
         public override bool IsPropWritable(int propNum)
-            => _properties[propNum].CanWrite;
+            => GetPropertiesCache()[propNum].CanWrite;
 
         public override IValue GetPropValue(int propNum)
         {
-            var prop = _properties[propNum];
+            var prop = GetPropertiesCache()[propNum];
             var getter = prop.GetGetMethod(true);
             if (getter == null)
                     throw PropertyAccessException.PropIsNotReadableException(prop.Name);
@@ -93,7 +122,7 @@ namespace ScriptEngine.Machine
 
         public override void SetPropValue(int propNum, IValue newVal)
         {
-            var prop = _properties[propNum];
+            var prop = GetPropertiesCache()[propNum];
             
             var setter = prop.GetSetMethod(true);
             if (setter == null) 
@@ -113,33 +142,33 @@ namespace ScriptEngine.Machine
                 val = ContextValuesMarshaller.ConvertToClrObject(newVal);
             
             var propType = prop.PropertyType;
-            if (val is NotBslValueWrapper wrapper && wrapper.UnderlyingObject.GetType() == propType)
+            if (val is NotBslValueWrapper wrapper && propType.IsInstanceOfType(wrapper.UnderlyingObject))
                 val = wrapper.UnderlyingObject;
             
             setter.Invoke(UnderlyingObject, new [] { val });
         }
 
         public override int GetPropCount()
-            => _properties.Count;
+            => GetPropertiesCache().Count;
 
         public override string GetPropName(int propNum)
-            => _properties[propNum].Name;
+            => GetPropertiesCache()[propNum].Name;
 
         public override int GetMethodNumber(string name)
-            => _methodsCache.TryGetIdOfName(name, out var id) ? id : GetMemberNumberByName(_methods, name);
+            => GetMethodsIndexer().TryGetIdOfName(name, out var id) ? id : -1;
 
         public override int GetMethodsCount()
-            => _methods.Count;
+            => GetMethodsCache().Count;
 
         public override BslMethodInfo GetMethodInfo(int methodNumber)
-            => _methods[methodNumber];
+            => GetMethodsCache()[methodNumber];
 
         public override BslPropertyInfo GetPropertyInfo(int propertyNumber)
-            => _properties[propertyNumber];
+            => GetPropertiesCache()[propertyNumber];
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
-            var method = _methods[methodNumber];
+            var method = GetMethodsCache()[methodNumber];
             
             var args = arguments.Select(ContextValuesMarshaller.ConvertToClrObject).ToArray();
             method.Invoke(UnderlyingObject, args);
@@ -147,7 +176,7 @@ namespace ScriptEngine.Machine
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process)
         {
-            var method = _methods[methodNumber];
+            var method = GetMethodsCache()[methodNumber];
             
             var args = arguments.Select(c => ContextValuesMarshaller.ConvertParam(c, method.ReturnType, process)).ToArray();
             var result = method.Invoke(UnderlyingObject, args);
@@ -167,11 +196,28 @@ namespace ScriptEngine.Machine
         private static int GetMemberNumberByName<T>(Dictionary<int, T> items, string name)
             where T : INameAndAliasProvider
         {
-            foreach (var kvp in items.Where(kvp => string.Equals(kvp.Value.Name,  name, StringComparison.InvariantCultureIgnoreCase) ||
-                                                   string.Equals(kvp.Value.Alias, name, StringComparison.InvariantCultureIgnoreCase)))
+            foreach (var kvp in from kvp in items
+                     let v = kvp.Value
+                     where string.Equals(v.Name, name, StringComparison.InvariantCultureIgnoreCase) ||
+                           string.Equals(v.Alias, name, StringComparison.InvariantCultureIgnoreCase)
+                     select kvp)
+            {
                 return kvp.Key;
+            }
 
             return -1;
         }
+        
+        private IndexedNamesCollection GetMethodsIndexer()
+            => MethodsIndexers[_underlyingType];
+        
+        private IndexedNamesCollection GetPropertiesIndexer()
+            => PropertiesIndexers[_underlyingType];
+
+        private Dictionary<int, ContextMethodInfo> GetMethodsCache()
+            => MethodsCaches[_underlyingType];
+        
+        private Dictionary<int, ContextPropertyInfo> GetPropertiesCache()
+            => PropertiesCaches[_underlyingType];
     }
 }
