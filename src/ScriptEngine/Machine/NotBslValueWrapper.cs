@@ -23,7 +23,7 @@ namespace ScriptEngine.Machine
 {
     public class NotBslValueWrapper : ContextIValueImpl, IObjectWrapper
     {
-        private readonly object _initLocker = new object();
+        private static readonly object InitLocker = new object();
         private readonly Type _underlyingType;
         
         private static readonly Dictionary<Type, IndexedNamesCollection> PropertiesIndexers = 
@@ -51,7 +51,7 @@ namespace ScriptEngine.Machine
         {
             var objType = UnderlyingObject.GetType();
 
-            lock (_initLocker)
+            lock (InitLocker)
             {
                 // Свойства и методы уже были закешированы
                 if (PropertiesIndexers.ContainsKey(objType))
@@ -71,7 +71,7 @@ namespace ScriptEngine.Machine
                 foreach (var property in props)
                 {
                     var info = new ContextPropertyInfo(property);
-                    var id = propertiesIndex.RegisterName(info.Name, info.Alias);
+                    var id = propertiesIndex.RegisterName(info.Name, string.IsNullOrEmpty(info.Alias) ? null : info.Alias);
                     
                     propertiesCache.Add(id, info);
                 }
@@ -83,7 +83,7 @@ namespace ScriptEngine.Machine
                 foreach (var method in methods)
                 {
                     var info = new ContextMethodInfo(method);
-                    var id = methodsIndex.RegisterName(info.Name, info.Alias);
+                    var id = methodsIndex.RegisterName(info.Name, string.IsNullOrEmpty(info.Alias) ? null : info.Alias);
                     
                     methodsCache.Add(id, info);
                 }
@@ -170,16 +170,24 @@ namespace ScriptEngine.Machine
         {
             var method = GetMethodsCache()[methodNumber];
             
-            var args = arguments.Select(ContextValuesMarshaller.ConvertToClrObject).ToArray();
-            method.Invoke(UnderlyingObject, args);
+            var args = arguments.Select(ContextValuesMarshaller.ConvertToClrObject).ToList();
+            
+            if (method.InjectsProcess)
+                args.Insert(0, process);
+            
+            method.Invoke(UnderlyingObject, args.ToArray());
         }
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue, IBslProcess process)
         {
             var method = GetMethodsCache()[methodNumber];
             
-            var args = arguments.Select(c => ContextValuesMarshaller.ConvertParam(c, method.ReturnType, process)).ToArray();
-            var result = method.Invoke(UnderlyingObject, args);
+            var args = arguments.Select(c => ContextValuesMarshaller.ConvertParam(c, method.ReturnType, process)).ToList();
+            
+            if (method.InjectsProcess)
+                args.Insert(0, process);
+            
+            var result = method.Invoke(UnderlyingObject, args.ToArray());
             
             if (method.TryGetConverter(out var converter))
             {
