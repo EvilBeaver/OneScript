@@ -11,6 +11,7 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
+using OneScript.StandardLibrary.Security.Tokens;
 using OneScript.StandardLibrary.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -43,6 +44,8 @@ namespace OneScript.StandardLibrary.Http
         }
 
         public Stream Body => _body?.GetDataStream();
+
+        public AccessTokenContext AccessToken { get; private set; }
 
         /// <summary>
         /// Относительный путь к ресурсу на сервере (не включает имя сервера)
@@ -115,6 +118,16 @@ namespace OneScript.StandardLibrary.Http
             return new GenericStream(_body.GetDataStream());
         }
 
+        /// <summary>
+        /// Добавляет токен доступа к HTTP-запросу. Устанавливает заголовок Authorization.
+        /// </summary>
+        /// <param name="accessToken">Токен доступа</param>
+        [ContextMethod("ДобавитьТокенДоступа", "AddAccessToken")]
+        public void AddAccessToken(AccessTokenContext accessToken)
+        {
+            AccessToken = accessToken;
+        }
+        
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
         public static HttpRequestContext Constructor()
         {
