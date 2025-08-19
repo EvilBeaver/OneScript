@@ -131,9 +131,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="output">Строка. Имя файла, в который нужно записать ответ. Необязательный параметр.</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("Получить", "Get")]
-        public HttpResponseContext Get(HttpRequestContext request, string output = null, IBslProcess process = null)
+        public HttpResponseContext Get(IBslProcess process, HttpRequestContext request, string output = null)
         {
-            return GetResponse(request, "GET", output, process);
+            return GetResponse(process, request, "GET", output);
         }
 
         /// <summary>
@@ -142,9 +142,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("Записать", "Put")]
-        public HttpResponseContext Put(HttpRequestContext request, IBslProcess process = null)
+        public HttpResponseContext Put(IBslProcess process, HttpRequestContext request)
         {
-            return GetResponse(request, "PUT", null, process);
+            return GetResponse(process, request, "PUT", null);
         }
 
         /// <summary>
@@ -154,9 +154,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="output">Строка. Имя файла, в который нужно записать ответ. Необязательный параметр.</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("ОтправитьДляОбработки", "Post")]
-        public HttpResponseContext Post(HttpRequestContext request, string output = null, IBslProcess process = null)
+        public HttpResponseContext Post(IBslProcess process, HttpRequestContext request, string output = null)
         {
-            return GetResponse(request, "POST", output, process);
+            return GetResponse(process, request, "POST", output);
         }
 
         /// <summary>
@@ -165,9 +165,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("Удалить", "Delete")]
-        public HttpResponseContext Delete(HttpRequestContext request, IBslProcess process = null)
+        public HttpResponseContext Delete(IBslProcess process, HttpRequestContext request)
         {
-            return GetResponse(request, "DELETE", null, process);
+            return GetResponse(process, request, "DELETE");
         }
 
         /// <summary>
@@ -176,9 +176,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("Изменить", "Patch")]
-        public HttpResponseContext Patch(HttpRequestContext request, IBslProcess process = null)
+        public HttpResponseContext Patch(IBslProcess process, HttpRequestContext request)
         {
-            return GetResponse(request, "PATCH", null, process);
+            return GetResponse(process, request, "PATCH");
         }
 
         /// <summary>
@@ -187,9 +187,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("ПолучитьЗаголовки", "Head")]
-        public HttpResponseContext Head(HttpRequestContext request, IBslProcess process = null)
+        public HttpResponseContext Head(IBslProcess process, HttpRequestContext request)
         {
-            return GetResponse(request, "HEAD", null, process);
+            return GetResponse(process, request, "HEAD");
         }
 
         /// <summary>
@@ -200,9 +200,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="output">Строка. Имя выходного файла</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("ВызватьHTTPМетод", "CallHTTPMethod")]
-        public HttpResponseContext CallHTTPMethod(string method, HttpRequestContext request, string output = null, IBslProcess process = null)
+        public HttpResponseContext CallHTTPMethod(IBslProcess process, string method, HttpRequestContext request, string output = null)
         {
-            return GetResponse(request, method, output, process);
+            return GetResponse(process, request, method, output);
         }
 
         private HttpWebRequest CreateRequest(string resource)
@@ -336,7 +336,7 @@ namespace OneScript.StandardLibrary.Http
             return range;
         }
 
-    private HttpResponseContext GetResponse(HttpRequestContext request, string method, string output = null, IBslProcess process = null)
+    private HttpResponseContext GetResponse(IBslProcess process, HttpRequestContext request, string method, string output = null)
         {
             var webRequest = CreateRequest(request.ResourceAddress);
             webRequest.AllowAutoRedirect = AllowAutoRedirect;
