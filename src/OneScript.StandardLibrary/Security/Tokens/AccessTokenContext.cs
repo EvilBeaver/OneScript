@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
@@ -135,101 +134,124 @@ namespace OneScript.StandardLibrary.Security.Tokens
 
         private void CreateToken(IBslProcess process, AccessTokenSignAlgorithmEnum algorithm, string secretKey = "")
         {
-            var claims = new List<Claim>();
-
-            AddStandardClaims(claims);
-            AddAudienceToClaims(process, claims);
-            AddPayloadToClaims(process, claims);
-            
-            var tokenHandler = new JwtSecurityTokenHandler
-            {
-                SetDefaultTimesOnTokenCreation = false
-            };
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                AdditionalInnerHeaderClaims = GetHeaderClaims(process),
-                SigningCredentials = GetSigningCredentials(algorithm, secretKey)
-            };
-
             try
             {
-                SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
-                _token = tokenHandler.WriteToken(token);
+                var header = CreateJwtHeader(process, algorithm, secretKey);
+                var payload = CreateJwtPayload(process);
+                var jwtToken = new JwtSecurityToken(header, payload);
+            
+                var tokenHandler = new JwtSecurityTokenHandler
+                {
+                    SetDefaultTimesOnTokenCreation = false
+                };
+                
+                _token = tokenHandler.WriteToken(jwtToken);
             }
             catch (Exception ex)
             {
                 throw new SecurityTokenException($"Ошибка при создании токена: {ex.Message}", ex);
             }
         }
-
-        private void AddStandardClaims(List<Claim> claims)
+   
+        private JwtHeader CreateJwtHeader(IBslProcess process, AccessTokenSignAlgorithmEnum algorithm, string secretKey)
         {
-            if(_issuer != null)
-                claims.Add(new Claim(JwtRegisteredClaimNames.Iss, _issuer));
+            JwtHeader header;
+
+            if (algorithm == AccessTokenSignAlgorithmEnum.None)
+            {
+                header = new JwtHeader();
+                header["alg"] = "none";
+            }
+            else
+            {
+                var signingCredentials = GetSigningCredentials(algorithm, secretKey);
+                header = new JwtHeader(signingCredentials);
+            }
+            
+            if (Headers != null)
+            {
+                foreach (var headerItem in Headers)
+                {
+                    var key = headerItem.Key.AsString(process);
+                    var value = headerItem.Value.AsString(process);
+                
+                    if(!String.IsNullOrEmpty(key))
+                        header[key] = value;
+                }
+            }
+
+            return header;
+        }
+        
+        private JwtPayload CreateJwtPayload(IBslProcess process)
+        {
+            var payload = new JwtPayload();
+            
+            AddStandardClaimsToPayload(payload);
+            AddAudienceToPayload(process, payload);
+            AddCustomClaimsToPayload(process, payload);
+
+            return payload;
+        }
+        
+        private void AddStandardClaimsToPayload(JwtPayload payload)
+        {
+            if (_issuer != null)
+                payload[JwtRegisteredClaimNames.Iss] = _issuer;
 
             if (CreationTime != 0)
             {
-                claims.Add(new Claim(JwtRegisteredClaimNames.Iat, CreationTime.ToString(), ClaimValueTypes.Integer64));
-                claims.Add(new Claim(JwtRegisteredClaimNames.Nbf, CreationTime.ToString(), ClaimValueTypes.Integer64));
+                payload[JwtRegisteredClaimNames.Iat] = CreationTime;
+                payload[JwtRegisteredClaimNames.Nbf] = CreationTime;
             }
 
             if (CreationTime != 0 || LifeTime != 0)
             {
                 int expires = CreationTime + LifeTime;
-                claims.Add(new Claim(JwtRegisteredClaimNames.Exp, expires.ToString(), ClaimValueTypes.Integer64));
+                payload[JwtRegisteredClaimNames.Exp] = expires;
             }
-                
-            if(_tokenId != null)
-                claims.Add(new Claim(JwtRegisteredClaimNames.Jti, _tokenId));
+
+            if (_tokenId != null)
+                payload[JwtRegisteredClaimNames.Jti] = _tokenId;
                    
             if(_userMatchingKey != null)
-                claims.Add(new Claim(JwtRegisteredClaimNames.Sub, _userMatchingKey));          
+                payload[JwtRegisteredClaimNames.Sub] = _userMatchingKey;          
         }
         
-        private void AddAudienceToClaims(IBslProcess process, List<Claim> claims)
+        private void AddAudienceToPayload(IBslProcess process, JwtPayload payload)
         {
             if (Recipients == null || Recipients.Count() == 0)
                 return;
-            
-            foreach (var recipient in Recipients)
+
+            if (Recipients.Count() == 1)
             {
-                claims.Add(new Claim(JwtRegisteredClaimNames.Aud, recipient.AsString(process)));
+                payload[JwtRegisteredClaimNames.Aud] = Recipients[0].AsString(process);
+            }
+            else
+            {
+                var recipientsStrings = new List<string>();
+                foreach (var recipient in Recipients)
+                {
+                    recipientsStrings.Add(recipient.AsString(process));
+                }
+
+                payload[JwtRegisteredClaimNames.Aud] = recipientsStrings;
             }
         }
 
-        private void AddPayloadToClaims(IBslProcess process, List<Claim> claims)
+        private void AddCustomClaimsToPayload(IBslProcess process, JwtPayload payload)
         {
             if (Payload == null || Payload.Count() == 0)
                 return;
-            
+
             foreach (var payloadItem in Payload)
             {
                 var key = payloadItem.Key?.AsString(process);
-                var value = payloadItem.Value?.AsString(process);
-
-                if(!String.IsNullOrEmpty(key) && value != null)
-                    claims.Add(new Claim(key, value));
-            }
-        }
-
-        private Dictionary<string, object> GetHeaderClaims(IBslProcess process)
-        {
-            var headerClaims = new Dictionary<string, object>();
-            
-            if (Headers == null || Headers.Count() == 0)
-                return headerClaims;
-
-            foreach (var headerItem in Headers)
-            {
-                var key = headerItem.Key.AsString(process);
-                var value = headerItem.Value.AsString(process);
+                var value = ConvertToClrObject(process, payloadItem.Value);
                 
-                if(!String.IsNullOrEmpty(key))
-                    headerClaims.Add(key, value);
+                if(!String.IsNullOrEmpty(key) && value != null)
+                    payload[key] = value;
             }
-
-            return headerClaims;
         }
         
         private SigningCredentials GetSigningCredentials(AccessTokenSignAlgorithmEnum algorithm, string secretKey)
@@ -330,6 +352,38 @@ namespace OneScript.StandardLibrary.Security.Tokens
                 
                 _ => throw new ArgumentException($"Неподдерживаемый алгоритм: {algorithm}")
             };
+        }
+        
+        private object ConvertToClrObject(IBslProcess process, IValue value)
+        {
+            if (value == null)
+                return null;
+
+            switch (value)
+            {
+                case ArrayImpl array:
+                case FixedArrayImpl fixedArray:
+                    var list = new List<object>();
+                    foreach (var item in (IEnumerable<IValue>)value)
+                    {
+                        list.Add(ConvertToClrObject(process, item));
+                    }
+                    return list; 
+                case StructureImpl structure:
+                case FixedStructureImpl fixedStructure:
+                case MapImpl map:
+                case FixedMapImpl fixedMap:
+                    var dict = new Dictionary<string, object>();
+                    foreach (var item in (IEnumerable<KeyAndValueImpl>)value)
+                    {
+                        var key = item.Key.AsString(process);
+                        dict[key] = ConvertToClrObject(process, item.Value);
+                    }
+                    return dict; 
+                default:
+                    var unwarpedValue = value.UnwrapToClrObject() ?? "";
+                    return unwarpedValue.GetType().IsValueType ? unwarpedValue : value.AsString(process);
+            }
         }
         
         [ScriptConstructor(Name = "По умолчанию")]
