@@ -11,9 +11,11 @@ using System.Text;
 using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
-using OneScript.Execution;
 using OneScript.Contexts;
+using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.StandardLibrary.Collections;
+using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -172,7 +174,10 @@ namespace OneScript.StandardLibrary.Security.Tokens
             {
                 foreach (var headerItem in Headers)
                 {
-                    var key = headerItem.Key.AsString(process);
+                    if (headerItem.Key.SystemType != BasicTypes.String)
+                        throw RuntimeException.InvalidArgumentType();
+
+                    var key = headerItem.Key.ToString();
                     var value = headerItem.Value.AsString(process);
                 
                     if(!String.IsNullOrEmpty(key))
@@ -232,7 +237,10 @@ namespace OneScript.StandardLibrary.Security.Tokens
                 var recipientsStrings = new List<string>();
                 foreach (var recipient in Recipients)
                 {
-                    recipientsStrings.Add(recipient.AsString(process));
+                    if (recipient.SystemType != BasicTypes.String)
+                        throw RuntimeException.InvalidArgumentType();
+
+                    recipientsStrings.Add(recipient.ToString());
                 }
 
                 payload[JwtRegisteredClaimNames.Aud] = recipientsStrings;
@@ -246,7 +254,10 @@ namespace OneScript.StandardLibrary.Security.Tokens
 
             foreach (var payloadItem in Payload)
             {
-                var key = payloadItem.Key?.AsString(process);
+                if (payloadItem.Key.SystemType != BasicTypes.String)
+                    throw RuntimeException.InvalidArgumentType();
+
+                var key = payloadItem.Key.ToString();
                 var value = ConvertToClrObject(process, payloadItem.Value);
                 
                 if(!String.IsNullOrEmpty(key) && value != null)
