@@ -251,19 +251,13 @@ namespace ScriptEngine.Machine.Contexts
                 case DataType.Number: return val.AsNumber();
                 case DataType.String: return val.AsString();
                 case DataType.Undefined: return null;
+                case DataType.NotAValidValue: return Missing.Value;
             }
 
-            object result;
-
-            if (val.DataType == DataType.Object)
-                result = val.AsObject();
-
 			if (val.GetRawValue() is IObjectWrapper wrapped)
-				result = wrapped.UnderlyingObject;
-			else
-				throw ValueMarshallingException.NoConversionToCLR(val.GetType());
-
-            return result;
+				return wrapped.UnderlyingObject;
+			
+			throw ValueMarshallingException.NoConversionToCLR(val.GetType());
         }
 
         public static T CastToCLRObject<T>(IValue val)

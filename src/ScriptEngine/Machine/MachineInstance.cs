@@ -1020,7 +1020,7 @@ namespace ScriptEngine.Machine
             IValue[] realArgs;
             if (instance.DynamicMethodSignatures)
             {
-                realArgs = PrepareDynamicArgs(argValues);
+                realArgs = PrepareDynamicArgs(instance, argValues);
             }
             else
             {
@@ -1053,8 +1053,11 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
-        private static IValue[] PrepareDynamicArgs(IValue[] factArgs)
+        private static IValue[] PrepareDynamicArgs(IRuntimeContextInstance context, IValue[] factArgs)
         {
+            if (context is COMWrapperContext)
+                return factArgs;
+
             var realArgs = new IValue[factArgs.Length];
             for (int i = 0; i < factArgs.Length; i++)
             {
@@ -1161,7 +1164,7 @@ namespace ScriptEngine.Machine
     
             if (context.DynamicMethodSignatures)
             {
-                argValues = PrepareDynamicArgs(factArgs);
+                argValues = PrepareDynamicArgs(context, factArgs);
             }
             else
             {

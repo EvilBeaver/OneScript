@@ -146,7 +146,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                retValue = ContextValuesMarshaller.ConvertToCLRObject(val) ?? Missing.Value;
+                retValue = ContextValuesMarshaller.ConvertToCLRObject(val);
             }
 
             return retValue;
