@@ -37,7 +37,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (index.DataType != DataType.String)
             {
-                throw RuntimeException.InvalidArgumentType();
+                throw RuntimeException.InvalidIndexType();
             }
 
             var n = FindProperty(index.AsString());
@@ -51,7 +51,7 @@ namespace ScriptEngine.Machine.Contexts
         {
             if (index.DataType != DataType.String)
             {
-                throw RuntimeException.InvalidArgumentType();
+                throw RuntimeException.InvalidIndexType();
             }
 
             var n = FindProperty(index.AsString());

@@ -102,8 +102,9 @@ namespace ScriptEngine.Machine
             if (module.EntryMethodIndex >= 0)
             {
                 var entryRef = module.MethodRefs[module.EntryMethodIndex];
-                PrepareReentrantMethodExecution(sdo, entryRef.CodeIndex);
-                CreateCurrentFrameLocals(module.Methods[entryRef.CodeIndex].Variables);
+                var frame = PrepareReentrantMethodExecution(sdo, entryRef.CodeIndex);
+                frame.Locals = CreateFrameLocals(module.Methods[entryRef.CodeIndex].Variables);
+                PushFrame(frame);
 
                 ExecuteCode();
                 if (_callStack.Count > 1)
@@ -115,10 +116,10 @@ namespace ScriptEngine.Machine
         
         internal IValue ExecuteMethod(IRunnable sdo, int methodIndex, IValue[] arguments)
         {
-            PrepareReentrantMethodExecution(sdo, methodIndex);
-            var method = _module.Methods[methodIndex];
-
-            SetCurrentFrameLocals(arguments, method.Signature.Params, method.Variables);
+            var frame = PrepareReentrantMethodExecution(sdo, methodIndex);
+            var method = frame.Module.Methods[methodIndex];
+            frame.Locals = SetFrameLocals(arguments, method.Signature.Params, method.Variables);
+            PushFrame(frame);
 
             ExecuteCode();
 
@@ -139,9 +140,9 @@ namespace ScriptEngine.Machine
             return methodResult;
         }
 
-        private void SetCurrentFrameLocals(IValue[] argValues, ParameterDefinition[] parameters, VariablesFrame variables)
+        private static IVariable[] SetFrameLocals(IValue[] argValues, ParameterDefinition[] parameters, VariablesFrame variables)
         {
-            var locals = _currentFrame.Locals;
+            var locals = new IVariable[variables.Count];
             int i = 0;
             for (; i < argValues.Length; i++)
             {
@@ -151,8 +152,7 @@ namespace ScriptEngine.Machine
                 {
                     if (paramDef.IsByValue)
                     {
-                        var value = argVar.Value;
-                        locals[i] = Variable.Create(value, variables[i]);
+                        locals[i] = Variable.Create(argVar.Value, variables[i]);
                     }
                     else
                     {
@@ -180,15 +180,19 @@ namespace ScriptEngine.Machine
             {
                 locals[i] = Variable.Create(ValueFactory.Create(), variables[i]);
             }
+
+            return locals;
         }
 
-        private void CreateCurrentFrameLocals(VariablesFrame variables)
+        private static IVariable[] CreateFrameLocals(VariablesFrame variables)
         {
-            var locals = _currentFrame.Locals;
-            for (int i = 0; i < locals.Length; i++)
+            var len = variables.Count;
+            var locals = new IVariable[len];
+            for (int i = 0; i < len; i++)
             {
                 locals[i] = Variable.Create(ValueFactory.Create(), variables[i]);
             }
+            return locals;
         }
 
         #region Debug protocol methods
@@ -429,21 +433,19 @@ namespace ScriptEngine.Machine
             _currentFrame = null;
         }
         
-        private void PrepareReentrantMethodExecution(IRunnable sdo, int methodIndex)
+        private ExecutionFrame PrepareReentrantMethodExecution(IRunnable sdo, int methodIndex)
         {
             var module = sdo.Module;
             var methDescr = module.Methods[methodIndex];
-            var frame = new ExecutionFrame
+            return new ExecutionFrame
             {
                 MethodName = methDescr.Signature.Name,
                 Module = module,
                 ModuleScope = CreateModuleScope(sdo),
                 ModuleLoadIndex = module.LoadAddress,
-                Locals = new IVariable[methDescr.Variables.Count],
                 InstructionPointer = methDescr.EntryPoint,
                 IsReentrantCall = true
             };
-            PushFrame(frame);
         }
 
         private void PrepareCodeStatisticsData(LoadedModule _module)
@@ -977,18 +979,18 @@ namespace ScriptEngine.Machine
                     // заранее переведем указатель на адрес возврата. В опкоде Return инкремента нет.
                     NextInstruction();
 
-                    var methDescr = _module.Methods[sdo.GetMethodDescriptorIndex(methodRef.CodeIndex)];
                     var frame = new ExecutionFrame
                     {
                         MethodName = methInfo.Name,
                         Module = _module,
                         ModuleScope = TopScope,
                         ModuleLoadIndex = _scopes.Count - 1,
-                        Locals = new IVariable[methDescr.Variables.Count],
-                        InstructionPointer = methDescr.EntryPoint,
                     };
+                    var methodIndex = sdo.GetMethodDescriptorIndex(methodRef.CodeIndex);
+                    var methDescr = frame.Module.Methods[methodIndex];
+                    frame.InstructionPointer = methDescr.EntryPoint;
+                    frame.Locals = SetFrameLocals(argValues, methInfo.Params, methDescr.Variables);
                     PushFrame(frame);
-                    SetCurrentFrameLocals(argValues, methInfo.Params, methDescr.Variables);
 
                     if (_stopManager != null)
                     {
@@ -1473,12 +1475,11 @@ namespace ScriptEngine.Machine
                 Module = module,
                 ModuleScope = localScope,
                 ModuleLoadIndex = _scopes.Count - 1,
-                Locals = new IVariable[method.Variables.Count],
                 InstructionPointer = 0,
-                IsReentrantCall = true
+                IsReentrantCall = true,
+                Locals = CreateFrameLocals(method.Variables)
             };
             PushFrame(frame);
-            CreateCurrentFrameLocals(method.Variables);
 
             try
             {
