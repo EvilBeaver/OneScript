@@ -12,7 +12,7 @@
             "args": ["-run", "${file}"],
             "cwd": "${workspaceRoot}",
             "env": {},
-            "runtimeExecutable": "${workspaceRoot}/../src/oscript/bin/LinuxDebug/net6.0/oscript",
+            "runtimeExecutable": "${workspaceRoot}/../src/oscript/bin/LinuxDebug/net8.0/oscript",
             "runtimeArgs": [],
             "debugPort": 2801
         },
@@ -24,7 +24,7 @@
             "args": ["-run", "${file}"],
             "cwd": "${workspaceRoot}",
             "env": {},
-            "runtimeExecutable": "${workspaceRoot}/../src/oscript/bin/Debug/net6.0/oscript",
+            "runtimeExecutable": "${workspaceRoot}/../src/oscript/bin/Debug/net8.0/oscript",
             "runtimeArgs": [],
             "debugPort": 2801
         }

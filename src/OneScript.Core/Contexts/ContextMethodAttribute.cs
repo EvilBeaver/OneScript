@@ -5,7 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+#nullable enable
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using OneScript.Commons;
 
@@ -16,6 +19,10 @@ namespace OneScript.Contexts
     {
         private readonly string _name;
         private readonly string _alias;
+        private bool _isDeprecated;
+        private bool _throwOnUse;
+        private bool _skipForDocumenter;
+        private Type? _converter;
 
         public ContextMethodAttribute(string name, string alias) 
         {
@@ -35,16 +42,49 @@ namespace OneScript.Contexts
         {
         }
 
-        public bool IsDeprecated { get; set; }
+        public bool IsDeprecated
+        {
+            get => _isDeprecated;
+            set => _isDeprecated = value;
+        }
 
-        public bool ThrowOnUse { get; set; }
-        
+        public bool ThrowOnUse
+        {
+            get => _throwOnUse;
+            set => _throwOnUse = value;
+        }
+
         /// <summary>
         /// Данный метод не будет обработан генератором документации при обходе типов
         /// </summary>
-        public bool SkipForDocumenter { get; set; }
+        public bool SkipForDocumenter
+        {
+            get => _skipForDocumenter;
+            set => _skipForDocumenter = value;
+        }
 
         public string Name => _name;
         public string Alias => _alias;
+
+        /// <summary>
+        /// Конвертер возвращаемого значения функции, необходим для неподдерживаемых маршаллингом типов 
+        /// </summary>
+        public Type? Converter
+        {
+            get => _converter;
+            set
+            {
+                if (value != null)
+                {
+                    if (!value.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IContextValueConverter<>)))
+                        throw new Exception("Конвертер должен реализовывать интерфейс IContextValueConverter");
+
+                    if (value.IsAbstract || value.IsInterface)
+                        throw new Exception("Конвертер не может быть абстрактным типом или интерфейсом");
+                }
+                
+                _converter = value;
+            }
+        }
     }
 }

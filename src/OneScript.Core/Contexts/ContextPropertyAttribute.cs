@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Linq;
 using OneScript.Commons;
 
 namespace OneScript.Contexts
@@ -15,6 +16,7 @@ namespace OneScript.Contexts
     {
         private readonly string _name;
         private readonly string _alias;
+        private Type _converter;
 
         public ContextPropertyAttribute(string name, string alias = "")
         {
@@ -40,5 +42,26 @@ namespace OneScript.Contexts
 
         public string Name => _name;
         public string Alias => _alias;
+
+        /// <summary>
+        /// Конвертер значения свойства
+        /// </summary>
+        public Type Converter
+        {
+            get => _converter;
+            set
+            {
+                if (value != null)
+                {
+                    if (!value.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IContextValueConverter<>)))
+                        throw new Exception("Конвертер должен реализовывать интерфейс IContextValueConverter");
+
+                    if (value.IsAbstract || value.IsInterface)
+                        throw new Exception("Конвертер не может быть абстрактным типом или интерфейсом");
+                }
+                
+                _converter = value;
+            }
+        }
     }
 }

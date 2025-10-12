@@ -179,7 +179,15 @@ namespace ScriptEngine.Machine
 
                 try
                 {
-                    return (IValue) methodInfo.Invoke(null, methArgs);
+                    var value = methodInfo.Invoke(null, methArgs);
+
+                    if (value is IValue iValue)
+                        return iValue;
+                    
+                    if (value is IRuntimeContextInstance rValue)
+                        return (IValue)rValue;
+
+                    return ContextValuesMarshaller.ConvertDynamicValue(value);
                 }
                 catch (Refl.TargetInvocationException e)
                 {

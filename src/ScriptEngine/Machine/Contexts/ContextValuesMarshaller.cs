@@ -33,7 +33,7 @@ namespace ScriptEngine.Machine.Contexts
             BslGenericParameterConverter = typeof(ContextValuesMarshaller).GetMethods()
                 .First(x => x.Name == nameof(ConvertParam) && x.GetGenericArguments().Length == 1 &&
                             x.GetParameters().Length == 3);
-            
+
             BslReturnValueGenericConverter = typeof(ContextValuesMarshaller).GetMethods()
                 .First(x => x.Name == nameof(ConvertReturnValue) && x.GetGenericArguments().Length == 1);
         }
@@ -88,7 +88,7 @@ namespace ScriptEngine.Machine.Contexts
         /// <returns>Значение целевого типа</returns>
         public static T ConvertParam<T>(IValue value, T defaultValue = default)
         {
-            return ConvertParam<T>(value, defaultValue, ForbiddenBslProcess.Instance);
+            return ConvertParam(value, defaultValue, ForbiddenBslProcess.Instance);
         }
         
         /// <summary>
@@ -101,7 +101,7 @@ namespace ScriptEngine.Machine.Contexts
         /// <returns>Значение целевого типа</returns>
         public static T ConvertParam<T>(IValue value, T defaultValue, IBslProcess process)
         {
-            object valueObj = ConvertParam(value, typeof(T), process);
+            var valueObj = ConvertParam(value, typeof(T), process);
             return valueObj != null ? (T)valueObj : defaultValue;
         }
         
@@ -163,7 +163,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return null;
             }
-
+            
             if (Nullable.GetUnderlyingType(type) != null)
             {
                 return ConvertValueType(value, Nullable.GetUnderlyingType(type), process);
@@ -293,25 +293,21 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             if (type.IsEnum)
-            {
                 return ConvertEnum(objParam, type);
-            }
-            else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
-            {
+
+            if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
                 return (IValue)(IRuntimeContextInstance)objParam;
-            }
-            else if (typeof(IValue).IsAssignableFrom(type))
-            {
+
+            if (typeof(IValue).IsAssignableFrom(type))
                 return (IValue)objParam;
-            }
-            else if (Nullable.GetUnderlyingType(type) != null)
-            {
+
+            if (Nullable.GetUnderlyingType(type) != null)
                 return ConvertReturnValue(objParam, Nullable.GetUnderlyingType(type));
-            }
-            else
-            {
-                throw ValueMarshallingException.TypeNotSupported(type);
-            }
+
+            if (type.GetCustomAttribute<ContextClassAttribute>() != null && !typeof(IRuntimeContextInstance).IsAssignableFrom(type))
+                return new NotBslValueWrapper(objParam);
+
+            throw ValueMarshallingException.TypeNotSupported(type);
         }
 
         private static IValue ConvertEnum(object objParam, Type type)

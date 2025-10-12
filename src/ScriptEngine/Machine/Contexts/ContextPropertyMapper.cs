@@ -16,8 +16,8 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class PropertyTarget<TInstance>
     {
-        private readonly BslPropertyInfo _propertyInfo;
-
+        private readonly ContextPropertyInfo _propertyInfo;
+        
         public PropertyTarget(PropertyInfo propInfo)
         {
             _propertyInfo = new ContextPropertyInfo(propInfo);
@@ -26,16 +26,6 @@ namespace ScriptEngine.Machine.Contexts
             
             if (string.IsNullOrEmpty(Alias))
                 Alias = propInfo.Name;
-
-            IValue CantReadAction(TInstance inst)
-            {
-                throw PropertyAccessException.PropIsNotReadableException(Name);
-            }
-
-            void CantWriteAction(TInstance inst, IValue val)
-            {
-                throw PropertyAccessException.PropIsNotWritableException(Name);
-            }
 
             if (_propertyInfo.CanRead)
             {
@@ -84,6 +74,18 @@ namespace ScriptEngine.Machine.Contexts
             {
                 Setter = CantWriteAction;
             }
+
+            return;
+
+            void CantWriteAction(TInstance inst, IValue val)
+            {
+                throw PropertyAccessException.PropIsNotWritableException(Name);
+            }
+
+            IValue CantReadAction(TInstance inst)
+            {
+                throw PropertyAccessException.PropIsNotReadableException(Name);
+            }
         }
         
         public Func<TInstance, IValue> Getter { get; }
@@ -108,19 +110,18 @@ namespace ScriptEngine.Machine.Contexts
         private Action<TInstance, IValue> CreateSetter<T>(MethodInfo methInfo)
         {
             var method = (Action<TInstance, T>)Delegate.CreateDelegate(typeof(Action<TInstance, T>), methInfo);
-            return (inst, val) => method(inst, ConvertParam<T>(val));
+            return (inst, val) => method(inst, ConvertValue<T>(val));
         }
 
-        private static T ConvertParam<T>(IValue value)
-        {
-            return ContextValuesMarshaller.ConvertValueStrict<T>(value);
-        }
+        private T ConvertValue<T>(IValue value)
+            => _propertyInfo.TryGetStrictConverter<T>(out var converter) ? 
+                converter.ToClr(value) 
+                : ContextValuesMarshaller.ConvertValueStrict<T>(value);
 
-        private static IValue ConvertReturnValue<TRet>(TRet param)
-        {
-            return ContextValuesMarshaller.ConvertReturnValue(param);
-        }
-
+        private IValue ConvertReturnValue<TRet>(TRet param)
+            => _propertyInfo.TryGetStrictConverter<TRet>(out var converter)
+                ? converter!.ToIValue(param)
+                : ContextValuesMarshaller.ConvertReturnValue(param);
     }
 
     public class ContextPropertyMapper<TInstance>

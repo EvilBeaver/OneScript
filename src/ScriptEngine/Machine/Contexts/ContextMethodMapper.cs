@@ -152,15 +152,16 @@ namespace ScriptEngine.Machine.Contexts
 
                 }
 
-                var scriptMethInfo = new MethodSignature();
-                scriptMethInfo.IsFunction = isFunc;
-                scriptMethInfo.IsExport = true;
-                scriptMethInfo.IsDeprecated = binding.IsDeprecated;
-                scriptMethInfo.ThrowOnUseDeprecated = binding.ThrowOnUse;
-                scriptMethInfo.Name = binding.Name;
-                scriptMethInfo.Alias = binding.Alias;
-
-                scriptMethInfo.Params = paramDefs;
+                var scriptMethInfo = new MethodSignature
+                {
+                    IsFunction = isFunc,
+                    IsExport = true,
+                    IsDeprecated = binding.IsDeprecated,
+                    ThrowOnUseDeprecated = binding.ThrowOnUse,
+                    Name = binding.Name,
+                    Alias = binding.Alias,
+                    Params = paramDefs
+                };
 
                 return scriptMethInfo;
             }
@@ -168,9 +169,18 @@ namespace ScriptEngine.Machine.Contexts
             private static ContextCallableDelegate<TInstance> CreateFunction(ContextMethodInfo target)
             {
                 var methodCall = MethodCallExpression(target, out var instParam, out var argsParam, out var processParam);
-
-                var convertRetMethod = ContextValuesMarshaller.BslReturnValueGenericConverter.MakeGenericMethod(target.ReturnType);
-                var convertReturnCall = Expression.Call(convertRetMethod, methodCall);
+                
+                var convertReturnCall = target.ConverterType switch
+                {
+                    null => Expression.Call(
+                        ContextValuesMarshaller.BslReturnValueGenericConverter.MakeGenericMethod(target.ReturnType), 
+                        methodCall),
+                    _ => Expression.Call(
+                        Expression.New(target.ConverterType),
+                        target.ConverterType.GetMethod("ToIValue")!,
+                        methodCall)
+                };
+                
                 var body = convertReturnCall;
 
                 var l = Expression.Lambda<ContextCallableDelegate<TInstance>>(body, instParam, argsParam, processParam);
@@ -226,28 +236,24 @@ namespace ScriptEngine.Machine.Contexts
 
                 var (clrIndexStart, argsLen) = contextMethod.InjectsProcess ? (1, parameters.Length - 1) : (0, parameters.Length);
                 
-                var argsPass = new List<Expression>();
-                argsPass.Add(instParam);
-                
+                var argsPass = new List<Expression> { instParam };
+
                 if (contextMethod.InjectsProcess)
                     argsPass.Add(processParam);
                 
                 for (int bslIndex = 0,clrIndex = clrIndexStart; bslIndex < argsLen; bslIndex++, clrIndex++)
                 {
                     var targetType = parameters[clrIndex].ParameterType;
-                    var convertMethod = ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType);
                     
                     Expression defaultArg;
                     if (parameters[clrIndex].HasDefaultValue)
-                    {
                         defaultArg = Expression.Constant(parameters[clrIndex].DefaultValue, targetType);
-                    }
                     else
-                    {
                         defaultArg = ContextValuesMarshaller.GetDefaultBslValueConstant(targetType);
-                    }
 
                     var indexedArg = Expression.ArrayIndex(argsParam, Expression.Constant(bslIndex));
+                    
+                    var convertMethod = ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType);
                     var conversionCall = Expression.Call(convertMethod,
                         indexedArg,
                         defaultArg,
