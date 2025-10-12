@@ -47,6 +47,11 @@ namespace ScriptEngine.Machine
 
         public static IVariable CreateReference(IVariable variable, string refName)
         {
+            if (variable is VariableReference vref && vref.isIndexed())
+            {
+                _ = vref.Value; // проверить правильность индекса через его чтение
+            }
+
             return new VariableReference(variable, refName);
         }
 
@@ -144,13 +149,14 @@ namespace ScriptEngine.Machine
 
         private class VariableReference : IVariable
         {
-            private ReferenceType _refType;
-            private IVariable _referencedValue;
-            private IRuntimeContextInstance _context;
-            private int _contextPropertyNumber;
-            private IValue _index;
+            private readonly ReferenceType _refType;
+            private readonly IVariable _referencedValue;
+            private readonly IRuntimeContextInstance _context;
+            private readonly int _contextPropertyNumber;
+            private readonly IValue _index;
 
             public string Name { get; private set; }
+            public bool isIndexed() => _refType == ReferenceType.IndexedProperty;
 
             public VariableReference(IVariable var, string name)
             {
