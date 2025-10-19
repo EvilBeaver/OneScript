@@ -254,9 +254,12 @@ namespace ScriptEngine.Machine.Contexts
                 case DataType.NotAValidValue: return Missing.Value;
             }
 
-			if (val.GetRawValue() is IObjectWrapper wrapped)
-				return wrapped.UnderlyingObject;
-			
+            if (val.GetRawValue() is IObjectWrapper wrapped)
+                return wrapped.UnderlyingObject;
+
+            if (val.DataType == DataType.Object)
+                return val.AsObject();
+ 			
 			throw ValueMarshallingException.NoConversionToCLR(val.GetType());
         }
 
