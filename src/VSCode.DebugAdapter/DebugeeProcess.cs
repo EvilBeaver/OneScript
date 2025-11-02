@@ -207,6 +207,7 @@ namespace VSCode.DebugAdapter
                 return;
             }
             _debugger.Disconnect(terminate);
+            _debugger = null;
 
             var mustKill = terminate && !_attachMode;
             

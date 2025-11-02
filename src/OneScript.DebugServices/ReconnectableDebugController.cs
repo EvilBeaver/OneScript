@@ -39,7 +39,6 @@ namespace OneScript.DebugServices
         public ReconnectableDebugController(int port)
         {
             _port = port;
-            _listener = TcpListener.Create(_port);
         }
 
         public IBreakpointManager BreakpointManager => _breakpointManager;
@@ -64,6 +63,7 @@ namespace OneScript.DebugServices
 
         private void CreateSession()
         {
+            _listener = TcpListener.Create(_port);
             _channel = new DelayedConnectionChannel(_listener);
             _server = new DefaultMessageServer<RpcCall>(_channel)
             {
@@ -125,6 +125,18 @@ namespace OneScript.DebugServices
             _channel?.Dispose();
             _callbackService?.Dispose();
             
+            if (_listener != null)
+            {
+                try
+                {
+                    _listener.Stop();
+                }
+                catch
+                {
+                    // Listener may already be stopped
+                }
+            }
+            
             _channel = null;
             _callbackService = null;
             _server = null;
@@ -132,6 +144,7 @@ namespace OneScript.DebugServices
             _debugger = null;
             _threadManager = null;
             _breakpointManager = null;
+            _listener = null;
         }
 
         private void ThreadManagerOnThreadStopped(object sender, ThreadStoppedEventArgs e)
@@ -189,9 +202,6 @@ namespace OneScript.DebugServices
                     return;
                 
                 DisposeSession();
-                
-                _listener?.Stop();
-                _listener = null;
                 
                 _disposed = true;
             }
