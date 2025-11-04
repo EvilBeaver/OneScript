@@ -1,4 +1,4 @@
-/*----------------------------------------------------------
+﻿/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
@@ -12,19 +12,26 @@ using OneScript.DebugProtocol;
 using OneScript.Execution;
 using ScriptEngine.Machine;
 using Variable = OneScript.DebugProtocol.Variable;
-using MachineVariable = OneScript.Contexts.Variable;
 
 namespace OneScript.DebugServices
 {
     public class DefaultVariableVisualizer : IVariableVisualizer
     {
+        // ВАЖНО О ПОВЕДЕНИИ В ОТЛАДКЕ:
+        // Данный визуализатор для построения представления переменных читает их значения (ToString, SystemType.Name,
+        // доступ к variable.Value в IsStructured и т.п.). Это может иметь побочные эффекты:
+        // - Запускать геттеры и логировать предупреждения об устаревших свойствах через PropertyBag.WarnDeprecation,
+        //   даже если пользовательский код явно не обращался к ним. Например, алиас StreamPosition помечен как устаревший.
+        // См. также комментарии в ScriptEngine.Machine.PropertyBag.WarnDeprecation.
         public Variable GetVariable(IVariable value)
         {
+            using (DeprecationWarningScope.Suppress())
+            {
             if (value == null)
             {
                 throw new ArgumentNullException(nameof(value));
             }
-            
+
             string presentation;
             string typeName;
 
@@ -60,12 +67,17 @@ namespace OneScript.DebugServices
                 TypeName = typeName,
                 IsStructured = IsStructured(value)
             };
+            }
         }
 
         public IEnumerable<IVariable> GetChildVariables(IValue value)
         {
+            using (DeprecationWarningScope.Suppress())
+            {
+            // Для вывода дочерних значений мы так же обращаемся к объекту (свойства/индексы),
+            // что потенциально может инициировать чтение значений и вызвать WarnDeprecation.
             var presenter = new DefaultValueVisitor();
-            
+
             if (value is IRuntimeContextInstance)
             {
                 var objectValue = value.AsObject();
@@ -90,27 +102,36 @@ namespace OneScript.DebugServices
                     }
                 }
             }
-            
+
             return presenter.Result;
+            }
         }
 
         private bool IsStructured(IVariable variable)
         {
+            using (DeprecationWarningScope.Suppress())
+            {
+            // Доступ к variable.Value здесь запускает вычисление значения и, для глобальных свойств,
+            // приводит к вызову PropertyBag.GetPropValue -> WarnDeprecation.
             var rawValue = variable?.Value;
             return HasProperties(rawValue as IRuntimeContextInstance) 
                    || HasIndexes(rawValue as ICollectionContext<IValue>);
+            }
         }
 
         private bool HasIndexes(ICollectionContext<IValue> collection)
         {
-            try
+            using (DeprecationWarningScope.Suppress())
             {
-                return collection?.Count(ForbiddenBslProcess.Instance) > 0;
-            }
-            catch (NotSupportedException)
-            {
-                // TODO разобраться с bsl-процессом для вычисления пользовательских скриптовых коллекций
-                return false;
+                try
+                {
+                    return collection?.Count(ForbiddenBslProcess.Instance) > 0;
+                }
+                catch (NotSupportedException)
+                {
+                    // TODO разобраться с bsl-процессом для вычисления пользовательских скриптовых коллекций
+                    return false;
+                }
             }
         }
 

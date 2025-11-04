@@ -38,6 +38,9 @@ namespace OneScript.StandardLibrary.Binary
         ReadAndWrite
     }
 
+    // Внимание: алиас "StreamPosition" помечен как устаревший.
+    // При первом чтении соответствующего глобального символа (в т.ч. косвенно при визуализации переменных в отладчике)
+    // PropertyBag.WarnDeprecation зафиксирует предупреждение "Обращение к устаревшему свойству ...".
     [DeprecatedName("StreamPosition")]
     [EnumerationType("ПозицияВПотоке", "PositionInStream")]
     public enum StreamPositionEnum

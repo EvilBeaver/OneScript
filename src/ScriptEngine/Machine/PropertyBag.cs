@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -18,7 +18,7 @@ namespace ScriptEngine.Machine
     {
         private readonly List<IValue> _values = new List<IValue>();
         private readonly HashSet<int> _checkedDeprecatedProps = new HashSet<int>();
-        
+
         public void Insert(IValue value, string identifier)
         {
             Insert(value, identifier, true, true);
@@ -67,26 +67,47 @@ namespace ScriptEngine.Machine
 
         public override IValue GetPropValue(int propNum)
         {
+            // Важно: любое чтение значения глобального свойства проходит через этот метод и вызывает WarnDeprecation.
+            // В отладке визуализатор переменных (DefaultVariableVisualizer) может косвенно инициировать чтение значений
+            // для построения представления (например, через IsStructured/Value.ToString()), что приведет к логированию
+            // предупреждения об обращении к устаревшему свойству, даже если пользовательский код его не читал.
             WarnDeprecation(propNum);
             return _values[propNum];
         }
 
         public override void SetPropValue(int propNum, IValue newVal)
         {
+            // Аналогично чтению: запись также фиксируется для устаревших свойств один раз за сеанс.
             WarnDeprecation(propNum);
             _values[propNum] = newVal;
         }
-        
+
+        /// <summary>
+        /// Логирует предупреждение об обращении к устаревшему системному свойству.
+        /// Особенности:
+        /// - Предупреждение выводится один раз для каждого свойства за время жизни PropertyBag (см. _checkedDeprecatedProps).
+        /// - В режиме отладки предупреждение может появляться «ложно» при остановке на брейкпоинте, если
+        ///   визуализатор переменных (OneScript.DebugServices.DefaultVariableVisualizer) читает значение
+        ///   для построения UI (например, через variable.Value в IsStructured или value.ToString()).
+        ///   Это чтение также проходит через GetPropValue и попадает сюда.
+        /// - Реальные обращения из пользовательского кода также фиксируются здесь.
+        /// См. также:
+        ///   - OneScript.StandardLibrary.Binary.StreamEnums.StreamPositionEnum помечен [DeprecatedName("StreamPosition")],
+        ///     что делает алиас устаревшим и провоцирует предупреждение при первом чтении.
+        /// </summary>
         private void WarnDeprecation(int propNum)
         {
+            if (DeprecationWarningScope.IsSuppressed)
+                return;
+
             if (_checkedDeprecatedProps.Contains(propNum)) 
                 return;
-            
+
             if (GetPropertyInfo(propNum) is SystemPropertyInfo { IsDeprecated: true })
             {
                 SystemLogger.Write($"Обращение к устаревшему свойству {GetPropertyInfo(propNum).Name}.");
             }
-            
+
             _checkedDeprecatedProps.Add(propNum);
         }
 

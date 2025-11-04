@@ -53,6 +53,11 @@ namespace ScriptEngine
 
         public void InjectGlobalProperty(IValue value, string identifier, string alias, bool readOnly)
         {
+            // Глобальные свойства инжектируются в PropertyBag. Любое их чтение в рантайме проходит через
+            // PropertyBag.GetPropValue, который вызывает WarnDeprecation для помеченных как устаревших свойств.
+            // Это важно при отладке: визуализатор переменных может косвенно инициировать чтение значения
+            // для построения представления, что приведет к регистрации предупреждения даже без явного обращения
+            // из пользовательского кода.
             if(!Utils.IsValidIdentifier(identifier))
             {
                 throw new ArgumentException("Invalid identifier", nameof(identifier));
