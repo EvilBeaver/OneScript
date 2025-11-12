@@ -204,6 +204,18 @@ namespace OneScript.StandardLibrary.Http
             return GetResponse(request, method, output);
         }
 
+        /// <summary>
+        /// Вызвать произвольный HTTP-метод с потоком ответа
+        /// </summary>
+        /// <param name="method">Строка. Имя метода HTTP</param>
+        /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
+        /// <returns>HTTPОтвет. Ответ сервера.</returns>
+        [ContextMethod("ВызватьHTTPМетодПоток", "CallHTTPMethodStream")]
+        public HttpResponseContext CallHTTPMethodStream(string method, HttpRequestContext request)
+        {
+            return GetResponse(request, method, null, true);
+        }
+
         private HttpWebRequest CreateRequest(string resource)
         {
             var uriBuilder = new UriBuilder(_hostUri);
@@ -335,7 +347,7 @@ namespace OneScript.StandardLibrary.Http
             return range;
         }
 
-    private HttpResponseContext GetResponse(HttpRequestContext request, string method, string output = null)
+    private HttpResponseContext GetResponse(HttpRequestContext request, string method, string output = null, bool rawStream = false)
         {
             var webRequest = CreateRequest(request.ResourceAddress);
             webRequest.AllowAutoRedirect = AllowAutoRedirect;
@@ -359,7 +371,7 @@ namespace OneScript.StandardLibrary.Http
                     throw;
             }
 
-            var responseContext = new HttpResponseContext(response, output);
+            var responseContext = new HttpResponseContext(response, output, rawStream);
             
             return responseContext;
 

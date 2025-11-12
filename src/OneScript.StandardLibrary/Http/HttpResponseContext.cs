@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -28,18 +28,27 @@ namespace OneScript.StandardLibrary.Http
         // TODO: Нельзя выделить массив размером больше чем 2GB
         // поэтому функционал сохранения в файл не должен использовать промежуточный буфер _body
         private HttpResponseBody _body;
-        
+        private Stream _rawStream;
+
         private string _defaultCharset;
         private string _filename;
 
-        public HttpResponseContext(HttpWebResponse response)
+        public HttpResponseContext(HttpWebResponse response, string dumpToFile, bool rawStream)
         {
-            RetrieveResponseData(response, null);
-        }
 
-        public HttpResponseContext(HttpWebResponse response, string dumpToFile)
-        {
-            RetrieveResponseData(response, dumpToFile);
+            if (!rawStream)
+            {
+
+                RetrieveResponseData(response, dumpToFile);
+            }
+            else
+            {
+                StatusCode = (int)response.StatusCode;
+                _defaultCharset = response.CharacterSet;
+
+                ProcessHeaders(response.Headers);
+                _rawStream = response.GetResponseStream();
+            }
         }
 
         private void RetrieveResponseData(HttpWebResponse response, string dumpToFile)
@@ -151,6 +160,9 @@ namespace OneScript.StandardLibrary.Http
         [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
         public IValue GetBodyAsStream()
         {
+            if(_rawStream != null)
+                return new GenericStream(_rawStream, true);
+            
             if (_body == null)
                 return ValueFactory.Create();
 
