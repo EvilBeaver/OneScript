@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -199,7 +199,7 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="output">Строка. Имя выходного файла</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("ВызватьHTTPМетод", "CallHTTPMethod")]
-        public HttpResponseContext Patch(string method, HttpRequestContext request, string output = null)
+        public HttpResponseContext CallHTTPMethod(string method, HttpRequestContext request, string output = null)
         {
             return GetResponse(request, method, output);
         }
