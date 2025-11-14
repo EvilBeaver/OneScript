@@ -109,3 +109,8 @@ msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles;PackDistributions /p:V
 ```bat
 msbuild Build.csproj /t:BuildDocumentation
 ```
+
+## Документация для разработчиков
+
+- Архитектурный обзор: docs/arhitecture_overview.md
+- Руководство по BSL-контекстам и глобальным методам: docs/contexts.md
