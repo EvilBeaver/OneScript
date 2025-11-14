@@ -16,5 +16,7 @@ namespace VSCode.DebugAdapter
         public string Cwd { get; set; }
         
         public bool? WaitOnStart { get; set; }
+        
+        public bool? RunInTerminal { get; set; }
     }
 }

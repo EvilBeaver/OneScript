@@ -8,6 +8,8 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 using Newtonsoft.Json.Linq;
 using Serilog;
 using VSCode.DebugAdapter.Transport;
@@ -31,6 +33,8 @@ namespace VSCode.DebugAdapter
         public string RuntimeArguments { get; set; }
 
         public IDictionary<string, string> Environment { get; set; } = new Dictionary<string, string>();
+        
+        public bool RunInTerminal { get; set; }
         
         protected override void InitInternal(JObject args)
         {
@@ -100,6 +104,7 @@ namespace VSCode.DebugAdapter
             DebugPort = options.DebugPort;
             Environment = options.Env;
             WaitOnStart = options.WaitOnStart ?? true;
+            RunInTerminal = options.RunInTerminal ?? false;
         }
 
         protected override Process CreateProcess()
@@ -116,17 +121,201 @@ namespace VSCode.DebugAdapter
             }
             
             var debugArguments = string.Join(" ", dbgArgs);
+            var commandLine = $"{RuntimeArguments} -debug {debugArguments} \"{StartupScript}\" {ScriptArguments}";
+            
             var process = new Process();
             var psi = process.StartInfo;
-            psi.FileName = RuntimeExecutable;
-            psi.UseShellExecute = false;
-            psi.Arguments = $"{RuntimeArguments} -debug {debugArguments} \"{StartupScript}\" {ScriptArguments}";
+            
+            if (RunInTerminal)
+            {
+                // Запуск в отдельном окне терминала
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    ConfigureWindowsTerminalLaunch(psi, commandLine);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    ConfigureMacOSTerminalLaunch(psi, commandLine);
+                }
+                else
+                {
+                    ConfigureLinuxTerminalLaunch(psi, commandLine);
+                }
+            }
+            else
+            {
+                ConfigureNormalLaunch(psi, commandLine);
+            }
+            
             psi.WorkingDirectory = WorkingDirectory;
+            // В режиме терминала переменные окружения уже установлены в batch-файле (Windows) или команде (Linux/Mac)
+            // В обычном режиме загружаем переменные окружения
+            if (!RunInTerminal)
+            {
+                LoadEnvironment(psi, Environment);
+            }
+            return process;
+        }
+        
+        private void ConfigureWindowsTerminalLaunch(ProcessStartInfo psi, string commandLine)
+        {
+            // Windows: создаем временный batch-файл для запуска в новом окне терминала
+            // Это позволяет корректно передать переменные окружения
+            var tempBatchFile = Path.Combine(Path.GetTempPath(), $"onescript_debug_{System.Guid.NewGuid():N}.bat");
+            CreateWindowsBatchFile(tempBatchFile, commandLine);
+            
+            psi.FileName = "cmd.exe";
+            psi.Arguments = $"/c start \"OneScript Debug\" cmd.exe /k \"{tempBatchFile}\"";
+            psi.UseShellExecute = false;
+            psi.CreateNoWindow = false;
+            psi.WindowStyle = ProcessWindowStyle.Normal;
+            
+            // Удаляем временный файл после запуска процесса
+            ScheduleBatchFileCleanup(tempBatchFile);
+        }
+        
+        private void CreateWindowsBatchFile(string batchFilePath, string commandLine)
+        {
+            using (var writer = new StreamWriter(batchFilePath, false, Encoding.Default))
+            {
+                writer.WriteLine("@echo off");
+                writer.WriteLine($"cd /d \"{WorkingDirectory}\"");
+                // Устанавливаем переменные окружения
+                foreach (var envVar in Environment)
+                {
+                    writer.WriteLine($"set \"{envVar.Key}={envVar.Value}\"");
+                }
+                writer.WriteLine($"\"{RuntimeExecutable}\" {commandLine}");
+                writer.WriteLine("if errorlevel 1 pause");
+            }
+        }
+        
+        private void ScheduleBatchFileCleanup(string batchFilePath)
+        {
+            System.Threading.Tasks.Task.Delay(2000).ContinueWith(_ =>
+            {
+                try
+                {
+                    if (File.Exists(batchFilePath))
+                        File.Delete(batchFilePath);
+                }
+                catch
+                {
+                    // Ignore
+                }
+            });
+        }
+        
+        private void ConfigureMacOSTerminalLaunch(ProcessStartInfo psi, string commandLine)
+        {
+            // macOS: используем osascript для запуска в Terminal.app
+            var escapedCommandLine = commandLine.Replace("\"", "\\\"");
+            var script = $"tell application \"Terminal\" to do script \"cd '{WorkingDirectory}' && {RuntimeExecutable} {escapedCommandLine}\"";
+            
+            psi.FileName = "osascript";
+            psi.Arguments = $"-e \"{script}\"";
+            psi.UseShellExecute = false;
+            psi.CreateNoWindow = false;
+        }
+        
+        private void ConfigureLinuxTerminalLaunch(ProcessStartInfo psi, string commandLine)
+        {
+            // Linux: пробуем различные терминалы
+            var terminal = FindTerminal();
+            if (terminal != null)
+            {
+                var terminalArguments = BuildLinuxTerminalCommand(terminal, commandLine);
+                psi.FileName = terminal;
+                psi.Arguments = terminalArguments;
+                psi.UseShellExecute = false;
+                psi.CreateNoWindow = false;
+            }
+            else
+            {
+                // Fallback: обычный запуск
+                Log.Warning("Terminal not found, falling back to normal process launch");
+                ConfigureNormalLaunch(psi, commandLine);
+            }
+        }
+        
+        private string BuildLinuxTerminalCommand(string terminal, string commandLine)
+        {
+            // Формируем команду с переменными окружения
+            var envPrefix = BuildEnvironmentPrefix();
+            var escapedCommandLine = commandLine.Replace("\"", "\\\"").Replace("$", "\\$");
+            var bashCommand = $"{envPrefix}cd '{WorkingDirectory}' && {RuntimeExecutable} {escapedCommandLine}; exec bash";
+            
+            if (terminal.Contains("gnome-terminal") || terminal.Contains("tilix"))
+            {
+                return $"--working-directory=\"{WorkingDirectory}\" -- bash -c \"{bashCommand}\"";
+            }
+            else if (terminal.Contains("xterm"))
+            {
+                return $"-e bash -c \"{bashCommand}\"";
+            }
+            else
+            {
+                // Общий формат для других терминалов
+                return $"-e bash -c \"{bashCommand}\"";
+            }
+        }
+        
+        private string BuildEnvironmentPrefix()
+        {
+            if (Environment == null || Environment.Count == 0)
+                return string.Empty;
+            
+            var envVars = new StringBuilder();
+            foreach (var envVar in Environment)
+            {
+                var escapedValue = envVar.Value.Replace("'", "'\"'\"'");
+                envVars.Append($"{envVar.Key}='{escapedValue}' ");
+            }
+            return envVars.ToString();
+        }
+        
+        private void ConfigureNormalLaunch(ProcessStartInfo psi, string commandLine)
+        {
+            // Обычный режим: перенаправляем потоки
+            psi.FileName = RuntimeExecutable;
+            psi.Arguments = commandLine;
+            psi.UseShellExecute = false;
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;
-
-            LoadEnvironment(psi, Environment);
-            return process;
+        }
+        
+        private string FindTerminal()
+        {
+            var terminals = new[] { "gnome-terminal", "xterm", "konsole", "tilix", "terminator" };
+            foreach (var terminal in terminals)
+            {
+                var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "which",
+                        Arguments = terminal,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    }
+                };
+                try
+                {
+                    process.Start();
+                    var output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+                    if (process.ExitCode == 0 && !string.IsNullOrWhiteSpace(output))
+                    {
+                        return output.Trim();
+                    }
+                }
+                catch
+                {
+                    // Ignore
+                }
+            }
+            return null;
         }
     }
 }

@@ -64,24 +64,38 @@ namespace VSCode.DebugAdapter
             _process = CreateProcess();
             var psi = _process.StartInfo;
             
-            psi.RedirectStandardError = true;
-            psi.RedirectStandardOutput = true;
-
-            if (_dapEncoding != null)
+            // Не перенаправляем потоки, если они уже не перенаправлены (например, в режиме терминала)
+            if (!psi.RedirectStandardError && !psi.RedirectStandardOutput)
             {
-                psi.StandardErrorEncoding = _dapEncoding;
-                psi.StandardOutputEncoding = _dapEncoding;
+                // Режим терминала - потоки не перенаправляются
+                _process.EnableRaisingEvents = true;
+                _process.Exited += Process_Exited;
+                _attachMode = false;
+                _process.Start();
+                System.Threading.Thread.Sleep(1500);
             }
+            else
+            {
+                // Обычный режим - перенаправляем потоки
+                psi.RedirectStandardError = true;
+                psi.RedirectStandardOutput = true;
 
-            _process.EnableRaisingEvents = true;
-            _process.OutputDataReceived += Process_OutputDataReceived;
-            _process.ErrorDataReceived += Process_ErrorDataReceived;
-            _process.Exited += Process_Exited;
-            _attachMode = false;
-            _process.Start();
-            System.Threading.Thread.Sleep(1500);
-            _process.BeginOutputReadLine();
-            _process.BeginErrorReadLine();
+                if (_dapEncoding != null)
+                {
+                    psi.StandardErrorEncoding = _dapEncoding;
+                    psi.StandardOutputEncoding = _dapEncoding;
+                }
+
+                _process.EnableRaisingEvents = true;
+                _process.OutputDataReceived += Process_OutputDataReceived;
+                _process.ErrorDataReceived += Process_ErrorDataReceived;
+                _process.Exited += Process_Exited;
+                _attachMode = false;
+                _process.Start();
+                System.Threading.Thread.Sleep(1500);
+                _process.BeginOutputReadLine();
+                _process.BeginErrorReadLine();
+            }
         }
         
         public void InitAttached()
