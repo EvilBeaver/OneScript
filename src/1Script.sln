@@ -67,6 +67,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumenterTests", "Tests\Do
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSCode.DebugAdapter.Tests", "Tests\VSCode.DebugAdapter.Tests\VSCode.DebugAdapter.Tests.csproj", "{861F70F4-B10D-4E4E-865C-B8E900391424}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnitTests", "Tests\NUnitTests\NUnitTests.csproj", "{FF61E75C-78EE-4579-A6B9-CF0A6A70D773}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -345,6 +347,18 @@ Global
 		{861F70F4-B10D-4E4E-865C-B8E900391424}.Release|Any CPU.Build.0 = Release|Any CPU
 		{861F70F4-B10D-4E4E-865C-B8E900391424}.Release|x86.ActiveCfg = Release|Any CPU
 		{861F70F4-B10D-4E4E-865C-B8E900391424}.Release|x86.Build.0 = Release|Any CPU
+		{FF61E75C-78EE-4579-A6B9-CF0A6A70D773}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF61E75C-78EE-4579-A6B9-CF0A6A70D773}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF61E75C-78EE-4579-A6B9-CF0A6A70D773}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FF61E75C-78EE-4579-A6B9-CF0A6A70D773}.Debug|x86.Build.0 = Debug|Any CPU
+		{FF61E75C-78EE-4579-A6B9-CF0A6A70D773}.LinuxDebug|Any CPU.ActiveCfg = LinuxDebug|Any CPU
+		{FF61E75C-78EE-4579-A6B9-CF0A6A70D773}.LinuxDebug|Any CPU.Build.0 = LinuxDebug|Any CPU
+		{FF61E75C-78EE-4579-A6B9-CF0A6A70D773}.LinuxDebug|x86.ActiveCfg = LinuxDebug|Any CPU
+		{FF61E75C-78EE-4579-A6B9-CF0A6A70D773}.LinuxDebug|x86.Build.0 = LinuxDebug|Any CPU
+		{FF61E75C-78EE-4579-A6B9-CF0A6A70D773}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF61E75C-78EE-4579-A6B9-CF0A6A70D773}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF61E75C-78EE-4579-A6B9-CF0A6A70D773}.Release|x86.ActiveCfg = Release|Any CPU
+		{FF61E75C-78EE-4579-A6B9-CF0A6A70D773}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
