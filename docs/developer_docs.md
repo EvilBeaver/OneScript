@@ -199,3 +199,4 @@ OneScript.Core — система типов и контекстная моде�
   - Стандартная библиотека: src/Tests/OneScript.StandardLibrary.Tests/*.
   - Отладчик: src/Tests/VSCode.DebugAdapter.Tests/, src/Tests/OneScript.DebugProtocol.Test/.
 - Скриптовые тесты: tests/*.os (поведенческие сценарии языка/библиотек).
+- NUnit-адаптер для `.os` тестов.
