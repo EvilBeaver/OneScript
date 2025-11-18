@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Linq;
 using System.Reflection;
 using OneScript.Contexts;
 using OneScript.Execution;
@@ -241,6 +242,86 @@ namespace OneScript.Core.Tests
 
             var first = (BslAnnotationAttribute)param.GetCustomAttributes(typeof(BslAnnotationAttribute), false)[0];
             Assert.Equal("Аннотация", first.Name);
+        }
+
+        [Fact]
+        public void CheckDecoratedMethodAnnotationsReflected()
+        {
+            string script = "&ИсходнаяАннотация\n" +
+                            "Процедура Внешняя() Экспорт\n" +
+                            "КонецПроцедуры";
+
+            var module = LoadFromString(script);
+            var builder = new ClassBuilder(typeof(UserScriptContextInstance));
+            
+            // Декорируем методы, добавляя дополнительную аннотацию другого типа
+            builder.SetModule(module)
+                   .SetTypeName("Dummy")
+                   .ExportScriptMethods((originalMethod, methodBuilder) =>
+                   {
+                       // Добавляем новую аннотацию другого типа (ObsoleteAttribute)
+                       // Это не заменит BslAnnotationAttribute, так как типы разные
+                       methodBuilder.SetAnnotations(new[] 
+                       { 
+                           new ObsoleteAttribute("Метод устарел") 
+                       });
+                   })
+                   .ExportScriptVariables();
+
+            var reflected = builder.Build();
+            var method = reflected.GetMethod("Внешняя");
+            Assert.NotNull(method);
+            
+            // Проверяем, что можно получить аннотации через стандартный Reflection API
+            var bslAnnotations = method.GetCustomAttributes(typeof(BslAnnotationAttribute), false);
+            Assert.Single(bslAnnotations); // Исходная аннотация должна остаться
+            
+            var obsoleteAnnotations = method.GetCustomAttributes(typeof(ObsoleteAttribute), false);
+            Assert.Single(obsoleteAnnotations); // Новая аннотация должна быть добавлена
+            
+            // Проверяем, что исходная BslAnnotationAttribute присутствует
+            var bslAnnotation = (BslAnnotationAttribute)bslAnnotations[0];
+            Assert.Equal("ИсходнаяАннотация", bslAnnotation.Name);
+            
+            // Проверяем, что новая ObsoleteAttribute присутствует
+            var obsoleteAnnotation = (ObsoleteAttribute)obsoleteAnnotations[0];
+            Assert.Equal("Метод устарел", obsoleteAnnotation.Message);
+        }
+
+        [Fact]
+        public void CheckDecoratedMethodAnnotationReplacement()
+        {
+            string script = "&ИсходнаяАннотация\n" +
+                            "Процедура Внешняя() Экспорт\n" +
+                            "КонецПроцедуры";
+
+            var module = LoadFromString(script);
+            var builder = new ClassBuilder(typeof(UserScriptContextInstance));
+            
+            // Декорируем методы, заменяя аннотацию того же типа
+            builder.SetModule(module)
+                   .SetTypeName("Dummy")
+                   .ExportScriptMethods((originalMethod, methodBuilder) =>
+                   {
+                       // Заменяем исходную аннотацию новой того же типа
+                       methodBuilder.SetAnnotations(new[] 
+                       { 
+                           new BslAnnotationAttribute("ЗамененнаяАннотация") 
+                       });
+                   })
+                   .ExportScriptVariables();
+
+            var reflected = builder.Build();
+            var method = reflected.GetMethod("Внешняя");
+            Assert.NotNull(method);
+            
+            // Проверяем, что можно получить аннотации через стандартный Reflection API
+            var annotations = method.GetCustomAttributes(typeof(BslAnnotationAttribute), false);
+            Assert.Single(annotations);
+            
+            // Проверяем, что исходная аннотация заменена
+            var annotation = (BslAnnotationAttribute)annotations[0];
+            Assert.Equal("ЗамененнаяАннотация", annotation.Name);
         }
     }
 }

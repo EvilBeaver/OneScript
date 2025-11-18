@@ -164,6 +164,37 @@ namespace OneScript.Contexts
             return this;
         }
 
+        public ClassBuilder ExportScriptMethods(Action<BslScriptMethodInfo, BslMethodBuilder<BslScriptMethodInfo>> decorator)
+        {
+            if (Module == null)
+                throw new InvalidOperationException("Module is not set");
+
+            if (decorator == null)
+                throw new ArgumentNullException(nameof(decorator));
+
+            foreach (var originalMethod in Module.Methods)
+            {
+                if(originalMethod.Name == IExecutableModule.BODY_METHOD_NAME)
+                    continue;
+                
+                // Создаем декоратор из оригинального метода
+                var decorated = DecoratedBslScriptMethodInfo.Create(originalMethod);
+                
+                // Создаем билдер для декорирования
+                var builder = new BslMethodBuilder<BslScriptMethodInfo>(decorated, () => new BslParameterInfo());
+                
+                // Применяем декоратор
+                decorator(originalMethod, builder);
+                
+                // Финализируем билдер
+                var finalMethod = builder.Build();
+                
+                _methods.Add(finalMethod);
+            }
+
+            return this;
+        }
+
         public ClassBuilder ExportScriptConstructors()
         {
             var statics = _classType.GetMethods(BindingFlags.Static | BindingFlags.Public)

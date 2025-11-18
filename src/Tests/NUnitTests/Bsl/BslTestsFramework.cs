@@ -10,10 +10,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using NUnit.Framework;
 using NUnit.Framework.Internal;
 using NUnit.Framework.Interfaces;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
@@ -97,44 +99,45 @@ namespace NUnitTests.Bsl
 
             // Получить методы жизненного цикла через testrunner.os метод ПолучитьМетодыЖизненногоЦикла
             var lifecycleMethodsNames = ReadLifecycleMethods(testInstance);
-
-            var fixtureType = CreateFixtureType(discoveredFile.FixtureName);
-            var fixtureTypeInfo = new TypeWrapper(fixtureType);
-            var testFixture = new BslTestFixture(fixtureTypeInfo)
-            {
-                Name = discoveredFile.FixtureName,
-                FullName = discoveredFile.FixtureName,
-                Fixture = testInstance
-            };
-
-            var methodsCache = new Dictionary<string, IMethodInfo>(StringComparer.OrdinalIgnoreCase);
-
-            var beforeAllMethods = ResolveLifecycleMethodInfos(testInstance, lifecycleMethodsNames.BeforeAll, methodsCache);
-            var beforeEachMethods = ResolveLifecycleMethodInfos(testInstance, lifecycleMethodsNames.BeforeEach, methodsCache);
-            var afterEachMethods = ResolveLifecycleMethodInfos(testInstance, lifecycleMethodsNames.AfterEach, methodsCache);
-            var afterAllMethods = ResolveLifecycleMethodInfos(testInstance, lifecycleMethodsNames.AfterAll, methodsCache);
-
-            testFixture.ApplyLifecycleMethods(beforeAllMethods, beforeEachMethods, afterEachMethods, afterAllMethods);
-
-            foreach (var testDescription in testDescriptions)
-            {
-                try
+            
+            // Создаем HashSet с именами тестовых методов для быстрой проверки
+            var testMethodNames = new HashSet<string>(
+                testDescriptions.Select(td => td.MethodName),
+                StringComparer.OrdinalIgnoreCase);
+            
+            var typeBuilder = new ClassBuilder(typeof(UserScriptContextInstance));
+            typeBuilder.SetTypeName(discoveredFile.FixtureName)
+                .SetModule(testInstance.Module)
+                .ExportScriptMethods((originalMethod, methodBuilder) =>
                 {
-                    var methodInfo = ResolveBslMethodInfo(testInstance, testDescription.MethodName, methodsCache);
-                    var displayName = string.IsNullOrEmpty(testDescription.Representation)
-                        ? testDescription.MethodName
-                        : testDescription.Representation;
-                    var fullName = string.IsNullOrEmpty(testDescription.FullName)
-                        ? $"{testDescription.ClassName}.{displayName}"
-                        : testDescription.FullName;
+                    var methodName = originalMethod.Name;
+                    
+                    // Проверяем, является ли метод методом жизненного цикла и добавляем соответствующую аннотацию NUnit
+                    if (lifecycleMethodsNames.BeforeAll.Contains(methodName, StringComparer.OrdinalIgnoreCase))
+                    {
+                        methodBuilder.SetAnnotations(new[] { new OneTimeSetUpAttribute() });
+                    }
+                    else if (lifecycleMethodsNames.BeforeEach.Contains(methodName, StringComparer.OrdinalIgnoreCase))
+                    {
+                        methodBuilder.SetAnnotations(new[] { new SetUpAttribute() });
+                    }
+                    else if (lifecycleMethodsNames.AfterEach.Contains(methodName, StringComparer.OrdinalIgnoreCase))
+                    {
+                        methodBuilder.SetAnnotations(new[] { new TearDownAttribute() });
+                    }
+                    else if (lifecycleMethodsNames.AfterAll.Contains(methodName, StringComparer.OrdinalIgnoreCase))
+                    {
+                        methodBuilder.SetAnnotations(new[] { new OneTimeTearDownAttribute() });
+                    }
+                    // Проверяем, является ли метод тестовым методом и добавляем TestAttribute
+                    else if (testMethodNames.Contains(methodName))
+                    {
+                        methodBuilder.SetAnnotations(new[] { new TestAttribute() });
+                    }
+                });
 
-                    testFixture.AddBslTest(methodInfo, displayName, fullName, testDescription);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-            }
+            var fixtureTypeInfo = new TypeWrapper(typeBuilder.Build());
+            var testFixture = new TestFixture(fixtureTypeInfo);
 
             return testFixture;
         }
@@ -244,99 +247,6 @@ namespace NUnitTests.Bsl
             {
                 Console.WriteLine(message.Text);
             }
-        }
-
-        private static Type CreateFixtureType(string fixtureName)
-        {
-            var builder = new ClassBuilder(typeof(UserScriptContextInstance));
-            return builder
-                .SetTypeName(fixtureName)
-                .Build();
-        }
-
-        private IMethodInfo ResolveBslMethodInfo(
-            UserScriptContextInstance testInstance,
-            string methodName,
-            IDictionary<string, IMethodInfo> cache)
-        {
-            if (string.IsNullOrEmpty(methodName))
-                throw new ArgumentException("Имя метода теста не задано", nameof(methodName));
-
-            if (cache.TryGetValue(methodName, out var cached))
-                return cached;
-
-            int methodNumber;
-            try
-            {
-                methodNumber = testInstance.GetMethodNumber(methodName);
-            }
-            catch (RuntimeException ex)
-            {
-                throw new Exception($"Не удалось найти тестовый метод \"{methodName}\" в объекте теста.", ex);
-            }
-
-            var methodInfo = testInstance.GetMethodInfo(methodNumber) as BslScriptMethodInfo;
-            
-            var invokableMethod = new InvokableBslMethodInfo(methodInfo, _bslExecutor);
-            var nunitMethod = new BslNUnitMethodInfo(invokableMethod, testInstance);
-
-            cache[methodName] = nunitMethod;
-            return nunitMethod;
-        }
-
-        private IMethodInfo ResolveLifecycleMethodInfo(
-            UserScriptContextInstance testInstance,
-            string methodName,
-            IDictionary<string, IMethodInfo> cache)
-        {
-            if (cache.TryGetValue(methodName, out var cached))
-                return cached;
-
-            int methodNumber;
-            try
-            {
-                methodNumber = testInstance.GetMethodNumber(methodName);
-            }
-            catch (RuntimeException)
-            {
-                return null;
-            }
-            
-            var methodInfo = testInstance.GetMethodInfo(methodNumber) as BslScriptMethodInfo;
-            if (methodInfo == null)
-                throw new Exception($"Метод \"{methodName}\" не является скриптовым методом BSL.");
-
-            var invokableMethod = new InvokableBslMethodInfo(methodInfo, _bslExecutor);
-            var nunitMethod = new BslNUnitMethodInfo(invokableMethod, testInstance);
-
-            cache[methodName] = nunitMethod;
-            return nunitMethod;
-        }
-
-        private IMethodInfo[] ResolveLifecycleMethodInfos(
-            UserScriptContextInstance testInstance,
-            string[] methodNames,
-            IDictionary<string, IMethodInfo> cache)
-        {
-            if (methodNames.Length == 0)
-            {
-                return Array.Empty<IMethodInfo>();
-            }
-
-            var result = new List<IMethodInfo>(methodNames.Length);
-            foreach (var methodName in methodNames)
-            {
-                if (string.IsNullOrWhiteSpace(methodName))
-                    continue;
-
-                var resolvedMethod = ResolveLifecycleMethodInfo(testInstance, methodName, cache);
-                if (resolvedMethod != null)
-                {
-                    result.Add(resolvedMethod);
-                }
-            }
-
-            return result.ToArray();
         }
 
         public void ClearMessages()

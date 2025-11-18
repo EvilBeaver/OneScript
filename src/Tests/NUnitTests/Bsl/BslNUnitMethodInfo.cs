@@ -70,10 +70,7 @@ namespace NUnitTests.Bsl
 
         public object Invoke(object fixture, params object[] args)
         {
-            // TODO: Реализовать вызов BSL-метода через движок BSL
-            // NUnit будет вызывать этот метод для выполнения теста
-            // Нужно вызвать метод на объекте _testInstance с параметрами args
-            return _methodInfo.Invoke(fixture ?? _testInstance, args ?? Array.Empty<object>());
+            return _methodInfo.Invoke(fixture, args ?? Array.Empty<object>());
         }
 
         public bool IsDefined<T>(bool inherit) where T : class
