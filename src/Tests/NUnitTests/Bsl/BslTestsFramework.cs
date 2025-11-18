@@ -136,8 +136,20 @@ namespace NUnitTests.Bsl
                     }
                 });
 
-            var fixtureTypeInfo = new TypeWrapper(typeBuilder.Build());
-            var testFixture = new TestFixture(fixtureTypeInfo);
+            var bslType = typeBuilder.Build();
+            var nUnitType = new TypeWrapper(bslType);
+            var testFixture = new TestFixture(nUnitType);
+            
+            // Получаем все методы с атрибутом TestAttribute
+            var testMethods = bslType.GetMethods()
+                .Where(m => m.GetCustomAttributes(typeof(TestAttribute), false).Length > 0)
+                .Cast<BslScriptMethodInfo>();
+
+            foreach (var methodInfo in testMethods)
+            {
+                var invokableMethod = new InvokableBslMethodInfo(methodInfo, _bslExecutor);
+                testFixture.Tests.Add(new TestMethod(new MethodWrapper(bslType, invokableMethod)));
+            }
 
             return testFixture;
         }

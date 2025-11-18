@@ -86,6 +86,11 @@ namespace OneScript.Contexts
             return _originalMethod.HasBslAnnotation(name);
         }
 
+        void IBuildableMember.SetDeclaringType(Type declaringType)
+        {
+            ((IBuildableMember)_originalMethod).SetDeclaringType(declaringType);
+        }
+        
         // Переопределяем SetAnnotations для объединения аннотаций
         void IBuildableMember.SetAnnotations(IEnumerable<object> annotations)
         {
