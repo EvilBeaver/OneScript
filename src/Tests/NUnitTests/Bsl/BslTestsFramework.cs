@@ -106,51 +106,22 @@ namespace NUnitTests.Bsl
                 StringComparer.OrdinalIgnoreCase);
             
             var typeBuilder = new ClassBuilder(typeof(UserScriptContextInstance));
+            
+            var methodDecorator = new TestCaseMethodDecorator(_bslExecutor, lifecycleMethodsNames, testMethodNames);
+            
             typeBuilder.SetTypeName(discoveredFile.FixtureName)
                 .SetModule(testInstance.Module)
-                .ExportScriptMethods((originalMethod, methodBuilder) =>
-                {
-                    var methodName = originalMethod.Name;
-                    
-                    // Проверяем, является ли метод методом жизненного цикла и добавляем соответствующую аннотацию NUnit
-                    if (lifecycleMethodsNames.BeforeAll.Contains(methodName, StringComparer.OrdinalIgnoreCase))
-                    {
-                        methodBuilder.SetAnnotations(new[] { new OneTimeSetUpAttribute() });
-                    }
-                    else if (lifecycleMethodsNames.BeforeEach.Contains(methodName, StringComparer.OrdinalIgnoreCase))
-                    {
-                        methodBuilder.SetAnnotations(new[] { new SetUpAttribute() });
-                    }
-                    else if (lifecycleMethodsNames.AfterEach.Contains(methodName, StringComparer.OrdinalIgnoreCase))
-                    {
-                        methodBuilder.SetAnnotations(new[] { new TearDownAttribute() });
-                    }
-                    else if (lifecycleMethodsNames.AfterAll.Contains(methodName, StringComparer.OrdinalIgnoreCase))
-                    {
-                        methodBuilder.SetAnnotations(new[] { new OneTimeTearDownAttribute() });
-                    }
-                    // Проверяем, является ли метод тестовым методом и добавляем TestAttribute
-                    else if (testMethodNames.Contains(methodName))
-                    {
-                        methodBuilder.SetAnnotations(new[] { new TestAttribute() });
-                    }
-                });
+                .ExportScriptMethods(methodDecorator);
 
             var bslType = typeBuilder.Build();
             var nUnitType = new TypeWrapper(bslType);
             var testFixture = new TestFixture(nUnitType);
-            
-            // Получаем все методы с атрибутом TestAttribute
-            var testMethods = bslType.GetMethods()
-                .Where(m => m.GetCustomAttributes(typeof(TestAttribute), false).Length > 0)
-                .Cast<BslScriptMethodInfo>();
 
-            foreach (var methodInfo in testMethods)
+            foreach (var testCase in nUnitType.GetMethodsWithAttribute<TestAttribute>(false))
             {
-                var invokableMethod = new InvokableBslMethodInfo(methodInfo, _bslExecutor);
-                testFixture.Tests.Add(new TestMethod(new MethodWrapper(bslType, invokableMethod)));
+                testFixture.Tests.Add(new TestMethod(testCase));
             }
-
+            
             return testFixture;
         }
 

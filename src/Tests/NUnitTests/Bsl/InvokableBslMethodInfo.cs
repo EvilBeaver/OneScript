@@ -19,7 +19,7 @@ namespace NUnitTests.Bsl
     /// Обертка над BslScriptMethodInfo, которая позволяет вызывать метод через Invoke.
     /// Используется для интеграции BSL-методов с NUnit.
     /// </summary>
-    public class InvokableBslMethodInfo : MethodInfo
+    public class InvokableBslMethodInfo : BslScriptMethodInfo
     {
         private readonly BslScriptMethodInfo _bslMethod;
         private readonly BslScriptProcess _bslProcess;
@@ -29,8 +29,6 @@ namespace NUnitTests.Bsl
             _bslMethod = bslMethod ?? throw new ArgumentNullException(nameof(bslMethod));
             _bslProcess = bslProcess ?? throw new ArgumentNullException(nameof(bslProcess));
         }
-
-        public BslScriptMethodInfo BslMethod => _bslMethod;
 
         public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
@@ -104,8 +102,6 @@ namespace NUnitTests.Bsl
 
         public override Type ReturnType => _bslMethod.ReturnType;
 
-        public override Type DeclaringType => _bslMethod.DeclaringType;
-
         public override Type ReflectedType => _bslMethod.ReflectedType;
 
         public override MethodAttributes Attributes => _bslMethod.Attributes;
@@ -133,21 +129,6 @@ namespace NUnitTests.Bsl
         public override MethodInfo GetBaseDefinition()
         {
             return _bslMethod.GetBaseDefinition();
-        }
-
-        public override object[] GetCustomAttributes(bool inherit)
-        {
-            return _bslMethod.GetCustomAttributes(inherit);
-        }
-
-        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
-        {
-            return _bslMethod.GetCustomAttributes(attributeType, inherit);
-        }
-
-        public override bool IsDefined(Type attributeType, bool inherit)
-        {
-            return _bslMethod.IsDefined(attributeType, inherit);
         }
 
         public override ICustomAttributeProvider ReturnTypeCustomAttributes => _bslMethod.ReturnTypeCustomAttributes;

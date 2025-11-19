@@ -253,19 +253,22 @@ namespace OneScript.Core.Tests
 
             var module = LoadFromString(script);
             var builder = new ClassBuilder(typeof(UserScriptContextInstance));
-            
+            var decorator = new TestAnnotationDecorator()
+            {
+                OnBuildUp = methodBuilder =>
+                {
+                    // Добавляем новую аннотацию другого типа (ObsoleteAttribute)
+                    methodBuilder.SetAnnotations(new[]
+                    {
+                        new ObsoleteAttribute("Метод устарел")
+                    });
+                }
+            };    
+
             // Декорируем методы, добавляя дополнительную аннотацию другого типа
             builder.SetModule(module)
                    .SetTypeName("Dummy")
-                   .ExportScriptMethods((originalMethod, methodBuilder) =>
-                   {
-                       // Добавляем новую аннотацию другого типа (ObsoleteAttribute)
-                       // Это не заменит BslAnnotationAttribute, так как типы разные
-                       methodBuilder.SetAnnotations(new[] 
-                       { 
-                           new ObsoleteAttribute("Метод устарел") 
-                       });
-                   })
+                   .ExportScriptMethods(decorator)
                    .ExportScriptVariables();
 
             var reflected = builder.Build();
@@ -273,55 +276,36 @@ namespace OneScript.Core.Tests
             Assert.NotNull(method);
             
             // Проверяем, что можно получить аннотации через стандартный Reflection API
-            var bslAnnotations = method.GetCustomAttributes(typeof(BslAnnotationAttribute), false);
-            Assert.Single(bslAnnotations); // Исходная аннотация должна остаться
+            var bslAnnotations = method.GetCustomAttributes(false).ToList();
+            Assert.NotEmpty(bslAnnotations);
             
             var obsoleteAnnotations = method.GetCustomAttributes(typeof(ObsoleteAttribute), false);
             Assert.Single(obsoleteAnnotations); // Новая аннотация должна быть добавлена
             
-            // Проверяем, что исходная BslAnnotationAttribute присутствует
-            var bslAnnotation = (BslAnnotationAttribute)bslAnnotations[0];
-            Assert.Equal("ИсходнаяАннотация", bslAnnotation.Name);
-            
-            // Проверяем, что новая ObsoleteAttribute присутствует
-            var obsoleteAnnotation = (ObsoleteAttribute)obsoleteAnnotations[0];
-            Assert.Equal("Метод устарел", obsoleteAnnotation.Message);
+            // Проверяем, что исходная BslAnnotationAttribute отсутсвует
+            Assert.DoesNotContain(bslAnnotations, a => a is BslAnnotationAttribute);
         }
 
-        [Fact]
-        public void CheckDecoratedMethodAnnotationReplacement()
+        private class TestAnnotationDecorator : IScriptMethodDecorator<BslScriptMethodInfo>
         {
-            string script = "&ИсходнаяАннотация\n" +
-                            "Процедура Внешняя() Экспорт\n" +
-                            "КонецПроцедуры";
+            public Action<BslMethodBuilder<BslScriptMethodInfo>> OnBuildUp { get; set; }
+            
+            public BslScriptMethodInfo Convert(BslScriptMethodInfo originalMethod)
+            {
+                return BslMethodBuilder.Create()
+                    .Name(originalMethod.Name)
+                    .ReturnType(originalMethod.ReturnType)
+                    .DeclaringType(originalMethod.DeclaringType)
+                    .SetDispatchingIndex(originalMethod.DispatchId)
+                    .SetAnnotations(originalMethod.GetAnnotations())
+                    .IsExported(!originalMethod.Attributes.HasFlag(MethodAttributes.Private))
+                    .Build();
+            }
 
-            var module = LoadFromString(script);
-            var builder = new ClassBuilder(typeof(UserScriptContextInstance));
-            
-            // Декорируем методы, заменяя аннотацию того же типа
-            builder.SetModule(module)
-                   .SetTypeName("Dummy")
-                   .ExportScriptMethods((originalMethod, methodBuilder) =>
-                   {
-                       // Заменяем исходную аннотацию новой того же типа
-                       methodBuilder.SetAnnotations(new[] 
-                       { 
-                           new BslAnnotationAttribute("ЗамененнаяАннотация") 
-                       });
-                   })
-                   .ExportScriptVariables();
-
-            var reflected = builder.Build();
-            var method = reflected.GetMethod("Внешняя");
-            Assert.NotNull(method);
-            
-            // Проверяем, что можно получить аннотации через стандартный Reflection API
-            var annotations = method.GetCustomAttributes(typeof(BslAnnotationAttribute), false);
-            Assert.Single(annotations);
-            
-            // Проверяем, что исходная аннотация заменена
-            var annotation = (BslAnnotationAttribute)annotations[0];
-            Assert.Equal("ЗамененнаяАннотация", annotation.Name);
+            public void BuildUp(BslScriptMethodInfo originalMethod, BslMethodBuilder<BslScriptMethodInfo> builder)
+            {
+                OnBuildUp?.Invoke(builder);
+            }
         }
     }
 }

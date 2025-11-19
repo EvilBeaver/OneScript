@@ -164,7 +164,7 @@ namespace OneScript.Contexts
             return this;
         }
 
-        public ClassBuilder ExportScriptMethods(Action<BslScriptMethodInfo, BslMethodBuilder<BslScriptMethodInfo>> decorator)
+        public ClassBuilder ExportScriptMethods<T>(IScriptMethodDecorator<T> decorator) where T : BslScriptMethodInfo
         {
             if (Module == null)
                 throw new InvalidOperationException("Module is not set");
@@ -174,22 +174,27 @@ namespace OneScript.Contexts
 
             foreach (var originalMethod in Module.Methods)
             {
-                if(originalMethod.Name == IExecutableModule.BODY_METHOD_NAME)
+                if (originalMethod.Name == IExecutableModule.BODY_METHOD_NAME)
                     continue;
-                
+
                 // Создаем декоратор из оригинального метода
-                var decorated = DecoratedBslScriptMethodInfo.Create(originalMethod);
-                
-                // Создаем билдер для декорирования
-                var builder = new BslMethodBuilder<BslScriptMethodInfo>(decorated, () => new BslParameterInfo());
-                
-                // Применяем декоратор
-                decorator(originalMethod, builder);
-                
-                // Финализируем билдер
-                var finalMethod = builder.Build();
-                
-                _methods.Add(finalMethod);
+                var newMethod = decorator.Convert(originalMethod);
+                if (newMethod == null)
+                    continue;
+
+                if (!ReferenceEquals(newMethod, originalMethod))
+                {
+                    // Создаем билдер для декорирования
+                    var builder = new BslMethodBuilder<T>(newMethod, () => new BslParameterInfo());
+
+                    // Применяем декоратор
+                    decorator.BuildUp(originalMethod, builder);
+
+                    // Финализируем билдер
+                    newMethod = builder.Build();
+                }
+
+                _methods.Add(newMethod);
             }
 
             return this;
