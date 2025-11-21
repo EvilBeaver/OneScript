@@ -7,11 +7,12 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
+using OneScript.StandardLibrary;
 using OneScript.Values;
 
-namespace NUnitTests.Bsl
+namespace BslTestsBridge.BslBridge
 {
     public sealed class BslProcessResult
     {
@@ -25,16 +26,29 @@ namespace NUnitTests.Bsl
         
         public IReadOnlyList<BslLogMessage> Messages { get; }
 
-        public string GetCombinedLog()
+        public void FlushIntoWriter(TextWriter writer)
         {
-            var builder = new StringBuilder();
             foreach (var message in Messages)
             {
-                builder.AppendLine(message.Text);
+                writer.WriteLine(message.Text);
             }
-
-            return builder.ToString();
+        }
         
+        public void FlushIntoWriter(TextWriter infoWriter, TextWriter errorWriter)
+        {
+            foreach (var message in Messages)
+            {
+                if (message.Status == MessageStatusEnum.Ordinary ||
+                    message.Status == MessageStatusEnum.WithoutStatus ||
+                    message.Status == MessageStatusEnum.Information)
+                {
+                    infoWriter.WriteLine(message.Text);
+                }
+                else
+                {
+                    errorWriter.WriteLine(message.Text);
+                }
+            }
         }
     }
 }

@@ -5,12 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace NUnitTests.Bsl
+namespace BslTestsBridge.BslBridge
 {
     /// <summary>
     /// Класс для хранения методов жизненного цикла теста.
     /// </summary>
-    internal class LifecycleMethods
+    public class LifecycleMethods
     {
         /// <summary>
         /// Методы, выполняемые один раз перед всеми тестами в фикстуре.

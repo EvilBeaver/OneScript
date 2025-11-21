@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using OneScript.StandardLibrary;
 
-namespace NUnitTests.Bsl
+namespace BslTestsBridge.BslBridge
 {
     public sealed class BslLogMessage
     {

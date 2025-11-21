@@ -7,31 +7,31 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using OneScript.Contexts;
 using OneScript.StandardLibrary;
 using OneScript.Values;
 using OneScript.Web.Server;
-using ScriptEngine;
 using ScriptEngine.HostedScript;
 using ScriptEngine.HostedScript.Extensions;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace NUnitTests.Bsl
+namespace BslTestsBridge.BslBridge
 {
-    public class BslScriptProcess
+    public class BslExecutor
     {
-        private HostedScriptEngine _engine;
-        private UserScriptContextInstance _testRunner;
-        private CapturingHostApplication _hostApp;
+        private readonly HostedScriptEngine _engine;
+        private readonly UserScriptContextInstance _scriptInstance;
+        private readonly CapturingHostApplication _hostApp;
 
         public HostedScriptEngine Engine => _engine;
         
-        public BslScriptProcess(string runnerPath)
+        public BslExecutor(string runnerPath)
         {
             if (string.IsNullOrEmpty(runnerPath))
-                throw new ArgumentException("Не указан путь к testrunner.os", nameof(runnerPath));
+                throw new FileNotFoundException(runnerPath);
 
             var builder = DefaultEngineBuilder.Create()
                 .SetupConfiguration(p =>
@@ -62,24 +62,24 @@ namespace NUnitTests.Bsl
             var compiler = _engine.GetCompilerService();
             var bslProcess = _engine.Engine.NewProcess();
             var executable = compiler.Compile(src, bslProcess);
-            _testRunner = _engine.Engine.NewObject(executable, bslProcess);
+            _scriptInstance = _engine.Engine.NewObject(executable, bslProcess);
         }
 
         public BslProcessResult Execute(string methodName, IValue[] args)
         {
             _hostApp.ClearMessages();
-            var index = _testRunner.GetMethodNumber(methodName);
-            var methodInfo = _testRunner.GetMethodInfo(index);
+            var index = _scriptInstance.GetMethodNumber(methodName);
+            var methodInfo = _scriptInstance.GetMethodInfo(index);
 
             var process = _engine.Engine.NewProcess();
             IValue result = null;
             if (methodInfo.IsFunction())
             {
-                _testRunner.CallAsFunction(index, args, out result, process);
+                _scriptInstance.CallAsFunction(index, args, out result, process);
             }
             else
             {
-                _testRunner.CallAsProcedure(index, args, process);
+                _scriptInstance.CallAsProcedure(index, args, process);
             }
 
             var processResult = new BslProcessResult((BslValue)result, new List<BslLogMessage>(_hostApp.Messages));
@@ -88,7 +88,7 @@ namespace NUnitTests.Bsl
             return processResult;
         }
 
-        internal void ClearMessages()
+        private void ClearMessages()
         {
             _hostApp.ClearMessages();
         }

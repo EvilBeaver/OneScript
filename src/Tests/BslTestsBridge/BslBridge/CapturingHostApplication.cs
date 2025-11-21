@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using OneScript.StandardLibrary;
 using ScriptEngine.HostedScript;
 
-namespace NUnitTests.Bsl
+namespace BslTestsBridge.BslBridge
 {
     internal sealed class CapturingHostApplication : IHostApplication
     {

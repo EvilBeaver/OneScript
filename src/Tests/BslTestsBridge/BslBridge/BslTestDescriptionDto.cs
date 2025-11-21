@@ -5,10 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
-namespace NUnitTests.Bsl
+namespace BslTestsBridge.BslBridge
 {
     /// <summary>
     /// DTO для описания теста, возвращаемого методом ЗагрузитьТесты из testrunner.os

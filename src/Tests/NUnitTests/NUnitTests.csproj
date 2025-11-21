@@ -26,13 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="testrunner\testrunner.os">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <ProjectReference Include="..\BslTestsBridge\BslTestsBridge.csproj" />
   </ItemGroup>
 
   

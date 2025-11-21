@@ -5,19 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace NUnitTests.Bsl
-{
-    public class BslTestsFileDto
-    {
-        public BslTestsFileDto(string testsFile, string fixtureName)
-        {
-            Path = testsFile;
-            FixtureName = fixtureName;
-        }
+using BslTestsBridge.Attributes;
 
-        public string Path { get; }
+namespace NUnitTests
+{
+    [BslTestFixture("tests")]
+    public class TestBslClassFixture
+    {
         
-        public string FixtureName { get; }
     }
 }
-

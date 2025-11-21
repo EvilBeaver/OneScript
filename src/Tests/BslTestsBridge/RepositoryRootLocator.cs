@@ -8,13 +8,19 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.IO;
 
-namespace NUnitTests.Bsl
+namespace BslTestsBridge
 {
-    internal static class RepositoryRootLocator
+    internal class RepositoryRootLocator : IBaseDirectoryLocator
     {
         private static readonly Lazy<string> RepoRoot = new Lazy<string>(FindRoot);
 
-        public static string ResolvePath(string relativePath)
+        public static RepositoryRootLocator Instance => new RepositoryRootLocator();
+        
+        private RepositoryRootLocator()
+        {
+        }
+
+        public string ResolvePath(string relativePath)
         {
             if (relativePath == null)
                 throw new ArgumentNullException(nameof(relativePath));
@@ -41,4 +47,3 @@ namespace NUnitTests.Bsl
         }
     }
 }
-

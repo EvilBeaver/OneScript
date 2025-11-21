@@ -5,37 +5,40 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using System.Collections.Generic;
 using NUnit.Engine;
 using NUnit.Engine.Extensibility;
 
-namespace BslTestsBridge;
-
-public class BslFrameworkDriver : IFrameworkDriver
+namespace BslTestsBridge
 {
-    public string Load(string testAssemblyPath, IDictionary<string, object> settings)
+    public class BslFrameworkDriver : IFrameworkDriver
     {
-        throw new NotImplementedException();
-    }
+        public string Load(string testAssemblyPath, IDictionary<string, object> settings)
+        {
+            throw new NotImplementedException();
+        }
 
-    public int CountTestCases(string filter)
-    {
-        throw new NotImplementedException();
-    }
+        public int CountTestCases(string filter)
+        {
+            throw new NotImplementedException();
+        }
 
-    public string Run(ITestEventListener listener, string filter)
-    {
-        throw new NotImplementedException();
-    }
+        public string Run(ITestEventListener listener, string filter)
+        {
+            throw new NotImplementedException();
+        }
 
-    public string Explore(string filter)
-    {
-        throw new NotImplementedException();
-    }
+        public string Explore(string filter)
+        {
+            throw new NotImplementedException();
+        }
 
-    public void StopRun(bool force)
-    {
-        throw new NotImplementedException();
-    }
+        public void StopRun(bool force)
+        {
+            throw new NotImplementedException();
+        }
 
-    public string ID { get; set; }
+        public string ID { get; set; } = nameof(BslFrameworkDriver);
+    }
 }

@@ -5,22 +5,17 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.IO;
 using System.Reflection;
-using NUnit.Engine.Extensibility;
 
 namespace BslTestsBridge
 {
-    [Extension]
-    public class BslDriverFactory : IDriverFactory
+    public static class Utils
     {
-        public bool IsSupportedTestFramework(AssemblyName reference)
-        {
-            return reference.Name == "nunit.framework";
-        }
-
-        public IFrameworkDriver GetDriver(AssemblyName reference)
-        {
-            return new BslFrameworkDriver();
-        }
+        public static string GetTestRunnerPath() => 
+            Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty,
+                "testrunner",
+                "testrunner.os"
+            );
     }
 }
