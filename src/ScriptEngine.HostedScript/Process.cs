@@ -50,7 +50,7 @@ namespace ScriptEngine.HostedScript
             }
             finally
             {
-                _engine.DebugController?.NotifyProcessExit(exitCode);
+                _engine.Debugger.NotifyProcessExit(exitCode);
                 _engine.Dispose();
                 _engine = null;
             }

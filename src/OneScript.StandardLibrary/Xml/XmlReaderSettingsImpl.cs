@@ -106,6 +106,7 @@ namespace OneScript.StandardLibrary.Xml
                 IgnoreComments = ignoreComments,
                 IgnoreProcessingInstructions = ignoreDataProcessorInstructions,
                 IgnoreWhitespace = ignoreSpaceCharacters,
+                DtdProcessing = ignoreDocumentType ? DtdProcessing.Ignore : DtdProcessing.Parse,
             };
 
             return new XmlReaderSettingsImpl(
@@ -128,6 +129,7 @@ namespace OneScript.StandardLibrary.Xml
                 IgnoreComments = true, // отличается от конструктора скрипта
                 IgnoreProcessingInstructions = false,
                 IgnoreWhitespace =  true,
+                DtdProcessing = DtdProcessing.Ignore,
             };
 
             return new XmlReaderSettingsImpl("1.0", context, settings);

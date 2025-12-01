@@ -10,6 +10,10 @@ using OneScript.DebugProtocol.Abstractions;
 
 namespace OneScript.DebugProtocol.TcpServer
 {
+    /// <summary>
+    /// Диспетчер обработки сообщений. Получает сообщения от сервера и передает их в обработчик.
+    /// </summary>
+    /// <typeparam name="TService"></typeparam>
     public class DispatchingService<TService>
     {
         private readonly ICommunicationServer _server;
@@ -50,7 +54,7 @@ namespace OneScript.DebugProtocol.TcpServer
             }
         }
 
-        private void ProcessSuccess(RpcCall message, ICommunicationChannel responseChannel)
+        private void ProcessSuccess(RpcCall message, IMessageChannel responseChannel)
         {
             RpcCallResult callResult = null;
             try
@@ -58,11 +62,6 @@ namespace OneScript.DebugProtocol.TcpServer
                 var methodResult = _requestProcessor.Dispatch(_requestService, message.Id, message.Parameters);
                 if (methodResult != null)
                     callResult = RpcCallResult.Respond(message, methodResult);
-            }
-            catch (StopServiceException)
-            {
-                Stop();
-                return;
             }
             catch (Exception e)
             {

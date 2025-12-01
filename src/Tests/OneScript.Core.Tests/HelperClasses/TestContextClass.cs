@@ -33,16 +33,20 @@ namespace OneScript.Core.Tests
 			// Do nothing
 		}
 
+		[DeprecatedName("ObsoleteAlias", throwOnUse: false)]
+		[DeprecatedName("VeryObsoleteAlias", throwOnUse: true)]
 		[ContextMethod("ХорошийМетод", "GoodMethod")]
-		[ContextMethod("ObsoleteAlias", IsDeprecated = true, ThrowOnUse = false)]
-		[ContextMethod("VeryObsoleteAlias", IsDeprecated = true, ThrowOnUse = true)]
 		public void GoodMethod()
 		{
 			// Do nothing
 		}
 		
+		[DeprecatedName("OldBslProp")]
 		[ContextProperty("СвойствоBsl","BslProp")]
 		public string BslProp { get; set; }
+		
+		[ContextProperty("УстаревшееСвойство","ObsoleteProperty", IsDeprecated = true)]
+		public string ObsoleteProp { get; set; }
 
 		public override bool IsIndexed => true;
 

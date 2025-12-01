@@ -16,40 +16,31 @@ namespace OneScript.Values
 {
     public abstract class EnumerationValue : BslValue
     {
-        readonly TypeDescriptor _systemType;
-        readonly string _name, _alias;
-
-        public EnumerationValue(TypeDescriptor systemType, string name, string alias)
+        protected EnumerationValue(TypeDescriptor systemType, string name, string alias)
         {
             if (!Utils.IsValidIdentifier(name))
-                throw new ArgumentException("Name must be a valid identifier", "name");
+                throw new ArgumentException("Name must be a valid identifier", nameof(name));
 
             if(alias != null && !Utils.IsValidIdentifier(alias))
-                throw new ArgumentException("Name must be a valid identifier", "alias");
+                throw new ArgumentException("Name must be a valid identifier", nameof(alias));
 
-            _systemType = systemType;
-            _name = name;
-            _alias = alias;
+            SystemType = systemType;
+            Name = name;
+            Alias = alias;
         }
 
-        public string Name => _name;
-        public string Alias => _alias;
+        public string Name { get; }
 
-        public bool IsFilled() => true;
+        public string Alias { get; }
 
-        public override TypeDescriptor SystemType => _systemType;
+        public override TypeDescriptor SystemType { get; }
 
         public override string ToString()
         {
-            return BilingualString.Localize(_name, _alias);
+            return BilingualString.Localize(Name, Alias);
         }
 
         public override IValue GetRawValue() => this;
-
-        public override int CompareTo(BslValue other)
-        {
-            throw RuntimeException.ComparisonNotSupportedException();
-        }
 
         public override bool Equals(BslValue other)
         {

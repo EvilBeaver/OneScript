@@ -150,17 +150,6 @@ namespace OneScript.StandardLibrary.Collections
             return GetPropertyName(propNum);
         }
 
-        public override BslPropertyInfo GetPropertyInfo(int propNum)
-        {
-           return BslPropertyBuilder.Create()
-                .Name(GetPropName(propNum))
-                .CanRead(true)
-                .CanWrite(true)
-                .ReturnType(_values[propNum].GetType())
-                .DeclaringType(GetType())
-                .Build();
-        }
-
         public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
             return _methods.GetRuntimeMethod(methodNumber);

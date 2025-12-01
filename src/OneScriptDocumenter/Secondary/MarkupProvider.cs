@@ -51,16 +51,20 @@ namespace OneScriptDocumenter.Secondary
         
         public static ContextMethodAttribute GetMethodMarkup(MethodInfo target)
         {
-            try
+            var markup = target.GetCustomAttribute<ContextMethodAttribute>()
+                         ?? throw new ArgumentException($"Method {target} is not marked with method attribute");
+
+            if (markup.SkipForDocumenter)
             {
-                return target
-                    .GetCustomAttributes<ContextMethodAttribute>()
-                    .Single(attr => !attr.IsDeprecated && !attr.SkipForDocumenter);
+                throw new ArgumentException($"Method {target} is skipped for documentation");
             }
-            catch (InvalidOperationException e)
+
+            if (markup.IsDeprecated)
             {
-                throw new ArgumentException($"Method {target} is not marked with method attribute", e);
+                throw new ArgumentException($"Method {target} is deprecated");
             }
+
+            return markup;
         }
         
         public static INameAndAliasProvider GetMemberDocumentationMarkup(MemberInfo target)

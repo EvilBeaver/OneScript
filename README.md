@@ -103,3 +103,9 @@ msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles /p:VersionPrefix=2.0.0
 ```bat
 msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles;PackDistributions /p:VersionPrefix=2.0.0 /p:VersionSuffix=preview223
 ```
+
+### Генерация документации
+
+```bat
+msbuild Build.csproj /t:BuildDocumentation
+```

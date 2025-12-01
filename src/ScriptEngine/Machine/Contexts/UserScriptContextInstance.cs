@@ -280,10 +280,6 @@ namespace ScriptEngine.Machine.Contexts
             return base.GetOwnVariableCount() + (_ownProperties?.Count ?? 0);
         }
 
-        protected override void UpdateState()
-        {
-        }
-
         protected override bool IsOwnPropReadable(int index)
         {
             if (_ownProperties == null)

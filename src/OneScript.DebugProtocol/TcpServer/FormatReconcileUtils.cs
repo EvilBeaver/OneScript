@@ -63,7 +63,7 @@ namespace OneScript.DebugProtocol.TcpServer
         {
             var magic = GetReconcileMagic();
             var buffer = new byte[magic.Length];
-            ReadStream(stream, buffer, buffer.Length);
+            StreamUtils.ReadStream(stream, buffer, buffer.Length);
             for (int i = 0; i < magic.Length; i++)
             {
                 if (buffer[i] != magic[i]) 
@@ -80,6 +80,7 @@ namespace OneScript.DebugProtocol.TcpServer
             using var binaryWriter = new BinaryWriter(target, Encoding.UTF8, true);
             binaryWriter.Write(FORMAT_RECONCILE_RESPONSE_PREFIX);
             binaryWriter.Write(formatInfo);
+            binaryWriter.Flush();
         }
 
         public static int EncodeFormatMarker(short transport, short dataVersion)
@@ -94,21 +95,6 @@ namespace OneScript.DebugProtocol.TcpServer
             var dataVersion = marker & 0x0000FFFF;
 
             return (transport, dataVersion);
-        }
-        
-        private static void ReadStream(Stream stream, byte[] buffer, int length)
-        {
-            int readPosition = 0;
-            int bytesReceived = 0;
-
-            while (bytesReceived < length)
-            {
-                bytesReceived = stream.Read(buffer, readPosition, length - bytesReceived);
-                if (bytesReceived == 0)
-                    throw new IOException("Unexpected end of stream");
-                
-                readPosition += bytesReceived;
-            }
         }
     }
 }

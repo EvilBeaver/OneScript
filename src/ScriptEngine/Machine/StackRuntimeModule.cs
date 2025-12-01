@@ -28,9 +28,9 @@ namespace ScriptEngine.Machine
 
         public List<BslPrimitiveValue> Constants { get; } = new List<BslPrimitiveValue>();
         
-        internal IList<SymbolBinding> VariableRefs { get; } = new List<SymbolBinding>();
+        internal IList<ModuleSymbolBinding> VariableRefs { get; } = new List<ModuleSymbolBinding>();
         
-        internal IList<SymbolBinding> MethodRefs { get; } = new List<SymbolBinding>();
+        internal IList<ModuleSymbolBinding> MethodRefs { get; } = new List<ModuleSymbolBinding>();
         
         #region IExecutableModule members
 

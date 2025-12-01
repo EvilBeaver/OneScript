@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+#nullable enable
+
 using OneScript.Execution;
 using OneScript.Sources;
 
@@ -18,6 +20,7 @@ namespace OneScript.Compilation
         /// <param name="module">Модуль в котором объявлен импорт</param>
         /// <param name="libraryName">имя библиотеки</param>
         /// <param name="process"></param>
-        void Resolve(SourceCode module, string libraryName, IBslProcess process);
+        /// <returns>Информация о загруженном пакете или null</returns>
+        PackageInfo? Resolve(SourceCode module, string libraryName, IBslProcess process);
     }
 }

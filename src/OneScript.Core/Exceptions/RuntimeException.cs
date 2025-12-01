@@ -33,6 +33,13 @@ namespace OneScript.Exceptions
                 $"Вызов безнадёжно устаревшего метода {name}",
                 $"Call to deprecated method {name}");
         }
+        
+        public static RuntimeException DeprecatedPropertyAccess(string name)
+        {
+            return new RuntimeException(
+                $"Обращение к безнадёжно устаревшему свойству {name}",
+                $"Access to deprecated property {name}");
+        }
 
         public static RuntimeException MethodNotFoundException(string methodName)
         {
@@ -118,20 +125,6 @@ namespace OneScript.Exceptions
                 $"Invalid value for argument number {argNum}");
         }
         
-        public static RuntimeException ComparisonNotSupportedException()
-        {
-            return new RuntimeException(
-                "Сравнение на больше/меньше для данного типа не поддерживается",
-                "Greater-than/Less-than comparison operations are not supported");
-        }
-        
-        public static RuntimeException ComparisonNotSupportedException(string type1, string type2)
-        {
-            return new RuntimeException(
-                $"Сравнение на больше/меньше для данного типа не поддерживается {type1} <-> {type2}",
-                $"Greater-than/Less-than comparison operations are not supported for {type1} <-> {type2}");
-        }
-
         public static RuntimeException IndexedAccessIsNotSupportedException()
         {
             return new RuntimeException(

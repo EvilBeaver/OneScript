@@ -476,7 +476,7 @@ namespace OneScript.Dynamic.Tests
             var symbolProvider = services.Resolve<TypeSymbolsProviderFactory>();
             var moduleScope = new SymbolScope();
             symbolProvider.Get<UserScriptContextInstance>().FillSymbols(moduleScope);
-            symbols.PushScope(moduleScope, null);
+            symbols.PushScope(moduleScope, ScopeBindingDescriptor.Static(null));
             
             var helper = new CompileHelper(services);
             helper.ParseModule(code);

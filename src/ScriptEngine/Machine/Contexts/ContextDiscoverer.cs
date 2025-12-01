@@ -121,8 +121,7 @@ namespace ScriptEngine.Machine.Contexts
             var enumMetadata = (SystemEnumAttribute)enumType.GetCustomAttributes(typeof(SystemEnumAttribute), false)[0];
             var instance = (IValue)method.Invoke(null, new object[]{Types});
             
-            Globals.RegisterInstance(instance);
-            environment.InjectGlobalProperty(instance, enumMetadata.Name, enumMetadata.Alias, true);
+            RegisterEnumGlobalProperty(instance, environment, enumType, enumMetadata);
         }
         
         private void RegisterSimpleEnum(Type enumType, IRuntimeEnvironment environment)
@@ -150,9 +149,38 @@ namespace ScriptEngine.Machine.Contexts
             var instance = (IValue)factory.Invoke(null, new object[]{enumTypeDescription, valueTypeDescription});
             
 			if (enumTypeAttribute.CreateGlobalProperty)
-			{
-				Globals.RegisterInstance(enumType, instance);
-				environment.InjectGlobalProperty(instance, enumTypeAttribute.Name, enumTypeAttribute.Alias, true);
+            {
+                RegisterEnumGlobalProperty(instance, environment, enumType, enumTypeAttribute);
+            }
+        }
+
+        private void RegisterEnumGlobalProperty(
+            IValue instance,
+            IRuntimeEnvironment environment, 
+            Type enumType,
+            IEnumMetadataProvider enumTypeAttribute)
+        {
+            Globals.RegisterInstance(enumType, instance);
+            
+            var mainProperty = new SystemPropertyInfo.Builder(enumTypeAttribute.Name, enumTypeAttribute.Alias)
+                .SetPropertyType(enumType)
+                .Build();
+            
+            environment.InjectGlobalProperty(instance, mainProperty);
+                
+            // Deprecations
+            foreach (var deprecation in enumType.GetCustomAttributes<DeprecatedNameAttribute>())
+            {
+                if (deprecation.ThrowOnUse)
+                    throw new NotSupportedException(
+                        $"{nameof(deprecation.ThrowOnUse)} is not supported for enums yet. ({enumType})");
+                    
+                var deprecatedProperty = new SystemPropertyInfo.Builder(deprecation.Name)
+                    .SetPropertyType(enumType)
+                    .SetDeprecated(true)
+                    .Build();
+                
+                environment.InjectGlobalProperty(instance, deprecatedProperty);
             }
         }
 

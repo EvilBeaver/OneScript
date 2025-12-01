@@ -99,6 +99,7 @@ namespace VSCode.DebugAdapter
             ScriptArguments = Utilities.ConcatArguments(options.Args);
             DebugPort = options.DebugPort;
             Environment = options.Env;
+            WaitOnStart = options.WaitOnStart ?? true;
         }
 
         protected override Process CreateProcess()
@@ -107,6 +108,11 @@ namespace VSCode.DebugAdapter
             if (DebugPort != 0)
             {
                 dbgArgs.Add($"-port={DebugPort}");
+            }
+
+            if (!WaitOnStart)
+            {
+                dbgArgs.Add("-noWait");
             }
             
             var debugArguments = string.Join(" ", dbgArgs);

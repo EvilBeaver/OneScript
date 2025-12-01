@@ -22,6 +22,7 @@ using OneScript.Language.Extensions;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
+using OneScript.Localization;
 using OneScript.Sources;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -31,19 +32,24 @@ namespace ScriptEngine.Compiler
     public partial class StackMachineCodeGenerator : BslSyntaxWalker
     {
         private readonly IErrorSink _errorSink;
+        private readonly ExplicitImportsBehavior _importsOption;
         private readonly StackRuntimeModule _module;
         private SourceCode _sourceCode;
         private SymbolTable _ctx;
         private List<ConstDefinition> _constMap = new List<ConstDefinition>();
+        private HashSet<string> _localImports = new HashSet<string>();
         
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
 
-        private IBslProcess _compilerProcess; 
+        private IBslProcess _compilerProcess;
+        
+        private HashSet<BslPropertyInfo> _reportedOldProperties = new HashSet<BslPropertyInfo>();
 
-        public StackMachineCodeGenerator(IErrorSink errorSink)
+        public StackMachineCodeGenerator(IErrorSink errorSink, ExplicitImportsBehavior importsOption)
         {
             _errorSink = errorSink;
+            _importsOption = importsOption;
             _module = new StackRuntimeModule(typeof(IRuntimeContextInstance));
         }
         
@@ -99,10 +105,11 @@ namespace ScriptEngine.Compiler
             
             try
             {
-                DependencyResolver.Resolve(_sourceCode, libName, _compilerProcess);
-                // TODO: решить проблему с импортами
-                // if(_ctx is ModuleCompilerContext moduleContext)
-                //     moduleContext.Update();
+                var resolvedLib = DependencyResolver.Resolve(_sourceCode, libName, _compilerProcess);
+                if (resolvedLib != null && _importsOption != ExplicitImportsBehavior.Disabled)
+                {
+                    _localImports.Add(resolvedLib.Id);
+                }
             }
             catch (DependencyResolveException e)
             {
@@ -174,7 +181,15 @@ namespace ScriptEngine.Compiler
             var field = fieldBuilder.Build();
             _module.Fields.Add(field);
             var binding = _ctx.DefineVariable(field.ToSymbol());
-            _module.VariableRefs.Add(binding);
+            var descriptor = _ctx.GetBinding(binding.ScopeNumber);
+            var imageBinding = new ModuleSymbolBinding
+            {
+                Target = descriptor.Target,
+                MemberNumber = binding.MemberNumber,
+                Kind = descriptor.Kind,
+                ScopeIndex = descriptor.ScopeIndex
+            };
+            _module.VariableRefs.Add(imageBinding);
         }
 
         protected override void VisitModuleBody(BslSyntaxNode child)
@@ -184,7 +199,7 @@ namespace ScriptEngine.Compiler
 
             var entry = _module.Code.Count;
             var localCtx = new SymbolScope();
-            _ctx.PushScope(localCtx, null);
+            _ctx.PushScope(localCtx, ScopeBindingDescriptor.ThisScope());
 
             try
             {
@@ -211,10 +226,13 @@ namespace ScriptEngine.Compiler
                 methodInfo.SetRuntimeParameters(entry, GetVariableNames(localCtx));
                 
                 var entryRefNumber = _module.MethodRefs.Count;
-                var bodyBinding = new SymbolBinding
+                var descriptor = _ctx.GetBinding(topIdx);
+                var bodyBinding = new ModuleSymbolBinding
                 {
-                    ScopeNumber = topIdx,
-                    MemberNumber = _module.Methods.Count
+                    Target = descriptor.Target,
+                    MemberNumber = _module.Methods.Count,
+                    Kind = descriptor.Kind,
+                    ScopeIndex = descriptor.ScopeIndex
                 };
                 
                 _module.Methods.Add(methodInfo);
@@ -276,7 +294,7 @@ namespace ScriptEngine.Compiler
                 methodCtx.DefineVariable(new LocalVariableSymbol(paramNode.Name));
             }
             
-            _ctx.PushScope(methodCtx, null);
+            _ctx.PushScope(methodCtx, ScopeBindingDescriptor.ThisScope());
             var entryPoint = _module.Code.Count;
             try
             {
@@ -300,7 +318,15 @@ namespace ScriptEngine.Compiler
                 AddError(LocalizedErrors.DuplicateMethodDefinition(signature.MethodName), signature.Location);
                 binding = default;
             }
-            _module.MethodRefs.Add(binding);
+            var descriptor = _ctx.GetBinding(binding.ScopeNumber);
+            var imageBinding = new ModuleSymbolBinding
+            {
+                Target = descriptor.Target,
+                MemberNumber = binding.MemberNumber,
+                Kind = descriptor.Kind,
+                ScopeIndex = descriptor.ScopeIndex
+            };
+            _module.MethodRefs.Add(imageBinding);
             _module.Methods.Add(methodInfo);
         }
 
@@ -732,13 +758,54 @@ namespace ScriptEngine.Compiler
 
             var symbol = _ctx.GetVariable(varNum);
             
-            if (symbol is IPropertySymbol)
+            if (symbol is IPropertySymbol propSymbol)
             {
+                if (_importsOption != ExplicitImportsBehavior.Disabled && symbol is IPackageSymbol pkgSymbol)
+                {
+                    CheckExplicitImport(node, pkgSymbol, symbol);
+                }
+                
+                if (propSymbol.Property is ISupportsDeprecation { IsDeprecated: true } && 
+                    !_reportedOldProperties.Contains(propSymbol.Property))
+                {
+                    var message = BilingualString.Localize(
+                        $"Использование устаревшего свойства \"{identifier}\" в файле \"{_sourceCode.Location}\" ({node.Location})",
+                        $"Usage of deprecated property \"{identifier}\" in \"{_sourceCode.Location}\" ({node.Location})"
+                    );
+                    _reportedOldProperties.Add(propSymbol.Property);
+                    SystemLogger.Write(message);
+                }
+                
                 return PushPropertyReference(varNum);
             }
             else
             {
                 return PushSimpleVariable(varNum);
+            }
+        }
+
+        private void CheckExplicitImport(TerminalNode node, IPackageSymbol pkgSymbol, IVariableSymbol symbol)
+        {
+            var packageInfo = pkgSymbol.GetPackageInfo();
+            var id = packageInfo.Id;
+
+            // Если модуль принадлежит той же библиотеке - не требуем явный импорт
+            if (_sourceCode.OwnerPackageId != null && id == _sourceCode.OwnerPackageId)
+                return;
+
+            if (!_localImports.Contains(id))
+            {
+                var error = CompilerErrors.MissedImport(symbol.Name, packageInfo.ShortName);
+                error.Position = MakeCodePosition(node.Location);
+                switch (_importsOption)
+                {
+                    case ExplicitImportsBehavior.Enabled:
+                        AddError(error);
+                        break;
+                    case ExplicitImportsBehavior.Warn:
+                        SystemLogger.Write(error.ToString());
+                        break;
+                }
             }
         }
 
@@ -1250,22 +1317,40 @@ namespace ScriptEngine.Compiler
 
         private int GetMethodRefNumber(in SymbolBinding methodBinding)
         {
-            var idx = _module.MethodRefs.IndexOf(methodBinding);
+            var descriptor = _ctx.GetBinding(methodBinding.ScopeNumber);
+            var imageBinding = new ModuleSymbolBinding
+            {
+                Target = descriptor.Target,
+                MemberNumber = methodBinding.MemberNumber,
+                Kind = descriptor.Kind,
+                ScopeIndex = descriptor.ScopeIndex
+            };
+            
+            var idx = _module.MethodRefs.IndexOf(imageBinding);
             if (idx < 0)
             {
                 idx = _module.MethodRefs.Count;
-                _module.MethodRefs.Add(methodBinding);
+                _module.MethodRefs.Add(imageBinding);
             }
             return idx;
         }
 
         private int GetVariableRefNumber(in SymbolBinding binding)
         {
-            var idx = _module.VariableRefs.IndexOf(binding);
+            var descriptor = _ctx.GetBinding(binding.ScopeNumber);
+            var imageBinding = new ModuleSymbolBinding
+            {
+                Target = descriptor.Target,
+                MemberNumber = binding.MemberNumber,
+                Kind = descriptor.Kind,
+                ScopeIndex = descriptor.ScopeIndex
+            };
+            
+            var idx = _module.VariableRefs.IndexOf(imageBinding);
             if (idx < 0)
             {
                 idx = _module.VariableRefs.Count;
-                _module.VariableRefs.Add(binding);
+                _module.VariableRefs.Add(imageBinding);
             }
 
             return idx;

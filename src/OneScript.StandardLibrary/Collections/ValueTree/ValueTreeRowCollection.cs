@@ -7,14 +7,14 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
+using OneScript.StandardLibrary.Collections.Exceptions;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTree
 {
@@ -72,7 +72,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         [ContextMethod("Количество", "Count")]
         public override int Count()
         {
-            return _rows.Count();
+            return _rows.Count;
         }
 
         /// <summary>
@@ -323,12 +323,12 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             else
                 throw RuntimeException.InvalidArgumentType();
 
-            if (indexSource < 0 || indexSource >= _rows.Count())
+            if (indexSource < 0 || indexSource >= _rows.Count)
                 throw RuntimeException.InvalidArgumentValue();
 
-            int indexDestination = (indexSource + offset) % _rows.Count();
+            int indexDestination = (indexSource + offset) % _rows.Count;
             while (indexDestination < 0)
-                indexDestination += _rows.Count();
+                indexDestination += _rows.Count;
 
             ValueTreeRow tmp = _rows[indexSource];
 
@@ -361,15 +361,15 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             foreach (string column in aColumns)
             {
                 string[] description = column.Trim().Split(' ');
-                if (description.Count() == 0)
-                    throw PropertyAccessException.PropNotFoundException(""); // TODO: WrongColumnNameException
+                if (description.Length == 0)
+                    throw ColumnException.WrongColumnName(); 
 
                 ValueTreeSortRule desc = new ValueTreeSortRule();
                 desc.Column = this.Columns.FindColumnByName(description[0]);
                 if (desc.Column == null)
-                    throw PropertyAccessException.PropNotFoundException(description[0]);
+                    throw ColumnException.WrongColumnName(description[0]);
 
-                if (description.Count() > 1)
+                if (description.Length > 1)
                 {
                     if (String.Compare(description[1], "DESC", true) == 0 || String.Compare(description[1], "УБЫВ", true) == 0)
                         desc.direction = -1;
@@ -389,14 +389,15 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         {
             readonly List<ValueTreeSortRule> _rules;
 
-            readonly GenericIValueComparer _comparer = new GenericIValueComparer();
+            readonly GenericIValueComparer _comparer;
 
-            public RowComparator(List<ValueTreeSortRule> rules)
+            public RowComparator(IBslProcess process, List<ValueTreeSortRule> rules)
             {
-                if (rules.Count() == 0)
+                if (rules.Count == 0)
                     throw RuntimeException.InvalidArgumentValue();
 
                 this._rules = rules;
+                _comparer = new GenericIValueComparer(process);
             }
 
             private int OneCompare(ValueTreeRow x, ValueTreeRow y, ValueTreeSortRule rule)
@@ -414,7 +415,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
                 int i = 0, r;
                 while ((r = OneCompare(x, y, _rules[i])) == 0)
                 {
-                    if (++i >= _rules.Count())
+                    if (++i >= _rules.Count)
                         return 0;
                 }
 
@@ -430,12 +431,12 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         /// <param name="sortChildren">Булево. Если Истина, сортировка будет применена также к вложенным строкам.</param>
         /// <param name="comparator">СравнениеЗначений. Не используется.</param>
         [ContextMethod("Сортировать", "Sort")]
-        public void Sort(string columns, bool sortChildren = false, IValue comparator = null)
+        public void Sort(IBslProcess process, string columns, bool sortChildren = false, IValue comparator = null)
         {
-            Sort(new RowComparator(GetSortRules(columns)), sortChildren);
+            Sort(process, new RowComparator(process, GetSortRules(columns)), sortChildren);
         }
 
-        private void Sort(RowComparator comparator, bool sortChildren)
+        private void Sort(IBslProcess process, RowComparator comparator, bool sortChildren)
         {
             _rows.Sort(comparator);
 
@@ -443,7 +444,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
             {
                 foreach (var row in _rows)
                 {
-                    row.Rows.Sort(comparator, sortChildren);
+                    row.Rows.Sort(process, comparator, sortChildren);
                 }
             }
         }

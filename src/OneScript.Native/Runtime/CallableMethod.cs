@@ -60,13 +60,9 @@ namespace OneScript.Native.Runtime
                 }
                 else if (obj is IAttachableContext context)
                 {
-                    context.OnAttach(out var state, out var methods);
-
                     callableWrapper = new NativeClassInstanceWrapper
                     {
-                        Context = context,
-                        State = state,
-                        Methods = methods
+                        Context = context
                     };
                 }
                 else

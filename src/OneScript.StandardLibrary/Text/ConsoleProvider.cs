@@ -23,13 +23,7 @@ namespace OneScript.StandardLibrary.Text
         {
             _console = new ConsoleContext(executionContext);
         }
-
-        public override void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
-        {
-            variables = new [] {Variable.CreateContextPropertyReference(this, 0, GetPropName(0))};
-            methods = Array.Empty<BslMethodInfo>();
-        }
-
+        
         [ContextProperty("Консоль", "Console")]
         public ConsoleContext Console => _console;
 

@@ -126,7 +126,7 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext members
 
-        public virtual void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
+        void IAttachableContext.OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
         {
             variables = new IVariable[GetPropCount()];
             for (int i = 0; i < variables.Length; i++)
@@ -136,7 +136,21 @@ namespace ScriptEngine.Machine.Contexts
             
             methods = this.GetMethods().ToArray();
         }
+
+        IVariable IAttachableContext.GetVariable(int index)
+        {
+            return Variable.CreateContextPropertyReference(this, index, GetPropName(index));
+        }
         
+        BslMethodInfo IAttachableContext.GetMethod(int index)
+        {
+            return GetMethodInfo(index);
+        }
+
+        int IAttachableContext.VariablesCount => GetPropCount();
+        
+        int IAttachableContext.MethodsCount => GetMethodsCount();
+
         public virtual int GetMethodsCount()
         {
             return Methods.Count;

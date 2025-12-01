@@ -27,7 +27,30 @@ namespace OneScript.Values
             return ToString();
         }
 
-        public abstract int CompareTo(BslValue other);
+        public virtual int CompareTo(BslValue other)
+        {
+            if (other is null)
+                return -1;
+
+            string typeOfThis = null;
+            string typeOfOther = null;
+            
+            try
+            {
+                typeOfThis = this.SystemType.Name;
+                typeOfOther = other.SystemType.Name;
+            }
+            catch (InvalidOperationException) // если тип не зарегистрирован
+            {
+                typeOfThis ??= this.GetType().ToString();
+                typeOfOther ??= other.GetType().ToString();
+            }
+            
+            if (typeOfThis == typeOfOther)
+                throw ComparisonException.NotSupported(typeOfThis);
+            else
+                throw ComparisonException.NotSupported(typeOfThis, typeOfOther);
+        }
 
         public abstract bool Equals(BslValue other);
         
@@ -76,7 +99,7 @@ namespace OneScript.Values
 
         public virtual IValue GetRawValue() => this;
 
-        private BslValue UnwrapReference(IValue v)
+        private static BslValue UnwrapReference(IValue v)
         {
             if (v is IValueReference r)
                 return r.BslValue;

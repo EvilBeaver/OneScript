@@ -11,7 +11,7 @@ ARG VERSION="dev"
 RUN mono /var/ovm/ovm.exe install --fdd ${VERSION}
 
 # Основной образ
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-jammy
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy
 
 RUN apt-get update \
     && apt-get install -y locales \

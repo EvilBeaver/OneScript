@@ -17,11 +17,11 @@ jobs:
     # Setup steps for OneScript development environment
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - run: git config --global core.quotepath false
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '6.0.x'
 

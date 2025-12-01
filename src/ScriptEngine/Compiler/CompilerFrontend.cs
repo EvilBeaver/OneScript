@@ -14,6 +14,7 @@ using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Debugger;
 
 namespace ScriptEngine.Compiler
 {
@@ -25,6 +26,7 @@ namespace ScriptEngine.Compiler
     {
         private readonly IDependencyResolver _dependencyResolver;
         private readonly PredefinedInterfaceResolver _interfaceResolver;
+        private readonly OneScriptCoreOptions _options;
         private readonly CompilerBackendSelector _backendSelector;
 
         public CompilerFrontend(
@@ -32,10 +34,12 @@ namespace ScriptEngine.Compiler
             IErrorSink errorSink,
             IServiceContainer services,
             IDependencyResolver dependencyResolver,
-            PredefinedInterfaceResolver interfaceResolver) : base(handlers, errorSink, services)
+            PredefinedInterfaceResolver interfaceResolver,
+            OneScriptCoreOptions options) : base(handlers, errorSink, services)
         {
             _dependencyResolver = dependencyResolver;
             _interfaceResolver = interfaceResolver;
+            _options = options;
 
             _backendSelector = services.Resolve<CompilerBackendSelector>();
 
@@ -45,7 +49,21 @@ namespace ScriptEngine.Compiler
 
         private ICompilerBackend StackInitializer()
         {
-            var backend = new DefaultCompilerBackend(ErrorSink);
+            var actualBehavior = _options.ExplicitImports;
+            if (_options.ExplicitImports == ExplicitImportsBehavior.Development)
+            {
+                var dbg = Services.TryResolve<IDebugger>();
+                if (dbg == null || dbg.IsEnabled == false)
+                {
+                    actualBehavior = ExplicitImportsBehavior.Disabled;
+                }
+                else
+                {
+                    actualBehavior = ExplicitImportsBehavior.Enabled;
+                }
+            }
+            
+            var backend = new DefaultCompilerBackend(ErrorSink, actualBehavior);
             SetDefaultOptions(backend);
             backend.DependencyResolver = _dependencyResolver;
 

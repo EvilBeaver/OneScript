@@ -94,10 +94,11 @@ namespace ScriptEngine.HostedScript
         {
             Initialize();
             SetGlobalEnvironment(host, src);
-            if (_engine.DebugController != null)
+            
+            if (_engine.Debugger.IsEnabled)
             {
-                _engine.DebugController.Init();
-                _engine.DebugController.Wait();
+                _engine.Debugger.Start();
+                _engine.Debugger.GetSession().WaitReadyToRun();
             }
 
             var compilerSvc = GetCompilerService();
@@ -110,7 +111,7 @@ namespace ScriptEngine.HostedScript
             }
             catch (CompilerException)
             {
-                _engine.DebugController?.NotifyProcessExit(1);
+                _engine.Debugger.NotifyProcessExit(1);
                 throw;
             }
             return InitProcess(bslProcess, host, module);

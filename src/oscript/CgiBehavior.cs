@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using OneScript.Contexts;
+using OneScript.DebugServices;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.StandardLibrary;
@@ -97,12 +98,27 @@ namespace oscript
 			return exitCode;
 		}
 
-		public void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
+		void IAttachableContext.OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
 		{
 			variables = Array.Empty<IVariable>();
 			methods = this.GetMethods().ToArray();
 		}
 
+		IVariable IAttachableContext.GetVariable(int index)
+		{
+			throw new IndexOutOfRangeException("No such variable at index: " + index);
+		}
+
+		BslMethodInfo IAttachableContext.GetMethod(int index)
+		{
+			return GetMethodInfo(index);
+		}
+
+		int IAttachableContext.VariablesCount => 0;
+		
+		int IAttachableContext.MethodsCount => _methods.Count;
+
+		
 		#region CGIHost
 
 		[ContextMethod("ВывестиЗаголовок", "Header")]

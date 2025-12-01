@@ -8,16 +8,19 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
+#if NET48
 using System.Runtime.Serialization.Formatters.Binary;
+#endif
 using OneScript.DebugProtocol.Abstractions;
 
+// ReSharper disable once CheckNamespace
 namespace OneScript.DebugProtocol
 {
     /// <summary>
     /// TCP-канал, использующий стандартную Binary-сериализацию .NET
     /// </summary>
     [Obsolete("Используется только со стороны адаптера, для работы со старыми версиями 1Script")]
-    public sealed class BinaryChannel : ICommunicationChannel
+    public sealed class BinaryChannel : IMessageChannel
     {
         private readonly TcpClient _client;
         private readonly NetworkStream _clientStream;

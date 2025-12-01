@@ -12,14 +12,6 @@ namespace OneScript.Values
 {
     public abstract class BslObjectValue : BslValue
     {
-        public override int CompareTo(BslValue other)
-        {
-            var msg = new BilingualString("Сравнение на больше/меньше для данного типа не поддерживается",
-                "Comparison for less/greater is not supported for this type");
-            
-            throw new RuntimeException(msg);
-        }
-
         public override bool Equals(BslValue other)
         {
             return ReferenceEquals(this, other);

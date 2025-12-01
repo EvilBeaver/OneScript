@@ -6,7 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -16,12 +18,33 @@ namespace ScriptEngine.Machine.Contexts
         
         public DynamicPropertiesAccessor()
         {
-            _propHolder = new DynamicPropertiesHolder();
+            _propHolder = new DynamicPropertiesHolder(InfoFactory);
         }
- 
-        protected int RegisterProperty(string name)
+
+        private BslPropertyInfo InfoFactory(int index, string identifier, bool canRead, bool canWrite)
         {
-            return _propHolder.RegisterProperty(name);
+            return OnPropertyRegistration(index, identifier, canRead, canWrite);
+        }
+        
+        protected virtual BslPropertyInfo OnPropertyRegistration(int index, string propertyName, bool canRead, bool canWrite)
+        {
+            return BslPropertyBuilder.Create()
+                .Name(propertyName)
+                .CanRead(canRead)
+                .CanWrite(canWrite)
+                .SetDispatchingIndex(index)
+                .ReturnType(typeof(BslValue))
+                .Build();
+        }
+
+        protected int RegisterProperty(string name, bool canRead = true, bool canWrite = true)
+        {
+            return _propHolder.RegisterProperty(name, canRead, canWrite);
+        }
+        
+        protected int RegisterProperty(BslPropertyInfo propInfo)
+        {
+            return _propHolder.RegisterProperty(propInfo);
         }
 
         protected void RemoveProperty(string name)
@@ -42,6 +65,11 @@ namespace ScriptEngine.Machine.Contexts
         protected virtual IEnumerable<KeyValuePair<string, int>> GetDynamicProperties()
         {
             return _propHolder.GetProperties();
+        }
+
+        public override BslPropertyInfo GetPropertyInfo(int index)
+        {
+            return _propHolder[index];
         }
 
         #region IRuntimeContextInstance Members

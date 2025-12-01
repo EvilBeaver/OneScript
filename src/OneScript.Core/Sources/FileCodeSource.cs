@@ -9,6 +9,7 @@ using System.IO;
 using System.Text;
 using OneScript.Commons;
 using System;
+using OneScript.Language.Sources;
 
 namespace OneScript.Sources
 {

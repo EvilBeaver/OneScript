@@ -9,12 +9,12 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Debugger;
 
 namespace OneScript.DebugServices
 {
-    public class ThreadManager : IThreadManager
+    public class ThreadManager : IThreadEventsListener
     {
         private readonly IDictionary<int, MachineWaitToken> _machinesOnThreads = new ConcurrentDictionary<int, MachineWaitToken>();
 
@@ -85,7 +85,7 @@ namespace OneScript.DebugServices
             };
         }
 
-        void IThreadManager.ThreadStopped(int threadId, MachineStopReason reason, string errorMessage)
+        void IThreadEventsListener.ThreadStopped(int threadId, MachineStopReason reason, string errorMessage)
         {
             EmitThreadStopped(threadId, reason, errorMessage);
         }

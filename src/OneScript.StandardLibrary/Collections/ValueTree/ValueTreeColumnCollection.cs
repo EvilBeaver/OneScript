@@ -11,12 +11,12 @@ using System.Linq;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
+using OneScript.StandardLibrary.Collections.Exceptions;
 using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTree
 {
@@ -40,7 +40,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         public ValueTreeColumn Add(string name, TypeDescription type = null, string title = null, int width = 0)
         {
             if (FindColumnByName(name) != null)
-                throw new RuntimeException("Неверное имя колонки " + name);
+                throw ColumnException.DuplicatedColumnName(name);
 
             ValueTreeColumn column = new ValueTreeColumn(this, name, title, type, width);
             _columns.Add(column);
@@ -61,7 +61,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         public ValueTreeColumn Insert(int index, string name, TypeDescription type = null, string title = null, int width = 0)
         {
             if (FindColumnByName(name) != null)
-                throw new RuntimeException("Неверное имя колонки " + name);
+                throw ColumnException.DuplicatedColumnName(name);
 
             ValueTreeColumn column = new ValueTreeColumn(this, name, title, type, width);
             _columns.Insert(index, column);

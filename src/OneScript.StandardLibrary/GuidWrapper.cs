@@ -62,7 +62,7 @@ namespace OneScript.StandardLibrary
         {
             GuidWrapper otherUuid = other.GetRawValue() as GuidWrapper;
             if (otherUuid == null)
-                throw RuntimeException.ComparisonNotSupportedException();
+                throw ComparisonException.NotSupported();
 
             return _value.CompareTo(otherUuid._value);
         }

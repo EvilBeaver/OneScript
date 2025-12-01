@@ -99,7 +99,7 @@ namespace OneScript.Native.Compiler
             {
                 MethodReturn = Expression.Label(typeof(BslValue))
             });
-            Symbols.PushScope(new SymbolScope(), null);
+            Symbols.PushScope(new SymbolScope(), ScopeBindingDescriptor.ThisScope());
             FillParameterVariables();
 
             try
@@ -245,7 +245,8 @@ namespace OneScript.Native.Compiler
             }
             else if (symbol is IPropertySymbol prop)
             {
-                var expression = ReadGlobalProperty(Symbols.GetBinding(binding.ScopeNumber), prop);
+                var descriptor = Symbols.GetBinding(binding.ScopeNumber);
+                var expression = ReadGlobalProperty((IRuntimeContextInstance)descriptor.Target, prop);
                 _statementBuildParts.Push(expression);
             }
             else if (symbol is IFieldSymbol && _method.IsInstance)
@@ -279,13 +280,13 @@ namespace OneScript.Native.Compiler
 
         private object GetPropertyBinding(SymbolBinding binding, IVariableSymbol symbol)
         {
-            return Symbols.GetBinding(binding.ScopeNumber) ?? 
+            return Symbols.GetBinding(binding.ScopeNumber).Target ?? 
                    throw new InvalidOperationException($"Property {symbol.Name} is not bound to a value");
         }
         
         private object GetMethodBinding(SymbolBinding binding, IMethodSymbol symbol)
         {
-            return Symbols.GetBinding(binding.ScopeNumber) ?? 
+            return Symbols.GetBinding(binding.ScopeNumber).Target ?? 
                    throw new InvalidOperationException($"Method {symbol.Name} is not bound to a value");
         }
 

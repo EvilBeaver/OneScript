@@ -27,8 +27,6 @@ namespace VSCode.DebugAdapter
         
         public IDictionary<string, string> Environment { get; set; } = new Dictionary<string, string>();
         
-        public bool WaitOnStart { get; set; }
-        
         protected override Process CreateProcess()
         {
             var dbgArgs = new List<string>();

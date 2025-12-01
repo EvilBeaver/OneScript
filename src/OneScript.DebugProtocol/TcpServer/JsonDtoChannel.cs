@@ -14,29 +14,29 @@ using OneScript.DebugProtocol.Abstractions;
 
 namespace OneScript.DebugProtocol.TcpServer
 {
-    public class JsonDtoChannel : ICommunicationChannel
+    public class JsonDtoChannel : IMessageChannel
     {
-        private readonly TcpClient _tcpClient;
+        private readonly IDebuggerClient _client;
         private readonly Stream _dataStream;
         
         private bool _enabled = true;
 
-        public JsonDtoChannel(TcpClient tcpClient)
+        public JsonDtoChannel(IDebuggerClient client)
         {
-            _tcpClient = tcpClient;
-            _dataStream = tcpClient.GetStream();
+            _client = client;
+            _dataStream = client.GetDataStream();
         }
         
         public JsonDtoChannel(Stream dataStream)
         {
-            _tcpClient = null;
+            _client = null;
             _dataStream = dataStream;
         }
 
         public void Dispose()
         {
             _dataStream.Dispose();
-            _tcpClient?.Close();
+            _client?.Dispose();
             _enabled = false;
         }
 
@@ -71,35 +71,27 @@ namespace OneScript.DebugProtocol.TcpServer
             if (!_enabled)
                 throw new ObjectDisposedException(nameof(JsonDtoChannel));
 
-            using (var socketReader = new BinaryReader(_dataStream, Encoding.UTF8, true))
+            try
             {
-                var contentLength = socketReader.ReadInt32();
-                var contentBuffer = new byte[contentLength];
-                ReadStream(socketReader, contentBuffer, contentLength);
-
-                using (var textReader = new StreamReader(new MemoryStream(contentBuffer), Encoding.UTF8, false))
+                using (var socketReader = new BinaryReader(_dataStream, Encoding.UTF8, true))
                 {
-                    using var reader = new JsonTextReader(textReader);
-                    return JsonSerializer.CreateDefault().Deserialize<TcpProtocolDtoBase>(reader);
+                    var contentLength = socketReader.ReadInt32();
+                    var contentBuffer = new byte[contentLength];
+                    StreamUtils.ReadStream(socketReader.BaseStream, contentBuffer, contentLength);
+
+                    using (var textReader = new StreamReader(new MemoryStream(contentBuffer), Encoding.UTF8, false))
+                    {
+                        using var reader = new JsonTextReader(textReader);
+                        return JsonSerializer.CreateDefault().Deserialize<TcpProtocolDtoBase>(reader);
+                    }
                 }
             }
-        }
-
-        private void ReadStream(BinaryReader reader, byte[] buffer, int length)
-        {
-            int readPosition = 0;
-            int bytesReceived = 0;
-
-            while (bytesReceived < length)
+            catch (Exception ex)
             {
-                bytesReceived = reader.Read(buffer, readPosition, length - bytesReceived);
-                if (bytesReceived == 0)
-                    throw new IOException("Unexpected end of stream");
-                
-                readPosition += bytesReceived;
+                throw new ChannelException("Channel read exception", ex);
             }
         }
         
-        public bool Connected => _enabled && (_tcpClient?.Connected ?? true);
+        public bool Connected => _enabled && (_client?.Connected ?? true);
     }
 }

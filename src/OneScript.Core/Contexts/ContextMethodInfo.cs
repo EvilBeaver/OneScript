@@ -9,6 +9,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using OneScript.Commons;
 using OneScript.Execution;
 
@@ -17,39 +18,33 @@ namespace OneScript.Contexts
     /// <summary>
     /// Информация о методе, объявленном в классе .NET и помеченном атрибутом ContextMethod
     /// </summary>
-    public sealed class ContextMethodInfo : BslMethodInfo, IObjectWrapper
+    public sealed class ContextMethodInfo : BslMethodInfo, IObjectWrapper, ISupportsDeprecation
     {
         private readonly MethodInfo _realMethod;
-        private readonly ContextMethodAttribute _scriptMark;
 
         public ContextMethodInfo(MethodInfo realMethod)
+            : this(realMethod, realMethod.GetCustomAttribute<ContextMethodAttribute>(false)
+                               ?? throw new ArgumentException("Method is not marked with ContextMethodAttribute"))
         {
-            _realMethod = realMethod;
-            try
-            {
-                _scriptMark =
-                    (ContextMethodAttribute) GetCustomAttributes(typeof(ContextMethodAttribute), false).First();
-            }
-            catch (InvalidOperationException e)
-            {
-                throw new ArgumentException("Method is not marked with ContextMethodAttribute", e);
-            }
         }
 
         public ContextMethodInfo(MethodInfo realMethod, ContextMethodAttribute binding)
         {
             _realMethod = realMethod;
-            _scriptMark = binding;
             InjectsProcess = _realMethod.GetParameters().FirstOrDefault()?.ParameterType == typeof(IBslProcess);
+            IsDeprecated = binding.IsDeprecated;
+            IsForbiddenToUse = binding.ThrowOnUse;
+            Name = binding.Name;
+            Alias = binding.Alias;
         }
 
         public override Type ReturnType => _realMethod.ReturnType;
 
         public override ParameterInfo ReturnParameter => _realMethod.ReturnParameter;
 
-        public bool IsDeprecated => _scriptMark.IsDeprecated;
+        public bool IsDeprecated { get; }
 
-        public bool IsForbiddenToUse => _scriptMark.ThrowOnUse;
+        public bool IsForbiddenToUse { get; }
         
         public override object[] GetCustomAttributes(bool inherit)
         {
@@ -88,9 +83,9 @@ namespace OneScript.Contexts
 
         public override ICustomAttributeProvider ReturnTypeCustomAttributes => _realMethod.ReturnTypeCustomAttributes;
 
-        public override string Name => _scriptMark.Name;
-        
-        public override string Alias => _scriptMark.Alias;
+        public override string Name { get; }
+
+        public override string Alias { get; }
 
         public override Type DeclaringType => _realMethod.DeclaringType;
 

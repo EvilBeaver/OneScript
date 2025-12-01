@@ -7,6 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using OneScript.Contexts;
 using OneScript.Contexts.Enums;
 using OneScript.Types;
 using OneScript.Values;
@@ -76,10 +78,30 @@ namespace ScriptEngine.Machine.Contexts
                             alias = field.Name;
                     }
 
-                    var osValue = new ClrEnumValueWrapper<T>(valuesType, (T)field.GetValue(null),
+                    var enumValue = (T)field.GetValue(null)!;
+                    var osValue = new ClrEnumValueWrapper<T>(valuesType, enumValue,
                         contextField.Name, alias);
                     
                     AddValue(osValue);
+                    
+                    // Deprecations
+                    foreach (var deprecation in field.GetCustomAttributes<DeprecatedNameAttribute>())
+                    {
+                        if (deprecation.Name.Equals(contextField.Name, StringComparison.InvariantCultureIgnoreCase)
+                            || deprecation.Name.Equals(contextField.Alias, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            throw new InvalidOperationException($"Enum value '{contextField.Name}' has same name in deprecations");
+                        }
+                        
+                        var deprecatedValue = new ClrEnumValueWrapper<T>(valuesType, enumValue, deprecation.Name, null);
+                        var propertyDef = new SystemPropertyInfo.Builder(deprecation.Name)
+                            .SetPropertyType(deprecatedValue.UnderlyingValue.GetType())
+                            .SetDeprecated(true)
+                            .SetDeclaringType(enumType)
+                            .Build();
+                        
+                        AddValue(deprecatedValue, propertyDef);
+                    }
                 }
             }
         }

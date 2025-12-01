@@ -1,23 +1,111 @@
-# README #
+# OneScript #
 
-### The project is an independent cross-platform open-source implementation of a virtual machine that executes scripts written in BSL (1C:Enterprise scripting language).
+[![Join telegram chat](https://img.shields.io/badge/chat-telegram-blue?style=flat&logo=telegram)](https://t.me/oscript_library) [![DEV Build Status](https://build.oscript.io/buildStatus/icon?job=1Script%2Fdevelop&style=flat-square&subject=dev)](https://build.oscript.io/job/1Script/job/develop/) [![STABLE Build Status](https://build.oscript.io/buildStatus/icon?job=1Script%2Fmaster&style=flat-square&subject=stable)](https://build.oscript.io/job/1Script/job/master/)
 
-![Logo](.github/logo-small.png)
+## The project is an independent cross-platform implementation of a virtual machine that executes scripts written in the 1C:Enterprise language ##
 
-Script execution doesn't use any 1C:Enterprise system libraries and doesn't require installation of 1C:Enterprise system on the target machine.
+![Logo](.github/logo-small-2.png) ![Logo](.github/logo-small.png)
 
-In other words, this is a possibility to write programs in the 1C (BSL) language without using the 1C:Enterprise platform.
+The 1C:Enterprise system libraries are not used and installation of the 1C:Enterprise system on the target machine is not required.
 
-## Name and pronunciation
+In other words, this is a tool for writing and executing programs in the 1C language without using the 1C:Enterprise platform.
 
-The project is called OneScript, can be abbreviated to the title 1Script on writing.
+## Name and pronunciation ##
 
-## Project site
+The project is called OneScript, can be abbreviated to the title 1Script when writing. Pronounced as `[uanskript]`.
 
-Basic information about the project, releases and technical documentation are located on the official website.
+OneScript allows you to create and execute text scripts written in a language familiar to any specialist working with the 1C:Enterprise system. Using a familiar language for script automation significantly increases a specialist's productivity by simplifying the automation of manual operations.
 
-http://oscript.io
+## Project site ##
 
-## Library of useful scripts
+Main information about the project, releases and technical documentation are located on the official website
 
-The OneScript package already includes a set of commonly used packages.
+[https://oscript.io](https://oscript.io)
+
+## Library of useful scripts ##
+
+The OneScript distribution already includes a set of the most commonly used packages. These, as well as other packages, are located in the [oscript-library](https://github.com/oscript-library) repository and are available to everyone. There is a package manager [opm](https://github.com/oscript-library/opm).
+
+## Installation ##
+
+### Windows ###
+
+- (interactively) download from the [official website](https://oscript.io) or installer from the [Releases](https://github.com/EvilBeaver/OneScript/releases) section and run it. Then, Next, Done.
+
+### Linux ###
+
+- (interactively) download the required package from the [official website](https://oscript.io) or installer from the [Releases](https://github.com/EvilBeaver/OneScript/releases) section and install it.
+
+### MacOS ###
+
+There is no interactive installer, but the engine can be installed from the command line:
+
+- install [homebrew](https://brew.sh/index_ru)
+- install mono with the command `brew install mono`
+- download [ovm](https://github.com/oscript-library/ovm/releases). Download the `ovm.exe` file (despite the .exe extension it will work on MacOS)
+- run the command `mono path/to/ovm.exe install stable`
+
+    *Tip: To correctly specify the path to `ovm.exe`, drag the `ovm.exe` file into the terminal. Example of a full command: `mono Users/username/Downloads/ovm.exe install stable`*
+- run the command `mono path/to/ovm.exe use stable`
+- restart the terminal
+
+#### Additional configuration for Self-Contained distribution (does not require dotnet installation)
+
+```
+chmod +x ./oscript
+xattr -d com.apple.quarantine *.dylib oscript
+codesign -s - ./oscript
+```
+
+
+# Manual local build
+
+## Preparation
+
+Links to distributions are provided below, however, please note that links may change over time and their relevance is not guaranteed. You need dotnet SDK and C++ compiler, which can be downloaded from anywhere you can find.
+
+* Install [MS BuildTools](https://visualstudio.microsoft.com/ru/thank-you-downloading-visual-studio/?sku=buildtools&rel=16), when installing enable targeting for .net6, .net4.8, install C++ compiler.
+
+## Build
+
+Launch Developer Command Prompt (will appear in the Start menu after installing MSBuildTools or Visual Studio). Navigate to the OneScript repository directory. The following are commands in the Developer Command Prompt console.
+Build is performed using msbuild. Targets:
+
+* CleanAll - clean previous build results
+* BuildAll - prepare files for distribution
+* MakeCPP;MakeFDD;MakeSCD;BuildDebugger - separate build targets for preparing different types of distributions
+* PrepareDistributionFiles - build full distribution packages (including libraries)
+* PackDistributions - prepare ZIP archives for distribution
+* CreateNuget - create packages for publishing to NuGet
+
+**Build parameters**
+
+* VersionPrefix - release number prefix, its main part, for example, 2.0.0
+* VersionSuffix - version suffix, which usually acts as an arbitrary versioning suffix according to semver, for example, beta-786 (optional)
+* NoCppCompiler - if True - C++ compiler is not installed, C++ components (NativeApi support) will not be added to the build
+
+All distribution files will be placed in the `built` directory at the root of the 1Script repository
+
+### Building distribution contents in a separate directory
+
+```bat
+msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles
+```
+
+### Building with manual version specification
+
+```bat
+msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles /p:VersionPrefix=2.0.0
+```
+
+### Building ZIP distributions
+
+```bat
+msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles;PackDistributions /p:VersionPrefix=2.0.0 /p:VersionSuffix=preview223
+```
+
+### Documentation generation
+
+```bat
+msbuild Build.csproj /t:BuildDocumentation
+```

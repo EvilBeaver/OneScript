@@ -5,11 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using OneScript.DebugServices;
 using OneScript.StandardLibrary;
 using ScriptEngine;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Debugger;
 
 namespace oscript
 {
@@ -24,7 +26,7 @@ namespace oscript
             _path = path;
         }
         
-        public IDebugController DebugController { get; set; }
+        public IDebugger DebugController { get; set; } = new DisabledDebugger();
         
         public string CodeStatFile { get; set; }
 
@@ -50,8 +52,6 @@ namespace oscript
             }
 
             var hostedScript = ConsoleHostBuilder.Build(builder);
-
-                
             
             var source = hostedScript.Loader.FromFile(_path);
             Process process;

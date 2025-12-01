@@ -12,11 +12,11 @@ using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
+using OneScript.StandardLibrary.Collections.Exceptions;
 using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {
@@ -48,7 +48,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         public ValueTableColumn Add(string name, TypeDescription type = null, string title = null, int width = 0)
         {
             if (FindColumnByName(name) != null)
-                throw new RuntimeException("Неверное имя колонки " + name);
+                throw ColumnException.DuplicatedColumnName(name);
 
             var column = new ValueTableColumn(this, ++maxColumnId, name, title, type, width);
             _columns.Add(column);
@@ -69,7 +69,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         public ValueTableColumn Insert(int index, string name, TypeDescription type = null, string title = null, int width = 0)
         {
             if (FindColumnByName(name) != null)
-                throw new RuntimeException("Неверное имя колонки " + name);
+                throw ColumnException.DuplicatedColumnName(name);
 
             ValueTableColumn column = new ValueTableColumn(this, ++maxColumnId, name, title, type, width);
             _columns.Insert(index, column);

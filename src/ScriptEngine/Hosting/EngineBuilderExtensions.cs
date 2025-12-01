@@ -17,6 +17,7 @@ using OneScript.Language.SyntaxAnalysis;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Machine.Debugger;
 using ScriptEngine.Machine.Interfaces;
 
 namespace ScriptEngine.Hosting
@@ -55,6 +56,7 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<IErrorSink>(svc => new ThrowingErrorSink(CompilerException.FromCodeError));
             services.RegisterSingleton<IExceptionInfoFactory, ExceptionInfoFactory>();
             services.RegisterSingleton<IBslProcessFactory, BslProcessFactory>();
+            services.RegisterSingleton<IDebugger, DisabledDebugger>();
 
             services.RegisterScoped<StackMachineProvider>();
             
@@ -89,7 +91,7 @@ namespace ScriptEngine.Hosting
             return b;
         }
 
-        public static IEngineBuilder WithDebugger(this IEngineBuilder b, IDebugController debugger)
+        public static IEngineBuilder WithDebugger(this IEngineBuilder b, IDebugger debugger)
         {
             b.Services.RegisterSingleton(debugger);
             return b;

@@ -12,7 +12,7 @@ using OneScript.Types;
 
 namespace OneScript.Values
 {
-    public sealed class BslBooleanValue : BslPrimitiveValue
+    public sealed class BslBooleanValue : BslPrimitiveValue, IBslComparable
     {
         public static readonly BslBooleanValue True = new BslBooleanValue(true);
         public static readonly BslBooleanValue False = new BslBooleanValue(false);
@@ -57,7 +57,6 @@ namespace OneScript.Values
         
         public override bool Equals(BslValue other)
         {
-            if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
 
            return other switch

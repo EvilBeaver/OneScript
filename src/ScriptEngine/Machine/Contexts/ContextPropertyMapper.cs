@@ -11,121 +11,15 @@ using System.Linq;
 using System.Reflection;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Language;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class PropertyTarget<TInstance>
-    {
-        private readonly BslPropertyInfo _propertyInfo;
-
-        public PropertyTarget(PropertyInfo propInfo)
-        {
-            _propertyInfo = new ContextPropertyInfo(propInfo);
-            Name = _propertyInfo.Name;
-            Alias = _propertyInfo.Alias;
-            
-            if (string.IsNullOrEmpty(Alias))
-                Alias = propInfo.Name;
-
-            IValue CantReadAction(TInstance inst)
-            {
-                throw PropertyAccessException.PropIsNotReadableException(Name);
-            }
-
-            void CantWriteAction(TInstance inst, IValue val)
-            {
-                throw PropertyAccessException.PropIsNotWritableException(Name);
-            }
-
-            if (_propertyInfo.CanRead)
-            {
-                var getMethodInfo = propInfo.GetGetMethod();
-                if (getMethodInfo == null)
-                {
-                    Getter = CantReadAction;
-                }
-                else
-                {
-                    var genericGetter = typeof(PropertyTarget<TInstance>).GetMembers(BindingFlags.NonPublic | BindingFlags.Instance)
-                        .Where(x => x.MemberType == MemberTypes.Method && x.Name == nameof(CreateGetter))
-                        .Select(x => (MethodInfo)x)
-                        .First();
-
-                    var resolvedGetter = genericGetter.MakeGenericMethod(propInfo.PropertyType);
-
-                    Getter = (Func<TInstance, IValue>)resolvedGetter.Invoke(this, new object[] { getMethodInfo });
-                }
-            }
-            else
-            {
-                Getter = CantReadAction;
-            }
-
-            if (_propertyInfo.CanWrite)
-            {
-                var setMethodInfo = propInfo.GetSetMethod();
-                if (setMethodInfo == null)
-                {
-                    Setter = CantWriteAction;
-                }
-                else
-                {
-                    var genericSetter = typeof(PropertyTarget<TInstance>).GetMembers(BindingFlags.NonPublic | BindingFlags.Instance)
-                        .Where(x => x.MemberType == MemberTypes.Method && x.Name == nameof(CreateSetter))
-                        .Select(x => (MethodInfo)x)
-                        .First();
-
-                    var resolvedSetter = genericSetter.MakeGenericMethod(propInfo.PropertyType);
-
-                    Setter = (Action<TInstance, IValue>)resolvedSetter.Invoke(this, new object[] { setMethodInfo });
-                }
-            }
-            else
-            {
-                Setter = CantWriteAction;
-            }
-        }
-        
-        public Func<TInstance, IValue> Getter { get; }
-
-        public Action<TInstance, IValue> Setter { get; }
-
-        public string Name { get; }
-
-        public string Alias { get; }
-
-        public bool CanRead => _propertyInfo.CanRead;
-        public bool CanWrite => _propertyInfo.CanWrite;
-
-        public BslPropertyInfo PropertyInfo => _propertyInfo;
-
-        private Func<TInstance, IValue> CreateGetter<T>(MethodInfo methInfo)
-        {
-            var method = (Func<TInstance, T>)Delegate.CreateDelegate(typeof(Func<TInstance, T>), methInfo);
-            return inst => ConvertReturnValue(method(inst));
-        }
-
-        private Action<TInstance, IValue> CreateSetter<T>(MethodInfo methInfo)
-        {
-            var method = (Action<TInstance, T>)Delegate.CreateDelegate(typeof(Action<TInstance, T>), methInfo);
-            return (inst, val) => method(inst, ConvertParam<T>(val));
-        }
-
-        private static T ConvertParam<T>(IValue value)
-        {
-            return ContextValuesMarshaller.ConvertValueStrict<T>(value);
-        }
-
-        private static IValue ConvertReturnValue<TRet>(TRet param)
-        {
-            return ContextValuesMarshaller.ConvertReturnValue(param);
-        }
-
-    }
-
     public class ContextPropertyMapper<TInstance>
     {
         private List<PropertyTarget<TInstance>> _properties;
+        private IdentifiersTrie<int> _propertyNumbers;
+        
         private readonly object _locker = new object();
 
         private void Init()
@@ -137,16 +31,50 @@ namespace ScriptEngine.Machine.Contexts
             {
                 if (_properties == null)
                 {
-                    _properties = FindProperties();
+                    var localProps = MapProperties();
+                    _propertyNumbers = new IdentifiersTrie<int>();
+                    for (int idx = 0; idx < localProps.Count; ++idx)
+                    {
+                        var propInfo = localProps[idx];
+
+                        _propertyNumbers.Add(propInfo.Name, idx);
+                        if (propInfo.Alias != null)
+                            _propertyNumbers.Add(propInfo.Alias, idx);
+                    }
+
+                    _properties = localProps;
                 }
             }
         }
 
-        private List<PropertyTarget<TInstance>> FindProperties()
+        private static List<PropertyTarget<TInstance>> MapProperties()
         {
-            return typeof(TInstance).GetProperties()
-                .Where(x => x.GetCustomAttributes(typeof(ContextPropertyAttribute), false).Any())
-                .Select(x => new PropertyTarget<TInstance>(x)).ToList();
+            var mappedProperties = new List<PropertyTarget<TInstance>>();
+            foreach (var propertyInfo in typeof(TInstance).GetProperties()
+                         .Where(x => Attribute.IsDefined(x, typeof(ContextPropertyAttribute))))
+            {
+                var propertyMarkup = propertyInfo.GetCustomAttribute<ContextPropertyAttribute>();
+                var bslProp = new ContextPropertyInfo(propertyInfo, propertyMarkup);
+                var mainMapping = new PropertyTarget<TInstance>(bslProp);
+                mappedProperties.Add(mainMapping);
+
+                foreach (var deprecation in propertyInfo.GetCustomAttributes<DeprecatedNameAttribute>())
+                {
+                    var deprecatedMarkup = new ContextPropertyAttribute(deprecation.Name)
+                    {
+                        CanRead = bslProp.CanRead,
+                        CanWrite = bslProp.CanWrite,
+                        IsDeprecated = true,
+                        ThrowOnUse = deprecation.ThrowOnUse
+                    };
+
+                    bslProp = new ContextPropertyInfo(propertyInfo, deprecatedMarkup);
+                    var deprecatedMapping = new PropertyTarget<TInstance>(bslProp);
+                    mappedProperties.Add(deprecatedMapping);
+                }
+            }
+
+            return mappedProperties;
         }
 
         public bool ContainsProperty(string name)
@@ -187,8 +115,10 @@ namespace ScriptEngine.Machine.Contexts
         private int GetPropertyIndex(string name)
         {
             Init();
-            return _properties.FindIndex(x => String.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase) 
-                || String.Equals(x.Alias, name, StringComparison.OrdinalIgnoreCase));
+            if (_propertyNumbers.TryGetValue(name, out var index))
+                return index;
+
+            return -1;
         }
     }
 }

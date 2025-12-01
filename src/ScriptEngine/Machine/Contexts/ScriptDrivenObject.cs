@@ -98,8 +98,7 @@ namespace ScriptEngine.Machine.Contexts
 
         protected abstract int GetOwnVariableCount();
         protected abstract int GetOwnMethodCount();
-        protected abstract void UpdateState();
-        
+
         public bool MethodDefinedInScript(int index)
         {
             return index >= METHOD_COUNT;
@@ -223,38 +222,29 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext Members
 
-        public void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
+        void IAttachableContext.OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
         {
-            UpdateState();
-
             variables = _state;
-            methods = AttachMethods();
-        }
-
-        private BslMethodInfo[] AttachMethods()
-        {
-            if (_attachableMethods != null)
-                return _attachableMethods;
-
-            int totalMethods = METHOD_COUNT + _module.Methods.Count;
-            _attachableMethods = new BslMethodInfo[totalMethods];
-
-            var moduleMethods = _module.Methods;
-
-            for (int i = 0; i < totalMethods; i++)
+            methods = new BslMethodInfo[GetMethodsCount()];
+            for (int i = 0; i < methods.Length; i++)
             {
-                if (MethodDefinedInScript(i))
-                {
-                    _attachableMethods[i] = moduleMethods[i - METHOD_COUNT];
-                }
-                else
-                {
-                    _attachableMethods[i] = GetOwnMethod(i);
-                }
+                methods[i] = GetMethodInfo(i);
             }
-
-            return _attachableMethods;
         }
+        
+        IVariable IAttachableContext.GetVariable(int index)
+        {
+            return _state[index];
+        }
+
+        BslMethodInfo IAttachableContext.GetMethod(int index)
+        {
+            return GetMethodInfo(index);
+        }
+
+        int IAttachableContext.VariablesCount => _state.Length;
+        
+        int IAttachableContext.MethodsCount => GetMethodsCount();
 
         #endregion
 

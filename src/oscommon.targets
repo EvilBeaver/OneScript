@@ -7,7 +7,7 @@
         <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
         <Platform Condition="'$(Platform)' == ''">x86</Platform>
         <LangVersion>8.0</LangVersion>
-        <TargetFrameworkVersion>net6.0</TargetFrameworkVersion>
+        <TargetFrameworkVersion>net8.0</TargetFrameworkVersion>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
         <IncludeSourceRevisionInInformationalVersion>False</IncludeSourceRevisionInInformationalVersion>
         <ImplicitUsings>disable</ImplicitUsings>

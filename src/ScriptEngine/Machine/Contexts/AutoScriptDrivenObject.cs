@@ -59,10 +59,6 @@ namespace ScriptEngine.Machine.Contexts
             return _ownMethods.Count;
         }
 
-        protected override void UpdateState()
-        {
-        }
-
         protected override int FindOwnProperty(string name)
         {
             var baseIndex = base.FindOwnProperty(name);
