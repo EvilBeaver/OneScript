@@ -53,7 +53,7 @@ namespace OneScript.Values
                 return 0;
             
             if (other is BslStringValue s)
-                return String.Compare(_value, s._value, StringComparison.CurrentCulture);
+                return String.Compare(_value, s._value, StringComparison.InvariantCulture);
             
             return base.CompareTo(other);
         }
