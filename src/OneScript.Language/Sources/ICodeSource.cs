@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace OneScript.Sources
+namespace OneScript.Language.Sources
 {
     public interface ICodeSource
     {

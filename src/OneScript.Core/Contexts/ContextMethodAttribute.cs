@@ -11,7 +11,7 @@ using OneScript.Commons;
 
 namespace OneScript.Contexts
 {
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Method)]
     public class ContextMethodAttribute : Attribute, INameAndAliasProvider
     {
         private readonly string _name;

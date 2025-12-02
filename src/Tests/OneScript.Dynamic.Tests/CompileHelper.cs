@@ -90,15 +90,16 @@ namespace OneScript.Dynamic.Tests
         public DynamicModule Compile(SymbolTable scopes, IBslProcess process)
         {
             if (scopes.ScopeCount == 0)
-                scopes.PushScope(new SymbolScope(), null);
+                scopes.PushScope(new SymbolScope(), ScopeBindingDescriptor.Static(null));
             var compiler = new ModuleCompiler(_errors, _services, new DependencyResolverMock());
             return compiler.Compile(_codeIndexer, _module, scopes, process);
         }
         
         private class DependencyResolverMock : ICompileTimeDependencyResolver
         {
-            public void Resolve(SourceCode module, string libraryName, IBslProcess process)
+            public PackageInfo Resolve(SourceCode module, string libraryName, IBslProcess process)
             {
+                return null;
             }
         }
     }

@@ -5,8 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
@@ -16,13 +14,13 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Compiler;
 using ScriptEngine.Libraries;
+using ScriptEngine.Machine.Debugger;
 
 namespace ScriptEngine
 {
     public class ScriptingEngine : IDisposable
     {
         private AttachedScriptsFactory _attachedScriptsFactory;
-        private IDebugController _debugController;
         private IRuntimeEnvironment _runtimeEnvironment;
         
         private readonly ILibraryManager _libraryManager;
@@ -31,6 +29,7 @@ namespace ScriptEngine
             IGlobalsManager globals,
             RuntimeEnvironment env, 
             OneScriptCoreOptions options,
+            IDebugger debugger,
             IServiceContainer services)
         {
             TypeManager = types;
@@ -43,7 +42,14 @@ namespace ScriptEngine
             Loader = new ScriptSourceFactory();
             Services = services;
             ContextDiscoverer = new ContextDiscoverer(types, globals, services);
-            DebugController = services.TryResolve<IDebugController>();
+            
+            Debugger = debugger;
+
+            if (debugger.IsEnabled)
+            {
+                ProduceExtraCode |= CodeGenerationFlags.DebugCode;
+            }
+            
             Loader.ReaderEncoding = options.FileReaderEncoding;
         }
 
@@ -168,18 +174,7 @@ namespace ScriptEngine
         
         public AttachedScriptsFactory AttachedScriptsFactory => _attachedScriptsFactory;
 
-        public IDebugController DebugController
-        {
-            get => _debugController;
-            private set
-            {
-                _debugController = value;
-                if (value != null)
-                {
-                    ProduceExtraCode |= CodeGenerationFlags.DebugCode;
-                }
-            }
-        }
+        public IDebugger Debugger { get; }
 
         private void EnableCodeStatistics()
         {
@@ -194,7 +189,6 @@ namespace ScriptEngine
 
         public void Dispose()
         {
-            DebugController?.Dispose();
             AttachedScriptsFactory.SetInstance(null);
         }
 

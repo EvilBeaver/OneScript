@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using OneScript.Contexts;
 using OneScript.Exceptions;
@@ -97,12 +96,21 @@ namespace oscript
 			return exitCode;
 		}
 
-		public void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
+		IVariable IAttachableContext.GetVariable(int index)
 		{
-			variables = Array.Empty<IVariable>();
-			methods = this.GetMethods().ToArray();
+			throw new IndexOutOfRangeException("No such variable at index: " + index);
 		}
 
+		BslMethodInfo IAttachableContext.GetMethod(int index)
+		{
+			return GetMethodInfo(index);
+		}
+
+		int IAttachableContext.VariablesCount => 0;
+		
+		int IAttachableContext.MethodsCount => _methods.Count;
+
+		
 		#region CGIHost
 
 		[ContextMethod("ВывестиЗаголовок", "Header")]

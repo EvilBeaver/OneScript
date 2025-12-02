@@ -47,6 +47,10 @@ namespace ScriptEngine.HostedScript
                 _state[i] = Variable.CreateContextPropertyReference(this, i, _properties.GetProperty(i).Name);
             }
         }
+        
+        IVariable IAttachableContext.GetVariable(int index) => _state[index];
+        
+        BslMethodInfo IAttachableContext.GetMethod(int index) => _methods.GetRuntimeMethod(index);
 
         public IHostApplication ApplicationHost { get; set; }
         public SourceCode CodeSource { get; set; }
@@ -160,7 +164,7 @@ namespace ScriptEngine.HostedScript
         /// Каталог исполняемых файлов OneScript
         /// </summary>
         /// <returns></returns>
-        [ContextMethod("ProgramDirectory", IsDeprecated = true)]
+        [DeprecatedName("ProgramDirectory")]
         [ContextMethod("КаталогПрограммы","BinDir")]
         public string ProgramDirectory()
         {
@@ -172,19 +176,9 @@ namespace ScriptEngine.HostedScript
 
 #region IAttachableContext Members
 
-        public void OnAttach(out IVariable[] variables, 
-            out BslMethodInfo[] methods)
-        {
-            if (_state == null)
-                InitContextVariables();
-
-            variables = _state;
-            methods = new BslMethodInfo[_methods.Count];
-            for (int i = 0; i < _methods.Count; i++)
-            {
-                methods[i] = _methods.GetRuntimeMethod(i);
-            }
-        }
+int IAttachableContext.VariablesCount => _properties.Count;
+        
+        int IAttachableContext.MethodsCount => _methods.Count;
 
 #endregion
 

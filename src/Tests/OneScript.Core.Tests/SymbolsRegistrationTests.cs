@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
@@ -21,7 +22,7 @@ namespace OneScript.Core.Tests
             var env = new RuntimeEnvironment();
             var prop = new TestContextClass();
             
-            env.InjectGlobalProperty(null, "TestClass", false);
+            env.InjectGlobalProperty(BslUndefinedValue.Instance, "TestClass", false);
             env.SetGlobalProperty("TestClass", prop);
 
             var storedProp = env.GetGlobalProperty("TestClass");

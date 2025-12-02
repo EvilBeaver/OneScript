@@ -16,6 +16,7 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using OneScript.StandardLibrary.Collections.Exceptions;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {
@@ -166,7 +167,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                     var Column = Columns.FindColumnByName(name);
 
                     if (Column == null)
-                        throw WrongColumnNameException(name);
+                        throw ColumnException.WrongColumnName(name);
 
                     if (processing_list.Find( x=> x.Name==name ) == null)
                         processing_list.Add(Column);
@@ -271,7 +272,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             {
                 var Column = Columns.FindColumnByName(kv.Key.ToString());
                 if (Column == null)
-                    throw WrongColumnNameException(kv.Key.ToString());
+                    throw ColumnException.WrongColumnName(kv.Key.ToString());
 
                 IValue current = Row.Get(Column);
                 if (!current.StrictEquals(kv.Value))
@@ -374,7 +375,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                 }
             }
 
-            _rows.RemoveRange(new_idx, _rows.Count()-new_idx);
+            _rows.RemoveRange(new_idx, _rows.Count - new_idx);
 
             int i = 0;
             while (i < Columns.Count())
@@ -391,7 +392,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         {
             foreach (var groupColumn in groupColumns )
                 if ( aggregateColumns.Find(x => x.Name==groupColumn.Name)!=null )
-                    throw ColumnsMixedException(groupColumn.Name);
+                    throw ColumnException.ColumnsMixed(groupColumn.Name);
         }
 
         private static void CopyRowData(ValueTableRow source, ValueTableRow dest, IEnumerable<ValueTableColumn> columns)
@@ -467,7 +468,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                     throw RuntimeException.InvalidArgumentType();
                 }
 
-                if (index < 0 || index >= _rows.Count())
+                if (index < 0 || index >= _rows.Count)
                     throw new RuntimeException("Значение индекса выходит за пределы диапазона");
             }
 
@@ -489,7 +490,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
             int index_dest = index_source + offset;
 
-            if (index_dest < 0 || index_dest >= _rows.Count())
+            if (index_dest < 0 || index_dest >= _rows.Count)
                 throw RuntimeException.InvalidNthArgumentValue(2);
 
             ValueTableRow tmp = _rows[index_source];
@@ -610,13 +611,13 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             foreach (string column in a_columns)
             {
                 string[] description = column.Trim().Split(' ');
-                if (description.Count() == 0)
-                    throw WrongColumnNameException();
+                if (description.Length == 0)
+                    throw ColumnException.WrongColumnName();
 
                 ValueTableSortRule Desc = new ValueTableSortRule();
                 Desc.Column = this.Columns.FindColumnByName(description[0]);
 
-                if (description.Count() > 1)
+                if (description.Length > 1)
                 {
                     if (String.Compare(description[1], "DESC", true) == 0 || String.Compare(description[1], "УБЫВ", true) == 0)
                         Desc.direction = -1;
@@ -636,14 +637,15 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         {
             readonly List<ValueTableSortRule> Rules;
 
-            readonly GenericIValueComparer _comparer = new GenericIValueComparer();
+            readonly GenericIValueComparer _comparer;
 
-            public RowComparator(List<ValueTableSortRule> Rules)
+            public RowComparator(IBslProcess process, List<ValueTableSortRule> Rules)
             {
-                if (Rules.Count() == 0)
+                if (Rules.Count == 0)
                     throw RuntimeException.InvalidArgumentValue();
 
                 this.Rules = Rules;
+                 _comparer = new GenericIValueComparer(process);
             }
 
             private int OneCompare(ValueTableRow x, ValueTableRow y, ValueTableSortRule Rule)
@@ -661,7 +663,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                 int i = 0, r;
                 while ((r = OneCompare(x, y, Rules[i])) == 0)
                 {
-                    if (++i >= Rules.Count())
+                    if (++i >= Rules.Count)
                         return 0;
                 }
 
@@ -678,9 +680,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// </param>
         /// <param name="comparator">СравнениеЗначений - правила сравнения значений при наличии различных типов данных в колонке.</param>
         [ContextMethod("Сортировать", "Sort")]
-        public void Sort(string columns, IValue comparator = null)
+        public void Sort(IBslProcess process, string columns, IValue comparator = null)
         {
-            _rows.Sort(new RowComparator(GetSortRules(columns)));
+            _rows.Sort(new RowComparator(process, GetSortRules(columns)));
         }
 
         /// <summary>
@@ -716,22 +718,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         public static ValueTable Constructor()
         {
             return new ValueTable();
-        }
-
-
-        private static RuntimeException WrongColumnNameException()
-        {
-            return new RuntimeException("Неверное имя колонки");
-        }
-
-        private static RuntimeException WrongColumnNameException(string columnName)
-        {
-            return new RuntimeException(string.Format("Неверное имя колонки '{0}'", columnName));
-        }
-
-        private static RuntimeException ColumnsMixedException(string columnName)
-        {
-            return new RuntimeException(string.Format("Колонка '{0}' не может одновременно быть колонкой группировки и колонкой суммирования", columnName));
         }
 
         public string GetName(IValue field)

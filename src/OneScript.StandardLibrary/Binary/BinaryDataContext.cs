@@ -11,7 +11,6 @@ using System.IO;
 using System.Text;
 using OneScript.Contexts;
 using OneScript.Exceptions;
-using OneScript.Execution;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;

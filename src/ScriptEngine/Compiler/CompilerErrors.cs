@@ -25,6 +25,10 @@ namespace ScriptEngine.Compiler
         public static CodeError MissedArgument() =>
             Create("Пропущен обязательный параметр", "Missed mandatory parameter");
 
+        public static CodeError MissedImport(string symbol, string libName) =>
+            Create($"Свойство {symbol} принадлежит пакету {libName}, который не импортирован в данном модуле",
+                $"Property {symbol} belongs to package {libName} which is not imported in this module");
+
         private static CodeError Create(string ru, string en, [CallerMemberName] string errorId = default)
         {
             return new CodeError

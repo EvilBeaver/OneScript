@@ -5,25 +5,28 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using OneScript.DebugProtocol;
 using OneScript.DebugServices;
 
 namespace oscript
 {
     internal class DebugBehavior : ExecuteScriptBehavior
     {
-        private readonly int _port;
-        
-        public DebugBehavior(int port, string path, string[] args) : base(path, args)
+        public DebugBehavior(string path, string[] args) : base(path, args)
         {
-            _port = port;
         }
+
+        public int Port { get; set; } = 2801;
+        
+        public bool AttachMode { get; set; } = true;
 
         public override int Execute()
         {
-            var tcpDebugServer = new TcpDebugServer(_port);
-                    
-            DebugController = tcpDebugServer.CreateDebugController();
+            var tcpDebugServer = new TcpDebugServer(Port);
+            
+            DebugController = new DefaultDebugger(tcpDebugServer)
+            {
+                AttachMode = AttachMode
+            };
             
             return base.Execute();
         }
@@ -32,6 +35,7 @@ namespace oscript
         {
             int port = 2801;
             string path = null;
+            bool noWait = false;
             
             while (true)
             {
@@ -54,6 +58,10 @@ namespace oscript
                         return null;
                     }
                 }
+                else if (parsedArg.Name == "-noWait")
+                {
+                    noWait = true;
+                }
                 else if (parsedArg.Name == "-protocol")
                 {
                     // Обратная совместимость, не используется в реальности
@@ -66,7 +74,10 @@ namespace oscript
                 }
             }
 
-            return path == null ? null : new DebugBehavior(port, path, helper.Tail());
+            return path == null ? null : new DebugBehavior(path, helper.Tail())
+            {
+                Port = port, AttachMode = noWait
+            };
         }
     }
 }

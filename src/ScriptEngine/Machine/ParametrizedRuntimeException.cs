@@ -6,7 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Exceptions;
-using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {

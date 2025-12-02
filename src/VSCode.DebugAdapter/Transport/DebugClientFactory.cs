@@ -5,7 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
@@ -37,12 +36,12 @@ namespace VSCode.DebugAdapter.Transport
         {
             ReconcileDataFormat(_tcpClient);
 
-            ICommunicationChannel commandsChannel;
+            IMessageChannel commandsChannel;
             
             switch (_transport)
             {
                 case TransportProtocols.Json:
-                    commandsChannel = new JsonDtoChannel(_tcpClient);
+                    commandsChannel = new JsonDtoChannel(new TcpDebuggerClient(_tcpClient));
                     break;
                 case TransportProtocols.Binary:
                     commandsChannel = new BinaryChannel(_tcpClient);
@@ -88,7 +87,7 @@ namespace VSCode.DebugAdapter.Transport
                     var dataBuffer = new byte[requiredDataLength];
                     using (var binaryReader = new BinaryReader(stream, Encoding.ASCII, true))
                     {
-                        ReadStream(binaryReader, dataBuffer,FormatReconcileUtils.FORMAT_RECONCILE_RESPONSE_PREFIX.Length);
+                        StreamUtils.ReadStream(binaryReader.BaseStream, dataBuffer,FormatReconcileUtils.FORMAT_RECONCILE_RESPONSE_PREFIX.Length);
 
                         if (!FormatReconcileUtils.CheckReconcilePrefix(dataBuffer))
                         {
@@ -161,25 +160,32 @@ namespace VSCode.DebugAdapter.Transport
             Log.Verbose("Reading out completed");
         }
 
-        private void ReadStream(BinaryReader reader, byte[] buffer, int length)
-        {
-            int readPosition = 0;
-            int bytesReceived = 0;
-
-            while (bytesReceived < length)
-            {
-                bytesReceived = reader.Read(buffer, readPosition, length - bytesReceived);
-                if (bytesReceived == 0)
-                    throw new IOException("Unexpected end of stream");
-                
-                readPosition += bytesReceived;
-            }
-        }
-        
         private void SelectSafestFormat()
         {
             _protocolVersion = ProtocolVersions.SafestVersion;
             _transport = TransportProtocols.Binary;
+        }
+        
+        private class TcpDebuggerClient : IDebuggerClient
+        {
+            private TcpClient Client { get; }
+
+            public TcpDebuggerClient(TcpClient client)
+            {
+                Client = client;
+            }
+
+            public void Dispose()
+            {
+                Client.Dispose();
+            }
+
+            public Stream GetDataStream()
+            {
+                return Client.GetStream();
+            }
+
+            public bool Connected => Client.Connected;
         }
     }
 }

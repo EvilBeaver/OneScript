@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using OneScript.Language.Sources;
 
 // ReSharper disable once CheckNamespace
 namespace OneScript.Sources
@@ -14,6 +15,7 @@ namespace OneScript.Sources
     {
         private ICodeSource _source;
         private string _moduleName;
+        private string _ownerPackageId;
 
         private SourceCodeBuilder()
         {
@@ -30,6 +32,15 @@ namespace OneScript.Sources
             _moduleName = name;
             return this;
         }
+        
+        /// <summary>
+        /// Устанавливает идентификатор пакета-владельца для исходного кода.
+        /// </summary>
+        public SourceCodeBuilder WithOwnerPackage(string packageId)
+        {
+            _ownerPackageId = packageId;
+            return this;
+        }
 
         public SourceCode Build()
         {
@@ -39,7 +50,7 @@ namespace OneScript.Sources
             if (_moduleName == default)
                 _moduleName = _source.Location;
 
-            return new SourceCode(_moduleName, _source);
+            return new SourceCode(_moduleName, _source, _ownerPackageId);
         }
 
         public static SourceCodeBuilder Create() => new SourceCodeBuilder();

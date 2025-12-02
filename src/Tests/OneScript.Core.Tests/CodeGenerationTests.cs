@@ -14,6 +14,7 @@ using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Sources;
+using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 using Xunit;
@@ -67,8 +68,8 @@ namespace OneScript.Core.Tests
             var node = parser.ParseStatefulModule() as ModuleNode;
 
             var ctx = new SymbolTable();
-            ctx.PushScope(new SymbolScope(), null);
-            var compiler = new StackMachineCodeGenerator(errSink);
+            ctx.PushScope(new SymbolScope(), ScopeBindingDescriptor.Static(null));
+            var compiler = new StackMachineCodeGenerator(errSink, ExplicitImportsBehavior.Disabled);
             return compiler.CreateModule(node, lexer.Iterator.Source, ctx, process);
         }
     }

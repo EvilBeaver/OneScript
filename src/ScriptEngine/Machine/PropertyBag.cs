@@ -7,19 +7,15 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using OneScript.Contexts;
-using OneScript.Values;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
-    class PropertyBag : DynamicPropertiesAccessor, IAttachableContext
+    internal class PropertyBag : DynamicPropertiesAccessor, IAttachableContext
     {
         private readonly List<IValue> _values = new List<IValue>();
-        private readonly List<BslPropertyInfo> _definitions = new List<BslPropertyInfo>();
-
+        
         public void Insert(IValue value, string identifier)
         {
             Insert(value, identifier, true, true);
@@ -27,19 +23,11 @@ namespace ScriptEngine.Machine
 
         public int Insert(IValue value, string identifier, bool canRead, bool canWrite)
         {
-            var num = RegisterProperty(identifier);
+            var num = RegisterProperty(identifier, canRead, canWrite);
 
             if (num == _values.Count)
             {
                 _values.Add(null);
-                _definitions.Add(BslPropertyBuilder.Create()
-                    .Name(identifier)
-                    .CanRead(canRead)
-                    .CanWrite(canWrite)
-                    .SetDispatchingIndex(num)
-                    .ReturnType(typeof(BslValue))
-                    .Build()
-                );
             }
 
             value ??= ValueFactory.Create();
@@ -49,14 +37,29 @@ namespace ScriptEngine.Machine
             return num;
         }
 
+        public int Insert(IValue value, BslPropertyInfo definition)
+        {
+            var num = RegisterProperty(definition);
+            if (num == _values.Count)
+            {
+                _values.Add(null);
+            }
+
+            value ??= ValueFactory.Create();
+
+            _values[num] = value;
+
+            return num;
+        }
+
         public override bool IsPropReadable(int propNum)
         {
-            return _definitions[propNum].CanRead;
+            return GetPropertyInfo(propNum).CanRead;
         }
 
         public override bool IsPropWritable(int propNum)
         {
-            return _definitions[propNum].CanWrite;
+            return GetPropertyInfo(propNum).CanWrite;
         }
 
         public override IValue GetPropValue(int propNum)
@@ -68,12 +71,7 @@ namespace ScriptEngine.Machine
         {
             _values[propNum] = newVal;
         }
-
-        public override BslPropertyInfo GetPropertyInfo(int propertyNumber)
-        {
-            return _definitions[propertyNumber];
-        }
-
+        
         public int Count => _values.Count;
 
         public override int GetMethodsCount()
@@ -83,19 +81,14 @@ namespace ScriptEngine.Machine
 
         #region IAttachableContext Members
 
-        public void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
-        {
-            variables = new IVariable[this.Count];
-            var props = GetDynamicProperties().OrderBy(x => x.Value).Select(x=>x.Key).ToArray();
-            Debug.Assert(props.Length == variables.Length);
+        IVariable IAttachableContext.GetVariable(int index) => 
+            Variable.CreateContextPropertyReference(this, index, GetPropertyName(index));
+        
+        BslMethodInfo IAttachableContext.GetMethod(int index) => throw new ArgumentOutOfRangeException();
 
-            for (var i = 0; i < variables.Length; i++)
-            {
-                variables[i] = Variable.CreateContextPropertyReference(this, i, props[i]);
-            }
-
-            methods = Array.Empty<BslMethodInfo>();
-        }
+        int IAttachableContext.VariablesCount => this.Count;
+        
+        int IAttachableContext.MethodsCount => 0;
 
         #endregion
     }

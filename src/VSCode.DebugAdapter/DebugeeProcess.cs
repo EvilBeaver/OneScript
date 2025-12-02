@@ -26,7 +26,7 @@ namespace VSCode.DebugAdapter
         private bool _stdoutEOF;
         private bool _stderrEOF;
         private bool _attachMode;
-        
+
         private Encoding _dapEncoding;
 
         private OneScriptDebuggerClient _debugger;
@@ -41,9 +41,22 @@ namespace VSCode.DebugAdapter
         {
             _strategy = pathHandling;
         }
-        
-        public bool HasExited => _process?.HasExited ?? true;
-        public int ExitCode => _process.ExitCode;
+
+        public bool HasExited
+        {
+            get
+            {
+                if (_process != null)
+                    return _process.HasExited;
+
+                if (_attachMode && _debugger != null)
+                    return false;
+                    
+                return true;
+            }
+        }
+
+        public int ExitCode => _process?.ExitCode ?? 0;
 
         public int DebugPort { get; set; }
 
@@ -57,11 +70,15 @@ namespace VSCode.DebugAdapter
             }
         }
 
+        public bool WaitOnStart { get; set; }
+
+        public WorkspaceMapper PathsMapper { get; set; }
+
         public void Start()
         {
             _process = CreateProcess();
             var psi = _process.StartInfo;
-            
+
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;
 
@@ -81,21 +98,57 @@ namespace VSCode.DebugAdapter
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
         }
-        
+
         public void InitAttached()
         {
             var pid = _debugger.GetProcessId();
-            _process = Process.GetProcessById(pid);
+
+            try
+            {
+                _process = Process.GetProcessById(pid);
+                _process.EnableRaisingEvents = true;
+                _process.Exited += Process_Exited;
+            }
+            catch
+            {
+                _process = null;
+            }
+
             _attachMode = true;
-            _process.EnableRaisingEvents = true;
-            _process.Exited += Process_Exited;
+
         }
-        
+
         public void Init(JObject args)
         {
             InitInternal(args);
         }
-        
+
+        public void InitPathsMapper(JObject args)
+        {
+            if (args == null)
+            {
+                PathsMapper = null;
+                return;
+            }
+
+            try
+            {
+                var mappingToken = args["pathsMapping"];
+                if (mappingToken == null || mappingToken.Type == JTokenType.Null)
+                {
+                    PathsMapper = null;
+                    return;
+                }
+
+                PathsMapper = mappingToken.ToObject<WorkspaceMapper>();
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to initialize paths mapper; path mapping will be disabled");
+                PathsMapper = null;
+            }
+        }
+
         protected abstract Process CreateProcess();
 
         protected abstract void InitInternal(JObject args);
@@ -104,12 +157,12 @@ namespace VSCode.DebugAdapter
         {
             return _strategy.ConvertClientPathToDebugger(clientPath);
         }
-        
+
         protected void LoadEnvironment(ProcessStartInfo psi, IDictionary<string, string> variables)
         {
             if (variables == null || variables.Count <= 0)
                 return;
-            
+
             foreach (var pair in variables)
             {
                 psi.EnvironmentVariables[pair.Key] = pair.Value;
@@ -126,7 +179,7 @@ namespace VSCode.DebugAdapter
             {
                 _dapEncoding = Utilities.GetEncodingFromOptions(encodingFromOptions);
             }
-            
+
             Log.Information("Encoding for debuggee output is {Encoding}", _dapEncoding);
         }
 
@@ -140,10 +193,10 @@ namespace VSCode.DebugAdapter
             _debugger = service;
             ProtocolVersion = service.ProtocolVersion;
         }
-        
+
         public event EventHandler<DebugeeOutputEventArgs> OutputReceived;
         public event EventHandler ProcessExited;
-        
+
         private void Process_Exited(object sender, EventArgs e)
         {
             _debugger?.Stop();
@@ -192,7 +245,7 @@ namespace VSCode.DebugAdapter
                 {
                     System.Threading.Thread.Sleep(100);
                 }
-                
+
                 _terminated = true;
                 _process = null;
                 _debugger = null;
@@ -209,7 +262,7 @@ namespace VSCode.DebugAdapter
             _debugger.Disconnect(terminate);
 
             var mustKill = terminate && !_attachMode;
-            
+
             if (mustKill && _process != null && !_process.HasExited)
             {
                 Log.Debug("Stopping child process...");
@@ -223,12 +276,15 @@ namespace VSCode.DebugAdapter
                     Log.Debug("Process killed");
                 }
             }
-            
+
             Log.Debug("Debuggee disconnected");
         }
 
         public void Kill()
         {
+            if (_process == null)
+                return;
+
             _process.Kill();
             _process.WaitForExit(1500);
         }
@@ -257,8 +313,18 @@ namespace VSCode.DebugAdapter
 
         public Breakpoint[] SetBreakpoints(IEnumerable<Breakpoint> breakpoints)
         {
-            var confirmedBreaks = _debugger.SetMachineBreakpoints(breakpoints.ToArray());
-            
+            var breakpointsArray = breakpoints.ToArray();
+
+            if (PathsMapper != null)
+            {
+                for (int i = 0; i < breakpointsArray.Length; i++)
+                {
+                    breakpointsArray[i].Source = PathsMapper.LocalToRemote(breakpointsArray[i].Source);
+                }
+            }
+
+            var confirmedBreaks = _debugger.SetMachineBreakpoints(breakpointsArray);
+
             return confirmedBreaks;
         }
 
@@ -266,21 +332,29 @@ namespace VSCode.DebugAdapter
         {
             _debugger.Execute(threadId);
         }
-        
+
         public StackFrame[] GetStackTrace(int threadId, int firstFrameIdx, int limit)
         {
             var allFrames = _debugger.GetStackFrames(threadId);
-            
+            var pathsMapperInit = PathsMapper != null;
+
             if (limit == 0)
                 limit = allFrames.Length;
 
-            if(allFrames.Length < firstFrameIdx)
+            if (allFrames.Length < firstFrameIdx)
                 return new StackFrame[0];
 
             var result = new List<StackFrame>();
             for (int i = firstFrameIdx; i < limit && i < allFrames.Length; i++)
             {
+
                 allFrames[i].ThreadId = threadId;
+
+                if (pathsMapperInit)
+                {
+                    allFrames[i].Source = PathsMapper.RemoteToLocal(allFrames[i].Source);
+                }
+
                 result.Add(allFrames[i]);
             }
 

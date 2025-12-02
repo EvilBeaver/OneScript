@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json.Linq;
-using VSCode.DebugAdapter.Transport;
 
 namespace VSCode.DebugAdapter
 {
@@ -26,8 +25,6 @@ namespace VSCode.DebugAdapter
         public string WorkingDirectory { get; set; }
         
         public IDictionary<string, string> Environment { get; set; } = new Dictionary<string, string>();
-        
-        public bool WaitOnStart { get; set; }
         
         protected override Process CreateProcess()
         {

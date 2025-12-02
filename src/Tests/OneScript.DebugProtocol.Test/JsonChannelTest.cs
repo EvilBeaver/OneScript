@@ -5,10 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System.IO;
-using System.Net.Sockets;
-using System.Text;
 using FluentAssertions;
-using Newtonsoft.Json;
 using OneScript.DebugProtocol.TcpServer;
 using OneScript.Exceptions;
 using Xunit;

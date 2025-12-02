@@ -58,15 +58,6 @@ namespace ScriptEngine.Machine.Contexts
 
         #endregion
 
-        #region IComparable<IValue> Members
-
-        public override int CompareTo(BslValue other)
-        {
-            throw RuntimeException.ComparisonNotSupportedException();
-        }
-
-        #endregion
-
         #region IEquatable<IValue> Members
 
         public override bool Equals(BslValue other)

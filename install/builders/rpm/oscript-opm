@@ -1,4 +1,0 @@
-#!/bin/sh
-OSPATH=/usr/share/oscript
-oscript $OSPATH/lib/opm/src/cmd/opm.os "$@"
-

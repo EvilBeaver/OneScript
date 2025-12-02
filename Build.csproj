@@ -14,6 +14,8 @@
         <Configuration>Release</Configuration>
         <Solution>$(MSBuildProjectDirectory)/src/1Script.sln</Solution>
         
+        <ActiveFramework>net8.0</ActiveFramework>
+        
     </PropertyGroup>
     
     <ItemGroup>
@@ -30,11 +32,11 @@
     <ItemGroup>
         <PublishProjects Include="oscript">
             <ProjectFile>oscript.csproj</ProjectFile>
-            <Framework>net6.0</Framework>
+            <Framework>$(ActiveFramework)</Framework>
         </PublishProjects>
         <PublishProjects Include="TestApp">
             <ProjectFile>TestApp.csproj</ProjectFile>
-            <Framework>net6.0-windows</Framework>
+            <Framework>$(ActiveFramework)-windows</Framework>
         </PublishProjects>
     </ItemGroup>
     
@@ -106,7 +108,7 @@
         </ItemGroup>
         
         <Exec Command="dotnet publish &quot;src/oscript/oscript.csproj&quot; -r %(RuntimeID.Identity) --self-contained -c $(Configuration) -o &quot;$(ArtifactsRoot)/%(RuntimeID.Identity)/bin&quot;" UseUtf8Encoding="Always"/>
-        <Exec Command="dotnet publish &quot;src/TestApp/TestApp.csproj&quot; -f net6.0-windows -c $(Configuration) -p:Platform=%(PlatformItem.MSBuildName) -p:UseAppHost=true -o &quot;$(ArtifactsRoot)/win-%(PlatformItem.Identity)/bin&quot;" UseUtf8Encoding="Always"/>
+        <Exec Command="dotnet publish &quot;src/TestApp/TestApp.csproj&quot; -f $(ActiveFramework)-windows -c $(Configuration) -p:Platform=%(PlatformItem.MSBuildName) -p:UseAppHost=true -o &quot;$(ArtifactsRoot)/win-%(PlatformItem.Identity)/bin&quot;" UseUtf8Encoding="Always"/>
 
         <PropertyGroup>
             <CppBinPrefix>$(MSBuildProjectDirectory)/src/ScriptEngine.NativeApi/bin/$(Configuration)</CppBinPrefix>
@@ -162,11 +164,9 @@
     </Target>
     
     <Target Name="BuildWithCpp" DependsOnTargets="CleanAll;MakeCPP;MakeFDD;MakeSCD;BuildDebugger">
-        <CallTarget Targets="CleanIntermediates"/>
     </Target>
 
     <Target Name="BuildWithoutCpp" DependsOnTargets="CleanAll;MakeFDD;MakeSCD;BuildDebugger">
-        <CallTarget Targets="CleanIntermediates"/>
     </Target>
 
     <!-- Используется для поиска первого собранного oscript.exe -->
@@ -225,7 +225,7 @@
         
     </Target>
     
-    <Target Name="ComposeDistributionFolders">
+    <Target Name="ComposeDistributionFolders" DependsOnTargets="CleanIntermediates">
         <ItemGroup>
             <TargetDir Include="fdd-x64"/>
             <TargetDir Include="fdd-x86"/>
@@ -261,7 +261,7 @@
         <Delete Files="@(TempFiles)"/>
     </Target>
     
-	<Target Name="PrepareDistributionFiles" DependsOnTargets="CleanAll;BuildAll;GatherLibrary;ComposeDistributionFolders"/>
+	<Target Name="PrepareDistributionFiles" DependsOnTargets="CleanAll;BuildAll;GatherLibrary;BuildDocumentation;ComposeDistributionFolders"/>
     
     <Target Name="Test">
         <CallTarget Targets="UnitTests;ScriptedTests" />
@@ -373,5 +373,35 @@
             Command="dotnet nuget push %(NugetAbleProject.Identity) -k $(NugetToken) -s https://api.nuget.org/v3/index.json" UseUtf8Encoding="Always"/>
         
     </Target>
+
+    <Target Name="BuildDocumenter">
+        <Exec Command="dotnet publish &quot;$(MSBuildProjectDirectory)/src/OneScriptDocumenter/OneScriptDocumenter.csproj&quot; -c Release -o &quot;$(ArtifactsRoot)/tools/documenter&quot;" UseUtf8Encoding="Always"/>
+    </Target>
     
+    <Target Name="BuildDocumentation" DependsOnTargets="MakeSCD;BuildDocumenter">
+        <PropertyGroup>
+            <DocInputDir>$(ArtifactsRoot)/win-x64/bin</DocInputDir>
+            <DocsRoot>$(ArtifactsRoot)/docs</DocsRoot>
+            <DocumenterToolDir>$(ArtifactsRoot)/tools/documenter</DocumenterToolDir>
+        </PropertyGroup>
+        <ItemGroup>
+            <DocAssemblies Include="$(DocInputDir)/ScriptEngine.HostedScript.dll"/>
+            <DocAssemblies Include="$(DocInputDir)/ScriptEngine.dll"/>
+            <DocAssemblies Include="$(DocInputDir)/OneScript.StandardLibrary.dll"/>
+            <DocAssemblies Include="$(DocInputDir)/OneScript.Web.Server.dll"/>
+            <DocAssemblies Include="$(DocInputDir)/oscript.dll"/>
+        </ItemGroup>
+
+        <Error Condition="'@(DocAssemblies)' == ''" Text="No input assemblies found in $(DocInputDir) for documentation generation" />
+        
+        <MakeDir Directories="$(DocsRoot)"/>
+        <MakeDir Directories="$(DocsRoot)/markdown"/>
+        <MakeDir Directories="$(DocsRoot)/json"/>
+        <Exec Command="dotnet &quot;$(DocumenterToolDir)/OneScriptDocumenter.dll&quot; @(DocAssemblies->'%(FullPath)', ' ') -t &quot;$(MSBuildProjectDirectory)/src/OneScriptDocumenter/default_toc.json&quot; -m &quot;$(DocsRoot)/markdown&quot; -j &quot;$(DocsRoot)/json/syntax-helper.json&quot;" UseUtf8Encoding="Always"/>
+        
+        <RemoveDir Directories="$(DocumenterToolDir)" Condition="Exists($(DocumenterToolDir))"/>
+        
+    </Target>
+    
+
 </Project>

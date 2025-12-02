@@ -5,17 +5,15 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.StandardLibrary.Collections.Exceptions;
 using OneScript.StandardLibrary.Collections.Indexes;
-using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {
@@ -143,7 +141,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                     var field = source.GetField(fieldName.Trim());
                     if (field == null)
                     {
-                        throw new ColumnNotFoundException(fieldName);
+                        throw ColumnException.WrongColumnName(fieldName);
                     }
                     fields.Add(field);
                 }

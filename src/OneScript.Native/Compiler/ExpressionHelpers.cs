@@ -12,10 +12,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
 using Microsoft.CSharp.RuntimeBinder;
 using OneScript.Contexts;
-using OneScript.Exceptions;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
@@ -597,13 +595,18 @@ namespace OneScript.Native.Compiler
 
         public static Expression AccessModuleVariable(ParameterExpression thisArg, int variableIndex)
         {
-            var stateProperty = PropertiesCache.GetOrAdd(
+            var contextProperty = PropertiesCache.GetOrAdd(
                 typeof(NativeClassInstanceWrapper),
-                nameof(NativeClassInstanceWrapper.State),
+                nameof(NativeClassInstanceWrapper.Context),
                 BindingFlags.Instance | BindingFlags.Public);
             
-            var propertyAccess = Expression.Property(thisArg, stateProperty);
-            var iVariable = Expression.ArrayIndex(propertyAccess, Expression.Constant(variableIndex));
+            var contextAccess = Expression.Property(thisArg, contextProperty);
+            var getVariableMethod = OperationsCache.GetOrAdd(
+                typeof(IAttachableContext),
+                nameof(IAttachableContext.GetVariable),
+                BindingFlags.Instance | BindingFlags.Public);
+            
+            var iVariable = Expression.Call(contextAccess, getVariableMethod, Expression.Constant(variableIndex));
             var valueProperty = PropertiesCache.GetOrAdd(
                 typeof(IValueReference),
                 nameof(IValueReference.BslValue),

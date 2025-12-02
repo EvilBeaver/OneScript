@@ -14,7 +14,7 @@ using OneScript.Types;
 
 namespace OneScript.Values
 {
-    public sealed class BslNumericValue : BslPrimitiveValue, IEquatable<BslNumericValue>
+    public sealed class BslNumericValue : BslPrimitiveValue, IEquatable<BslNumericValue>, IBslComparable
     {
         private static readonly BslNumericValue[] _popularValues = new BslNumericValue[10];
         static BslNumericValue()
@@ -84,7 +84,6 @@ namespace OneScript.Values
 
         public override bool Equals(BslValue other)
         {
-            if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
 
             return other switch

@@ -15,7 +15,6 @@ using OneScript.Compilation.Binding;
 using OneScript.DependencyInjection;
 using OneScript.Exceptions;
 using OneScript.Execution;
-using OneScript.Native.Runtime;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Collections.ValueList;
@@ -27,7 +26,6 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Types;
 using Xunit;
 

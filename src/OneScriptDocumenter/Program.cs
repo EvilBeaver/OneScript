@@ -6,11 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using System.IO;
 using System.Linq;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Unicode;
 using CommandLine;
 using OneScriptDocumenter.Cli;
 using OneScriptDocumenter.Model;

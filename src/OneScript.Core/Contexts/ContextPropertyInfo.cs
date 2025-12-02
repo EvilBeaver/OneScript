@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using OneScript.Commons;
 
@@ -16,15 +15,20 @@ namespace OneScript.Contexts
     /// <summary>
     /// Свойство, объявленое в CLR-классе через атрибут ContextProperty
     /// </summary>
-    public class ContextPropertyInfo : BslPropertyInfo, IObjectWrapper
+    public class ContextPropertyInfo : BslPropertyInfo, IObjectWrapper, ISupportsDeprecation
     {
         private readonly PropertyInfo _realProperty;
         private readonly ContextPropertyAttribute _scriptMark;
-        
+
         public ContextPropertyInfo(PropertyInfo wrappedInfo)
+            : this(wrappedInfo, wrappedInfo.GetCustomAttribute<ContextPropertyAttribute>(false))
+        {
+        }
+        
+        public ContextPropertyInfo(PropertyInfo wrappedInfo, ContextPropertyAttribute binding)
         {
             _realProperty = wrappedInfo;
-            _scriptMark = (ContextPropertyAttribute)_realProperty.GetCustomAttributes(typeof(ContextPropertyAttribute), false).First();
+            _scriptMark = binding;
         }
         
         public override object[] GetCustomAttributes(bool inherit)
@@ -69,7 +73,7 @@ namespace OneScript.Contexts
 
         public override MethodInfo GetGetMethod(bool nonPublic)
         {
-            return _scriptMark.CanRead ? _realProperty.GetGetMethod(nonPublic) : null;
+            return CanRead ? _realProperty.GetGetMethod(nonPublic) : null;
         }
 
         public override ParameterInfo[] GetIndexParameters()
@@ -79,7 +83,7 @@ namespace OneScript.Contexts
 
         public override MethodInfo GetSetMethod(bool nonPublic)
         {
-            return _scriptMark.CanWrite ? _realProperty.GetSetMethod(nonPublic) : null;
+            return CanWrite ? _realProperty.GetSetMethod(nonPublic) : null;
         }
 
         public override object GetValue(object obj, BindingFlags invokeAttr, Binder binder, object[] index, CultureInfo culture)
@@ -97,5 +101,7 @@ namespace OneScript.Contexts
         public override bool CanWrite => _scriptMark.CanWrite;
         public override Type PropertyType => _realProperty.PropertyType;
         public object UnderlyingObject => _realProperty;
+        public bool IsDeprecated => _scriptMark.IsDeprecated;
+        public bool IsForbiddenToUse => _scriptMark.ThrowOnUse;
     }
 }

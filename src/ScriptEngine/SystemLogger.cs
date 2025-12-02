@@ -24,6 +24,11 @@ namespace ScriptEngine
             _writer = writer;
         }
 
+        public static void Reset()
+        {
+            _writer = new NullWriter();
+        }
+
         public static void Write(string text)
         {
             _writer.Write(text);

@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Linq;
+using ScriptEngine.Machine.Debugger;
 
 namespace ScriptEngine.Machine
 {
@@ -21,19 +22,13 @@ namespace ScriptEngine.Machine
 
     internal class MachineStopManager
     {
-        private struct StopPoint
-        {
-            public ExecutionFrame frame;
-            public int line;
-        }
-
         private DebugState _currentState = DebugState.Running;
         private readonly IBreakpointManager _breakpoints;
         private readonly MachineInstance _machine;
-        private readonly IThreadManager _threadManager;
+        private readonly IThreadEventsListener _threadManager;
         private ExecutionFrame[] _stopFrames;
         
-        public MachineStopManager(MachineInstance runner, IThreadManager threadManager, IBreakpointManager breakpoints)
+        public MachineStopManager(MachineInstance runner, IThreadEventsListener threadManager, IBreakpointManager breakpoints)
         {
             _machine = runner ?? throw new ArgumentNullException(nameof(runner));
             _threadManager = threadManager;
