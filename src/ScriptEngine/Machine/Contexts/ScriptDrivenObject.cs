@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
@@ -222,16 +221,6 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext Members
 
-        void IAttachableContext.OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
-        {
-            variables = _state;
-            methods = new BslMethodInfo[GetMethodsCount()];
-            for (int i = 0; i < methods.Length; i++)
-            {
-                methods[i] = GetMethodInfo(i);
-            }
-        }
-        
         IVariable IAttachableContext.GetVariable(int index)
         {
             return _state[index];

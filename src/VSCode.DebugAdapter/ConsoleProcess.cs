@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Serilog;
-using VSCode.DebugAdapter.Transport;
 
 namespace VSCode.DebugAdapter
 {

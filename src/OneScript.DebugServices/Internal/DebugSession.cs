@@ -23,7 +23,6 @@ namespace OneScript.DebugServices.Internal
         private readonly DispatchingService<IDebuggerService> _messageServer;
         
         private readonly ManualResetEventSlim _startEvent = new ManualResetEventSlim();
-        private readonly IMessageChannel _channel;
         
         public bool IsActive { get; private set; }
 
@@ -33,8 +32,8 @@ namespace OneScript.DebugServices.Internal
             // т.к. IDE не пришлет команду Execute и мы сразу считаем себя готовой сессией.
             _isStarted = attachMode;
             
-            _channel = new JsonDtoChannel(connectedClient);
-            var ipcServer = new DefaultMessageServer<RpcCall>(_channel)
+            var channel = new JsonDtoChannel(connectedClient);
+            var ipcServer = new DefaultMessageServer<RpcCall>(channel)
             {
                 ServerThreadName = "debug-server"
             };
@@ -43,7 +42,7 @@ namespace OneScript.DebugServices.Internal
             
             BreakpointManager = new DefaultBreakpointManager();
             _threadManager = new ThreadManager();
-            _callbackChannel = new TcpEventCallbackChannel(_channel);
+            _callbackChannel = new TcpEventCallbackChannel(channel);
             
             var commandsHandler = new DebuggerServiceImpl(this, new DefaultVariableVisualizer());
             
@@ -83,7 +82,6 @@ namespace OneScript.DebugServices.Internal
             _threadManager.ThreadStopped -= ThreadManagerOnThreadStopped;
             _threadManager.Dispose();
             _messageServer.Stop();
-            _channel.Dispose();
             IsActive = false;
             
             OnClose?.Invoke(this);

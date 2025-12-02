@@ -9,7 +9,6 @@ using System.Diagnostics;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
-using OneScript.Types;
 using OneScript.Values;
 
 namespace ScriptEngine.Machine

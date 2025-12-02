@@ -8,10 +8,8 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using OneScript.Contexts;
-using OneScript.DebugServices;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.StandardLibrary;
@@ -96,12 +94,6 @@ namespace oscript
 			request.Dispose();
 			
 			return exitCode;
-		}
-
-		void IAttachableContext.OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
-		{
-			variables = Array.Empty<IVariable>();
-			methods = this.GetMethods().ToArray();
 		}
 
 		IVariable IAttachableContext.GetVariable(int index)

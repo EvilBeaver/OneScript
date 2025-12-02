@@ -16,7 +16,6 @@ using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Types;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Debugger;
 using ScriptEngine.Machine.Interfaces;
 

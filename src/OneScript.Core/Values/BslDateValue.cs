@@ -43,7 +43,15 @@ namespace OneScript.Values
         }
 
         public override int GetHashCode() => _value.GetHashCode();
-        
+
+        public override bool Equals(object obj)
+        {
+            if (obj is BslValue bsl)
+                return Equals(bsl);
+
+            return false;
+        }
+
         public override TypeDescriptor SystemType => BasicTypes.Date;
         
         #region Conversions

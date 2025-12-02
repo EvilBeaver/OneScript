@@ -12,8 +12,6 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Language;
 using OneScript.Localization;
-using OneScript.Types;
-using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts
 {

@@ -9,7 +9,7 @@ using System.IO;
 
 namespace OneScript.DebugProtocol.TcpServer
 {
-    public class StreamUtils
+    public static class StreamUtils
     {
         public static void ReadStream(Stream stream, byte[] buffer, int length)
         {

@@ -8,10 +8,8 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Execution;
-using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {

@@ -7,14 +7,13 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.IO;
-using System.Net.Sockets;
 using System.Text;
 using Newtonsoft.Json;
 using OneScript.DebugProtocol.Abstractions;
 
 namespace OneScript.DebugProtocol.TcpServer
 {
-    public class JsonDtoChannel : IMessageChannel
+    public sealed class JsonDtoChannel : IMessageChannel
     {
         private readonly IDebuggerClient _client;
         private readonly Stream _dataStream;

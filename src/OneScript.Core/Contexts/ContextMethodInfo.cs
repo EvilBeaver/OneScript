@@ -9,7 +9,6 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using OneScript.Commons;
 using OneScript.Execution;
 

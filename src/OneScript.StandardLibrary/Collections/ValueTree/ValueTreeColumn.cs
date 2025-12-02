@@ -8,9 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Collections.Exceptions;
 using OneScript.StandardLibrary.TypeDescriptions;
-using OneScript.Types;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTree
 {

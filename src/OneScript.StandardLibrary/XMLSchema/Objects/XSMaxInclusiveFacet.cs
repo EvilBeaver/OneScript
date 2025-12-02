@@ -9,7 +9,6 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Xml.Schema;
 using OneScript.Contexts;
-using OneScript.Exceptions;
 using OneScript.StandardLibrary.XMLSchema.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using OneScript.StandardLibrary.XMLSchema.Interfaces;

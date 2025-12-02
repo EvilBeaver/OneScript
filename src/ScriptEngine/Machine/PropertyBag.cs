@@ -7,8 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using OneScript.Contexts;
 using ScriptEngine.Machine.Contexts;
 
@@ -83,20 +81,6 @@ namespace ScriptEngine.Machine
 
         #region IAttachableContext Members
 
-        void IAttachableContext.OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
-        {
-            variables = new IVariable[this.Count];
-            var props = GetDynamicProperties().OrderBy(x => x.Value).Select(x=>x.Key).ToArray();
-            Debug.Assert(props.Length == variables.Length);
-
-            for (var i = 0; i < variables.Length; i++)
-            {
-                variables[i] = Variable.CreateContextPropertyReference(this, i, props[i]);
-            }
-
-            methods = Array.Empty<BslMethodInfo>();
-        }
-        
         IVariable IAttachableContext.GetVariable(int index) => 
             Variable.CreateContextPropertyReference(this, index, GetPropertyName(index));
         

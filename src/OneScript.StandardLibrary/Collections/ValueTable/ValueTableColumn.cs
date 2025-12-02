@@ -9,9 +9,7 @@ using System;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Collections.Exceptions;
 using OneScript.StandardLibrary.TypeDescriptions;
-using OneScript.Types;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {

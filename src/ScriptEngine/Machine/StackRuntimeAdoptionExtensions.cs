@@ -5,12 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using OneScript.Contexts;
 using OneScript.Values;
-using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {

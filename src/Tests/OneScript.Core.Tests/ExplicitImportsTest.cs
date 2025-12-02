@@ -11,14 +11,10 @@ using FluentAssertions;
 using Moq;
 using OneScript.Compilation;
 using OneScript.Contexts;
-using OneScript.Exceptions;
 using OneScript.Execution;
-using OneScript.Language.Sources;
 using OneScript.Sources;
-using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Hosting;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Debugger;
 using Xunit;
 

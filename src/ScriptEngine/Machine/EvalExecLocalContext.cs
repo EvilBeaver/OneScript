@@ -6,9 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using OneScript.Compilation.Binding;
 using OneScript.Contexts;
-using OneScript.Execution;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
@@ -20,11 +18,6 @@ namespace ScriptEngine.Machine
         public EvalExecLocalContext(IVariable[] locals)
         {
             _locals = locals;
-        }
-
-        public void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
-        {
-            throw new NotImplementedException();
         }
 
         public IVariable GetVariable(int index) => _locals[index];

@@ -10,7 +10,6 @@ using System.Linq;
 using System.Reflection;
 using OneScript.Contexts;
 using OneScript.Contexts.Enums;
-using OneScript.Localization;
 
 namespace OneScriptDocumenter.Secondary
 {

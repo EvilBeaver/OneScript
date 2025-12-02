@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 using OneScript.Values;
 using Xunit;
 using FluentAssertions;
-using ScriptEngine.Machine;
 
 namespace OneScript.Core.Tests
 {

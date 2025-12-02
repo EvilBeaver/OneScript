@@ -11,7 +11,6 @@ using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Execution;
-using OneScript.Values;
 using ScriptEngine.Libraries;
 using ScriptEngine.Machine;
 using SymbolScope = OneScript.Compilation.Binding.SymbolScope;

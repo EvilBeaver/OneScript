@@ -7,7 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 namespace ScriptEngine.Machine.Debugger
 {
-    public class DisabledDebugSession : IDebugSession
+    public sealed class DisabledDebugSession : IDebugSession
     {
         public IBreakpointManager BreakpointManager { get; } = new NoOpBreakpointManager();
         public IThreadEventsListener ThreadManager { get; } = new NoOpThreadEventsListener();

@@ -2488,6 +2488,7 @@ namespace ScriptEngine.Machine
                         }
                         catch
                         {
+                            // Алиас остается пустым
                         }
                     }
                     
@@ -2501,7 +2502,7 @@ namespace ScriptEngine.Machine
                     }
                 }
 
-                ctx.PushScope(symbolScope, CreateScopeDescriptor(scope, thisScope, index));
+                ctx.PushScope(symbolScope, ScopeBindingDescriptor.FrameScope(index));
             }
 
             // Локальные переменные текущего фрейма
@@ -2513,11 +2514,6 @@ namespace ScriptEngine.Machine
 
             ctx.PushScope(locals, ScopeBindingDescriptor.ThisScope());
             return ctx;
-        }
-
-        private ScopeBindingDescriptor CreateScopeDescriptor(IAttachableContext scope, IAttachableContext thisScope, int index)
-        {
-            return ScopeBindingDescriptor.FrameScope(index);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -7,8 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Contexts;
-using OneScript.DependencyInjection;
-using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

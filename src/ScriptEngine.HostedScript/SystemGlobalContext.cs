@@ -176,21 +176,7 @@ namespace ScriptEngine.HostedScript
 
 #region IAttachableContext Members
 
-        void IAttachableContext.OnAttach(out IVariable[] variables, 
-            out BslMethodInfo[] methods)
-        {
-            if (_state == null)
-                InitContextVariables();
-
-            variables = _state;
-            methods = new BslMethodInfo[_methods.Count];
-            for (int i = 0; i < _methods.Count; i++)
-            {
-                methods[i] = _methods.GetRuntimeMethod(i);
-            }
-        }
-
-        int IAttachableContext.VariablesCount => _properties.Count;
+int IAttachableContext.VariablesCount => _properties.Count;
         
         int IAttachableContext.MethodsCount => _methods.Count;
 

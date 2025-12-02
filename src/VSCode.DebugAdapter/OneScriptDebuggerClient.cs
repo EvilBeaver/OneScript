@@ -42,7 +42,6 @@ namespace VSCode.DebugAdapter
         public void Stop()
         {
             _processor.Stop();
-            _commandsChannel.Dispose();
         }
 
         private void RunEventsListener(IMessageChannel channelToListen)

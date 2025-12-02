@@ -15,8 +15,9 @@ namespace ScriptEngine.Libraries
     /// </summary>
     public class UserAddedScript
     {
-        public string Symbol;
-        public string FilePath;
-        public IExecutableModule Module;
+        public string Symbol { get; set; }
+        public string FilePath { get;  set; }
+        public string FileName { get; set; }
+        public IExecutableModule Module  { get; set; }
     }
 }

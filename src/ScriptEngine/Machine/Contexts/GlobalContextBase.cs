@@ -5,7 +5,6 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
-using System.Linq;
 using OneScript.Contexts;
 using OneScript.Execution;
 using OneScript.Values;
@@ -125,17 +124,6 @@ namespace ScriptEngine.Machine.Contexts
         #endregion
 
         #region IAttachableContext members
-
-        void IAttachableContext.OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
-        {
-            variables = new IVariable[GetPropCount()];
-            for (int i = 0; i < variables.Length; i++)
-            {
-                variables[i] = Variable.CreateContextPropertyReference(this, i, GetPropName(i));
-            }
-            
-            methods = this.GetMethods().ToArray();
-        }
 
         IVariable IAttachableContext.GetVariable(int index)
         {

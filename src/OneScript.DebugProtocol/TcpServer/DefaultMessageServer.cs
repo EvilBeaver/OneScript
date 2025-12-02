@@ -13,14 +13,16 @@ namespace OneScript.DebugProtocol.TcpServer
 {
     /// <summary>
     /// Читает сообщения из канала и вызывает обработчики сообщений.
-    /// Не управляет жизненным циклом канала и оставляет его доступным при остановке сервера.
+    /// Управляет жизненным циклом канала и освобождает его ресурсы при завершении работы сервера.
     /// </summary>
     /// <typeparam name="TMessage"></typeparam>
     public class DefaultMessageServer<TMessage> : ICommunicationServer
     {
         private readonly IMessageChannel _protocolChannel;
+        private readonly object _disposeLock = new object();
         private Thread _messageThread;
         private volatile bool _serverStopped;
+        private bool _channelDisposed;
 
         public DefaultMessageServer(IMessageChannel protocolChannel)
         {
@@ -114,7 +116,7 @@ namespace OneScript.DebugProtocol.TcpServer
                     }
                 }
                 
-                _protocolChannel.Dispose();
+                DisposeChannel();
             });
             
             _messageThread.IsBackground = true;
@@ -124,6 +126,18 @@ namespace OneScript.DebugProtocol.TcpServer
             }
 
             _messageThread.Start();
+        }
+
+        private void DisposeChannel()
+        {
+            lock (_disposeLock)
+            {
+                if (_channelDisposed)
+                    return;
+                
+                _channelDisposed = true;
+                _protocolChannel.Dispose();
+            }
         }
 
         public void Stop()

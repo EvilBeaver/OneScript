@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json.Linq;
-using VSCode.DebugAdapter.Transport;
 
 namespace VSCode.DebugAdapter
 {
