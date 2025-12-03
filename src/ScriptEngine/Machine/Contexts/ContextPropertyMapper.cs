@@ -148,7 +148,7 @@ namespace ScriptEngine.Machine.Contexts
 
         private T ConvertParam<T>(IValue value)
         {
-            return ContextValuesMarshaller.ConvertParam<T>(value);
+            return ContextValuesMarshaller.ConvertValueStrict<T>(value);
         }
 
         private IValue ConvertReturnValue<TRet>(TRet param)

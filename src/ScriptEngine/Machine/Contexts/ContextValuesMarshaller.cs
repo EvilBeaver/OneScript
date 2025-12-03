@@ -25,6 +25,37 @@ namespace ScriptEngine.Machine.Contexts
             return valueObj != null ? (T)valueObj : (T)defaultValue;
         }
 
+        public static T ConvertValueStrict<T>(IValue value)
+        {
+            if (value == null || value.DataType == DataType.NotAValidValue)
+            {
+                return default;
+            }
+
+            if (value is T t)
+                return t;
+            
+            try
+            {
+                var converted = ConvertToCLRObject(value);
+                if (converted is T casted)
+                    return casted;
+
+                if (converted is decimal)
+                    return (T)Convert.ChangeType(converted, typeof(T));
+
+                throw RuntimeException.InvalidArgumentType();
+            }
+            catch (InvalidCastException)
+            {
+                throw RuntimeException.InvalidArgumentType();
+            }
+            catch (ValueMarshallingException)
+            {
+                throw RuntimeException.InvalidArgumentType();
+            }
+        }
+
         public static object ConvertParam(IValue value, Type type)
         {
             try
