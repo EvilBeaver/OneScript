@@ -28,53 +28,26 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         }
         
         [ContextProperty("Значение", "Value")]
-        public IValue Value
-        {
-            get;
-            set;
-        }
+        public IValue Value { get; set; }
 
         [ContextProperty("Представление", "Presentation")]
         public string Presentation
         {
-            get
-            {
-                return _presentationHolder;
-            }
-            set
-            {
-                if (value == null)
-                    _presentationHolder = String.Empty;
-                else
-                    _presentationHolder = value;
-            }
+            get => _presentationHolder;
+            set => _presentationHolder = value ?? String.Empty;
         }
 
         [ContextProperty("Пометка", "Check")]
-        public bool Check
-        {
-            get;
-            set;
-        }
+        public bool Check { get; set; }
 
         [ContextProperty("Картинка", "Picture")]
         public IValue Picture
         {
-            get
-            {
-                return _pictureHolder;
-            }
-            set
-            {
-                if(value != null)
-                {
-                    _pictureHolder = value;
-                }
-                else
-                {
-                    _pictureHolder = ValueFactory.Create();
-                }
-            }
+            get => _pictureHolder;
+            set => _pictureHolder = value ?? ValueFactory.Create();
         }
+
+        public override string ToString()
+            => !String.IsNullOrEmpty(_presentationHolder) ? _presentationHolder : Value.ToString();
     }
 }

@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using OneScript.Commons;
+using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Execution;
@@ -53,6 +54,27 @@ namespace ScriptEngine
 
         public void InjectGlobalProperty(IValue value, string identifier, string alias, bool readOnly)
         {
+            InjectPropertyInternal(value, identifier, alias, readOnly, null);
+        }
+        
+        public void InjectGlobalProperty(IValue value, string identifier, bool readOnly)
+        {
+            InjectGlobalProperty(value, identifier, default, readOnly);
+        }
+
+        public void InjectGlobalProperty(IValue value, string identifier, PackageInfo ownerPackage)
+        {
+            InjectPropertyInternal(value, identifier, default, true, ownerPackage);
+        }
+
+        private void InjectPropertyInternal(
+            IValue value,
+            string identifier,
+            string alias,
+            bool readOnly,
+            PackageInfo ownerPackage)
+        {
+            ArgumentNullException.ThrowIfNull(value);
             if(!Utils.IsValidIdentifier(identifier))
             {
                 throw new ArgumentException("Invalid identifier", nameof(identifier));
@@ -65,18 +87,40 @@ namespace ScriptEngine
             CreateGlobalScopeIfNeeded();
             var num = _injectedProperties.Insert(value, identifier, true, !readOnly);
 
-            var symbol = new WrappedPropertySymbol(_injectedProperties.GetPropertyInfo(num))
+            var bslPropertyInfo = _injectedProperties.GetPropertyInfo(num);
+            IVariableSymbol registeredSymbol;
+            if (ownerPackage == null)
             {
-                Name = identifier,
-                Alias = alias
+                registeredSymbol = new WrappedPropertySymbol(bslPropertyInfo)
+                {
+                    Name = identifier,
+                    Alias = alias
+                };
+            }
+            else
+            {
+                registeredSymbol = new WrappedLibraryPropertySymbol(bslPropertyInfo, ownerPackage)
+                {
+                    Name = identifier,
+                    Alias = alias
+                };
+            }
+
+            _scopeOfGlobalProperties.DefineVariable(registeredSymbol);
+        }
+
+        public void InjectGlobalProperty(IValue value, BslPropertyInfo definition)
+        {
+            CreateGlobalScopeIfNeeded();
+            _injectedProperties.Insert(value, definition);
+
+            var symbol = new WrappedPropertySymbol(definition)
+            {
+                Name = definition.Name,
+                Alias = definition.Alias
             };
 
             _scopeOfGlobalProperties.DefineVariable(symbol);
-        }
-        
-        public void InjectGlobalProperty(IValue value, string identifier, bool readOnly)
-        {
-            InjectGlobalProperty(value, identifier, default, readOnly);
         }
 
         private void RegisterObject(IAttachableContext context)
@@ -103,14 +147,9 @@ namespace ScriptEngine
 
         public SymbolTable GetSymbolTable() => _symbols;
 
-        public IReadOnlyCollection<IAttachableContext> AttachedContexts => _contexts;
+        public IReadOnlyList<IAttachableContext> AttachedContexts => _contexts;
 
-        public IEnumerable<ExternalLibraryDef> GetLibraries()
-        { 
-            return _libraryManager.GetLibraries();
-        }
-
-        public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library, IBslProcess process)
+        public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryInfo library, IBslProcess process)
         {
             _libraryManager.InitExternalLibrary(runtime, library, process);
         }
@@ -126,6 +165,23 @@ namespace ScriptEngine
             public string Alias { get; set; }
             public Type Type => Property.PropertyType;
             public BslPropertyInfo Property { get; }
+        }
+        
+        private class WrappedLibraryPropertySymbol : IPropertySymbol, IPackageSymbol
+        {
+            public WrappedLibraryPropertySymbol(BslPropertyInfo propInfo, PackageInfo ownerPackage)
+            {
+                Property = propInfo;
+                Package = ownerPackage;
+            }
+
+            public string Name { get; set; }
+            public string Alias { get; set; }
+            public Type Type => Property.PropertyType;
+            public BslPropertyInfo Property { get; }
+            private PackageInfo Package { get; }
+
+            public PackageInfo GetPackageInfo() => Package;
         }
     }
 }

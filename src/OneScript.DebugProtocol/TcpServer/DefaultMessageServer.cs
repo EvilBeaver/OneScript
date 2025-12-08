@@ -11,13 +11,20 @@ using OneScript.DebugProtocol.Abstractions;
 
 namespace OneScript.DebugProtocol.TcpServer
 {
+    /// <summary>
+    /// Читает сообщения из канала и вызывает обработчики сообщений.
+    /// Управляет жизненным циклом канала и освобождает его ресурсы при завершении работы сервера.
+    /// </summary>
+    /// <typeparam name="TMessage"></typeparam>
     public class DefaultMessageServer<TMessage> : ICommunicationServer
     {
-        private readonly ICommunicationChannel _protocolChannel;
+        private readonly IMessageChannel _protocolChannel;
+        private readonly object _disposeLock = new object();
         private Thread _messageThread;
         private volatile bool _serverStopped;
+        private bool _channelDisposed;
 
-        public DefaultMessageServer(ICommunicationChannel protocolChannel)
+        public DefaultMessageServer(IMessageChannel protocolChannel)
         {
             _protocolChannel = protocolChannel;
         }
@@ -92,18 +99,24 @@ namespace OneScript.DebugProtocol.TcpServer
                     }
                     catch (Exception e)
                     {
+                        if (OnError == null)
+                        {
+                            _serverStopped = true;
+                            break;
+                        }
+                        
                         var eventData = new CommunicationEventArgs
                         {
                             Data = null,
                             Channel = _protocolChannel,
                             Exception = new ChannelException("Unhandled error in message handler", true, e)
                         };
-                        
+
                         OnError?.Invoke(this, eventData);
                     }
                 }
                 
-                _protocolChannel.Dispose();
+                DisposeChannel();
             });
             
             _messageThread.IsBackground = true;
@@ -113,6 +126,18 @@ namespace OneScript.DebugProtocol.TcpServer
             }
 
             _messageThread.Start();
+        }
+
+        private void DisposeChannel()
+        {
+            lock (_disposeLock)
+            {
+                if (_channelDisposed)
+                    return;
+                
+                _channelDisposed = true;
+                _protocolChannel.Dispose();
+            }
         }
 
         public void Stop()
@@ -125,7 +150,6 @@ namespace OneScript.DebugProtocol.TcpServer
             if (_messageThread?.IsAlive == true)
             {
                 _messageThread.Interrupt();
-                _protocolChannel.Dispose();
             }
         }
 

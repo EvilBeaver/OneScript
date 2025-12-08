@@ -9,3 +9,6 @@ ARG VERSION=stable
 
 RUN curl -L https://github.com/oscript-library/ovm/releases/latest/download/ovm.exe > ovm.exe \
     && mono ovm.exe use --install $VERSION
+
+ENV OSCRIPTBIN=/root/.local/share/ovm/current/bin
+ENV PATH="$OSCRIPTBIN:$PATH"

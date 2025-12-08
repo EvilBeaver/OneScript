@@ -17,9 +17,9 @@ namespace ScriptEngine.Compiler
     {
         private readonly StackMachineCodeGenerator _codeGen;
 
-        public DefaultCompilerBackend(IErrorSink errorSink)
+        public DefaultCompilerBackend(IErrorSink errorSink, ExplicitImportsBehavior importsOption)
         {
-            _codeGen = new StackMachineCodeGenerator(errorSink);
+            _codeGen = new StackMachineCodeGenerator(errorSink, importsOption);
         }
         
         public IDependencyResolver DependencyResolver { get; set; }

@@ -5,9 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Commons;
+using OneScript.Values;
 using System;
 using System.Collections.Generic;
-using OneScript.Values;
 
 namespace OneScript.Contexts
 {
@@ -37,7 +38,7 @@ namespace OneScript.Contexts
 
     public class BslAnnotationParameter
     {
-        public BslAnnotationParameter(string name, BslPrimitiveValue value)
+        public BslAnnotationParameter(string name, BslPrimitiveValue value = null)
         {
             Name = name;
             Value = value;
@@ -47,6 +48,10 @@ namespace OneScript.Contexts
         
         public BslPrimitiveValue Value { get; }
 
-        public int ConstantValueIndex { get; set; } = -1;
+        public override string ToString()
+        {
+            return Utils.NameAndValuePresentation(Name, Value);
+        }
+
     }
 }

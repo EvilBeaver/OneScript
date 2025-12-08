@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.IO;
 using OneScript.Contexts;
-using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.StandardLibrary
@@ -111,7 +110,7 @@ namespace OneScript.StandardLibrary
             }
         }
 
-        [ContextMethod("Exist", IsDeprecated = true)]
+        [DeprecatedName("Exist")]
         [ContextMethod("Существует","Exists")]
         public bool Exists()
         {

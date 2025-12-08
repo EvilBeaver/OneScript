@@ -12,7 +12,6 @@ using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Exceptions;
 using OneScript.Execution;
-using OneScript.Language;
 using OneScript.Localization;
 using OneScript.Types;
 using OneScript.Values;

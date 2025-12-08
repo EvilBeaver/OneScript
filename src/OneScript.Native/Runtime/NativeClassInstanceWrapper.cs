@@ -4,16 +4,17 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+using System;
 using OneScript.Contexts;
 
 namespace OneScript.Native.Runtime
 {
+    /// <summary>
+    /// Этот класс можно удалить, заменив все обращения к нему на IAttachableContext
+    /// </summary>
+    [Obsolete("This class can be removed, replace all usages with IAttachableContext")]
     internal class NativeClassInstanceWrapper
     {
         public IAttachableContext Context { get; set; }
-        
-        public IVariable[] State { get; set; }
-        
-        public BslMethodInfo[] Methods { get; set; }
     }
 }

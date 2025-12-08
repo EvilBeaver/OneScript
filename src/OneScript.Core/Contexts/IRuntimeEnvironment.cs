@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using ScriptEngine.Machine;
 
@@ -41,6 +42,21 @@ namespace OneScript.Contexts
         void InjectGlobalProperty(IValue value, string identifier, bool readOnly);
         
         /// <summary>
+        /// Инжект глобального свойства
+        /// </summary>
+        /// <param name="value">Значение свойства</param>
+        /// <param name="identifier">Идентификатор</param>
+        /// <param name="ownerPackage">Пакет, предоставивший это свойство</param>
+        void InjectGlobalProperty(IValue value, string identifier, PackageInfo ownerPackage);
+
+        /// <summary>
+        /// Инжект глобального свойства с помощью описания свойства.
+        /// </summary>
+        /// <param name="value">Значение свойства</param>
+        /// <param name="definition">Определение свойства</param>
+        void InjectGlobalProperty(IValue value, BslPropertyInfo definition);
+        
+        /// <summary>
         /// Установить новое значение глобального свойства
         /// </summary>
         /// <param name="propertyName">Имя свойства</param>
@@ -62,6 +78,6 @@ namespace OneScript.Contexts
         /// <summary>
         /// Список подключенных внешних контекстов (слоев), доступных всегда в рамках данного окружения
         /// </summary>
-        IReadOnlyCollection<IAttachableContext> AttachedContexts { get; }
+        IReadOnlyList<IAttachableContext> AttachedContexts { get; }
     }
 }

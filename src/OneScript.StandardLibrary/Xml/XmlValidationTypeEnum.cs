@@ -5,10 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System.Collections.Generic;
 using System.Xml;
 using OneScript.Contexts.Enums;
-using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using OneScript.Types;
 using ScriptEngine.Machine.Contexts;
 

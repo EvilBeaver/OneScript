@@ -5,12 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using OneScript.Contexts;
 using OneScript.Values;
-using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
 {
@@ -52,7 +50,6 @@ namespace ScriptEngine.Machine
             return new AnnotationParameter
             {
                 Name = parameter.Name,
-                ValueIndex = parameter.ConstantValueIndex,
                 RuntimeValue = parameter.Value,
             };
         }
@@ -82,10 +79,7 @@ namespace ScriptEngine.Machine
             if (annotation.ParamCount > 0)
             {
                 attribute.SetParameters(annotation.Parameters.Select(p => 
-                    new BslAnnotationParameter(p.Name, (BslPrimitiveValue) p.RuntimeValue)
-                    {
-                        ConstantValueIndex = p.ValueIndex
-                    }));
+                    new BslAnnotationParameter(p.Name, (BslPrimitiveValue) p.RuntimeValue)));
             }
 
             return attribute;

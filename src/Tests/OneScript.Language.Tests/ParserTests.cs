@@ -145,6 +145,30 @@ namespace OneScript.Language.Tests
         }
 
         [Fact]
+        public void CheckBuild_Of_AnnotationAsValue()
+        {
+            var code = @"
+            &Аннотация(Параметр = &ТожеАннотация(&СТожеПараметромАннотацией, П2 = &СТожеПараметромАннотацией))
+            Процедура Процедура1() Экспорт
+            КонецПроцедуры";
+
+            var treeValidator = ParseModuleAndGetValidator(code);
+
+            treeValidator.Is(NodeKind.MethodsSection);
+
+            var methodNode = treeValidator.NextChild();
+            methodNode.Is(NodeKind.Method);
+            var annotationNode = methodNode.NextChild();
+            annotationNode.Is(NodeKind.Annotation);
+            var annotationParameter = annotationNode.NextChild();
+            annotationParameter.Is(NodeKind.AnnotationParameter);
+
+            annotationParameter
+                .NextChildIs(NodeKind.AnnotationParameterName)
+                .NextChildIs(NodeKind.Annotation);
+        }
+
+        [Fact]
         public void Check_Method_Parameters()
         {
             var code = @"

@@ -31,6 +31,18 @@ namespace ScriptEngine
                 .FromFile(path, ReaderEncoding)
                 .Build();
         }
+        
+        /// <summary>
+        /// Создаёт SourceCode из файла с указанием пакета-владельца.
+        /// </summary>
+        public SourceCode FromFile(string path, string ownerPackageId)
+        {
+            return SourceCodeBuilder
+                .Create()
+                .FromFile(path, ReaderEncoding)
+                .WithOwnerPackage(ownerPackageId)
+                .Build();
+        }
 
         public Encoding ReaderEncoding { get; set; }
     }

@@ -14,5 +14,7 @@ namespace VSCode.DebugAdapter
         public string[] Args { get; set; }
 
         public string Cwd { get; set; }
+        
+        public bool? WaitOnStart { get; set; }
     }
 }

@@ -26,7 +26,7 @@ namespace ScriptEngine.Compiler
             IErrorSink errorSink,
             IServiceContainer services) : base(new PreprocessorHandlers(), errorSink, services)
         {
-            _backend = new DefaultCompilerBackend(errorSink);
+            _backend = new DefaultCompilerBackend(errorSink, ExplicitImportsBehavior.Disabled);
         }
 
         protected override IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType, IBslProcess process)

@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Serilog;
-using VSCode.DebugAdapter.Transport;
 
 namespace VSCode.DebugAdapter
 {
@@ -99,6 +98,7 @@ namespace VSCode.DebugAdapter
             ScriptArguments = Utilities.ConcatArguments(options.Args);
             DebugPort = options.DebugPort;
             Environment = options.Env;
+            WaitOnStart = options.WaitOnStart ?? true;
         }
 
         protected override Process CreateProcess()
@@ -107,6 +107,11 @@ namespace VSCode.DebugAdapter
             if (DebugPort != 0)
             {
                 dbgArgs.Add($"-port={DebugPort}");
+            }
+
+            if (!WaitOnStart)
+            {
+                dbgArgs.Add("-noWait");
             }
             
             var debugArguments = string.Join(" ", dbgArgs);

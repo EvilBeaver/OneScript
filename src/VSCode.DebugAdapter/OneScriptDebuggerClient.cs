@@ -17,13 +17,13 @@ namespace VSCode.DebugAdapter
     public class OneScriptDebuggerClient : IDebuggerService
     {
         private readonly IDebugEventListener _eventBackChannel;
-        private readonly ICommunicationChannel _commandsChannel;
+        private readonly IMessageChannel _commandsChannel;
         private RpcProcessor _processor;
         
         private readonly ILogger Log = Serilog.Log.ForContext<OneScriptDebuggerClient>();
         
         public OneScriptDebuggerClient(
-            ICommunicationChannel commandsChannel,
+            IMessageChannel commandsChannel,
             IDebugEventListener eventBackChannel,
             int protocolVersion)
         {
@@ -42,10 +42,9 @@ namespace VSCode.DebugAdapter
         public void Stop()
         {
             _processor.Stop();
-            _commandsChannel.Dispose();
         }
 
-        private void RunEventsListener(ICommunicationChannel channelToListen)
+        private void RunEventsListener(IMessageChannel channelToListen)
         {
             var server = new DefaultMessageServer<TcpProtocolDtoBase>(channelToListen);
             server.ServerThreadName = "dbg-client-event-listener";

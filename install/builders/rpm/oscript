@@ -1,3 +1,0 @@
-#!/bin/sh
-dotnet /usr/share/oscript/bin/oscript.dll "$@"
-

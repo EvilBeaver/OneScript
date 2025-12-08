@@ -1,7 +1,7 @@
 {
   "name": "oscript-debug",
   "displayName": "OneScript Debug (BSL)",
-  "version": "0.10.0",
+  "version": "1.0.0",
   "publisher": "EvilBeaver",
   "description": "Visual Studio Code debugger extension for OneScript (BSL)",
   "icon": "images/logo-dbg.png",
@@ -113,6 +113,11 @@
                 "type": "string",
                 "description": "Кодировка вывода отлаживаемого приложения. Отладчик будет интерпретировать вывод приложения в указанной кодировке",
                 "default": ""
+              },
+              "waitOnStart": {
+                "type": "boolean",
+                "description": "Ожидать подключения отладчика при старте приложения (не выполнять bsl до его подключения)",
+                "default": true
               }
             }
           },
@@ -127,7 +132,25 @@
                 "type": "string",
                 "description": "Кодировка вывода отлаживаемого приложения. Отладчик будет интерпретировать вывод приложения в указанной кодировке",
                 "default": ""
+              },
+              "pathsMapping": {
+                "type": "object",
+                "description": "Сопоставление путей между локальной и удаленной машиной (для удаленной отладки)",
+                "properties": {
+                  "localPath": {
+                    "type": "string",
+                    "description": "Путь к каталогу проекта на локальной машине.",
+                    "default": ""
+                  },
+                  "remotePath": {
+                    "type": "string",
+                    "description": "Путь к каталогу проекта на удаленной машине.",
+                    "default": ""
+                  }
+                },
+                "required": ["localPath", "remotePath"]
               }
+
             }
           }
         }

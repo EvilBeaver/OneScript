@@ -163,27 +163,41 @@ namespace OneScript.StandardLibrary
                 {
                     annotationRow.Set(annotationNameColumn, ValueFactory.Create(annotation.Name));
                 }
-                var parametersTable = new ValueTable();
-                var parameterNameColumn = parametersTable.Columns.Add("Имя");
-                var parameterValueColumn = parametersTable.Columns.Add("Значение");
-
+                var parametersTable = FillAnnotationParameters(annotation.Parameters);
                 annotationRow.Set(annotationParamsColumn, parametersTable);
-                if (annotation.Parameters.Any())
-                {
-
-                    foreach (var annotationParameter in annotation.Parameters)
-                    {
-                        var parameterRow = parametersTable.Add();
-                        if (annotationParameter.Name != null)
-                        {
-                            parameterRow.Set(parameterNameColumn, ValueFactory.Create(annotationParameter.Name));
-                        }
-                        parameterRow.Set(parameterValueColumn, annotationParameter.Value);
-                    }
-                }
             }
 
             return annotationsTable;
+        }
+
+        private static ValueTable FillAnnotationParameters(IEnumerable<BslAnnotationParameter> parameters)
+        {
+            var parametersTable = new ValueTable();
+            var parameterNameColumn = parametersTable.Columns.Add("Имя");
+            var parameterValueColumn = parametersTable.Columns.Add("Значение");
+
+            foreach (var annotationParameter in parameters)
+            {
+                var parameterRow = parametersTable.Add();
+                if (annotationParameter.Name != null)
+                {
+                    parameterRow.Set(parameterNameColumn, ValueFactory.Create(annotationParameter.Name));
+                }
+                if (annotationParameter.Value is BslAnnotationValue annotationValue)
+                {
+                    var expandedValue = EmptyAnnotationsTable();
+                    var row = expandedValue.Add();
+                    row.Set(expandedValue.Columns.FindColumnByName("Имя"), ValueFactory.Create(annotationValue.Name));
+                    row.Set(expandedValue.Columns.FindColumnByName("Параметры"), FillAnnotationParameters(annotationValue.Parameters));
+                    parameterRow.Set(parameterValueColumn, row);
+                }
+                else
+                {
+                    parameterRow.Set(parameterValueColumn, annotationParameter.Value);
+                }
+            }
+
+           return parametersTable;
         }
 
         private static bool MethodExistsForType(BslTypeValue type, string methodName)

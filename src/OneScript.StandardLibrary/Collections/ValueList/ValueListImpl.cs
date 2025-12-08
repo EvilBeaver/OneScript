@@ -212,7 +212,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
                 }
 
                 if (index < 0 || index >= _items.Count())
-                    throw new RuntimeException("Значение индекса выходит за пределы диапазона");
+                    throw RuntimeException.IndexOutOfRange();
             }
 
             return index;

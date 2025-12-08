@@ -7,16 +7,15 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
+using OneScript.StandardLibrary.Collections.Exceptions;
 using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Types;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {
@@ -47,8 +46,11 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Добавить", "Add")]
         public ValueTableColumn Add(string name, TypeDescription type = null, string title = null, int width = 0)
         {
+            if (!Utils.IsValidIdentifier(name))
+                throw ColumnException.WrongColumnName(name);
+
             if (FindColumnByName(name) != null)
-                throw new RuntimeException("Неверное имя колонки " + name);
+                throw ColumnException.DuplicatedColumnName(name);
 
             var column = new ValueTableColumn(this, ++maxColumnId, name, title, type, width);
             _columns.Add(column);
@@ -68,8 +70,11 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Вставить", "Insert")]
         public ValueTableColumn Insert(int index, string name, TypeDescription type = null, string title = null, int width = 0)
         {
+            if (!Utils.IsValidIdentifier(name))
+                throw ColumnException.WrongColumnName(name);
+
             if (FindColumnByName(name) != null)
-                throw new RuntimeException("Неверное имя колонки " + name);
+                throw ColumnException.DuplicatedColumnName(name);
 
             ValueTableColumn column = new ValueTableColumn(this, ++maxColumnId, name, title, type, width);
             _columns.Insert(index, column);
@@ -126,7 +131,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         public void Delete(IValue column)
         {
             var vtColumn = GetColumnByIIndex(column);
-            _owner.ForEach((ValueTableRow x)=>
+            _owner.ForEach((ValueTableRow x) =>
             {
                 x.OnOwnerColumnRemoval(vtColumn);
             });
@@ -140,7 +145,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Очистить", "Clear")]
         public void Clear()
         {
-            while (_columns.Any())
+            while (_columns.Count != 0)
             {
                 Delete(_columns[0]);
             }
@@ -151,10 +156,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             return _columns.Find(column => _namesComparer.Equals(name, column.Name));
         }
 
-        public ValueTableColumn FindColumnByIndex(int index)
-        {
-            return _columns[index];
-        }
+        public ValueTableColumn FindColumnByIndex(int index) => _columns[index];
 
         public IEnumerator<ValueTableColumn> GetEnumerator()
         {
@@ -171,10 +173,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public override bool IsIndexed => true;
 
-        public override IValue GetIndexedValue(IValue index)
-        {
-            return GetColumnByIIndex(index);
-        }
+        public override IValue GetIndexedValue(IValue index) => GetColumnByIIndex(index);
         
         public override int GetPropertyNumber(string name)
         {
@@ -184,11 +183,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             return idx;
         }
 
-        public override int GetPropCount()
-        {
-            return _columns.Count;
-        }
-        
+        public override int GetPropCount() => _columns.Count;
+
         public override string GetPropName(int propNum)
         {
             return FindColumnByIndex(propNum).Name;
@@ -199,39 +195,30 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             return FindColumnByIndex(propNum);
         }
 
-        public override bool IsPropWritable(int propNum)
-        {
-            return false;
-        }
-        
-        public override bool IsPropReadable(int propNum)
-        {
-            return true;
-        }
+        public override bool IsPropWritable(int propNum) => false;
+
+        public override bool IsPropReadable(int propNum) => true;
 
         public ValueTableColumn GetColumnByIIndex(IValue index)
         {
             if (index.SystemType == BasicTypes.String)
             {
-                ValueTableColumn Column = FindColumnByName(index.ToString());
-                if (Column == null)
-                    throw PropertyAccessException.PropNotFoundException(index.ToString());
-                return Column;
+                return FindColumnByName(index.ToString())
+                    ?? throw PropertyAccessException.PropNotFoundException(index.ToString());
             }
 
             if (index.SystemType == BasicTypes.Number)
             {
                 int i_index = Decimal.ToInt32(index.AsNumber());
                 if (i_index < 0 || i_index >= Count())
-                    throw RuntimeException.InvalidArgumentValue();
+                    throw RuntimeException.IndexOutOfRange();
 
-                ValueTableColumn Column = FindColumnByIndex(i_index);
-                return Column;
+                return FindColumnByIndex(i_index);
             }
 
-            if (index is ValueTableColumn)
+            if (index is ValueTableColumn column)
             {
-                return index as ValueTableColumn;
+                return column;
             }
 
             throw RuntimeException.InvalidArgumentType();
@@ -248,13 +235,12 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             {
                 int iIndex = Decimal.ToInt32(index.AsNumber());
                 if (iIndex < 0 || iIndex >= Count())
-                    throw RuntimeException.InvalidArgumentValue();
+                    throw RuntimeException.IndexOutOfRange();
 
                 return iIndex;
             }
 
-            var column = index as ValueTableColumn;
-            if (column != null)
+            if (index is ValueTableColumn column)
             {
                 return IndexOf(column);
             }

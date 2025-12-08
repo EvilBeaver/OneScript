@@ -35,7 +35,7 @@ namespace VSCode.DebugAdapter
             LogCommandReceived();
             AdapterID = (string) args.adapterID;
 
-            _debuggee = DebugeeFactory.CreateProcess(AdapterID, PathStrategy);
+            _debuggee = DebugeeFactory.CreateProcess(AdapterID, PathStrategy);      
 
             SendResponse(response, new Capabilities
             {
@@ -137,7 +137,9 @@ namespace VSCode.DebugAdapter
         {
             LogCommandReceived();
             SubscribeForDebuggeeProcessEvents();
+
             _debuggee.DebugPort = GetFromContainer(arguments, "debugPort", 2801);
+            _debuggee.InitPathsMapper(arguments);  
             
             DebugClientFactory debugClientFactory;
             try

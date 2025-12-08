@@ -74,4 +74,14 @@ namespace OneScript.Localization
             return russian;
         }
     }
+
+    public static class BilingualStringExtension
+    {
+        public static bool BilingualEquals(this string str, string lang1, string lang2, 
+            StringComparison comparison = StringComparison.CurrentCultureIgnoreCase)
+        {
+            return string.Equals(str, lang1, comparison) || string.Equals(str, lang2, comparison);
+        }
+    }
+
 }

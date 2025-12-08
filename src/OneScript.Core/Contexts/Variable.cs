@@ -146,6 +146,11 @@ namespace OneScript.Contexts
             {
                 return _reference.Equals(other);
             }
+
+            public override string ToString()
+            {
+                return Value.ToString();
+            }
         }
 
         #endregion

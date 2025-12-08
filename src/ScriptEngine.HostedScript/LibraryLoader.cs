@@ -12,9 +12,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OneScript.Commons;
+using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
+using OneScript.Values;
 using ScriptEngine.Libraries;
 
 namespace ScriptEngine.HostedScript
@@ -25,15 +27,25 @@ namespace ScriptEngine.HostedScript
         private readonly ILibraryManager _libManager;
         private readonly ScriptingEngine _engine;
 
-        readonly bool _customized;
-
-        readonly List<DelayLoadedScriptData> _delayLoadedScripts = new List<DelayLoadedScriptData>();
+        private readonly bool _customized;
+        private readonly Stack<LibraryLoadingContext> _librariesInProgress = new Stack<LibraryLoadingContext>();
 
         private struct DelayLoadedScriptData
         {
             public string path;
             public string identifier;
             public bool asClass;
+        }
+
+        private class LibraryLoadingContext
+        {
+            public LibraryLoadingContext(ExternalLibraryInfo library)
+            {
+                this.Library = library;
+            }
+
+            public readonly ExternalLibraryInfo Library;
+            public readonly List<DelayLoadedScriptData> delayLoadedScripts = new List<DelayLoadedScriptData>();
         }
         
         private LibraryLoader(IExecutableModule moduleHandle,
@@ -69,7 +81,6 @@ namespace ScriptEngine.HostedScript
             var module = CompileModule(compiler, code, typeof(LibraryLoader), process);
             
             return new LibraryLoader(module, engine.Environment, engine.LibraryManager, engine, process);
-
         }
 
         public static LibraryLoader Create(ScriptingEngine engine, IBslProcess process)
@@ -85,7 +96,7 @@ namespace ScriptEngine.HostedScript
             if (!Utils.IsValidIdentifier(className))
                 throw RuntimeException.InvalidArgumentValue();
 
-            _delayLoadedScripts.Add(new DelayLoadedScriptData()
+            _librariesInProgress.Peek().delayLoadedScripts.Add(new DelayLoadedScriptData()
                 {
                     path = file,
                     identifier = className,
@@ -99,7 +110,7 @@ namespace ScriptEngine.HostedScript
             if (!Utils.IsValidIdentifier(moduleName))
                 throw RuntimeException.InvalidArgumentValue();
 
-            _delayLoadedScripts.Add(new DelayLoadedScriptData()
+            _librariesInProgress.Peek().delayLoadedScripts.Add(new DelayLoadedScriptData()
             {
                 path = file,
                 identifier = moduleName,
@@ -112,8 +123,8 @@ namespace ScriptEngine.HostedScript
                     Locale.NStr($"ru = 'Загружаю модуль ={moduleName}= в область видимости из файла {file}';"+
                                 $"en = 'Load module ={moduleName}= in to context from file {file}'")    
                 );
-                _env.InjectGlobalProperty(null, moduleName, true);
-                process.Services.TryResolve<StackMachineProvider>()?.Machine?.UpdateGlobals();
+                
+                _env.InjectGlobalProperty(BslUndefinedValue.Instance, moduleName, _librariesInProgress.Peek().Library.Package);
             }
             catch (InvalidOperationException e)
 	        {
@@ -137,38 +148,44 @@ namespace ScriptEngine.HostedScript
             manager.RegisterTemplate(file, name, kind);
         }
 
-        public ExternalLibraryDef ProcessLibrary(string libraryPath, IBslProcess process)
+        public PackageInfo ProcessLibrary(string libraryPath, IBslProcess process)
         {
-            bool success;
-            _delayLoadedScripts.Clear();
-            
-            if(!_customized)
+            var package = new PackageInfo(libraryPath, Path.GetFileName(libraryPath));
+            var library = new ExternalLibraryInfo(package);
+            _librariesInProgress.Push(new LibraryLoadingContext(library));
+            try
             {
-                TraceLoadLibrary(
-                    Locale.NStr($"ru = 'Использую НЕ кастомизированный загрузчик пакетов по умолчанию для библиотеки {libraryPath}';"+
-                                $"en = 'Use NOT customized package loader for library {libraryPath}'")    
-                );
+                bool success;
+                if(!_customized)
+                {
+                    TraceLoadLibrary(
+                        Locale.NStr($"ru = 'Использую НЕ кастомизированный загрузчик пакетов по умолчанию для библиотеки {libraryPath}';"+
+                                    $"en = 'Use NOT customized package loader for library {libraryPath}'")    
+                    );
 
-                success = DefaultProcessing(libraryPath, process);
+                    success = DefaultProcessing(libraryPath, process);
+                }
+                else
+                {
+                    TraceLoadLibrary(
+                        Locale.NStr($"ru = 'Использую КАСТОМИЗИРОВАННЫЙ загрузчик пакетов для библиотеки {libraryPath}';"+
+                                    $"en = 'Use CUSTOMIZED package loader for library {libraryPath}'")
+                    );
+
+                    success = CustomizedProcessing(libraryPath, process);
+                }
+
+                if (!success)
+                    return default;
+            
+                CompileDelayedModules(library, process);
+                
+                return package;
             }
-            else
+            finally
             {
-                TraceLoadLibrary(
-                    Locale.NStr($"ru = 'Использую КАСТОМИЗИРОВАННЫЙ загрузчик пакетов для библиотеки {libraryPath}';"+
-                                $"en = 'Use CUSTOMIZED package loader for library {libraryPath}'")
-                );
-
-                success = CustomizedProcessing(libraryPath, process);
+                _librariesInProgress.Pop();
             }
-
-            if (!success)
-                return default;
-            
-            
-            var library = new ExternalLibraryDef(Path.GetFileName(libraryPath));
-            CompileDelayedModules(library, process);
-
-            return library;
         }
 
         private bool CustomizedProcessing(string libraryPath, IBslProcess process)
@@ -222,9 +239,9 @@ namespace ScriptEngine.HostedScript
             return hasFiles;
         }
 
-        private void CompileDelayedModules(ExternalLibraryDef library, IBslProcess process)
+        private void CompileDelayedModules(ExternalLibraryInfo library, IBslProcess process)
         {
-            foreach (var scriptFile in _delayLoadedScripts)
+            foreach (var scriptFile in _librariesInProgress.Peek().delayLoadedScripts)
             {
                 if (scriptFile.asClass)
                 {
@@ -236,27 +253,26 @@ namespace ScriptEngine.HostedScript
                 }
             }
 
-            library.Modules.ForEach(moduleFile =>
+            foreach (var moduleFile in library.Modules)
             {
-                var module = CompileFile(moduleFile.FilePath, process);
-                moduleFile.Module = module;
-            });
+                moduleFile.Module = CompileFile(moduleFile.FilePath, library.Package.Id, process);
+            }
             
-            library.Classes.ForEach(classFile =>
+            foreach (var classFile in library.Classes)
             {
-                var module = CompileFile(classFile.FilePath, process);
+                var module = CompileFile(classFile.FilePath, library.Package.Id, process);
                 _engine.AttachedScriptsFactory.RegisterTypeModule(classFile.Symbol, module);
                 classFile.Module = module;
-            });
+            }
 
             _libManager.InitExternalLibrary(_engine, library, process);
         }
 
-        private IExecutableModule CompileFile(string path, IBslProcess process)
+        private IExecutableModule CompileFile(string path, string ownerPackageId, IBslProcess process)
         {
             var compiler = _engine.GetCompilerService();
             
-            var source = _engine.Loader.FromFile(path);
+            var source = _engine.Loader.FromFile(path, ownerPackageId);
             var module = _engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, null, process);
 
             return module;
@@ -264,7 +280,7 @@ namespace ScriptEngine.HostedScript
 
         private static Lazy<bool> TraceEnabled =
             new Lazy<bool>(() => System.Environment.GetEnvironmentVariable("OS_LRE_TRACE") == "1");
-        
+
         public static void TraceLoadLibrary(string message)
         {
             if (TraceEnabled.Value) {

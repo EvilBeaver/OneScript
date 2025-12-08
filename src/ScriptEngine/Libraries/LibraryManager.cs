@@ -8,18 +8,15 @@ at http://mozilla.org/MPL/2.0/.
 using OneScript.Commons;
 using OneScript.Contexts;
 using ScriptEngine.Machine.Contexts;
-using System.Collections.Generic;
 using OneScript.Execution;
 
 namespace ScriptEngine.Libraries
 {
     /// <summary>
-    /// Временная имплементация временного интерфейса ILibraryManager
-    /// Нужна для откусывания ответственностей от RuntimeEnvironment
+    /// Менеджер загрузки внешних библиотек
     /// </summary>
     internal class LibraryManager : ILibraryManager
     {
-        private readonly List<ExternalLibraryDef> _externalLibs = new List<ExternalLibraryDef>();
         private readonly IRuntimeContextInstance _contextOfGlobalSymbols;
 
         public LibraryManager(IRuntimeContextInstance contextOfGlobalSymbols)
@@ -27,12 +24,7 @@ namespace ScriptEngine.Libraries
             _contextOfGlobalSymbols = contextOfGlobalSymbols;
         }
 
-        public IEnumerable<ExternalLibraryDef> GetLibraries()
-        {
-            return _externalLibs.ToArray();
-        }
-
-        public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library, IBslProcess process)
+        public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryInfo library, IBslProcess process)
         {
             var loadedObjects = new ScriptDrivenObject[library.Modules.Count];
             int i = 0;
@@ -45,7 +37,6 @@ namespace ScriptEngine.Libraries
                 loadedObjects[i++] = instance;
             }
 
-            _externalLibs.Add(library);
             loadedObjects.ForEach(sdo => runtime.InitializeSDO(sdo, process));
         }
     }

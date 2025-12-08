@@ -11,7 +11,7 @@ namespace OneScript.DebugProtocol.Abstractions
 {
     public class CommunicationEventArgs : EventArgs
     {
-        public ICommunicationChannel Channel { get; set; }
+        public IMessageChannel Channel { get; set; }
         
         public object Data { get; set; }
 

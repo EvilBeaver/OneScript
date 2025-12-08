@@ -9,7 +9,6 @@ using System;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
-using OneScript.Execution;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

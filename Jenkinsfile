@@ -5,7 +5,7 @@ pipeline {
 
     environment {
         VersionPrefix = '2.0.0'
-        VersionSuffix = 'rc.9'+"+${BUILD_NUMBER}"
+        VersionSuffix = 'rc.10'+"+${BUILD_NUMBER}"
         outputEnc = '65001'
     }
 
@@ -199,8 +199,9 @@ pipeline {
         }
 
         stage ('Publishing night-build') {
-            when { anyOf {
-                branch 'develop';
+            when { 
+                anyOf {
+                    branch 'develop';
                 }
             }
             agent { label 'master' }
@@ -217,8 +218,9 @@ pipeline {
         }
 
         stage ('Publishing preview') {
-            when { anyOf {
-                branch 'release/preview';
+            when { 
+                anyOf {
+                    branch 'release/preview';
                 }
             }
             agent { label 'master' }
@@ -254,6 +256,46 @@ pipeline {
                 
                 withCredentials([string(credentialsId: 'NuGetToken', variable: 'NUGET_TOKEN')]) {
                     bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PublishNuget /p:NugetToken=$NUGET_TOKEN"
+                }
+            }
+        }
+
+        stage ('Publishing docker-images') {
+            parallel {
+                stage('Build v1') {
+                    agent { label 'linux' }
+                    when { 
+                        anyOf {
+                            branch 'release/latest'
+                            expression { 
+                                return env.TAG_NAME && env.TAG_NAME.startsWith('v1.')
+                            }
+                        }
+                    }
+                    steps {
+                        script {
+                            def codename = env.TAG_NAME ? env.TAG_NAME : 'latest'
+                            publishDockerImage('v1', codename)
+                        }
+                    }
+                }
+
+                stage('Build v2') {
+                    agent { label 'linux' }
+                    when { 
+                        anyOf {
+                            branch 'develop'
+                            expression { 
+                                return env.TAG_NAME && env.TAG_NAME.startsWith('v2.')
+                            }
+                        }
+                    }
+                    steps {
+                        script {
+                            def codename = env.TAG_NAME ? env.TAG_NAME : 'dev'
+                            publishDockerImage('v2', codename)
+                        }
+                    }
                 }
             }
         }
@@ -298,5 +340,14 @@ def publishReleaseNotes(codename) {
         sudo rsync -rv . ${targetDir}
         """.stripIndent()        
     }
+}
+
+def publishDockerImage(flavour, codename) {
+    def imageName = "evilbeaver/onescript:${codename}"
+
+    docker.build(
+        imageName,
+        "--load -f install/builders/base-image/Dockerfile_${flavour} ."
+    ).push()
 }
 

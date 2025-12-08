@@ -17,18 +17,20 @@ namespace ScriptEngine.Machine.Contexts
         private readonly IndexedNameValueCollection<BslPropertyInfo> _propDefs =
             new IndexedNameValueCollection<BslPropertyInfo>();
 
-        private readonly Func<int, string, BslPropertyInfo> _infoFactory = MakeProperty;
+        public delegate BslPropertyInfo PropertyInfoFactory(int index, string name, bool canRead, bool canWrite);
+        
+        private readonly PropertyInfoFactory _infoFactory = MakeProperty;
 
         public DynamicPropertiesHolder()
         {
         }
 
-        public DynamicPropertiesHolder(Func<int, string, BslPropertyInfo> infoFactory)
+        public DynamicPropertiesHolder(PropertyInfoFactory infoFactory)
         {
             _infoFactory = infoFactory;
         }
         
-        public int RegisterProperty(string name)
+        public int RegisterProperty(string name, bool canRead = true, bool canWrite = true)
         {
             var index = _propDefs.IndexOf(name); 
             if (index != -1)
@@ -42,14 +44,27 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             index = _propDefs.Count;
-            return _propDefs.Add(_infoFactory(index, name), name);
+            return _propDefs.Add(_infoFactory(index, name, canRead, canWrite), name);
+        }
+        
+        public int RegisterProperty(BslPropertyInfo prop)
+        {
+            var index = _propDefs.IndexOf(prop.Name);
+            if (index != -1)
+            {
+                throw new ArgumentException($"Property {prop.Name} already exists");
+            }
+            
+            return _propDefs.Add(prop, prop.Name);
         }
 
-        private static BslPropertyInfo MakeProperty(int index, string name)
+        private static BslPropertyInfo MakeProperty(int index, string name, bool canRead, bool canWrite)
         {
             return BslPropertyBuilder.Create()
                 .Name(name)
                 .SetDispatchingIndex(index)
+                .CanRead(canRead)
+                .CanWrite(canWrite)
                 .Build();
         }
 

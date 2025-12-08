@@ -5,13 +5,11 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System;
 using System.Linq;
 using System.Net.WebSockets;
 

@@ -35,7 +35,20 @@ namespace OneScript.Commons
                 action(data);
             }
         }
-        
+        public static string NameAndValuePresentation(string name, object value)
+        {
+            var list = new List<string>();
+            if (!string.IsNullOrEmpty(name))
+            {
+                list.Add(name);
+            }
+            if (value != null)
+            {
+                list.Add(value.ToString());
+            }
+            return string.Join("=", list);
+        }
+
         public static bool IsMonoRuntime => Type.GetType("Mono.Runtime") != null;
 
     }

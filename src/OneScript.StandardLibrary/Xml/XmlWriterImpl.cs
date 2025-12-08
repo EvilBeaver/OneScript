@@ -183,7 +183,110 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("ЗаписатьТекущий","WriteCurrent")]
         public void WriteCurrent(XmlReaderImpl reader)
         {
-            _writer.WriteNode(reader.GetNativeReader(), false);
+            var nodeType = reader.NodeType.UnderlyingValue;
+            switch (nodeType)
+            {
+                case XmlNodeType.Element:
+                    CopyElementAndAttributes(reader, this);
+                    break;
+                case XmlNodeType.XmlDeclaration:
+                    WriteXMLDeclaration();
+                    break;
+                case XmlNodeType.DocumentType:
+                    CopyDocumentType(reader, this);
+                    break;
+                case XmlNodeType.Attribute:
+                    CopyAttribute(reader.Name, reader.Value, reader, this);
+                    break;
+                case XmlNodeType.EndElement:
+                    WriteEndElement();
+                    break;
+                case XmlNodeType.CDATA:
+                    WriteCDATASection(reader.Value);
+                    break;
+                case XmlNodeType.Text:
+                    WriteText(reader.Value);
+                    break;
+                case XmlNodeType.Whitespace:
+                case XmlNodeType.SignificantWhitespace:
+                    WriteText(reader.Value);
+                    break;
+                case XmlNodeType.Comment:
+                    WriteComment(reader.Value);
+                    break;
+                case XmlNodeType.EntityReference:
+                    WriteEntityReference(reader.Name);
+                    break;
+                case XmlNodeType.ProcessingInstruction:
+                    WriteProcessingInstruction(reader.Name, reader.Value);
+                    break;
+                case XmlNodeType.Entity:
+                case XmlNodeType.EndEntity:
+                case XmlNodeType.Document:
+                case XmlNodeType.DocumentFragment:
+                case XmlNodeType.Notation:
+                    throw new RuntimeException(new Localization.BilingualString($"Копирование узла {nodeType} не поддерживается"));
+                default:
+                    break;
+            }
+        }
+
+        private static void CopyDocumentType(XmlReaderImpl reader, XmlWriterImpl writer)
+        {
+            writer.WriteDocumentType(reader.Name, reader.Value);
+        }
+
+        private static void CopyElementAndAttributes(XmlReaderImpl reader, XmlWriterImpl writer)
+        {
+            writer.WriteStartElement(reader.Name);
+            var attributeCount = reader.AttributeCount();
+            if (attributeCount != 0)
+            {
+                for (var attributeIndex = 0; attributeIndex < attributeCount;  attributeIndex++)
+                {
+                    var attributeName = reader.AttributeName(attributeIndex);
+                    var attributeValue = reader.GetAttribute(ValueFactory.Create(attributeIndex)).ExplicitString();
+                    CopyAttribute(attributeName, attributeValue, reader, writer);
+                }
+            }
+        }
+
+        private static void CopyAttribute(string attributeNameIn, string attributeValue, XmlReaderImpl reader, XmlWriterImpl writer)
+        {
+            var splittedName = splitName(attributeNameIn);
+            if (!string.IsNullOrEmpty(splittedName.prefix))
+            {
+                var readerNsContext = (XmlNamespaceContext)reader.NamespaceContext;
+                var writerNsContext = (XmlNamespaceContext)writer.NamespaceContext;
+                if (splittedName.prefix.Equals("xmlns", StringComparison.Ordinal))
+                {
+                    writer.WriteNamespaceMapping(splittedName.localName, attributeValue);
+                    return;
+                }
+                else
+                {
+                    var uri = readerNsContext.LookupNamespaceUri(splittedName.prefix);
+                    if (uri is BslStringValue)
+                    {
+                        var value = uri.ExplicitString();
+                        var currentPrefix = writerNsContext.LookupPrefix(value);
+                        if (!(currentPrefix is BslStringValue && currentPrefix.ExplicitString().Equals(splittedName.prefix, StringComparison.Ordinal)))
+                        {
+                            writer.WriteNamespaceMapping(splittedName.prefix, value);
+                        }
+                        splittedName.prefix = value;
+                    }
+                }
+            }
+            writer.WriteAttribute(splittedName.localName, splittedName.prefix, attributeValue);
+        }
+
+        private static (string prefix, string localName) splitName(string nameOrLocalName)
+        {
+            var parts = nameOrLocalName.Split(':');
+            if (parts.Length > 1) return (parts[0], parts[1]);
+            if (parts[0].Equals("xmlns", StringComparison.Ordinal)) return (parts[0], "");
+            return ("", parts[0]);
         }
 
         [ContextMethod("ЗаписатьТипДокумента","WriteDocumentType")]

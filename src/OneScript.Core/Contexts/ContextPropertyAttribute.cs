@@ -40,5 +40,9 @@ namespace OneScript.Contexts
 
         public string Name => _name;
         public string Alias => _alias;
+        
+        public bool IsDeprecated { get; set; }
+
+        public bool ThrowOnUse { get; set; }
     }
 }

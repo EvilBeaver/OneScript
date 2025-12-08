@@ -541,13 +541,18 @@ namespace OneScript.Language.SyntaxAnalysis
         {
             while (_lastExtractedLexem.Type == LexemType.Annotation)
             {
-                var node = new AnnotationNode(NodeKind.Annotation, _lastExtractedLexem);
+                var node = BuildAnnotationDefinition();
                 _annotations.Add(node);
-                NextLexem();
-                BuildAnnotationParameters(node);
             }
         }
-        
+        private AnnotationNode BuildAnnotationDefinition() {
+            var node = new AnnotationNode(NodeKind.Annotation, _lastExtractedLexem);
+            NextLexem();
+            BuildAnnotationParameters(node);
+            return node;
+        }
+
+
         private void BuildAnnotationParameters(AnnotationNode annotation)
         {
             if (_lastExtractedLexem.Token != Token.OpenPar)
@@ -599,11 +604,16 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private bool BuildAnnotationParamValue(AnnotationParameterNode annotationParam)
         {
+            if (_lastExtractedLexem.Type == LexemType.Annotation) {
+                var annotation = BuildAnnotationDefinition();
+                annotationParam.AddChild(annotation);
+                return true;
+            }
             return BuildDefaultParameterValue(annotationParam, NodeKind.AnnotationParameterValue);
         }
-        
+
         #endregion
-        
+
         private void BuildCodeBatch(params Token[] endTokens)
         {
             PushStructureToken(endTokens);

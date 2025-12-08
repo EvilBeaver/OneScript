@@ -5,34 +5,34 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Collections;
 using System.Collections.Generic;
-using OneScript.Contexts;
 
 namespace OneScript.Compilation.Binding
 {
-    public class SymbolTable
+    public class SymbolTable : IEnumerable<SymbolScope>
     {
         private class BindingRecord
         {
-            public SymbolScope scope;
-            public IAttachableContext target;
+            public SymbolScope Scope;
+            public ScopeBindingDescriptor Descriptor;
         }
         
         private readonly List<BindingRecord> _bindings = new List<BindingRecord>();
         
-        public SymbolScope GetScope(int index) => _bindings[index].scope;
+        public SymbolScope GetScope(int index) => _bindings[index].Scope;
 
-        public IAttachableContext GetBinding(int scopeIndex) => _bindings[scopeIndex].target;
+        public ScopeBindingDescriptor GetBinding(int scopeIndex) => _bindings[scopeIndex].Descriptor;
 
         public int ScopeCount => _bindings.Count;
         
-        public int PushScope(SymbolScope scope, IAttachableContext target)
+        public int PushScope(SymbolScope scope, ScopeBindingDescriptor descriptor)
         {
             var idx = _bindings.Count;
             _bindings.Add(new BindingRecord
             {
-                scope = scope,
-                target = target
+                Scope = scope,
+                Descriptor = descriptor
             });
             
             return idx;
@@ -47,7 +47,7 @@ namespace OneScript.Compilation.Binding
         {
             for (int i = _bindings.Count - 1; i >= 0; i--)
             {
-                var scope = _bindings[i].scope;
+                var scope = _bindings[i].Scope;
                 var idx = scope.Variables.IndexOf(name);
                 if (idx >= 0)
                 {
@@ -68,7 +68,7 @@ namespace OneScript.Compilation.Binding
         {
             for (int i = _bindings.Count - 1; i >= 0; i--)
             {
-                var scope = _bindings[i].scope;
+                var scope = _bindings[i].Scope;
                 var idx = scope.Methods.IndexOf(name);
                 if (idx >= 0)
                 {
@@ -99,7 +99,7 @@ namespace OneScript.Compilation.Binding
 
         public SymbolBinding DefineMethod(IMethodSymbol symbol)
         {
-            var index = _bindings[ScopeCount - 1].scope.DefineMethod(symbol);
+            var index = _bindings[ScopeCount - 1].Scope.DefineMethod(symbol);
             return new SymbolBinding
             {
                 ScopeNumber = ScopeCount - 1,
@@ -109,7 +109,7 @@ namespace OneScript.Compilation.Binding
         
         public SymbolBinding DefineVariable(IVariableSymbol symbol)
         {
-            var index = _bindings[ScopeCount - 1].scope.DefineVariable(symbol);
+            var index = _bindings[ScopeCount - 1].Scope.DefineVariable(symbol);
             return new SymbolBinding
             {
                 ScopeNumber = ScopeCount - 1,
@@ -125,6 +125,17 @@ namespace OneScript.Compilation.Binding
         public IMethodSymbol GetMethod(SymbolBinding binding)
         {
             return GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
+        }
+
+        public IEnumerator<SymbolScope> GetEnumerator()
+        {
+            for (int i = 0; i < ScopeCount; i++)
+                yield return _bindings[i].Scope;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

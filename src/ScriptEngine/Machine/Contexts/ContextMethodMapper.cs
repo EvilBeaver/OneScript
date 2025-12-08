@@ -88,12 +88,25 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
 
-        private List<InternalMethInfo> MapType(Type type)
+        private static List<InternalMethInfo> MapType(Type type)
         {
-            return type.GetMethods()
-                .SelectMany(method => method.GetCustomAttributes(typeof(ContextMethodAttribute), false)
-                    .Select(attr => new InternalMethInfo(method, (ContextMethodAttribute)attr)) )
-                .ToList();
+            var mappedMethods = new List<InternalMethInfo>();
+            foreach (var methodInfo in type.GetMethods()
+                         .Where(method => Attribute.IsDefined(method, typeof(ContextMethodAttribute))))
+            {
+                var mainMarkup = methodInfo.GetCustomAttribute<ContextMethodAttribute>();
+                var mainMapping = new InternalMethInfo(methodInfo, mainMarkup);
+                mappedMethods.Add(mainMapping);
+                mappedMethods.AddRange(methodInfo.GetCustomAttributes<DeprecatedNameAttribute>()
+                    .Select(deprecation => new InternalMethInfo(methodInfo, new ContextMethodAttribute(deprecation.Name, default)
+                    {
+                        IsDeprecated = true,
+                        ThrowOnUse = deprecation.ThrowOnUse
+                    }))
+                );
+            }
+
+            return mappedMethods;
         }
 
         private class InternalMethInfo
@@ -118,7 +131,20 @@ namespace ScriptEngine.Machine.Contexts
 
             public ContextCallableDelegate<TInstance> Method => _method.Value;
 
-            private static MethodSignature CreateMetadata(MethodInfo target, ContextMethodAttribute binding, bool hasProcessParam)
+            private static MethodSignature CreateMetadata(MethodInfo target, ContextMethodAttribute binding,
+                bool hasProcessParam)
+            {
+                return CreateMetadata(target, binding.Name, binding.Alias, binding.IsDeprecated, binding.ThrowOnUse,
+                    hasProcessParam);
+            }
+            
+            private static MethodSignature CreateMetadata(
+                MethodInfo target,
+                string name,
+                string alias,
+                bool isDeprecated,
+                bool throwOnUse,
+                bool hasProcessParam)
             {
                 var parameters = target.GetParameters();
                 var isFunc = target.ReturnType != typeof(void);
@@ -152,17 +178,16 @@ namespace ScriptEngine.Machine.Contexts
 
                 }
 
-                var scriptMethInfo = new MethodSignature();
-                scriptMethInfo.IsFunction = isFunc;
-                scriptMethInfo.IsExport = true;
-                scriptMethInfo.IsDeprecated = binding.IsDeprecated;
-                scriptMethInfo.ThrowOnUseDeprecated = binding.ThrowOnUse;
-                scriptMethInfo.Name = binding.Name;
-                scriptMethInfo.Alias = binding.Alias;
-
-                scriptMethInfo.Params = paramDefs;
-
-                return scriptMethInfo;
+                return new MethodSignature
+                {
+                    IsFunction = isFunc,
+                    IsExport = true,
+                    IsDeprecated = isDeprecated,
+                    ThrowOnUseDeprecated = throwOnUse,
+                    Name = name,
+                    Alias = alias,
+                    Params = paramDefs
+                };
             }
 
             private static ContextCallableDelegate<TInstance> CreateFunction(ContextMethodInfo target)

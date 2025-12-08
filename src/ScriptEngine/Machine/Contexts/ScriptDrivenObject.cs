@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
@@ -98,8 +97,7 @@ namespace ScriptEngine.Machine.Contexts
 
         protected abstract int GetOwnVariableCount();
         protected abstract int GetOwnMethodCount();
-        protected abstract void UpdateState();
-        
+
         public bool MethodDefinedInScript(int index)
         {
             return index >= METHOD_COUNT;
@@ -223,38 +221,19 @@ namespace ScriptEngine.Machine.Contexts
 
         #region IAttachableContext Members
 
-        public void OnAttach(out IVariable[] variables, out BslMethodInfo[] methods)
+        IVariable IAttachableContext.GetVariable(int index)
         {
-            UpdateState();
-
-            variables = _state;
-            methods = AttachMethods();
+            return _state[index];
         }
 
-        private BslMethodInfo[] AttachMethods()
+        BslMethodInfo IAttachableContext.GetMethod(int index)
         {
-            if (_attachableMethods != null)
-                return _attachableMethods;
-
-            int totalMethods = METHOD_COUNT + _module.Methods.Count;
-            _attachableMethods = new BslMethodInfo[totalMethods];
-
-            var moduleMethods = _module.Methods;
-
-            for (int i = 0; i < totalMethods; i++)
-            {
-                if (MethodDefinedInScript(i))
-                {
-                    _attachableMethods[i] = moduleMethods[i - METHOD_COUNT];
-                }
-                else
-                {
-                    _attachableMethods[i] = GetOwnMethod(i);
-                }
-            }
-
-            return _attachableMethods;
+            return GetMethodInfo(index);
         }
+
+        int IAttachableContext.VariablesCount => _state.Length;
+        
+        int IAttachableContext.MethodsCount => GetMethodsCount();
 
         #endregion
 

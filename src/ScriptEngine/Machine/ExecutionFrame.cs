@@ -24,9 +24,9 @@ namespace ScriptEngine.Machine
         
         public readonly Stack<IValue> LocalFrameStack = new Stack<IValue>();
 
-        public AttachedContext ThisScope { get; set; }
+        public IAttachableContext ThisScope { get; set; }
         
-        public IReadOnlyList<AttachedContext> Scopes { get; set; }
+        public IReadOnlyList<IAttachableContext> Scopes { get; set; }
 
         public override string ToString()
         {

@@ -11,12 +11,15 @@ namespace OneScript.Contexts
 {
     /// <summary>
     /// Присоединяемый контекст. Методы и свойства этого контекста становятся глобальными методами и свойствами.
-    /// Каждый модуль также является присоединяемым, за счет чего его методы и свойства доступны в модуле, как глобальные.
+    /// Каждый скрипт также является присоединяемым, за счет чего его методы и свойства доступны в модуле, как глобальные.
     /// </summary>
     public interface IAttachableContext : IRuntimeContextInstance
     {
-        void OnAttach(out IVariable[] variables,
-                      out BslMethodInfo[] methods);
+        IVariable GetVariable(int index);
+        BslMethodInfo GetMethod(int index);
+        
+        int VariablesCount { get; }
+        int MethodsCount { get; }
     }
 
     /// <summary>

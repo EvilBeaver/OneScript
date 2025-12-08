@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
@@ -178,7 +178,7 @@ namespace OneScript.Native.Runtime
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [ContextMethod("СтрЗаменить", "StrReplace")]
         public static string StrReplace(string sourceString, string searchVal, string newVal) =>
-            sourceString.Replace(searchVal, newVal);
+            !string.IsNullOrEmpty(searchVal) ? sourceString.Replace(searchVal, newVal):sourceString;
 
         [ContextMethod("СтрПолучитьСтроку", "StrGetLine")]
         public static string StrGetLine(string strArg, int lineNumber)

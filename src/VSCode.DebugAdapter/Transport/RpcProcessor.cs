@@ -72,7 +72,7 @@ namespace VSCode.DebugAdapter.Transport
             }
         }
 
-        private void DispatchMessage(TcpProtocolDtoBase data, ICommunicationChannel responseChannel)
+        private void DispatchMessage(TcpProtocolDtoBase data, IMessageChannel responseChannel)
         {
             if (!_dispatchers.TryGetValue(data.ServiceName, out var serviceRecord))
             {

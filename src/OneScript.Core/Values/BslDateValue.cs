@@ -12,7 +12,7 @@ using OneScript.Types;
 
 namespace OneScript.Values
 {
-    public sealed class BslDateValue : BslPrimitiveValue
+    public sealed class BslDateValue : BslPrimitiveValue, IBslComparable
     {
         private readonly DateTime _value;
 
@@ -25,9 +25,6 @@ namespace OneScript.Values
         
         public override int CompareTo(BslValue other)
         {
-            if (ReferenceEquals(null, other))
-                return -1;
-            
             if(other is BslDateValue d)
                 return _value.CompareTo(d._value);
 
@@ -44,7 +41,17 @@ namespace OneScript.Values
             
             return base.Equals(other);
         }
-        
+
+        public override int GetHashCode() => _value.GetHashCode();
+
+        public override bool Equals(object obj)
+        {
+            if (obj is BslValue bsl)
+                return Equals(bsl);
+
+            return false;
+        }
+
         public override TypeDescriptor SystemType => BasicTypes.Date;
         
         #region Conversions

@@ -4,7 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using System;
+
 using System.Collections;
 using System.Collections.Generic;
 using OneScript.Commons;
@@ -15,41 +15,45 @@ using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
-    public class EnumerationContext : PropertyNameIndexAccessor, ICollectionContext<IValue>
+    public abstract class EnumerationContext : PropertyNameIndexAccessor, ICollectionContext<IValue>
     {
-        private readonly List<EnumerationValue> _values = new List<EnumerationValue>();
-
-        readonly IndexedNamesCollection _nameIds = new IndexedNamesCollection();
+        private readonly IndexedNameValueCollection<EnumerationValue> _values;
+        private readonly List<BslPropertyInfo> _definitions;
         private readonly TypeDescriptor _valuesType;
+        private readonly HashSet<int> _checkedDeprecatedProps = new HashSet<int>();
 
-        public EnumerationContext(TypeDescriptor typeRepresentation, TypeDescriptor valuesType) : base(typeRepresentation)
+        protected EnumerationContext(TypeDescriptor typeRepresentation, TypeDescriptor valuesType) : base(typeRepresentation)
         {
             _valuesType = valuesType;
+            _values = new IndexedNameValueCollection<EnumerationValue>();
+            _definitions = new List<BslPropertyInfo>();
         }
 
         public void AddValue(EnumerationValue val)
         {
-            System.Diagnostics.Debug.Assert(val != null);
+            var index = _values.Add(val, val.Name, val.Alias);
+            
+            var propertyBuilder = BslPropertyBuilder.Create()
+                .SetNames(val.Name, val.Alias)
+                .CanRead(true)
+                .CanWrite(false)
+                .SetDispatchingIndex(index);
+                
+            if (_valuesType != null)
+                propertyBuilder.ReturnType(_valuesType.ImplementingClass);
+            
+            _definitions.Add(propertyBuilder.Build());
+        }
 
-            _nameIds.RegisterName(val.Name, val.Alias);
-            _values.Add(val);
+        protected void AddValue(EnumerationValue val, BslPropertyInfo definition)
+        {
+            _values.Add(val, definition.Name, definition.Alias);
+            _definitions.Add(definition);
         }
 
         public TypeDescriptor ValuesType => _valuesType;
 
-        public EnumerationValue this[string name]
-        {
-            get
-            {
-                int id = GetPropertyNumber(name);
-                return _values[id];
-            }
-        }
-
-        public int IndexOf(EnumerationValue enumVal)
-        {
-            return _values.IndexOf(enumVal);
-        }
+        public EnumerationValue this[string name] => GetPropValueInternal(GetPropertyNumber(name));
 
         public override int GetPropCount()
         {
@@ -58,11 +62,9 @@ namespace ScriptEngine.Machine.Contexts
 
         public override int GetPropertyNumber(string name)
         {
-            int id;
-            if (_nameIds.TryGetIdOfName(name, out id))
-                return id;
-            else
-                return base.GetPropertyNumber(name);
+            var id = _values.IndexOf(name); 
+            
+            return id == -1 ? base.GetPropertyNumber(name) : id;
         }
 
         public override bool IsPropReadable(int propNum)
@@ -72,22 +74,39 @@ namespace ScriptEngine.Machine.Contexts
 
         public override IValue GetPropValue(int propNum)
         {
+            return GetPropValueInternal(propNum);
+        }
+        
+        private EnumerationValue GetPropValueInternal(int propNum)
+        {
+            WarnDeprecation(propNum);
             return _values[propNum];
+        }
+        
+        private void WarnDeprecation(int propNum)
+        {
+            if (_checkedDeprecatedProps.Contains(propNum)) 
+                return;
+            
+            if (GetPropertyInfo(propNum) is SystemPropertyInfo { IsDeprecated: true })
+            {
+                SystemLogger.Write($"Обращение к устаревшему свойству {GetPropertyInfo(propNum).Name}.");
+            }
+            
+            _checkedDeprecatedProps.Add(propNum);
         }
 
         public override string GetPropName(int propNum)
         {
-            return _values[propNum].ToString();
+            return _values.NameOf(propNum);
         }
-
-
-        protected IList<EnumerationValue> ValuesInternal
+        
+        public override BslPropertyInfo GetPropertyInfo(int propNum)
         {
-            get
-            {
-                return _values;
-            }
+            return _definitions[propNum];
         }
+
+        protected IEnumerable<EnumerationValue> ValuesInternal => _values;
 
         #region ICollectionContext Members
 

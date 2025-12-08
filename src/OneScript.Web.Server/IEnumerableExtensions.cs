@@ -7,11 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using Microsoft.Extensions.Primitives;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Values;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OneScript.Web.Server
 {

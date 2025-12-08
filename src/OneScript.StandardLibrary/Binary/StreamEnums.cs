@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Contexts;
 using OneScript.Contexts.Enums;
 
 namespace OneScript.StandardLibrary.Binary
@@ -37,7 +38,8 @@ namespace OneScript.StandardLibrary.Binary
         ReadAndWrite
     }
 
-    [EnumerationType("ПозицияВПотоке", "StreamPosition")]
+    [DeprecatedName("StreamPosition")]
+    [EnumerationType("ПозицияВПотоке", "PositionInStream")]
     public enum StreamPositionEnum
     {
         [EnumValue("Начало", "Begin")]

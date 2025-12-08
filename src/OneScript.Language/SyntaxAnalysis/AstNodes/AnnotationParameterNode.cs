@@ -17,19 +17,29 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         
         protected override void OnChildAdded(BslSyntaxNode child)
         {
-            var node = (TerminalNode) child;
-            if (child.Kind == NodeKind.AnnotationParameterName)
+            if (child.Kind == NodeKind.Annotation)
             {
-                Name = node.Lexem.Content;
+                AnnotationNode = (AnnotationNode)child;
             }
-            if (child.Kind == NodeKind.AnnotationParameterValue)
+            else
             {
-                Value = node.Lexem;
+                var node = (TerminalNode)child;
+                if (child.Kind == NodeKind.AnnotationParameterName)
+                {
+                    Name = node.Lexem.Content;
+                }
+                if (child.Kind == NodeKind.AnnotationParameterValue)
+                {
+                    Value = node.Lexem;
+                }
             }
         }
 
         public string Name { get; private set; }
         
         public Lexem Value { get; private set; }
+
+        public AnnotationNode AnnotationNode { get; private set; }
+
     }
 }

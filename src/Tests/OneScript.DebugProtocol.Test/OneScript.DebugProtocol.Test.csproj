@@ -8,6 +8,7 @@
         <Configurations>Debug;Release;LinuxDebug</Configurations>
 
         <Platforms>AnyCPU</Platforms>
+        <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'LinuxDebug' ">
@@ -32,8 +33,5 @@
       <ProjectReference Include="..\..\ScriptEngine\ScriptEngine.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Compile Remove="FormatReconcileTest.cs" />
-    </ItemGroup>
 
 </Project>

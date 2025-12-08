@@ -98,12 +98,13 @@ namespace OneScript.Compilation
             {
                 for (int i = 0; i < SharedSymbols.ScopeCount; i++)
                 {
-                    actualTable.PushScope(SharedSymbols.GetScope(i), SharedSymbols.GetBinding(i));
+                    var descriptor = SharedSymbols.GetBinding(i);
+                    actualTable.PushScope(SharedSymbols.GetScope(i), descriptor);
                 }
             }
 
             ModuleSymbols ??= new SymbolScope();
-            actualTable.PushScope(ModuleSymbols, null);
+            actualTable.PushScope(ModuleSymbols, ScopeBindingDescriptor.ThisScope());
 
             return actualTable;
         }

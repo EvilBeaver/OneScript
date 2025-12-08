@@ -388,6 +388,16 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("Прочитать", "Read")]
         public bool Read()
         {
+            var readingDone = ReadInternal();
+            if (readingDone && _reader.NodeType == XmlNodeType.XmlDeclaration && _settings.IgnoreXMLDeclaration)
+            {
+                readingDone = ReadInternal();
+            }
+            return readingDone;
+        }
+
+        private bool ReadInternal()
+        {
             if (_reader == null)
                 return false;
 
@@ -395,6 +405,15 @@ namespace OneScript.StandardLibrary.Xml
             {
                 _emptyElemReadState = EmptyElemCompabilityState.EmptyElementRead;
                 return true;
+            }
+            else if (_reader.NodeType == XmlNodeType.XmlDeclaration || _reader.NodeType == XmlNodeType.DocumentType)
+            {
+                var readingDone = _reader.Read();
+                while (readingDone && _reader.NodeType == XmlNodeType.Whitespace)
+                {
+                    readingDone = _reader.Read();
+                }
+                return readingDone;
             }
             else
             {
