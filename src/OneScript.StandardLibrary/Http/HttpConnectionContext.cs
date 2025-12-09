@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Execution;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using RegExp = System.Text.RegularExpressions;
@@ -130,9 +131,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="output">Строка. Имя файла, в который нужно записать ответ. Необязательный параметр.</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("Получить", "Get")]
-        public HttpResponseContext Get(HttpRequestContext request, string output = null)
+        public HttpResponseContext Get(IBslProcess process, HttpRequestContext request, string output = null)
         {
-            return GetResponse(request, "GET", output);
+            return GetResponse(process, request, "GET", output);
         }
 
         /// <summary>
@@ -141,9 +142,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("Записать", "Put")]
-        public HttpResponseContext Put(HttpRequestContext request)
+        public HttpResponseContext Put(IBslProcess process, HttpRequestContext request)
         {
-            return GetResponse(request, "PUT");
+            return GetResponse(process, request, "PUT", null);
         }
 
         /// <summary>
@@ -153,9 +154,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="output">Строка. Имя файла, в который нужно записать ответ. Необязательный параметр.</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("ОтправитьДляОбработки", "Post")]
-        public HttpResponseContext Post(HttpRequestContext request, string output = null)
+        public HttpResponseContext Post(IBslProcess process, HttpRequestContext request, string output = null)
         {
-            return GetResponse(request, "POST", output);
+            return GetResponse(process, request, "POST", output);
         }
 
         /// <summary>
@@ -164,9 +165,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("Удалить", "Delete")]
-        public HttpResponseContext Delete(HttpRequestContext request)
+        public HttpResponseContext Delete(IBslProcess process, HttpRequestContext request)
         {
-            return GetResponse(request, "DELETE");
+            return GetResponse(process, request, "DELETE");
         }
 
         /// <summary>
@@ -175,9 +176,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("Изменить", "Patch")]
-        public HttpResponseContext Patch(HttpRequestContext request)
+        public HttpResponseContext Patch(IBslProcess process, HttpRequestContext request)
         {
-            return GetResponse(request, "PATCH");
+            return GetResponse(process, request, "PATCH");
         }
 
         /// <summary>
@@ -186,9 +187,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="request">HTTPЗапрос. Данные и заголовки запроса http</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("ПолучитьЗаголовки", "Head")]
-        public HttpResponseContext Head(HttpRequestContext request)
+        public HttpResponseContext Head(IBslProcess process, HttpRequestContext request)
         {
-            return GetResponse(request, "HEAD");
+            return GetResponse(process, request, "HEAD");
         }
 
         /// <summary>
@@ -199,9 +200,9 @@ namespace OneScript.StandardLibrary.Http
         /// <param name="output">Строка. Имя выходного файла</param>
         /// <returns>HTTPОтвет. Ответ сервера.</returns>
         [ContextMethod("ВызватьHTTPМетод", "CallHTTPMethod")]
-        public HttpResponseContext Patch(string method, HttpRequestContext request, string output = null)
+        public HttpResponseContext CallHTTPMethod(IBslProcess process, string method, HttpRequestContext request, string output = null)
         {
-            return GetResponse(request, method, output);
+            return GetResponse(process, request, method, output);
         }
 
         private HttpWebRequest CreateRequest(string resource)
@@ -335,12 +336,12 @@ namespace OneScript.StandardLibrary.Http
             return range;
         }
 
-    private HttpResponseContext GetResponse(HttpRequestContext request, string method, string output = null)
+    private HttpResponseContext GetResponse(IBslProcess process, HttpRequestContext request, string method, string output = null)
         {
             var webRequest = CreateRequest(request.ResourceAddress);
             webRequest.AllowAutoRedirect = AllowAutoRedirect;
             webRequest.Method = method;
-            SetRequestHeaders(request, webRequest);
+            SetRequestHeaders(request, webRequest, process);
             
             if (ContentBodyAllowed(method)) 
                 SetRequestBody(request, webRequest);
@@ -385,7 +386,7 @@ namespace OneScript.StandardLibrary.Http
             }
         }
 
-        private static void SetRequestHeaders(HttpRequestContext request, HttpWebRequest webRequest)
+        private static void SetRequestHeaders(HttpRequestContext request, HttpWebRequest webRequest, IBslProcess process)
         {
             foreach (var item in request.Headers.Select(x => x.GetRawValue() as KeyAndValueImpl))
             {
@@ -483,15 +484,19 @@ namespace OneScript.StandardLibrary.Http
                     default:
                         webRequest.Headers.Set(key, value);
                         break;
-                           
                 }
+            }
 
-                // fix #1151
-                if (webRequest.UserAgent == default)
-                {
-                    webRequest.UserAgent = $"1Script v${Assembly.GetExecutingAssembly().GetName().Version}";
-                }
+            // fix #1151
+            if (webRequest.UserAgent == default)
+            {
+                webRequest.UserAgent = $"1Script v${Assembly.GetExecutingAssembly().GetName().Version}";
+            }
 
+            if (request.AccessToken != null)
+            {
+                string token = request.AccessToken.ToString(process);
+                webRequest.Headers.Set(HttpRequestHeader.Authorization, $"Bearer {token}");
             }
         }
 
