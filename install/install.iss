@@ -62,7 +62,7 @@ Source: "{#ArtifactRoot}\{#Binaries}\ScriptEngine.dll"; DestDir: "{app}\bin"; Co
 Source: "{#ArtifactRoot}\{#Binaries}\OneScript.DebugProtocol.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\OneScript.DebugServices.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\OneScript.Language.dll"; DestDir: "{app}\bin"; Components: main
-Source: "{#ArtifactRoot}\{#Binaries}\ProDotNetZip.dll"; DestDir: "{app}\bin"; Components: main
+Source: "{#ArtifactRoot}\{#Binaries}\DotNetZip.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\Newtonsoft.Json.dll"; DestDir: "{app}\bin"; Components: main
 Source: "{#ArtifactRoot}\{#Binaries}\oscript.cfg"; DestDir: "{app}\bin"; Components: main; Flags: onlyifdoesntexist
 
