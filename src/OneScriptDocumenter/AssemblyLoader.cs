@@ -58,7 +58,7 @@ namespace OneScriptDocumenter
             _enumerationTypeAttribute = scriptEngineLib.GetType("ScriptEngine.EnumerationTypeAttribute", true);
             _enumValue = scriptEngineLib.GetType("ScriptEngine.EnumItemAttribute", true);
 
-            foreach (var name in new string[] { "ScriptEngine.HostedScript", "DotNetZip", "Newtonsoft.Json" })
+            foreach (var name in new string[] { "ScriptEngine.HostedScript", "ProDotNetZip", "Newtonsoft.Json" })
             {
                 var libFile = Path.Combine(_baseDirectory, name + ".dll");
                 if (File.Exists(libFile))
