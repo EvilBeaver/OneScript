@@ -206,7 +206,7 @@ namespace ScriptEngine.Machine.Contexts
                 return ValueFactory.Create();
 
             var type = objParam.GetType();
-            Console.WriteLine($"objt={type.FullName} isI:{objParam is IValue} A:{type.IsArray} asg:{typeof(IValue).IsAssignableFrom(type)} nP:{!type.IsPrimitive} ");
+            
             if (typeof(IValue).IsAssignableFrom(type))
             {
                 return (IValue)objParam;
