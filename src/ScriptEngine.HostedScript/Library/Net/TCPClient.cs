@@ -80,7 +80,11 @@ namespace ScriptEngine.HostedScript.Library.Net
                 int numberOfBytesRead = source.Read(readBuffer, 0, portion);
                 ms.Write(readBuffer, 0, numberOfBytesRead);
                 if (useLimit)
+                {
                     limit -= numberOfBytesRead;
+                    if (limit <= 0)
+                        break;
+                }
             } while (source.DataAvailable);
             
             if(ms.Length > 0)
