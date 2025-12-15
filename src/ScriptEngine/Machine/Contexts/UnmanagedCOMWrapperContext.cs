@@ -248,10 +248,14 @@ namespace ScriptEngine.Machine.Contexts
                 var initialValue = initialValues[i];
                 var valueAfterCall = values[i];
                 
-                if (flags[i] && !Equals(initialValue, valueAfterCall))
+                if (flags[i]) // wrapped Variable (see COMWrapperContext.MarshalArguments)
                 {
-                    var variable = (IVariable)arguments[i];
-                    variable.Value = CreateIValue(values[i]);
+                    var unwrapped = (initialValue as System.Runtime.InteropServices.VariantWrapper)?.WrappedObject;
+                    if (!Equals(unwrapped, valueAfterCall))
+                    {
+                        var variable = (IVariable)arguments[i];
+                        variable.Value = CreateIValue(values[i]);
+                    }
                 }
             }
         }

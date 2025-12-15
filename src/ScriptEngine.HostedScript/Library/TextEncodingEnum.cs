@@ -81,10 +81,10 @@ namespace ScriptEngine.HostedScript.Library
 
         public EnumerationValue GetValue(Encoding encoding)
         {
-            if (encoding.Equals(Encoding.GetEncoding(866)))
+            if (encoding.Equals(Encoding.GetEncoding(866)) || encoding.CodePage == 866)
                 return Oem;
 
-            if (encoding.Equals(Encoding.GetEncoding(1251)))
+            if (encoding.Equals(Encoding.GetEncoding(1251)) || encoding.CodePage == 1251)
                 return Ansi;
 
             if (encoding.Equals(new UnicodeEncoding(false, true)))
@@ -93,7 +93,7 @@ namespace ScriptEngine.HostedScript.Library
             if (encoding.Equals(new UTF8Encoding(true)))
                 return Utf8;
 
-            if (encoding.Equals(new UTF8Encoding(false)))
+            if (encoding.Equals(new UTF8Encoding(false)) || encoding.CodePage == 65001)
                 return Utf8NoBOM;
 
             if (encoding.Equals(Encoding.Default))

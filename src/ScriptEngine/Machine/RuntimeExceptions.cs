@@ -113,6 +113,10 @@ namespace ScriptEngine.Machine
         {
             return new RuntimeException("Неверный тип аргумента");
         }
+        public static RuntimeException InvalidIndexType()
+        {
+            return new RuntimeException("Неверный тип индекса");
+        }
 
         public static RuntimeException InvalidArgumentType(string argName)
         {

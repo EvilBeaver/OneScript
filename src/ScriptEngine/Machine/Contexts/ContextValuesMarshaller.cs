@@ -25,6 +25,37 @@ namespace ScriptEngine.Machine.Contexts
             return valueObj != null ? (T)valueObj : (T)defaultValue;
         }
 
+        public static T ConvertValueStrict<T>(IValue value)
+        {
+            if (value == null || value.DataType == DataType.NotAValidValue)
+            {
+                return default;
+            }
+
+            if (value is T t)
+                return t;
+            
+            try
+            {
+                var converted = ConvertToCLRObject(value);
+                if (converted is T casted)
+                    return casted;
+
+                if (converted is decimal)
+                    return (T)Convert.ChangeType(converted, typeof(T));
+
+                throw RuntimeException.InvalidArgumentType();
+            }
+            catch (InvalidCastException)
+            {
+                throw RuntimeException.InvalidArgumentType();
+            }
+            catch (ValueMarshallingException)
+            {
+                throw RuntimeException.InvalidArgumentType();
+            }
+        }
+
         public static object ConvertParam(IValue value, Type type)
         {
             try
@@ -251,19 +282,16 @@ namespace ScriptEngine.Machine.Contexts
                 case DataType.Number: return val.AsNumber();
                 case DataType.String: return val.AsString();
                 case DataType.Undefined: return null;
+                case DataType.NotAValidValue: return Missing.Value;
             }
 
-            object result;
+            if (val.GetRawValue() is IObjectWrapper wrapped)
+                return wrapped.UnderlyingObject;
 
             if (val.DataType == DataType.Object)
-                result = val.AsObject();
-
-			if (val.GetRawValue() is IObjectWrapper wrapped)
-				result = wrapped.UnderlyingObject;
-			else
-				throw ValueMarshallingException.NoConversionToCLR(val.GetType());
-
-            return result;
+                return val.AsObject();
+ 			
+			throw ValueMarshallingException.NoConversionToCLR(val.GetType());
         }
 
         public static T CastToCLRObject<T>(IValue val)
