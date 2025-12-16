@@ -1,0 +1,58 @@
+﻿/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using System;
+using OneScript.Contexts;
+using OneScript.Exceptions;
+using OneScript.Localization;
+using OneScript.Types;
+using System.Collections.Generic;
+using System.Text;
+
+namespace OneScript.Values
+{
+    public sealed class BslAnnotationValue : BslPrimitiveValue
+    {
+        public BslAnnotationValue(string name) {
+            Name = name;
+        }
+
+        public string Name { get; }
+
+        public List<BslAnnotationParameter> Parameters { get; } = new List<BslAnnotationParameter>();
+
+        
+        public override int CompareTo(BslValue other) {
+            var msg = new BilingualString("Сравнение на больше/меньше для данного типа не поддерживается",
+                "Comparison for less/greater is not supported for this type");
+
+            throw new RuntimeException(msg);
+        }
+
+        public override bool Equals(BslValue other) {
+            return ReferenceEquals(this, other);
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder("&");
+            sb.Append(Name);
+            if (Parameters.Count != 0)
+            {
+                var prefix = "(";
+                foreach (var parameter in Parameters)
+                {
+                    sb.Append(prefix);
+                    sb.Append(parameter);
+                    prefix = ",";
+                }
+                sb.Append(")");
+            }
+            return sb.ToString();
+        }
+    }
+}

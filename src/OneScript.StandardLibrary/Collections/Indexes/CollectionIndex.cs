@@ -21,8 +21,8 @@ namespace OneScript.StandardLibrary.Collections.Indexes
         private readonly List<IValue> _fields = new List<IValue>();
         private readonly IIndexCollectionSource _source;
 
-        private readonly IDictionary<CollectionIndexKey, IList<IValue>> _data =
-            new Dictionary<CollectionIndexKey, IList<IValue>>();
+        private readonly IDictionary<CollectionIndexKey, HashSet<IValue>> _data =
+            new Dictionary<CollectionIndexKey, HashSet<IValue>>();
         
         public CollectionIndex(IIndexCollectionSource source, IEnumerable<IValue> fields)
         {
@@ -48,7 +48,7 @@ namespace OneScript.StandardLibrary.Collections.Indexes
         public IEnumerable<IValue> GetData(PropertyNameIndexAccessor searchCriteria)
         {
             var key = IndexKey(searchCriteria);
-            return _data.TryGetValue(key, out var filteredData) ? filteredData : new List<IValue>();
+            return _data.TryGetValue(key, out var filteredData) ? filteredData : Enumerable.Empty<IValue>();
         }
 
         internal void FieldRemoved(IValue field)
@@ -63,22 +63,22 @@ namespace OneScript.StandardLibrary.Collections.Indexes
         internal void ElementAdded(PropertyNameIndexAccessor element)
         {
             var key = CollectionIndexKey.Extract(element, _fields);
-            if (_data.TryGetValue(key, out var list))
+            if (_data.TryGetValue(key, out var set))
             {
-                list.Add(element);
+                set.Add(element);
             }
             else
             {
-                _data.Add(key, new List<IValue> { element});
+                _data.Add(key, new HashSet<IValue> { element });
             }
         }
 
         internal void ElementRemoved(PropertyNameIndexAccessor element)
         {
             var key = CollectionIndexKey.Extract(element, _fields);
-            if (_data.TryGetValue(key, out var value))
+            if (_data.TryGetValue(key, out var set))
             {
-                value.Remove(element);
+                set.Remove(element);
             }
         }
 

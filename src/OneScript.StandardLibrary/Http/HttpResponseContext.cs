@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -28,34 +28,24 @@ namespace OneScript.StandardLibrary.Http
         // TODO: Нельзя выделить массив размером больше чем 2GB
         // поэтому функционал сохранения в файл не должен использовать промежуточный буфер _body
         private HttpResponseBody _body;
-        
+        private HttpWebResponse _response;
+
         private string _defaultCharset;
         private string _filename;
 
-        public HttpResponseContext(HttpWebResponse response)
-        {
-            RetrieveResponseData(response, null);
-        }
-
         public HttpResponseContext(HttpWebResponse response, string dumpToFile)
         {
-            RetrieveResponseData(response, dumpToFile);
-        }
+             StatusCode = (int)response.StatusCode;
+            _defaultCharset = response.CharacterSet;
 
-        private void RetrieveResponseData(HttpWebResponse response, string dumpToFile)
-        {
-            using(response)
+            ProcessHeaders(response.Headers);
+            ProcessResponseBody(response, dumpToFile);
+            _response = response;
+
+            if (_body != null && _body.AutoDecompress)
             {
-                StatusCode = (int)response.StatusCode;
-                _defaultCharset = response.CharacterSet;
-
-                ProcessHeaders(response.Headers);
-                ProcessResponseBody(response, dumpToFile);
-                if (_body != null && _body.AutoDecompress)
-                {
-                    _headers.Delete(ValueFactory.Create("Content-Encoding"));
-                    _headers.SetIndexedValue(ValueFactory.Create("Content-Length"), ValueFactory.Create(_body.ContentSize));
-                }
+                _headers.Delete(ValueFactory.Create("Content-Encoding"));
+                _headers.SetIndexedValue(ValueFactory.Create("Content-Length"), ValueFactory.Create(_body.ContentSize));
             }
         }
 
@@ -83,13 +73,7 @@ namespace OneScript.StandardLibrary.Http
         /// Соответствие. Заголовки ответа сервера.
         /// </summary>
         [ContextProperty("Заголовки", "Headers")]
-        public MapImpl Headers
-        {
-            get
-            {
-                return _headers;
-            }
-        }
+        public MapImpl Headers => _headers;
 
         /// <summary>
         /// Код состояния HTTP ответа. Число.
@@ -137,24 +121,24 @@ namespace OneScript.StandardLibrary.Http
                 return ValueFactory.Create();
 
             using (var stream = _body.OpenReadStream())
-            {
-                var data = new byte[stream.Length];
-                stream.Read(data, 0, data.Length);
-                return new BinaryDataContext(data);
+            using (var memoryStream = new MemoryStream())
+            {   
+                stream.CopyTo(memoryStream);
+                return new BinaryDataContext(memoryStream.ToArray());
             }
         }
 
         /// <summary>
         /// Интерпретировать ответ, как Поток
         /// </summary>
+        /// <param name="rawStream">Булево. Будет получен сырой поток без дополнительной обработки. По умолчанию Ложь</param>
         /// <returns>Поток</returns>
         [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
-        public IValue GetBodyAsStream()
+        public IValue GetBodyAsStream(bool rawStream = false)
         {
             if (_body == null)
                 return ValueFactory.Create();
-
-            return new GenericStream(_body.OpenReadStream(), true);
+            return new GenericStream(_body.OpenReadStream(rawStream), true);
         }
 
         /// <summary>
@@ -181,8 +165,11 @@ namespace OneScript.StandardLibrary.Http
 
         public void Dispose()
         {
-            if (_body != null)
-                _body.Dispose();
+            _response?.Dispose();
+                _response = null;
+            
+            _body?.Dispose();
+                _body = null;
         }
     }
 }

@@ -59,7 +59,7 @@ namespace ScriptEngine.Compiler
                 }
                 else
                 {
-                    actualBehavior = ExplicitImportsBehavior.Enabled;
+                    actualBehavior = ExplicitImportsBehavior.Warn;
                 }
             }
             

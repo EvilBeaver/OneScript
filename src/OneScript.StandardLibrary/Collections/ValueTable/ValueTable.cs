@@ -5,18 +5,19 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using OneScript.Contexts;
-using OneScript.StandardLibrary.Collections.Indexes;
 using OneScript.Exceptions;
 using OneScript.Execution;
+using OneScript.Localization;
+using OneScript.StandardLibrary.Collections.Exceptions;
+using OneScript.StandardLibrary.Collections.Indexes;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using OneScript.StandardLibrary.Collections.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace OneScript.StandardLibrary.Collections.ValueTable
 {
@@ -34,7 +35,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             Columns = new ValueTableColumnCollection(this);
             _rows = new List<ValueTableRow>();
             Indexes = new CollectionIndexes(this);
-    }
+        }
 
         /// <summary>
         /// Коллекция колонок
@@ -76,13 +77,18 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// <summary>
         /// Вставляет строку в указанную позицию
         /// </summary>
-        /// <param name="index">Число - Индекс позиции куда будет произведена вставка</param>
+        /// <param name="index">Число - Индекс позиции куда будет произведена вставка.
+        /// Если индекс вне размера Таблицы значений, строка добавляется в конец</param>
         /// <returns>СтрокаТаблицыЗначений</returns>
         [ContextMethod("Вставить", "Insert")]
         public ValueTableRow Insert(int index)
         {
             var row = new ValueTableRow(this);
-            _rows.Insert(index, row);
+            if (index < 0 || index > _rows.Count)
+                _rows.Add(row); // для совместимости с 1С, хотя логичней было бы исключение
+            else
+                _rows.Insert(index, row);
+
             Indexes.ElementAdded(row);
             return row;
         }
@@ -116,15 +122,16 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         {
             // ValueTableColumn Column = Columns.GetColumnByIIndex(ColumnIndex);
             var row_iterator = _rows.GetEnumerator();
-            var array_iterator = (values as ArrayImpl).GetEnumerator();
+            var array_iterator = (values as ArrayImpl)?.GetEnumerator()
+                ?? throw RuntimeException.InvalidNthArgumentType(1);
 
             Indexes.ClearIndexes();
-            
+
             while (row_iterator.MoveNext() && array_iterator.MoveNext())
             {
                 row_iterator.Current.Set(columnIndex, array_iterator.Current);
             }
-            
+
             Indexes.Rebuild();
         }
 
@@ -150,33 +157,33 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             return result;
         }
 
-        private List<ValueTableColumn> GetProcessingColumnList(string ColumnNames, bool EmptyListInCaseOfNull = false)
+        private List<ValueTableColumn> GetProcessingColumnList(string columnNames, bool emptyListInCaseOfNull = false)
         {
-            List<ValueTableColumn> processing_list = new List<ValueTableColumn>();
-            if (ColumnNames != null)
+            var processing_list = new List<ValueTableColumn>();
+            if (string.IsNullOrEmpty(columnNames)) // Передали пустую строку вместо списка колонок
             {
-                if (ColumnNames.Trim().Length == 0)
+                if (!emptyListInCaseOfNull)
                 {
-                    // Передали пустую строку вместо списка колонок
-                    return processing_list;
+                    processing_list.AddRange(Columns);
                 }
-
-                foreach (var column_name in ColumnNames.Split(','))
-                {
-                    var name = column_name.Trim();
-                    var Column = Columns.FindColumnByName(name);
-
-                    if (Column == null)
-                        throw ColumnException.WrongColumnName(name);
-
-                    if (processing_list.Find( x=> x.Name==name ) == null)
-                        processing_list.Add(Column);
-                }
+                return processing_list;
             }
-            else if (!EmptyListInCaseOfNull)
+
+            foreach (var column_name in columnNames.Split(','))
             {
-                processing_list.AddRange(Columns);
+                if (column_name == String.Empty)
+                    continue;
+
+                var name = column_name.Trim();
+
+                var Column = Columns.FindColumnByName(name);
+                if (Column == null)
+                    throw ColumnException.WrongColumnName(column_name);
+
+                if (processing_list.Find(x => x.Name == name) == null)
+                    processing_list.Add(Column);
             }
+
             return processing_list;
         }
 
@@ -184,7 +191,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// Заполнить колонку/колонки указанным значением
         /// </summary>
         /// <param name="value">Произвольный - Устанавливаемое значение</param>
-        /// <param name="columnNames">Строка - Список имен колонок для установки значения (разделены запятыми)</param>
+        /// <param name="columnNames">Строка - Список имен колонок для установки значения (разделены запятыми).
+        /// Если параметр не указан или передана пустая строка, будут заполнены все колонки</param>
         [ContextMethod("ЗаполнитьЗначения", "FillValues")]
         public void FillValues(IValue value, string columnNames = null)
         {
@@ -211,7 +219,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             if (row is ValueTableRow tableRow)
                 return _rows.IndexOf(tableRow);
 
-            return -1;
+            throw RuntimeException.InvalidArgumentType();
         }
 
         /// <summary>
@@ -222,25 +230,65 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// Число - Индекс колонки для суммирования
         /// КолонкаТаблицыЗначений - Колонка для суммирования
         /// </param>
+        /// <remarks>
+        /// Если в колонке установлен тип и он единственный,
+        ///  то при суммировании будет попытка преобразования значения к типу Число.
+        /// <br/>Если колонке не присвоены типы 
+        ///  или в колонке несколько типов и среди них есть тип Число,
+        /// то в суммироваться будут только значения типа Число
+        /// <br/>Если в колонке несколько типов и среди них нет типа Число, то результатом будет Неопределено.
+        /// </remarks>
         /// <returns>Число</returns>
         [ContextMethod("Итог", "Total")]
         public IValue Total(IValue columnIndex)
         {
-            var Column = Columns.GetColumnByIIndex(columnIndex);
-            bool has_data = false;
-            decimal Result = 0;
+            var column = Columns.GetColumnByIIndex(columnIndex);
 
+            var types = column.ValueType.Types();
+            if (types.Count() == 1)  // единственный тип
+            {
+                return TotalAllAsNumber(column);
+            }
+
+            if (types.Count() == 0 // нет типов
+                || types.Any(x => ((BslTypeValue)x).TypeValue == BasicTypes.Number)) // среди типов есть Число
+            {
+                return TotalNumbersOnly(column);
+            }
+
+            // несколько типов и нет типа Число
+            return ValueFactory.Create();
+        }
+
+        private IValue TotalAllAsNumber(ValueTableColumn column)
+        {
+            decimal result = 0;
             foreach (var row in _rows)
             {
-                var current_value = row.Get(Column);
-                if (current_value.SystemType == BasicTypes.Number)
+                try
                 {
-                    has_data = true;
-                    Result += current_value.AsNumber();
+                    result += row.Get(column).AsNumber();
+                }
+                catch (RuntimeException)
+                {
+                    // игнорировать неприводимые к числу
                 }
             }
-            
-            return has_data ? ValueFactory.Create(Result) : ValueFactory.Create();
+            return ValueFactory.Create(result);
+        }
+
+        private IValue TotalNumbersOnly(ValueTableColumn column)
+        {
+            decimal result = 0;
+            foreach (var row in _rows)
+            {
+                var current_value = row.Get(column);
+                if (current_value.SystemType == BasicTypes.Number)
+                {
+                    result += current_value.AsNumber();
+                }
+            }
+            return ValueFactory.Create(result);
         }
 
         /// <summary>
@@ -296,7 +344,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
             var mapped = ColumnsMap(filter);
             var suitableIndex = Indexes.FindSuitableIndex(mapped.Keys());
-            var dataToScan = suitableIndex != null ? suitableIndex.GetData(mapped) : _rows; 
+            var dataToScan = suitableIndex != null ? suitableIndex.GetData(mapped) : _rows;
 
             foreach (var element in dataToScan)
             {
@@ -314,6 +362,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             foreach (var kv in filter)
             {
                 var key = Columns.FindColumnByName(kv.Key.ToString());
+                if (key == null)
+                    throw ColumnException.WrongColumnName(kv.Key.ToString());
+
                 result.Insert(key, kv.Value);
             }
 
@@ -339,7 +390,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         public ValueTableRow Get(int index)
         {
             if (index < 0 || index >= Count())
-                throw RuntimeException.InvalidArgumentValue();
+                throw RuntimeException.IndexOutOfRange();
             return _rows[index];
         }
 
@@ -390,8 +441,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         private static void CheckMixedColumns(List<ValueTableColumn> groupColumns, List<ValueTableColumn> aggregateColumns)
         {
-            foreach (var groupColumn in groupColumns )
-                if ( aggregateColumns.Find(x => x.Name==groupColumn.Name)!=null )
+            foreach (var groupColumn in groupColumns)
+                if (aggregateColumns.Find(x => x.Name == groupColumn.Name) != null)
                     throw ColumnException.ColumnsMixed(groupColumn.Name);
         }
 
@@ -401,7 +452,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                 dest.Set(column, source.Get(column));
         }
 
-        private void AppendRowData(ValueTableRow source, ValueTableRow dest, IEnumerable<ValueTableColumn> columns)
+        private static void AppendRowData(ValueTableRow source, ValueTableRow dest, IEnumerable<ValueTableColumn> columns)
         {
             foreach (var column in columns)
             {
@@ -420,7 +471,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         private class RowsByColumnsEqComparer : IEqualityComparer<ValueTableRow>
         {
             private readonly IBslProcess _process;
-            private List<ValueTableColumn> _columns;
+            private readonly List<ValueTableColumn> _columns;
 
             public RowsByColumnsEqComparer(IBslProcess process, List<ValueTableColumn> columns)
             {
@@ -455,7 +506,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             {
                 index = IndexOf(row);
                 if (index == -1)
-                    throw new RuntimeException("Строка не принадлежит таблице значений");
+                    throw ValueTableException.RowDoesntBelongTo();
             }
             else
             {
@@ -469,7 +520,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                 }
 
                 if (index < 0 || index >= _rows.Count)
-                    throw new RuntimeException("Значение индекса выходит за пределы диапазона");
+                    throw RuntimeException.IndexOutOfRange();
             }
 
             return index;
@@ -482,7 +533,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// СтрокаТаблицыЗначений - Строка которую сдвигаем
         /// Число - Индекс сдвигаемой строки
         /// </param>
-        /// <param name="offset">Количество строк, на которое сдвигается строка. Если значение положительное - сдвиг вниз, иначе вверх</param>
+        /// <param name="offset">Количество строк, на которое сдвигается строка.
+        /// Если значение положительное - сдвиг вниз, иначе вверх</param>
         [ContextMethod("Сдвинуть", "Move")]
         public void Move(BslValue row, int offset)
         {
@@ -491,7 +543,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             int index_dest = index_source + offset;
 
             if (index_dest < 0 || index_dest >= _rows.Count)
-                throw RuntimeException.InvalidNthArgumentValue(2);
+                throw RuntimeException.IncorrectOffset();
 
             ValueTableRow tmp = _rows[index_source];
 
@@ -510,7 +562,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         /// <summary>
         /// Создает новую таблицу значений с указанными колонками. Данные не копируются.
         /// </summary>
-        /// <param name="columnNames">Строка - Имена колонок для копирования, разделены запятыми</param>
+        /// <param name="columnNames">Строка - Имена колонок для копирования, разделены запятыми
+        /// Если параметр не указан или передана пустая строка, будут скопированы все колонки</param>
         /// <returns>ТаблицаЗначений</returns>
         [ContextMethod("СкопироватьКолонки", "CopyColumns")]
         public ValueTable CopyColumns(string columnNames = null)
@@ -540,59 +593,43 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Скопировать", "Copy")]
         public ValueTable Copy(IValue rows = null, string columnNames = null)
         {
-            var Result = CopyColumns(columnNames);
+            var result = CopyColumns(columnNames);
             var columns = GetProcessingColumnList(columnNames);
-            
-            IEnumerable<ValueTableRow> requestedRows;
-            if (rows == null)
+
+            IEnumerable<ValueTableRow> requestedRows = rows switch
             {
-                requestedRows = _rows;
-            }
-            else
-            {
-                if (rows is StructureImpl structure)
-                    requestedRows = FindRows(structure).Select(x => x as ValueTableRow);
-                else if (rows is ArrayImpl array)
-                    requestedRows = GetRowsEnumByArray(array);
-                else
-                    throw RuntimeException.InvalidArgumentType();
-            }
+                null => _rows,
+                StructureImpl structure => FindRows(structure).Select(x => x as ValueTableRow),
+                ArrayImpl array => GetRowsEnumByArray(array),
+                _ => throw RuntimeException.InvalidArgumentType(),
+            };
 
             var columnMap = new Dictionary<ValueTableColumn, ValueTableColumn>();
             foreach (var column in columns)
             {
-                var destinationColumn = Result.Columns.FindColumnByName(column.Name);
+                var destinationColumn = result.Columns.FindColumnByName(column.Name);
                 columnMap.Add(column, destinationColumn);
             }
 
             foreach (var row in requestedRows)
             {
-                var new_row = Result.Add();
+                var new_row = result.Add();
                 foreach (var Column in columns)
                 {
                     new_row.Set(columnMap[Column], row.Get(Column));
                 }
             }
 
-            return Result;
+            return result;
         }
 
-        private IEnumerable<ValueTableRow> GetRowsEnumByArray(IValue rows)
+        private IEnumerable<ValueTableRow> GetRowsEnumByArray(ArrayImpl rowsArray)
         {
-            IEnumerable<ValueTableRow> requestedRows;
-            var rowsArray = rows as ArrayImpl;
             if (rowsArray == null)
                 throw RuntimeException.InvalidArgumentType();
 
-            requestedRows = rowsArray.Select(x =>
-            {
-                var vtr = x as ValueTableRow;
-                if (vtr == null || vtr.Owner() != this)
-                    throw RuntimeException.InvalidArgumentValue();
-
-                return vtr;
-            });
-            return requestedRows;
+            return rowsArray.Select(x => x is ValueTableRow vtr && vtr.Owner() == this ? vtr
+                : throw RuntimeException.InvalidArgumentValue());
         }
 
         private struct ValueTableSortRule
@@ -610,24 +647,23 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
             foreach (string column in a_columns)
             {
-                string[] description = column.Trim().Split(' ');
+                string[] description = column.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (description.Length == 0)
                     throw ColumnException.WrongColumnName();
+                if (description.Length > 2)
+                    throw RuntimeException.InvalidNthArgumentValue(1);
 
-                ValueTableSortRule Desc = new ValueTableSortRule();
-                Desc.Column = this.Columns.FindColumnByName(description[0]);
+                var sortColumn = this.Columns.FindColumnByName(description[0]);
+                if (sortColumn == null)
+                    throw ColumnException.WrongColumnName(description[0]);
 
-                if (description.Length > 1)
+                var rule = new ValueTableSortRule
                 {
-                    if (String.Compare(description[1], "DESC", true) == 0 || String.Compare(description[1], "УБЫВ", true) == 0)
-                        Desc.direction = -1;
-                    else
-                        Desc.direction = 1;
-                }
-                else
-                    Desc.direction = 1;
+                    Column = sortColumn,
+                    direction = (description.Length > 1 && description[1].BilingualEquals("УБЫВ", "DESC")) ? -1 : 1
+                };
 
-                Rules.Add(Desc);
+                Rules.Add(rule);
             }
 
             return Rules;
@@ -645,7 +681,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                     throw RuntimeException.InvalidArgumentValue();
 
                 this.Rules = Rules;
-                 _comparer = new GenericIValueComparer(process);
+                _comparer = new GenericIValueComparer(process);
             }
 
             private int OneCompare(ValueTableRow x, ValueTableRow y, ValueTableSortRule Rule)
@@ -708,7 +744,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                 yield return item;
             }
         }
-        
+
         public override IValue GetIndexedValue(IValue index)
         {
             return Get((int)index.AsNumber());
@@ -730,6 +766,25 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         public IValue GetField(string name)
         {
             return Columns.FindColumnByName(name);
+        }
+    }
+
+    public sealed class ValueTableException : RuntimeException
+    {
+        public ValueTableException(BilingualString message, Exception innerException) : base(message,
+            innerException)
+        {
+        }
+
+        public ValueTableException(BilingualString message) : base(message)
+        {
+        }
+
+        public static ValueTableException RowDoesntBelongTo()
+        {
+            return new ValueTableException(new BilingualString(
+                "Строка не принадлежит таблице значений",
+                "Row does not belong to table"));
         }
     }
 }

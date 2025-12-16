@@ -176,7 +176,21 @@ namespace OneScript.Exceptions
                 $"Неправильное имя кодировки '{encoding}'",
                 $"Invalid encoding name '{encoding}'");
         }
-        
+
+        public static RuntimeException IncorrectOffset()
+        {
+            return new RuntimeException(
+                "Неправильное смещение внутри коллекции",
+                "Incorrect offset within collection");
+        }
+
+        public static RuntimeException IndexOutOfRange()
+        {
+            return new RuntimeException(
+                "Значение индекса выходит за пределы диапазона",
+                "Index is out of range");
+        }
+
         #endregion
     }
 }
