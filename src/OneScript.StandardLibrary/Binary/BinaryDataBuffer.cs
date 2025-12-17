@@ -246,7 +246,7 @@ namespace OneScript.StandardLibrary.Binary
         private void WriteBitwiseOp(int position, BinaryDataBuffer buffer, int number, Func<byte, byte, byte> op)
         {
             if(position < 0)
-                throw new IndexOutOfRangeException("Значение индекса выходит за границы диапазона");
+                throw RuntimeException.IndexOutOfRange();
 
             try
             {

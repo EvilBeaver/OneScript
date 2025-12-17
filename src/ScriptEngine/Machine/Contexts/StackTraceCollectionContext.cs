@@ -53,15 +53,9 @@ namespace ScriptEngine.Machine.Contexts
             var idx = (int)index.AsNumber();
 
             if (idx < 0 || idx >= Count())
-                throw IndexOutOfBoundsException();
+                throw RuntimeException.IndexOutOfRange();
 
             return _frames[idx];
         }
-
-        private static RuntimeException IndexOutOfBoundsException()
-        {
-            return new RuntimeException("Значение индекса выходит за пределы диапазона");
-        }
-
     }
 }

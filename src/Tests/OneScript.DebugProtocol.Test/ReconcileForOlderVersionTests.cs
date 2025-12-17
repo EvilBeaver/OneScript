@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
@@ -13,7 +13,7 @@ using OneScript.DebugProtocol;
 using OneScript.DebugProtocol.TcpServer;
 using Xunit;
 
-namespace VSCode.DebugAdapter.Tests
+namespace OneScript.DebugProtocol.Test
 {
     public class ReconcileForOlderVersionTests
     {
@@ -75,3 +75,4 @@ namespace VSCode.DebugAdapter.Tests
         }
     }
 }
+

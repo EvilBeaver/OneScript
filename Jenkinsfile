@@ -5,7 +5,7 @@ pipeline {
 
     environment {
         VersionPrefix = '2.0.0'
-        VersionSuffix = 'rc.9'
+        VersionSuffix = 'rc.10'
         outputEnc = '65001'
     }
 

@@ -12,6 +12,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
@@ -1237,23 +1238,35 @@ namespace ScriptEngine.Compiler
 
         private BslAnnotationParameter MakeAnnotationParameter(AnnotationParameterNode param)
         {
-            BslAnnotationParameter result;
+            var runtimeValue = MakeAnnotationParameterValueConstant(param);
+            return new BslAnnotationParameter(param.Name, runtimeValue);
+        }
+
+        private BslPrimitiveValue MakeAnnotationParameterValueConstant(AnnotationParameterNode param)
+        {
+            if (param.AnnotationNode != null)
+            {
+                var runtimeValue = new BslAnnotationValue(param.AnnotationNode.Name);
+                foreach (var child in param.AnnotationNode.Children)
+                {
+                    var parameter = (AnnotationParameterNode)child;
+                    var parameterValue = MakeAnnotationParameterValueConstant(parameter);
+                    runtimeValue.Parameters.Add(new BslAnnotationParameter(parameter.Name, parameterValue));
+                }
+                return runtimeValue;
+            }
+            else
             if (param.Value.Type != LexemType.NotALexem)
             {
                 var constDef = CreateConstDefinition(param.Value);
                 var constNumber = GetConstNumber(constDef);
                 var runtimeValue = _module.Constants[constNumber];
-                result = new BslAnnotationParameter(param.Name, runtimeValue)
-                {
-                    ConstantValueIndex = constNumber
-                };
+                return runtimeValue;
             }
             else
             {
-                result = new BslAnnotationParameter(param.Name, null);
+                return null;
             }
-
-            return result;
         }
 
         private IEnumerable<BslAnnotationAttribute> GetAnnotations(AnnotatableNode parent)
@@ -1302,7 +1315,7 @@ namespace ScriptEngine.Compiler
             };
             return cDef;
         }
-        
+
         private int GetConstNumber(in ConstDefinition cDef)
         {
             var idx = _constMap.IndexOf(cDef);

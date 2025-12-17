@@ -50,7 +50,6 @@ namespace ScriptEngine.Machine
             return new AnnotationParameter
             {
                 Name = parameter.Name,
-                ValueIndex = parameter.ConstantValueIndex,
                 RuntimeValue = parameter.Value,
             };
         }
@@ -80,10 +79,7 @@ namespace ScriptEngine.Machine
             if (annotation.ParamCount > 0)
             {
                 attribute.SetParameters(annotation.Parameters.Select(p => 
-                    new BslAnnotationParameter(p.Name, (BslPrimitiveValue) p.RuntimeValue)
-                    {
-                        ConstantValueIndex = p.ValueIndex
-                    }));
+                    new BslAnnotationParameter(p.Name, (BslPrimitiveValue) p.RuntimeValue)));
             }
 
             return attribute;

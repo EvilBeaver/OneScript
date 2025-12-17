@@ -243,7 +243,10 @@ namespace ScriptEngine.Machine.Contexts
             }
             else if (typeof(IRuntimeContextInstance).IsAssignableFrom(type))
             {
-                valueObj = value.AsObject();
+                if (value.GetType().IsAssignableTo(type))
+                    valueObj = value.AsObject();
+                else
+                    throw new InvalidCastException();
             }
             else if (value is EnumerationValue && typeof(EnumerationValue).IsAssignableFrom(type))
             {

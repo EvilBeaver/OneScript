@@ -99,7 +99,7 @@ namespace OneScript.StandardLibrary.Collections
         public void Insert(int index, IValue value = null)
         {
             if (index < 0)
-                throw IndexOutOfBoundsException();
+                throw RuntimeException.IndexOutOfRange();
 
             if (index > _values.Count)
                 Extend(index - _values.Count);
@@ -128,7 +128,7 @@ namespace OneScript.StandardLibrary.Collections
         public void Remove(int index)
         {
             if (index < 0 || index >= _values.Count)
-                throw IndexOutOfBoundsException();
+                throw RuntimeException.IndexOutOfRange();
 
             _values.RemoveAt(index);
         }
@@ -143,7 +143,7 @@ namespace OneScript.StandardLibrary.Collections
         public IValue Get(int index)
         {
             if (index < 0 || index >= _values.Count)
-                throw IndexOutOfBoundsException();
+                throw RuntimeException.IndexOutOfRange();
 
             return _values[index];
         }
@@ -152,7 +152,7 @@ namespace OneScript.StandardLibrary.Collections
         public void Set(int index, IValue value)
         {
             if (index < 0 || index >= _values.Count)
-                throw IndexOutOfBoundsException();
+                throw RuntimeException.IndexOutOfRange();
 
             _values[index] = value;
         }
@@ -233,11 +233,6 @@ namespace OneScript.StandardLibrary.Collections
         public static ArrayImpl Constructor(FixedArrayImpl fixedArray)
         {
             return new ArrayImpl(fixedArray);
-        }
-
-        private static RuntimeException IndexOutOfBoundsException()
-        {
-            return new RuntimeException("Значение индекса выходит за пределы диапазона");
         }
     }
 }

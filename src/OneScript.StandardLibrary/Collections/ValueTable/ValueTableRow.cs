@@ -16,7 +16,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
     [ContextClass("СтрокаТаблицыЗначений", "ValueTableRow")]
     public class ValueTableRow : AutoContext<ValueTableRow>, ICollectionContext<IValue>, IDebugPresentationAcceptor
     {
-        private readonly Dictionary<IValue, IValue> _data = new Dictionary<IValue, IValue>();
+        private readonly Dictionary<ValueTableColumn, IValue> _data = new Dictionary<ValueTableColumn, IValue>();
         private readonly ValueTable _owner;
 
         public ValueTableRow(ValueTable owner)
@@ -26,7 +26,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public int Count()
         {
-            return Owner().Columns.Count();
+            return _owner.Columns.Count();
         }
         
         public int Count(IBslProcess process) => Count();
@@ -43,12 +43,11 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
 		private IValue TryValue(ValueTableColumn Column)
 		{
-			IValue Value;
-			if (_data.TryGetValue(Column, out Value))
-			{
-				return Value;
-			}
-			return Column.ValueType.AdjustValue();
+            if (_data.TryGetValue(Column, out IValue Value))
+            {
+                return Value;
+            }
+            return Column.ValueType.AdjustValue();
 		}
 
         /// <summary>
@@ -59,19 +58,17 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Получить", "Get")]
         public IValue Get(int index)
         {
-            var C = Owner().Columns.FindColumnByIndex(index);
-            return TryValue(C);
+            return TryValue(_owner.Columns.FindColumnByIndex(index));
         }
 
         public IValue Get(IValue index)
         {
-            var C = Owner().Columns.GetColumnByIIndex(index);
-            return TryValue(C);
+            return TryValue(_owner.Columns.GetColumnByIIndex(index));
         }
 
-        public IValue Get(ValueTableColumn c)
+        public IValue Get(ValueTableColumn column)
         {
-            return TryValue(c);
+            return TryValue(column);
         }
         
         /// <summary>
@@ -82,31 +79,29 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Установить", "Set")]
         public void Set(int index, IValue value)
         {
-            var C = Owner().Columns.FindColumnByIndex(index);
-            Set(C, value);
+            Set(_owner.Columns.FindColumnByIndex(index), value);
         }
 
         public void Set(IValue index, IValue value)
         {
-            var C = Owner().Columns.GetColumnByIIndex(index);
-            Set(C, value);
+            Set(_owner.Columns.GetColumnByIIndex(index), value);
         }
 
         public void Set(ValueTableColumn column, IValue value)
         {
-            Owner().Indexes.ElementRemoved(this);
+            _owner.Indexes.ElementRemoved(this);
             _data[column] = column.ValueType.AdjustValue(value);
-            Owner().Indexes.ElementAdded(this);
+            _owner.Indexes.ElementAdded(this);
         }
 
-        public void OnOwnerColumnRemoval(IValue column)
+        public void OnOwnerColumnRemoval(ValueTableColumn column)
         {
             _data.Remove(column);
         }
 
         public IEnumerator<IValue> GetEnumerator()
         {
-            foreach (var item in Owner().Columns)
+            foreach (var item in _owner.Columns)
             {
                 yield return TryValue(item);
             }
@@ -124,51 +119,41 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public override string GetPropName(int propNum)
         {
-            return Owner().Columns.GetPropName(propNum);
+            return _owner.Columns.GetPropName(propNum);
         }
 
         public override int GetPropertyNumber(string name)
         {
-            return Owner().Columns.GetPropertyNumber(name);
+            return _owner.Columns.GetPropertyNumber(name);
         }
 
-        public override bool IsPropReadable(int propNum)
-        {
-            return true;
-        }
+        public override bool IsPropReadable(int propNum) => true;
 
-        public override bool IsPropWritable(int propNum)
-        {
-            return true;
-        }
+        public override bool IsPropWritable(int propNum) => true; 
 
         public override IValue GetPropValue(int propNum)
         {
-            var C = Owner().Columns.FindColumnByIndex(propNum);
-            return TryValue(C);
+            return TryValue(_owner.Columns.FindColumnByIndex(propNum));
         }
 
 		public override void SetPropValue(int propNum, IValue newVal)
 		{
-			var C = Owner().Columns.FindColumnByIndex(propNum);
-            Set(C, newVal);
+            Set(_owner.Columns.FindColumnByIndex(propNum), newVal);
 		}
 
         private ValueTableColumn GetColumnByIIndex(IValue index)
         {
-            return Owner().Columns.GetColumnByIIndex(index);
+            return _owner.Columns.GetColumnByIIndex(index);
         }
 
         public override IValue GetIndexedValue(IValue index)
         {
-            ValueTableColumn C = GetColumnByIIndex(index);
-            return TryValue(C);
+            return TryValue(GetColumnByIIndex(index));
         }
 
 		public override void SetIndexedValue(IValue index, IValue val)
 		{
-			var C = GetColumnByIIndex(index);
-			_data[C] = C.ValueType.AdjustValue(val);
+            Set(GetColumnByIIndex(index), val);
 		}
 
         void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)

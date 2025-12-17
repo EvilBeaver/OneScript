@@ -1,7 +1,7 @@
 /*----------------------------------------------------------
-This Source Code Form is subject to the terms of the
-Mozilla Public License, v.2.0. If a copy of the MPL
-was not distributed with this file, You can obtain one
+This Source Code Form is subject to the terms of the 
+Mozilla Public License, v.2.0. If a copy of the MPL 
+was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
@@ -22,6 +22,11 @@ namespace OneScript.Values
         public override bool Equals(BslValue other)
         {
             return ReferenceEquals(Instance, other);
+        }
+
+        public override int GetHashCode()
+        {
+            return 42; // Константа для синглтона
         }
 
         public override string ToString() => string.Empty;

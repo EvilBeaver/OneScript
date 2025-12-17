@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Diagnostics;
 using System.Threading;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Debugger;
@@ -53,6 +54,11 @@ namespace OneScript.DebugServices.Internal
             }
 
             _connectionEvent.Wait();
+            Debug.Assert(_isConnected, "Must be connected");
+            Debug.Assert(_session is DebugSession, "Session must be DebugSession");
+            
+            // Делегируем ожидание реальной сессии
+            _session.WaitReadyToRun();
         }
 
         public bool IsActive => _session.IsActive;

@@ -57,7 +57,7 @@ namespace OneScript.StandardLibrary.Collections.Indexes
                 foreach (var key in allKeys)
                 {
                     var thisValue = _values[key];
-                    var otherValue = _values[key];
+                    var otherValue = casted._values[key];
 
                     if (!thisValue.Equals(otherValue)) return false;
                 }

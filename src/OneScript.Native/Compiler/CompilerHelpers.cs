@@ -90,6 +90,16 @@ namespace OneScript.Native.Compiler
         private static BslAnnotationParameter MakeAnnotationParameter(AnnotationParameterNode param)
         {
             BslAnnotationParameter result;
+            if (param.AnnotationNode != null)
+            {
+                var runtimeValue = new BslAnnotationValue(param.AnnotationNode.Name);
+                foreach (var child in param.AnnotationNode.Children)
+                {
+                    runtimeValue.Parameters.Add(MakeAnnotationParameter((AnnotationParameterNode)child));
+                }
+                result = new BslAnnotationParameter(param.Name, runtimeValue);
+            }
+            else
             if (param.Value.Type != LexemType.NotALexem)
             {
                 var runtimeValue = ValueFromLiteral(param.Value);
