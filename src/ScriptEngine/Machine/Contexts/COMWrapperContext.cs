@@ -115,8 +115,14 @@ namespace ScriptEngine.Machine.Contexts
                 var flags = new ParameterModifier(arguments.Length);
                 for (int i = 0; i < arguments.Length; i++)
                 {
-                    values[i] = MarshalIValue(arguments[i]);
-                    flags[i] = arguments[i] is IVariable;
+                    if (arguments[i] is IVariable v)
+                    {
+                        values[i] = new System.Runtime.InteropServices.VariantWrapper(MarshalIValue(v.Value));
+                        flags[i] = true;
+                    }
+                    else
+                        values[i] = MarshalIValue(arguments[i]);
+                    
                 }
 
                 flagsArray[0] = flags;
@@ -146,7 +152,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                retValue = ContextValuesMarshaller.ConvertToCLRObject(val) ?? Missing.Value;
+                retValue = ContextValuesMarshaller.ConvertToCLRObject(val);
             }
 
             return retValue;
@@ -200,6 +206,7 @@ namespace ScriptEngine.Machine.Contexts
                 return ValueFactory.Create();
 
             var type = objParam.GetType();
+            
             if (typeof(IValue).IsAssignableFrom(type))
             {
                 return (IValue)objParam;

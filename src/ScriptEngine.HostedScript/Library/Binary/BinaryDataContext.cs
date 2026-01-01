@@ -203,8 +203,11 @@ namespace ScriptEngine.HostedScript.Library.Binary
                     return "";
 
                 buffer = new byte[length];
+                
+                var keepPos = _backingFile.Position;
                 _backingFile.Seek(0, SeekOrigin.Begin);
                 _backingFile.Read(buffer, 0, length);
+                _backingFile.Seek(keepPos, SeekOrigin.Begin);
             }
             
             StringBuilder hex = new StringBuilder(length*3);

@@ -30,7 +30,10 @@ namespace ScriptEngine.HostedScript.Library.NativeApi
 
         public static IntPtr GetProcAddress(IntPtr module, string procName)
         {
-            return IsLinux ? LinuxProc(module, procName) : WindowsProc(module, procName);
+            var pointer = IsLinux ? LinuxProc(module, procName) : WindowsProc(module, procName);
+            return pointer != IntPtr.Zero
+                ? pointer
+                : throw new ApplicationException($"Function pointer for {procName} not obtained.");
         }
 
         public static bool FreeLibrary(IntPtr module)

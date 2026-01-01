@@ -215,6 +215,8 @@ namespace ScriptEngine.Machine.Contexts
                 return _ownProperties.Count;
         }
 
+        public int GetOwnPropCount() => GetOwnVariableCount();
+
         protected override void UpdateState()
         {
         }
@@ -242,7 +244,7 @@ namespace ScriptEngine.Machine.Contexts
 
             return _ownPropertyIndexes.Where(x => x.Value == index).First().Key;
         }
-        
+
         public override int GetMethodsCount()
         {
             return GetOwnMethodCount() + _module.Methods.Length;

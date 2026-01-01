@@ -4,7 +4,7 @@ pipeline {
     agent none
 
     environment {
-        ReleaseNumber = '1.9.2'
+        ReleaseNumber = '1.9.4'
         outputEnc = '65001'
     }
 
@@ -218,7 +218,7 @@ pipeline {
             }
         }
 
-        stage ('Publishing revision') {
+        stage ('Publishing dev-revision') {
             when { anyOf {
 				// TODO сделать автовычисление маркера lts или latest и согласовать его с путём к папке на стр. 250 (TARGET=..._)
 				branch 'release/lts'

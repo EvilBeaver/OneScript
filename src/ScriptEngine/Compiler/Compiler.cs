@@ -1111,7 +1111,7 @@ namespace ScriptEngine.Compiler
             BuildCodeBatch(Token.EndTry);
 
             var endIndex = AddLineNumber(_lastExtractedLexem.LineNumber, CodeGenerationFlags.CodeStatistics | CodeGenerationFlags.DebugCode);
-            AddCommand(OperationCode.EndTry);
+            AddCommand(OperationCode.EndTry, beginHandler);
             CorrectCommandArgument(jmpIndex, endIndex);
             
             NextToken();
