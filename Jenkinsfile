@@ -218,46 +218,9 @@ pipeline {
             }
         }
 
-        stage ('Publishing dev-revision') {
-            when { anyOf {
-				// TODO сделать автовычисление маркера lts или latest и согласовать его с путём к папке на стр. 250 (TARGET=..._)
-				branch 'release/lts'
-				}
-			}
-			
-            agent { label 'master' }
-
-            steps {
-                
-                unstash 'winDist'
-                unstash 'debian'
-                unstash 'redhat'
-                unstash 'vsix'
-
-                dir('targetContent') {
-                    sh '''
-                    WIN=../built
-                    DEB=../out/deb
-                    RPM=../out/rpm
-                    mkdir x64
-                    mv $WIN/OneScript*-x64*.exe x64/
-                    mv $WIN/OneScript*-x64*.zip x64/
-                    mv $WIN/vscode/*.vsix x64/
-                    mv $WIN/OneScript*-x86*.exe ./
-                    mv $WIN/OneScript*-x86*.zip ./
-                    mv $RPM/*.rpm x64/
-                    mv $DEB/*.deb x64/
-                    TARGET="/var/www/oscript.io/download/versions/lts/"
-                    sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
-                    '''.stripIndent()
-                }
-            }
-        }
-        
         stage ('Publishing release') {
             when { anyOf {
-                // TODO сделать автовычисление маркера lts или latest и согласовать его с путём к папке на стр. 250 (TARGET=..._)
-                branch 'release/latest'
+                branch 'release/lts'
                 }
             }
             
@@ -283,7 +246,7 @@ pipeline {
                     mv $WIN/OneScript*-x86*.zip ./
                     mv $RPM/*.rpm x64/
                     mv $DEB/*.deb x64/
-                    TARGET="/var/www/oscript.io/download/versions/latest/"
+                    TARGET="/var/www/oscript.io/download/versions/lts/"
                     sudo rsync -rv --delete --exclude mddoc*.zip --exclude *.src.rpm . $TARGET
                     '''.stripIndent()
                     
@@ -296,7 +259,7 @@ pipeline {
         }
         
         stage ('Publishing artifacts to clouds'){
-            when { branch 'release/latest' }
+            when { branch 'release/lts' }
             agent { label 'windows' }
 
             steps{
