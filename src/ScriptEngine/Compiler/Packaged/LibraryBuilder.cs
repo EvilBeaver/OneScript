@@ -15,6 +15,7 @@ using OneScript.Compilation;
 using OneScript.Execution;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Sources;
+using ScriptEngine.Libraries;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.Compiler.Packaged
@@ -51,6 +52,80 @@ namespace ScriptEngine.Compiler.Packaged
             "tests", "test", "тесты", "examples", "примеры", "doc", "docs", 
             "bin", "obj", ".git", ".svn", "node_modules", "addins"
         };
+
+        /// <summary>
+        /// Собирает библиотеку из уже загруженной ExternalLibraryInfo
+        /// </summary>
+        public CompiledPackageDto BuildFromLoaded(ExternalLibraryInfo libraryInfo)
+        {
+            var libraryName = libraryInfo.Package.ShortName;
+
+            var package = new CompiledPackageDto
+            {
+                Type = PackageType.Library,
+                Name = libraryName
+            };
+
+            // Добавляем модули
+            foreach (var moduleInfo in libraryInfo.Modules)
+            {
+                if (moduleInfo.Module is StackRuntimeModule stackModule)
+                {
+                    // Собираем зависимости
+                    if (!string.IsNullOrEmpty(moduleInfo.FilePath) && File.Exists(moduleInfo.FilePath))
+                    {
+                        var source = _engine.Loader.FromFile(moduleInfo.FilePath);
+                        CollectDependencies(source);
+                    }
+
+                    var scriptDto = new PackagedScriptDto
+                    {
+                        Type = ScriptType.Module,
+                        Symbol = moduleInfo.Symbol,
+                        OwnerLibrary = libraryName,
+                        LoadOrder = _loadOrder++,
+                        Module = _packager.ConvertToDto(stackModule)
+                    };
+
+                    package.Scripts.Add(scriptDto);
+                }
+            }
+
+            // Добавляем классы
+            foreach (var classInfo in libraryInfo.Classes)
+            {
+                if (classInfo.Module is StackRuntimeModule stackModule)
+                {
+                    // Собираем зависимости
+                    if (!string.IsNullOrEmpty(classInfo.FilePath) && File.Exists(classInfo.FilePath))
+                    {
+                        var source = _engine.Loader.FromFile(classInfo.FilePath);
+                        CollectDependencies(source);
+                    }
+
+                    var scriptDto = new PackagedScriptDto
+                    {
+                        Type = ScriptType.Class,
+                        Symbol = classInfo.Symbol,
+                        OwnerLibrary = libraryName,
+                        LoadOrder = _loadOrder++,
+                        Module = _packager.ConvertToDto(stackModule)
+                    };
+
+                    package.Scripts.Add(scriptDto);
+                }
+            }
+
+            if (package.Scripts.Count == 0)
+            {
+                throw new InvalidOperationException($"No valid script modules found in library: {libraryName}");
+            }
+
+            // Добавляем собранные зависимости
+            package.Dependencies.AddRange(_dependencies);
+
+            return package;
+        }
 
         /// <summary>
         /// Собирает библиотеку из папки

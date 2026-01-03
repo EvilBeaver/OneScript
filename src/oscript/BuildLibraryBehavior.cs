@@ -7,8 +7,11 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.IO;
+using OneScript.Execution;
 using OneScript.Language;
 using ScriptEngine.Compiler.Packaged;
+using ScriptEngine.HostedScript;
+using ScriptEngine.Libraries;
 using ScriptEngine.Machine;
 
 namespace oscript
@@ -37,23 +40,25 @@ namespace oscript
 
             try
             {
-                // Создаём скрипт-заглушку который загружает библиотеку
-                var loaderScript = $"#Использовать \"{_libraryPath.Replace("\\", "\\\\")}\"";
-                
                 var builder = ConsoleHostBuilder.Create(_libraryPath);
                 var hostedScript = ConsoleHostBuilder.Build(builder);
                 hostedScript.Initialize();
 
                 var process = hostedScript.Engine.NewProcess();
-                var compiler = hostedScript.GetCompilerService();
 
-                // Компилируем скрипт-заглушку — это загрузит библиотеку в контекст
-                var loaderSource = hostedScript.Engine.Loader.FromString(loaderScript);
-                compiler.Compile(loaderSource, process);
+                // Загружаем библиотеку через LibraryLoader и получаем ExternalLibraryInfo
+                var libraryLoader = ScriptEngine.HostedScript.LibraryLoader.Create(hostedScript.Engine, process);
+                var libraryInfo = libraryLoader.LoadLibraryWithInfo(_libraryPath, process);
 
-                // Теперь все модули библиотеки в контексте, можно компилировать
-                var libraryBuilder = new LibraryBuilder(hostedScript.Engine, compiler);
-                var package = libraryBuilder.Build(_libraryPath, process);
+                if (libraryInfo == null)
+                {
+                    Output.WriteLine($"Failed to load library: '{_libraryPath}'");
+                    return 1;
+                }
+
+                // Собираем пакет из загруженных модулей
+                var packageBuilder = new LibraryBuilder(hostedScript.Engine, hostedScript.GetCompilerService());
+                var package = packageBuilder.BuildFromLoaded(libraryInfo);
 
                 var outputPath = string.IsNullOrEmpty(_outputPath)
                     ? _libraryPath + ".oslib"
@@ -61,7 +66,7 @@ namespace oscript
 
                 using (var stream = File.Create(outputPath))
                 {
-                    libraryBuilder.Save(stream, package);
+                    packageBuilder.Save(stream, package);
                 }
 
                 var moduleCount = package.Scripts.Count;

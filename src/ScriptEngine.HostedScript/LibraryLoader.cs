@@ -287,5 +287,39 @@ namespace ScriptEngine.HostedScript
                 SystemLogger.Write("LRE: " + message);
             }
         }
+
+        /// <summary>
+        /// Загружает библиотеку и возвращает информацию о ней с скомпилированными модулями.
+        /// Используется для сборки .oslib файлов.
+        /// </summary>
+        public ExternalLibraryInfo LoadLibraryWithInfo(string libraryPath, IBslProcess process)
+        {
+            var package = new PackageInfo(libraryPath, Path.GetFileName(libraryPath));
+            var library = new ExternalLibraryInfo(package);
+            _librariesInProgress.Push(new LibraryLoadingContext(library));
+            try
+            {
+                bool success;
+                if (!_customized)
+                {
+                    success = DefaultProcessing(libraryPath, process);
+                }
+                else
+                {
+                    success = CustomizedProcessing(libraryPath, process);
+                }
+
+                if (!success)
+                    return null;
+
+                CompileDelayedModules(library, process);
+
+                return library;
+            }
+            finally
+            {
+                _librariesInProgress.Pop();
+            }
+        }
     }
 }
