@@ -39,6 +39,19 @@ namespace ScriptEngine.Compiler.Packaged
             _loadOrder = 0;
         }
 
+        // Стандартные папки с модулями
+        private static readonly string[] ModuleFolders = { "Modules", "Модули", "src" };
+        
+        // Стандартные папки с классами
+        private static readonly string[] ClassFolders = { "Classes", "Классы" };
+        
+        // Папки, которые следует игнорировать
+        private static readonly HashSet<string> IgnoredFolders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "tests", "test", "тесты", "examples", "примеры", "doc", "docs", 
+            "bin", "obj", ".git", ".svn", "node_modules", "addins"
+        };
+
         /// <summary>
         /// Собирает библиотеку из папки
         /// </summary>
@@ -52,59 +65,15 @@ namespace ScriptEngine.Compiler.Packaged
                 Name = libraryName
             };
 
-            // Находим все .os файлы в папке библиотеки
-            var scriptFiles = Directory.EnumerateFiles(libraryPath, "*.os")
-                .Select(x => new { Name = Path.GetFileNameWithoutExtension(x), Path = x })
-                .Where(x => Utils.IsValidIdentifier(x.Name))
-                .ToList();
+            // Собираем модули из корня и стандартных папок
+            CollectModules(libraryPath, libraryName, package, process);
 
-            if (scriptFiles.Count == 0)
+            // Собираем классы из стандартных папок
+            CollectClasses(libraryPath, libraryName, package, process);
+
+            if (package.Scripts.Count == 0)
             {
                 throw new InvalidOperationException($"No valid script files found in library: {libraryPath}");
-            }
-
-            // Компилируем каждый модуль
-            foreach (var scriptFile in scriptFiles)
-            {
-                var source = _engine.Loader.FromFile(scriptFile.Path);
-
-                // Собираем зависимости из директив #Использовать
-                CollectDependencies(source);
-
-                // Компилируем модуль
-                var module = _compiler.Compile(source, process);
-
-                if (!(module is StackRuntimeModule stackModule))
-                {
-                    throw new InvalidOperationException(
-                        $"Only stack runtime modules can be compiled to library. " +
-                        $"File '{scriptFile.Path}' uses native runtime.");
-                }
-
-                var scriptDto = new PackagedScriptDto
-                {
-                    Type = ScriptType.Module,
-                    Symbol = scriptFile.Name,
-                    OwnerLibrary = libraryName,
-                    LoadOrder = _loadOrder++,
-                    Module = _packager.ConvertToDto(stackModule)
-                };
-
-                package.Scripts.Add(scriptDto);
-            }
-
-            // Проверяем папку Классы
-            var classesPath = Path.Combine(libraryPath, "Классы");
-            if (Directory.Exists(classesPath))
-            {
-                CompileClasses(classesPath, libraryName, package, process);
-            }
-
-            // Альтернативное имя папки
-            classesPath = Path.Combine(libraryPath, "Classes");
-            if (Directory.Exists(classesPath))
-            {
-                CompileClasses(classesPath, libraryName, package, process);
             }
 
             // Добавляем собранные зависимости
@@ -113,7 +82,140 @@ namespace ScriptEngine.Compiler.Packaged
             return package;
         }
 
-        private void CompileClasses(string classesPath, string libraryName, CompiledPackageDto package, IBslProcess process)
+        private void CollectModules(string libraryPath, string libraryName, CompiledPackageDto package, IBslProcess process)
+        {
+            // Сначала ищем в корне библиотеки
+            CompileModulesInFolder(libraryPath, libraryName, package, process);
+
+            // Затем в стандартных папках модулей
+            foreach (var folderName in ModuleFolders)
+            {
+                var modulesPath = Path.Combine(libraryPath, folderName);
+                if (Directory.Exists(modulesPath))
+                {
+                    CompileModulesRecursive(modulesPath, libraryName, package, process);
+                }
+            }
+
+            // Проверяем подпапки core, tools и т.д. (для библиотек типа oint)
+            foreach (var subDir in Directory.EnumerateDirectories(libraryPath))
+            {
+                var dirName = Path.GetFileName(subDir);
+                if (IgnoredFolders.Contains(dirName) || ClassFolders.Any(c => c.Equals(dirName, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                // Проверяем есть ли внутри папка Modules
+                foreach (var folderName in ModuleFolders)
+                {
+                    var nestedModulesPath = Path.Combine(subDir, folderName);
+                    if (Directory.Exists(nestedModulesPath))
+                    {
+                        CompileModulesRecursive(nestedModulesPath, libraryName, package, process);
+                    }
+                }
+            }
+        }
+
+        private void CollectClasses(string libraryPath, string libraryName, CompiledPackageDto package, IBslProcess process)
+        {
+            // Ищем классы в стандартных папках
+            foreach (var folderName in ClassFolders)
+            {
+                var classesPath = Path.Combine(libraryPath, folderName);
+                if (Directory.Exists(classesPath))
+                {
+                    CompileClassesRecursive(classesPath, libraryName, package, process);
+                }
+            }
+
+            // Проверяем подпапки (для библиотек типа oint)
+            foreach (var subDir in Directory.EnumerateDirectories(libraryPath))
+            {
+                var dirName = Path.GetFileName(subDir);
+                if (IgnoredFolders.Contains(dirName))
+                    continue;
+
+                foreach (var folderName in ClassFolders)
+                {
+                    var nestedClassesPath = Path.Combine(subDir, folderName);
+                    if (Directory.Exists(nestedClassesPath))
+                    {
+                        CompileClassesRecursive(nestedClassesPath, libraryName, package, process);
+                    }
+                }
+            }
+        }
+
+        private void CompileModulesInFolder(string folderPath, string libraryName, CompiledPackageDto package, IBslProcess process)
+        {
+            var scriptFiles = Directory.EnumerateFiles(folderPath, "*.os")
+                .Select(x => new { Name = Path.GetFileNameWithoutExtension(x), Path = x })
+                .Where(x => Utils.IsValidIdentifier(x.Name))
+                .ToList();
+
+            foreach (var scriptFile in scriptFiles)
+            {
+                CompileModule(scriptFile.Path, scriptFile.Name, libraryName, package, process);
+            }
+        }
+
+        private void CompileModulesRecursive(string folderPath, string libraryName, CompiledPackageDto package, IBslProcess process)
+        {
+            CompileModulesInFolder(folderPath, libraryName, package, process);
+
+            // Рекурсивно обрабатываем подпапки
+            foreach (var subDir in Directory.EnumerateDirectories(folderPath))
+            {
+                var dirName = Path.GetFileName(subDir);
+                if (IgnoredFolders.Contains(dirName))
+                    continue;
+
+                // Пропускаем папки классов внутри папок модулей
+                if (ClassFolders.Any(c => c.Equals(dirName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    CompileClassesRecursive(subDir, libraryName, package, process);
+                }
+                else
+                {
+                    CompileModulesRecursive(subDir, libraryName, package, process);
+                }
+            }
+        }
+
+        private void CompileModule(string filePath, string moduleName, string libraryName, CompiledPackageDto package, IBslProcess process)
+        {
+            // Проверяем, не добавлен ли уже модуль с таким именем
+            if (package.Scripts.Any(s => s.Type == ScriptType.Module && 
+                s.Symbol.Equals(moduleName, StringComparison.OrdinalIgnoreCase)))
+            {
+                return; // Модуль уже добавлен
+            }
+
+            var source = _engine.Loader.FromFile(filePath);
+            CollectDependencies(source);
+
+            var module = _compiler.Compile(source, process);
+
+            if (!(module is StackRuntimeModule stackModule))
+            {
+                throw new InvalidOperationException(
+                    $"Only stack runtime modules can be compiled to library. " +
+                    $"File '{filePath}' uses native runtime.");
+            }
+
+            var scriptDto = new PackagedScriptDto
+            {
+                Type = ScriptType.Module,
+                Symbol = moduleName,
+                OwnerLibrary = libraryName,
+                LoadOrder = _loadOrder++,
+                Module = _packager.ConvertToDto(stackModule)
+            };
+
+            package.Scripts.Add(scriptDto);
+        }
+
+        private void CompileClassesRecursive(string classesPath, string libraryName, CompiledPackageDto package, IBslProcess process)
         {
             var classFiles = Directory.EnumerateFiles(classesPath, "*.os")
                 .Select(x => new { Name = Path.GetFileNameWithoutExtension(x), Path = x })
@@ -122,29 +224,51 @@ namespace ScriptEngine.Compiler.Packaged
 
             foreach (var classFile in classFiles)
             {
-                var source = _engine.Loader.FromFile(classFile.Path);
-                CollectDependencies(source);
-
-                var module = _compiler.Compile(source, process);
-
-                if (!(module is StackRuntimeModule stackModule))
-                {
-                    throw new InvalidOperationException(
-                        $"Only stack runtime modules can be compiled to library. " +
-                        $"File '{classFile.Path}' uses native runtime.");
-                }
-
-                var scriptDto = new PackagedScriptDto
-                {
-                    Type = ScriptType.Class,
-                    Symbol = classFile.Name,
-                    OwnerLibrary = libraryName,
-                    LoadOrder = _loadOrder++,
-                    Module = _packager.ConvertToDto(stackModule)
-                };
-
-                package.Scripts.Add(scriptDto);
+                CompileClass(classFile.Path, classFile.Name, libraryName, package, process);
             }
+
+            // Рекурсивно обрабатываем подпапки
+            foreach (var subDir in Directory.EnumerateDirectories(classesPath))
+            {
+                var dirName = Path.GetFileName(subDir);
+                if (IgnoredFolders.Contains(dirName))
+                    continue;
+
+                CompileClassesRecursive(subDir, libraryName, package, process);
+            }
+        }
+
+        private void CompileClass(string filePath, string className, string libraryName, CompiledPackageDto package, IBslProcess process)
+        {
+            // Проверяем, не добавлен ли уже класс с таким именем
+            if (package.Scripts.Any(s => s.Type == ScriptType.Class &&
+                s.Symbol.Equals(className, StringComparison.OrdinalIgnoreCase)))
+            {
+                return; // Класс уже добавлен
+            }
+
+            var source = _engine.Loader.FromFile(filePath);
+            CollectDependencies(source);
+
+            var module = _compiler.Compile(source, process);
+
+            if (!(module is StackRuntimeModule stackModule))
+            {
+                throw new InvalidOperationException(
+                    $"Only stack runtime modules can be compiled to library. " +
+                    $"File '{filePath}' uses native runtime.");
+            }
+
+            var scriptDto = new PackagedScriptDto
+            {
+                Type = ScriptType.Class,
+                Symbol = className,
+                OwnerLibrary = libraryName,
+                LoadOrder = _loadOrder++,
+                Module = _packager.ConvertToDto(stackModule)
+            };
+
+            package.Scripts.Add(scriptDto);
         }
 
         private void CollectDependencies(SourceCode source)
