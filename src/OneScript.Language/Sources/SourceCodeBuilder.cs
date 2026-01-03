@@ -16,6 +16,7 @@ namespace OneScript.Sources
         private ICodeSource _source;
         private string _moduleName;
         private string _ownerPackageId;
+        private bool _isCompiled;
 
         private SourceCodeBuilder()
         {
@@ -41,6 +42,15 @@ namespace OneScript.Sources
             _ownerPackageId = packageId;
             return this;
         }
+        
+        /// <summary>
+        /// Помечает исходный код как загруженный из скомпилированного файла.
+        /// </summary>
+        public SourceCodeBuilder AsCompiled()
+        {
+            _isCompiled = true;
+            return this;
+        }
 
         public SourceCode Build()
         {
@@ -50,7 +60,7 @@ namespace OneScript.Sources
             if (_moduleName == default)
                 _moduleName = _source.Location;
 
-            return new SourceCode(_moduleName, _source, _ownerPackageId);
+            return new SourceCode(_moduleName, _source, _ownerPackageId, _isCompiled);
         }
 
         public static SourceCodeBuilder Create() => new SourceCodeBuilder();

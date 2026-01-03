@@ -17,10 +17,12 @@ namespace ScriptEngine.Machine.Contexts
     public class ScriptInformationContext : AutoContext<ScriptInformationContext>
     {
         private readonly string _origin;
+        private readonly bool _isCompiled;
 
         public ScriptInformationContext(SourceCode codeSrc)
         {
             _origin = codeSrc.Location;
+            _isCompiled = codeSrc.IsCompiled;
         }
 
         /// <summary>
@@ -48,6 +50,19 @@ namespace ScriptEngine.Machine.Contexts
                 {
                     return System.IO.Directory.GetCurrentDirectory();
                 }
+            }
+        }
+        
+        /// <summary>
+        /// Признак того, что сценарий загружен из скомпилированного кода (.osc, .oslib).
+        /// Позволяет в прикладном коде определить способ вычисления путей к ресурсам.
+        /// </summary>
+        [ContextProperty("ЭтоСкомпилированныйКод", "IsCompiledCode")]
+        public bool IsCompiledCode
+        {
+            get
+            {
+                return _isCompiled;
             }
         }
 

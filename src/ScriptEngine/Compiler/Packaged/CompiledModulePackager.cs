@@ -333,12 +333,14 @@ namespace ScriptEngine.Compiler.Packaged
                 EntryMethodIndex = dto.EntryMethodIndex
             };
 
-            // Создаём фиктивный SourceCode для модуля
+            // Создаём SourceCode для модуля с оригинальным путём к файлу
+            // Это позволяет относительным путям к ресурсам (DLL и т.д.) работать корректно
             if (!string.IsNullOrEmpty(dto.SourceFileName))
             {
                 module.Source = SourceCodeBuilder.Create()
                     .FromSource(new CompiledCodeSource(dto.SourceFileName))
                     .WithName(dto.SourceFileName)
+                    .AsCompiled()
                     .Build();
             }
 

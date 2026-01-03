@@ -18,11 +18,12 @@ namespace OneScript.Sources
 
         private string _code = null;
 
-        internal SourceCode(string sourceName, ICodeSource source, string ownerPackageId = null)
+        internal SourceCode(string sourceName, ICodeSource source, string ownerPackageId = null, bool isCompiled = false)
         {
             _source = source;
             Name = sourceName;
             OwnerPackageId = ownerPackageId;
+            IsCompiled = isCompiled;
         }
 
         public SourceCodeIterator CreateIterator()
@@ -41,6 +42,11 @@ namespace OneScript.Sources
         /// Идентификатор пакета-владельца. null если модуль не принадлежит библиотеке.
         /// </summary>
         public string OwnerPackageId { get; }
+        
+        /// <summary>
+        /// Признак того, что модуль загружен из скомпилированного кода (.osc, .oslib)
+        /// </summary>
+        public bool IsCompiled { get; }
 
         public string GetSourceCode()
         {
