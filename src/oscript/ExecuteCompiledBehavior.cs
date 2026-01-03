@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.IO;
-using OneScript.Language.Sources;
 using OneScript.Sources;
 using OneScript.StandardLibrary;
 using ScriptEngine;
@@ -51,18 +50,14 @@ namespace oscript
                 var source = SourceCodeBuilder.Create()
                     .FromSource(new CompiledCodeSource(_path))
                     .WithName(Path.GetFileName(_path))
+                    .AsCompiled()
                     .Build();
 
                 hostedScript.SetGlobalEnvironment(this, source);
 
                 // Загружаем бандл
                 var bundleLoader = new BundleLoader(hostedScript.Engine);
-                LoadedBundle bundle;
-
-                using (var stream = File.OpenRead(_path))
-                {
-                    bundle = bundleLoader.Load(stream);
-                }
+                var bundle = bundleLoader.LoadFromFile(_path);
 
                 if (bundle.EntryModule == null)
                 {
@@ -116,20 +111,5 @@ namespace oscript
         {
             Console.Error.WriteLine(text);
         }
-    }
-
-    /// <summary>
-    /// Источник кода для скомпилированного модуля
-    /// </summary>
-    internal class CompiledCodeSource : ICodeSource
-    {
-        public CompiledCodeSource(string location)
-        {
-            Location = location;
-        }
-
-        public string Location { get; }
-
-        public string GetSourceCode() => "<Source code is not available for compiled modules>";
     }
 }

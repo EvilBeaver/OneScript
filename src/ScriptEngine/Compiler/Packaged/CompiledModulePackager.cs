@@ -318,6 +318,18 @@ namespace ScriptEngine.Compiler.Packaged
         /// </summary>
         public StackRuntimeModule ConvertFromDto(CompiledModuleDto dto, IRuntimeEnvironment environment)
         {
+            return ConvertFromDto(dto, environment, null);
+        }
+
+        /// <summary>
+        /// Конвертирует DTO обратно в модуль с возможностью переопределить путь к источнику.
+        /// Используется для бандлов, где все модули должны ссылаться на .osc файл.
+        /// </summary>
+        /// <param name="dto">DTO модуля</param>
+        /// <param name="environment">Окружение выполнения</param>
+        /// <param name="overrideSourcePath">Путь к скомпилированному файлу (для бандлов — путь к .osc)</param>
+        public StackRuntimeModule ConvertFromDto(CompiledModuleDto dto, IRuntimeEnvironment environment, string overrideSourcePath)
+        {
             if (dto.MagicHeader != CompiledModuleDto.Magic)
             {
                 throw new InvalidOperationException("Invalid compiled module format");
@@ -333,13 +345,15 @@ namespace ScriptEngine.Compiler.Packaged
                 EntryMethodIndex = dto.EntryMethodIndex
             };
 
-            // Создаём SourceCode для модуля с оригинальным путём к файлу
-            // Это позволяет относительным путям к ресурсам (DLL и т.д.) работать корректно
-            if (!string.IsNullOrEmpty(dto.SourceFileName))
+            // Создаём SourceCode для модуля
+            // Для бандлов используем путь к .osc файлу (overrideSourcePath)
+            // Для библиотек используем оригинальный путь (dto.SourceFileName)
+            var sourcePath = overrideSourcePath ?? dto.SourceFileName;
+            if (!string.IsNullOrEmpty(sourcePath))
             {
                 module.Source = SourceCodeBuilder.Create()
-                    .FromSource(new CompiledCodeSource(dto.SourceFileName))
-                    .WithName(dto.SourceFileName)
+                    .FromSource(new CompiledCodeSource(sourcePath))
+                    .WithName(dto.SourceFileName ?? sourcePath)
                     .AsCompiled()
                     .Build();
             }
@@ -571,7 +585,7 @@ namespace ScriptEngine.Compiler.Packaged
     /// <summary>
     /// Фиктивный источник кода для скомпилированных модулей
     /// </summary>
-    internal class CompiledCodeSource : ICodeSource
+    public class CompiledCodeSource : ICodeSource
     {
         private readonly string _location;
 

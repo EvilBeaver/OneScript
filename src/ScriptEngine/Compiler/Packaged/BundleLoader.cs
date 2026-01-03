@@ -25,6 +25,7 @@ namespace ScriptEngine.Compiler.Packaged
         private readonly ScriptingEngine _engine;
         private readonly CompiledModulePackager _packager;
         private readonly Dictionary<string, IAttachableContext> _loadedModules;
+        private string _bundlePath;
 
         public BundleLoader(ScriptingEngine engine)
         {
@@ -49,6 +50,18 @@ namespace ScriptEngine.Compiler.Packaged
         {
             var package = MessagePackSerializer.Deserialize<CompiledPackageDto>(data);
             return LoadPackage(package);
+        }
+
+        /// <summary>
+        /// Загружает бандл из файла
+        /// </summary>
+        public LoadedBundle LoadFromFile(string path)
+        {
+            _bundlePath = Path.GetFullPath(path);
+            using (var stream = File.OpenRead(path))
+            {
+                return Load(stream);
+            }
         }
 
         private LoadedBundle LoadPackage(CompiledPackageDto package)
@@ -86,7 +99,8 @@ namespace ScriptEngine.Compiler.Packaged
         {
             // Для модулей библиотек используем расширенный lookup, включающий уже загруженные модули
             var env = _engine.Environment;
-            var module = _packager.ConvertFromDto(scriptDto.Module, env);
+            // Для бандла все модули ссылаются на .osc файл
+            var module = _packager.ConvertFromDto(scriptDto.Module, env, _bundlePath);
 
             switch (scriptDto.Type)
             {
@@ -111,7 +125,8 @@ namespace ScriptEngine.Compiler.Packaged
         {
             // Entry module загружается с учётом всех уже загруженных модулей
             var env = _engine.Environment;
-            var module = _packager.ConvertFromDto(scriptDto.Module, env);
+            // Для бандла entry module тоже ссылается на .osc файл
+            var module = _packager.ConvertFromDto(scriptDto.Module, env, _bundlePath);
             result.EntryModule = module;
         }
 
