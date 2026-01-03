@@ -50,7 +50,7 @@ namespace oscript
             
             initializers.Add("-measure", MeasureBehavior.Create);
             initializers.Add("-compile", ShowCompiledBehavior.Create);
-            initializers.Add("-save", SaveCompiledBehavior.Create);
+            initializers.Add("-build", SaveCompiledBehavior.Create);
             initializers.Add("-check", CheckSyntaxBehavior.Create);
             initializers.Add("-cgi", h => new CgiBehavior());
             initializers.Add("-version", h => new ShowVersionBehavior());

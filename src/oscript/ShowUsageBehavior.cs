@@ -24,8 +24,8 @@ namespace oscript
             Output.WriteLine("Modes:");
             Output.WriteLine($"  {"-measure",modeWidth} Measures script execution time.");
             Output.WriteLine($"  {"-compile",modeWidth} Shows compiled module without execution.");
-            Output.WriteLine($"  {"-save",modeWidth} Compiles script and saves to .osc file.");
-            Output.WriteLine($"  {"",modeWidth}   Usage: -save <script.os> [output.osc]");
+            Output.WriteLine($"  {"-build",modeWidth} Compiles script and saves to .osc file.");
+            Output.WriteLine($"  {"",modeWidth}   Usage: -build <script.os> [output.osc]");
             Output.WriteLine($"  {"-check",modeWidth} Provides syntax check.");
             Output.WriteLine($"  {"",modeWidth}   Options:");
             Output.WriteLine($"  {"",modeWidth}     {"-cgi",subOptionWidth} Syntax check in CGI-mode.");
