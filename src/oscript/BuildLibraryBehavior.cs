@@ -37,12 +37,23 @@ namespace oscript
 
             try
             {
+                // Создаём скрипт-заглушку который загружает библиотеку
+                var loaderScript = $"#Использовать \"{_libraryPath.Replace("\\", "\\\\")}\"";
+                
                 var builder = ConsoleHostBuilder.Create(_libraryPath);
                 var hostedScript = ConsoleHostBuilder.Build(builder);
                 hostedScript.Initialize();
 
-                var libraryBuilder = new LibraryBuilder(hostedScript.Engine, hostedScript.GetCompilerService());
-                var package = libraryBuilder.Build(_libraryPath, hostedScript.Engine.NewProcess());
+                var process = hostedScript.Engine.NewProcess();
+                var compiler = hostedScript.GetCompilerService();
+
+                // Компилируем скрипт-заглушку — это загрузит библиотеку в контекст
+                var loaderSource = hostedScript.Engine.Loader.FromString(loaderScript);
+                compiler.Compile(loaderSource, process);
+
+                // Теперь все модули библиотеки в контексте, можно компилировать
+                var libraryBuilder = new LibraryBuilder(hostedScript.Engine, compiler);
+                var package = libraryBuilder.Build(_libraryPath, process);
 
                 var outputPath = string.IsNullOrEmpty(_outputPath)
                     ? _libraryPath + ".oslib"
