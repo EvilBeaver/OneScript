@@ -16,6 +16,7 @@ using OneScript.Contexts.Internal;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Compiler.Packaged
 {
@@ -24,6 +25,17 @@ namespace ScriptEngine.Compiler.Packaged
     /// </summary>
     public class CompiledModulePackager
     {
+        private Dictionary<IAttachableContext, string> _contextSymbols;
+
+        /// <summary>
+        /// Устанавливает маппинг контекстов на их символьные имена.
+        /// Используется при сборке бандла.
+        /// </summary>
+        public void SetContextSymbols(Dictionary<IAttachableContext, string> symbols)
+        {
+            _contextSymbols = symbols;
+        }
+
         /// <summary>
         /// Сериализует модуль в поток
         /// </summary>
@@ -60,7 +72,10 @@ namespace ScriptEngine.Compiler.Packaged
             return ConvertFromDto(dto, environment);
         }
 
-        private CompiledModuleDto ConvertToDto(StackRuntimeModule module)
+        /// <summary>
+        /// Конвертирует модуль в DTO (используется также BundleBuilder)
+        /// </summary>
+        public CompiledModuleDto ConvertToDto(StackRuntimeModule module)
         {
             var dto = new CompiledModuleDto
             {
@@ -269,6 +284,12 @@ namespace ScriptEngine.Compiler.Packaged
             {
                 // Сохраняем имя контекста для восстановления при загрузке
                 dto.ContextName = GetContextIdentifier(binding.Target);
+                
+                // Для PropertyBag сохраняем также имя свойства
+                if (binding.Target is PropertyBag propertyBag)
+                {
+                    dto.MemberName = propertyBag.GetPropName(binding.MemberNumber);
+                }
             }
 
             return dto;
@@ -276,11 +297,24 @@ namespace ScriptEngine.Compiler.Packaged
 
         private string GetContextIdentifier(IAttachableContext context)
         {
-            // Используем полное имя типа как идентификатор контекста
+            // Для пользовательских модулей используем специальный префикс + символьное имя
+            if (context is UserScriptContextInstance)
+            {
+                // Пытаемся найти символьное имя модуля
+                if (_contextSymbols != null && _contextSymbols.TryGetValue(context, out var symbol))
+                {
+                    return "$UserModule:" + symbol;
+                }
+            }
+
+            // Для системных контекстов используем полное имя типа
             return context.GetType().FullName;
         }
 
-        private StackRuntimeModule ConvertFromDto(CompiledModuleDto dto, IRuntimeEnvironment environment)
+        /// <summary>
+        /// Конвертирует DTO обратно в модуль (используется также BundleLoader)
+        /// </summary>
+        public StackRuntimeModule ConvertFromDto(CompiledModuleDto dto, IRuntimeEnvironment environment)
         {
             if (dto.MagicHeader != CompiledModuleDto.Magic)
             {
@@ -338,9 +372,9 @@ namespace ScriptEngine.Compiler.Packaged
             }
 
             // Methods
-            foreach (var methodDto in dto.Methods)
+            for (int i = 0; i < dto.Methods.Count; i++)
             {
-                module.Methods.Add(ConvertMethodFromDto(methodDto, module.ClassType));
+                module.Methods.Add(ConvertMethodFromDto(dto.Methods[i], module.ClassType, i));
             }
 
             // Module attributes
@@ -368,14 +402,33 @@ namespace ScriptEngine.Compiler.Packaged
 
         private Dictionary<string, IAttachableContext> BuildContextLookup(IRuntimeEnvironment environment)
         {
-            var lookup = new Dictionary<string, IAttachableContext>();
+            var lookup = new Dictionary<string, IAttachableContext>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var context in environment.AttachedContexts)
             {
-                var key = context.GetType().FullName;
-                if (!string.IsNullOrEmpty(key) && !lookup.ContainsKey(key))
+                // Для системных контекстов — по имени типа
+                var typeKey = context.GetType().FullName;
+                if (!string.IsNullOrEmpty(typeKey) && !lookup.ContainsKey(typeKey))
                 {
-                    lookup[key] = context;
+                    lookup[typeKey] = context;
+                }
+
+                // Для PropertyBag — добавляем пользовательские модули по символьным именам
+                if (context is PropertyBag propertyBag)
+                {
+                    for (int i = 0; i < propertyBag.Count; i++)
+                    {
+                        var value = propertyBag.GetPropValue(i);
+                        if (value is IAttachableContext attachable)
+                        {
+                            var symbol = propertyBag.GetPropName(i);
+                            var userModuleKey = "$UserModule:" + symbol;
+                            if (!lookup.ContainsKey(userModuleKey))
+                            {
+                                lookup[userModuleKey] = attachable;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -396,6 +449,12 @@ namespace ScriptEngine.Compiler.Packaged
                 if (contextLookup.TryGetValue(dto.ContextName, out var context))
                 {
                     binding.Target = context;
+                    
+                    // Для PropertyBag восстанавливаем MemberNumber по имени
+                    if (context is PropertyBag propertyBag && !string.IsNullOrEmpty(dto.MemberName))
+                    {
+                        binding.MemberNumber = propertyBag.GetPropertyNumber(dto.MemberName);
+                    }
                 }
                 else
                 {
@@ -423,7 +482,7 @@ namespace ScriptEngine.Compiler.Packaged
             return builder;
         }
 
-        private BslScriptMethodInfo ConvertMethodFromDto(MethodDto dto, Type ownerType)
+        private BslScriptMethodInfo ConvertMethodFromDto(MethodDto dto, Type ownerType, int index)
         {
             var builder = MachineMethodInfo.Create();
             var buildable = (IBuildableMember)builder;
@@ -433,6 +492,10 @@ namespace ScriptEngine.Compiler.Packaged
             buildable.SetAlias(dto.Alias);
             buildable.SetExportFlag(dto.IsExport);
             buildable.SetDeclaringType(ownerType);
+            
+            // DispatchId = METHOD_COUNT + index
+            // Для UserScriptContextInstance METHOD_COUNT = 1
+            buildable.SetDispatchIndex(1 + index);
 
             if (dto.IsFunction)
             {

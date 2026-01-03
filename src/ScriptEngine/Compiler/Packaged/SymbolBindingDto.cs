@@ -40,5 +40,12 @@ namespace ScriptEngine.Compiler.Packaged
         /// </summary>
         [Key(3)]
         public string ContextName { get; set; }
+
+        /// <summary>
+        /// Имя свойства/метода в контексте (для PropertyBag).
+        /// Используется для восстановления MemberNumber при загрузке.
+        /// </summary>
+        [Key(4)]
+        public string MemberName { get; set; }
     }
 }

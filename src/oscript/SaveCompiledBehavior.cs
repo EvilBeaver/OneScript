@@ -15,7 +15,7 @@ using ScriptEngine.Machine;
 namespace oscript
 {
     /// <summary>
-    /// Поведение для сохранения скомпилированного модуля в файл
+    /// Поведение для сохранения скомпилированного модуля/бандла в файл
     /// </summary>
     internal class SaveCompiledBehavior : AppBehavior
     {
@@ -47,29 +47,33 @@ namespace oscript
                 hostedScript.SetGlobalEnvironment(new DoNothingHost(), source);
 
                 var process = hostedScript.Engine.NewProcess();
-                var module = compiler.Compile(source, process);
 
-                if (module is StackRuntimeModule stackModule)
+                // Используем BundleBuilder для сборки всех зависимостей
+                var bundleBuilder = new BundleBuilder(hostedScript.Engine, compiler);
+                var package = bundleBuilder.Build(source, process);
+
+                var outputPath = string.IsNullOrEmpty(_outputPath)
+                    ? Path.ChangeExtension(_sourcePath, ".osc")
+                    : _outputPath;
+
+                using (var stream = File.Create(outputPath))
                 {
-                    var packager = new CompiledModulePackager();
-                    
-                    var outputPath = string.IsNullOrEmpty(_outputPath) 
-                        ? Path.ChangeExtension(_sourcePath, ".osc")
-                        : _outputPath;
+                    bundleBuilder.Save(stream, package);
+                }
 
-                    using (var stream = File.Create(outputPath))
-                    {
-                        packager.Save(stream, stackModule);
-                    }
-
-                    Output.WriteLine($"Compiled module saved to: {outputPath}");
-                    return 0;
+                var moduleCount = package.Scripts.Count;
+                var libModules = moduleCount - 1; // минус entry point
+                
+                if (libModules > 0)
+                {
+                    Output.WriteLine($"Bundle saved to: {outputPath} ({libModules} library module(s) included)");
                 }
                 else
                 {
-                    Output.WriteLine("Only stack runtime modules can be saved. Native modules are not supported.");
-                    return 1;
+                    Output.WriteLine($"Compiled module saved to: {outputPath}");
                 }
+                
+                return 0;
             }
             catch (ScriptException e)
             {

@@ -18,7 +18,7 @@ using ScriptEngine.Machine;
 namespace oscript
 {
     /// <summary>
-    /// Поведение для выполнения скомпилированного модуля (.osc файла)
+    /// Поведение для выполнения скомпилированного бандла (.osc файла)
     /// </summary>
     internal class ExecuteCompiledBehavior : AppBehavior, IHostApplication, ISystemLogWriter
     {
@@ -47,15 +47,6 @@ namespace oscript
                 var hostedScript = ConsoleHostBuilder.Build(builder);
                 hostedScript.Initialize();
 
-                // Загружаем скомпилированный модуль
-                var packager = new CompiledModulePackager();
-                StackRuntimeModule module;
-
-                using (var stream = File.OpenRead(_path))
-                {
-                    module = packager.Load(stream, hostedScript.Engine.Environment);
-                }
-
                 // Создаём source для контекста
                 var source = SourceCodeBuilder.Create()
                     .FromSource(new CompiledCodeSource(_path))
@@ -64,9 +55,24 @@ namespace oscript
 
                 hostedScript.SetGlobalEnvironment(this, source);
 
+                // Загружаем бандл
+                var bundleLoader = new BundleLoader(hostedScript.Engine);
+                LoadedBundle bundle;
+
+                using (var stream = File.OpenRead(_path))
+                {
+                    bundle = bundleLoader.Load(stream);
+                }
+
+                if (bundle.EntryModule == null)
+                {
+                    Echo("Bundle does not contain entry point");
+                    return 1;
+                }
+
                 // Создаём и запускаем процесс
                 var bslProcess = hostedScript.Engine.NewProcess();
-                var scriptObject = hostedScript.Engine.NewObject(module, bslProcess);
+                hostedScript.Engine.NewObject(bundle.EntryModule, bslProcess);
 
                 hostedScript.Dispose();
                 return 0;
