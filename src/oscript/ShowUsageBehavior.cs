@@ -26,6 +26,8 @@ namespace oscript
             Output.WriteLine($"  {"-compile",modeWidth} Shows compiled module without execution.");
             Output.WriteLine($"  {"-build",modeWidth} Compiles script and saves to .osc file.");
             Output.WriteLine($"  {"",modeWidth}   Usage: -build <script.os> [output.osc]");
+            Output.WriteLine($"  {"-buildlib",modeWidth} Compiles library folder to .oslib file.");
+            Output.WriteLine($"  {"",modeWidth}   Usage: -buildlib <library_path> [output.oslib]");
             Output.WriteLine($"  {"-check",modeWidth} Provides syntax check.");
             Output.WriteLine($"  {"",modeWidth}   Options:");
             Output.WriteLine($"  {"",modeWidth}     {"-cgi",subOptionWidth} Syntax check in CGI-mode.");

@@ -13,6 +13,8 @@ using MessagePack;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Contexts.Internal;
+using OneScript.Language.Sources;
+using OneScript.Sources;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -331,6 +333,15 @@ namespace ScriptEngine.Compiler.Packaged
                 EntryMethodIndex = dto.EntryMethodIndex
             };
 
+            // Создаём фиктивный SourceCode для модуля
+            if (!string.IsNullOrEmpty(dto.SourceFileName))
+            {
+                module.Source = SourceCodeBuilder.Create()
+                    .FromSource(new CompiledCodeSource(dto.SourceFileName))
+                    .WithName(dto.SourceFileName)
+                    .Build();
+            }
+
             // Constants
             foreach (var constDto in dto.Constants)
             {
@@ -552,6 +563,27 @@ namespace ScriptEngine.Compiler.Packaged
             }
 
             return new BslAnnotationAttribute(dto.Name);
+        }
+    }
+
+    /// <summary>
+    /// Фиктивный источник кода для скомпилированных модулей
+    /// </summary>
+    internal class CompiledCodeSource : ICodeSource
+    {
+        private readonly string _location;
+
+        public CompiledCodeSource(string location)
+        {
+            _location = location;
+        }
+
+        public string Location => _location;
+
+        public string GetSourceCode()
+        {
+            // Исходный код недоступен для скомпилированных модулей
+            return string.Empty;
         }
     }
 }

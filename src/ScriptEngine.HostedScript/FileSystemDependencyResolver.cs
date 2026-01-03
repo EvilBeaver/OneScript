@@ -15,12 +15,15 @@ using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Localization;
 using OneScript.Sources;
+using ScriptEngine.Compiler.Packaged;
 
 namespace ScriptEngine.HostedScript
 {
     public class FileSystemDependencyResolver : IDependencyResolver
     {
         public const string PREDEFINED_LOADER_FILE = "package-loader.os";
+        public const string COMPILED_LIBRARY_EXTENSION = ".oslib";
+        
         private readonly List<Library> _libs = new List<Library>();
         private LibraryLoader _defaultLoader;
         private object _defaultLoaderLocker = new object();
@@ -94,15 +97,29 @@ namespace ScriptEngine.HostedScript
 
         private PackageInfo LoadByName(string libraryName, IBslProcess process)
         {
+            // Сначала ищем скомпилированную библиотеку (.oslib)
             foreach (var path in SearchDirectories)
             {
-                if(!Directory.Exists(path))
+                if (!Directory.Exists(path))
                     continue;
 
+                var oslibPath = Path.Combine(path, libraryName + COMPILED_LIBRARY_EXTENSION);
+                if (File.Exists(oslibPath))
+                {
+                    return LoadCompiledLibrary(oslibPath, process);
+                }
+
                 var libraryPath = Path.Combine(path, libraryName);
-                var loadAttempt = LoadByPath(libraryPath, process); 
+                var loadAttempt = LoadByPath(libraryPath, process);
                 if (loadAttempt != null)
                     return loadAttempt;
+            }
+
+            // Проверяем в корневой папке
+            var rootOslibPath = Path.Combine(LibraryRoot, libraryName + COMPILED_LIBRARY_EXTENSION);
+            if (File.Exists(rootOslibPath))
+            {
+                return LoadCompiledLibrary(rootOslibPath, process);
             }
 
             var rootPath = Path.Combine(LibraryRoot, libraryName);
@@ -128,6 +145,13 @@ namespace ScriptEngine.HostedScript
             else
             {
                 realPath = libraryPath;
+            }
+
+            // Сначала проверяем скомпилированную библиотеку (.oslib)
+            var oslibPath = realPath + COMPILED_LIBRARY_EXTENSION;
+            if (File.Exists(oslibPath))
+            {
+                return LoadCompiledLibrary(oslibPath, process);
             }
 
             return LoadByPath(realPath, process);
@@ -276,6 +300,60 @@ namespace ScriptEngine.HostedScript
         private static string GetLibraryId(string libraryPath)
         {
             return Path.GetFullPath(libraryPath);
+        }
+
+        private PackageInfo LoadCompiledLibrary(string oslibPath, IBslProcess process)
+        {
+            var id = GetLibraryId(oslibPath);
+            var existedLib = _libs.FirstOrDefault(x => x.id == id);
+            if (existedLib != null)
+            {
+                if (existedLib.state == ProcessingState.Discovered)
+                {
+                    string libStack = ListToStringStack(_libs, id);
+                    throw new DependencyResolveException(
+                        new BilingualString(
+                            $"Ошибка загрузки библиотеки {id}. Обнаружены циклические зависимости.\n",
+                            $"Error loading library {id}. Circular dependencies found.\n") + libStack);
+                }
+
+                return existedLib.loadingResult;
+            }
+
+            var newLib = new Library { id = id, state = ProcessingState.Discovered };
+            int newLibIndex = _libs.Count;
+
+            try
+            {
+                _libs.Add(newLib);
+
+                var loader = new Compiler.Packaged.LibraryLoader(Engine);
+                var loadedLib = loader.LoadFromFile(oslibPath, process);
+
+                // Сначала загружаем зависимости
+                foreach (var dep in loadedLib.Dependencies)
+                {
+                    var depPackage = LoadByName(dep, process);
+                    if (depPackage == null)
+                    {
+                        throw new DependencyResolveException(
+                            new BilingualString(
+                                $"Не найдена зависимость '{dep}' для библиотеки '{loadedLib.Name}'",
+                                $"Dependency '{dep}' not found for library '{loadedLib.Name}'"));
+                    }
+                }
+
+                var package = new PackageInfo(oslibPath, loadedLib.Name);
+                newLib.state = ProcessingState.Processed;
+                newLib.loadingResult = package;
+
+                return package;
+            }
+            catch (Exception)
+            {
+                _libs.RemoveAt(newLibIndex);
+                throw;
+            }
         }
         
         private static bool PathHasInvalidChars(string path)
