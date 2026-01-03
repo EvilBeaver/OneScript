@@ -31,6 +31,8 @@ namespace OneScript.Contexts
             _name = name;
         }
 
+        public static BslScriptFieldInfo Create(string name = null) => new BslScriptFieldInfo(name);
+
         public override Type DeclaringType => _declaringType;
         public override string Name => _name;
         public override Type ReflectedType => _declaringType;

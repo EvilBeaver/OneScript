@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace OneScript.Contexts.Internal
 {
-    internal interface IBuildableMember
+    public interface IBuildableMember
     {
         void SetDeclaringType(Type type);
         void SetName(string name);
@@ -21,12 +21,12 @@ namespace OneScript.Contexts.Internal
         void SetDispatchIndex(int index);
     }
 
-    internal interface IBuildableMethod : IBuildableMember
+    public interface IBuildableMethod : IBuildableMember
     {
         void SetParameters(IEnumerable<BslParameterInfo> parameters);
     }
     
-    internal interface IBuildableProperty : IBuildableMember
+    public interface IBuildableProperty : IBuildableMember
     {
         void CanRead(bool canRead);
         void CanWrite(bool canWrite);

@@ -6,12 +6,15 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace oscript
 {
     static class BehaviorSelector
     {
+        private const string CompiledExtension = ".osc";
+
         public static AppBehavior Select(string[] cmdLineArgs)
         {
             var helper = new CmdLineHelper(cmdLineArgs);
@@ -23,6 +26,13 @@ namespace oscript
             if (!arg.StartsWith("-"))
             {
                 var path = arg;
+                
+                // Автоматически определяем тип файла по расширению
+                if (Path.GetExtension(path).Equals(CompiledExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new ExecuteCompiledBehavior(path, helper.Tail());
+                }
+                
                 return new ExecuteScriptBehavior(path, helper.Tail());
             }
 
@@ -40,6 +50,7 @@ namespace oscript
             
             initializers.Add("-measure", MeasureBehavior.Create);
             initializers.Add("-compile", ShowCompiledBehavior.Create);
+            initializers.Add("-save", SaveCompiledBehavior.Create);
             initializers.Add("-check", CheckSyntaxBehavior.Create);
             initializers.Add("-cgi", h => new CgiBehavior());
             initializers.Add("-version", h => new ShowVersionBehavior());

@@ -10,11 +10,17 @@ using OneScript.Contexts;
 
 namespace ScriptEngine.Machine
 {
-    internal class MachineMethodInfo : BslScriptMethodInfo
+    public class MachineMethodInfo : BslScriptMethodInfo
     {
         private MachineMethod _method;
+
+        internal MachineMethodInfo()
+        {
+        }
+
+        public static MachineMethodInfo Create() => new MachineMethodInfo();
         
-        internal void SetRuntimeParameters(int entryPoint, string[] locals)
+        public void SetRuntimeParameters(int entryPoint, string[] locals)
         {
             _method = new MachineMethod
             {

@@ -23,6 +23,8 @@ namespace OneScript.Contexts
             AttrsImpl = ParameterAttributes.In;
             ClassImpl = typeof(BslValue);
         }
+
+        public static BslParameterInfo Create() => new BslParameterInfo();
         
         #region Attributes Infrastructure
 
@@ -97,6 +99,22 @@ namespace OneScript.Contexts
         {
             DefaultValueImpl = val;
             AttrsImpl |= ParameterAttributes.HasDefault | ParameterAttributes.Optional;
+        }
+
+        public void SetDefaultValueIndex(int index)
+        {
+            ConstantValueIndex = index;
+            AttrsImpl |= ParameterAttributes.HasDefault | ParameterAttributes.Optional;
+        }
+
+        public void SetByValue(bool byVal)
+        {
+            ExplicitByVal = byVal;
+        }
+
+        public void SetPosition(int position)
+        {
+            PositionImpl = position;
         }
 
         internal void SetOwner(MemberInfo parent)

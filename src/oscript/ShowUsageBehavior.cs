@@ -24,6 +24,8 @@ namespace oscript
             Output.WriteLine("Modes:");
             Output.WriteLine($"  {"-measure",modeWidth} Measures script execution time.");
             Output.WriteLine($"  {"-compile",modeWidth} Shows compiled module without execution.");
+            Output.WriteLine($"  {"-save",modeWidth} Compiles script and saves to .osc file.");
+            Output.WriteLine($"  {"",modeWidth}   Usage: -save <script.os> [output.osc]");
             Output.WriteLine($"  {"-check",modeWidth} Provides syntax check.");
             Output.WriteLine($"  {"",modeWidth}   Options:");
             Output.WriteLine($"  {"",modeWidth}     {"-cgi",subOptionWidth} Syntax check in CGI-mode.");
@@ -45,6 +47,11 @@ namespace oscript
             Output.WriteLine("CGI Mode:");
             Output.WriteLine("  oscript.exe -cgi <script_path> [script_arguments...]");
             Output.WriteLine("  Runs as CGI application under HTTP-server.");
+            Output.WriteLine();
+            
+            Output.WriteLine("Compiled Modules:");
+            Output.WriteLine("  oscript.exe script.osc [arguments...]");
+            Output.WriteLine("  Runs pre-compiled module (.osc file) directly.");
 
 			return 0;
 		}
