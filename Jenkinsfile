@@ -152,10 +152,6 @@ pipeline {
             parallel {
                 stage('Windows distribution'){
                     agent { label 'windows' }
-
-                    environment {
-                        InnoSetupPath = "${tool 'InnoSetup'}"
-                    }
                     
                     steps {
                         ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
@@ -168,17 +164,45 @@ pipeline {
                             unstash 'builtNativeApi'
                             script
                             {
+                                // Build distributions without installer (installer is built on Linux via Docker)
                                 if (env.BRANCH_NAME == "preview") {
                                     echo 'Building preview'
-                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions /p:Suffix=-pre%BUILD_NUMBER%"
+                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PrepareDistributionContent;CreateZip;CreateNuget /p:Suffix=-pre%BUILD_NUMBER%"
                                 }
                                 else{
-                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:CreateDistributions"
+                                    bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PrepareDistributionContent;CreateZip;CreateNuget"
                                 }
                             }
                             archiveArtifacts artifacts: 'built/**', fingerprint: true
                             stash includes: 'built/**', name: 'winDist'
                         }
+                    }
+                }
+
+                stage('Windows installer') {
+                    agent {
+                        docker {
+                            image 'amake/innosetup'
+                            label 'master'
+                        }
+                    }
+
+                    steps {
+                        unstash 'buildResults'
+                        unstash 'builtNativeApi'
+                        
+                        dir('install') {
+                            sh '''
+                            # Build x86 installer
+                            iscc install.iss /o"../built" /DSuffix=x86
+                            
+                            # Build x64 installer
+                            iscc install.iss /o"../built" /DSuffix=x64
+                            '''.stripIndent()
+                        }
+                        
+                        archiveArtifacts artifacts: 'built/*.exe', fingerprint: true
+                        stash includes: 'built/*.exe', name: 'winInstallers'
                     }
                 }
 
@@ -230,6 +254,7 @@ pipeline {
             steps {
                 
                 unstash 'winDist'
+                unstash 'winInstallers'
                 unstash 'debian'
                 unstash 'redhat'
                 unstash 'vsix'
