@@ -66,4 +66,3 @@ tests/tests.xml
 src/oscript/Properties/launchSettings\.json
 
 *.DotSettings
-*.ospx
