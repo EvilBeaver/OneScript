@@ -26,7 +26,7 @@ namespace OneScript.StandardLibrary
         {
             // Strip null characters that can be added by Windows WebDAV client
             // to maintain compatibility with 1.x behavior
-            name = StripNullCharacters(name);
+            name = PathHelper.StripNullCharacters(name);
             
             if (String.IsNullOrWhiteSpace(name))
             {
@@ -38,14 +38,6 @@ namespace OneScript.StandardLibrary
             }
             
             _givenName = name;
-        }
-        
-        private static string StripNullCharacters(string path)
-        {
-            if (path == null)
-                return null;
-                
-            return path.Replace("\0", "");
         }
         
         private string LazyField(ref string value, Func<string, string> algo)

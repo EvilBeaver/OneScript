@@ -140,8 +140,8 @@ namespace OneScript.StandardLibrary
         {
             // Strip null characters that can be added by Windows WebDAV client
             // to maintain compatibility with 1.x behavior
-            dir = StripNullCharacters(dir);
-            mask = StripNullCharacters(mask);
+            dir = PathHelper.StripNullCharacters(dir);
+            mask = PathHelper.StripNullCharacters(mask);
             
             if (mask == null)
             {
@@ -168,14 +168,6 @@ namespace OneScript.StandardLibrary
 
             return new ArrayImpl(filesFound);
 
-        }
-        
-        private static string StripNullCharacters(string path)
-        {
-            if (path == null)
-                return null;
-                
-            return path.Replace("\0", "");
         }
 
         private static IEnumerable<FileContext> FindFilesV8Compatible(string dir, string mask, bool recursive)
