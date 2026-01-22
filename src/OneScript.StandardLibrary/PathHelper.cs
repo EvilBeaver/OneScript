@@ -13,18 +13,20 @@ namespace OneScript.StandardLibrary
     internal static class PathHelper
     {
         /// <summary>
-        /// Strips null characters from a path string.
-        /// This is needed because Windows WebDAV client can add null characters to paths,
+        /// Strips trailing null characters from a path string.
+        /// This is needed because Windows WebDAV client can add null characters to the end of paths,
         /// which causes ArgumentException in System.IO methods.
+        /// Only trailing null characters are removed to avoid masking potential security issues
+        /// with null characters in the middle of paths (e.g., "file.txt\0.exe").
         /// </summary>
-        /// <param name="path">Path that may contain null characters</param>
-        /// <returns>Path with null characters removed, or null if input was null</returns>
+        /// <param name="path">Path that may contain trailing null characters</param>
+        /// <returns>Path with trailing null characters removed, or null if input was null</returns>
         public static string StripNullCharacters(string path)
         {
             if (path == null)
                 return null;
                 
-            return path.Replace("\0", "");
+            return path.TrimEnd('\0');
         }
     }
 }
