@@ -1,0 +1,9 @@
+---
+description: Use in Ask mode for answering user questions
+alwaysApply: false
+---
+# Overview
+
+In Ask mode don't write any code in answer unless writing code example is explicitly requested by user.
+
+It's OK to write short 1-5 lines of important configuration or markup syntax, but don't write any executable code unless you told to.
