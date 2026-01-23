@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(MSBuildProjectDirectory)/../oscommon.targets" />
   
@@ -40,12 +40,16 @@
     <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
   </PropertyGroup>
   
-  <ItemGroup>
-    <ProjectReference Include="..\OneScript.Core\OneScript.Core.csproj" />
-    <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
-    <ProjectReference Include="..\OneScript.Native\OneScript.Native.csproj" />
-  </ItemGroup>
-  
+    <ItemGroup>
+      <ProjectReference Include="..\OneScript.Core\OneScript.Core.csproj" />
+      <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
+      <ProjectReference Include="..\OneScript.Native\OneScript.Native.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="MessagePack" Version="2.5.187" />
+    </ItemGroup>
+
   <ItemGroup>
     <Reference Include="CustomMarshalers" Condition="'$(TargetFramework)' == 'net452'" />
   </ItemGroup>
