@@ -90,7 +90,7 @@ namespace HttpMultipartParser
         /// </returns>
         public bool HasData()
         {
-            return streams.Any();
+            return streams.Count != 0;
         }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace HttpMultipartParser
                 top.Dispose();
                 streams.Pop();
 
-                if (!streams.Any())
+                if (streams.Count == 0)
                 {
                     return -1;
                 }
@@ -182,7 +182,7 @@ namespace HttpMultipartParser
             // or untill count is satisfied
             int amountRead = 0;
             BinaryReader top = streams.Peek();
-            while (amountRead < count && streams.Any())
+            while (amountRead < count && streams.Count != 0)
             {
                 int read = top.Read(buffer, index + amountRead, count - amountRead);
                 if (read == 0)
@@ -228,7 +228,7 @@ namespace HttpMultipartParser
             // or untill count is satisfied
             int amountRead = 0;
             BinaryReader top = streams.Peek();
-            while (amountRead < count && streams.Any())
+            while (amountRead < count && streams.Count != 0)
             {
                 int read = top.Read(buffer, index + amountRead, count - amountRead);
                 if (read == 0)
@@ -295,7 +295,7 @@ namespace HttpMultipartParser
                 while (amountRead == 0)
                 {
                     streams.Pop();
-                    if (!streams.Any())
+                    if (streams.Count == 0)
                     {
                         hitStreamEnd = true;
                         return builder.ToArray();
@@ -396,7 +396,7 @@ namespace HttpMultipartParser
             BinaryReader top = streams.Pop();
             top.Dispose();
 
-            return streams.Any() ? streams.Peek() : null;
+            return streams.Count != 0 ? streams.Peek() : null;
         }
 
         #endregion

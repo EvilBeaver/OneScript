@@ -26,7 +26,6 @@
         <VersionPrefix Condition="'$(VersionPrefix)' == ''">2.0.0</VersionPrefix>
         <FileVersion>$(VersionPrefix).$(BuildNumber)</FileVersion>
         <InformationalVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</InformationalVersion>
-        <InformationalVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)+$(BuildNumber)</InformationalVersion>
         <Product>1C (BSL) language runtime</Product>
         <Copyright>Copyright (c) 2021 EvilBeaver</Copyright>
     </PropertyGroup>

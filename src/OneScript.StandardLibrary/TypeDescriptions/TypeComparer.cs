@@ -14,7 +14,7 @@ namespace OneScript.StandardLibrary.TypeDescriptions
     internal class TypeComparer : IComparer<BslTypeValue>
     {
         private const string TYPE_BINARYDATA_NAME = "ДвоичныеДанные";
-        private static readonly IDictionary<TypeDescriptor, int> primitives = new Dictionary<TypeDescriptor, int>();
+        private static readonly Dictionary<TypeDescriptor, int> primitives = new Dictionary<TypeDescriptor, int>();
 
         public int Compare(BslTypeValue x, BslTypeValue y)
         {

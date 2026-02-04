@@ -28,7 +28,7 @@ namespace OneScript.StandardLibrary
     /// Как правило, рефлексия используется для проверки наличия у объекта определенных свойств/методов.
     /// В OneScript рефлексию можно применять для вызова методов объектов по именам методов.
     /// </summary>
-    [ContextClass("Рефлектор","Reflector")]
+    [ContextClass("Рефлектор", "Reflector")]
     public class ReflectorContext : AutoContext<ReflectorContext>
     {
         private readonly ITypeManager _typeManager;
@@ -56,7 +56,7 @@ namespace OneScript.StandardLibrary
                 argsToPass = arguments?.ToArray() ?? Array.Empty<IValue>();
             else
                 argsToPass = GetArgsToPass(arguments, methInfo.GetBslParameters());
- 
+
             IValue retValue = ValueFactory.Create();
             if (methInfo.IsFunction())
             {
@@ -85,7 +85,7 @@ namespace OneScript.StandardLibrary
         {
             var argValues = arguments?.ToArray() ?? Array.Empty<IValue>();
             // ArrayImpl не может (не должен!) содержать null или NotAValidValue
-            
+
             if (argValues.Length > parameters.Length)
                 throw RuntimeException.TooManyArgumentsPassed();
 
@@ -119,7 +119,7 @@ namespace OneScript.StandardLibrary
         [ContextMethod("МетодСуществует", "MethodExists")]
         public bool MethodExists(BslValue target, string methodName)
         {
-            if(target is BslObjectValue)
+            if (target is BslObjectValue)
                 return MethodExistsForObject(target.AsObject(), methodName);
 
             if (target.SystemType == BasicTypes.Type)
@@ -141,11 +141,14 @@ namespace OneScript.StandardLibrary
             }
         }
 
+
+        private const int annotNameColumnIndex = 0;
+        private const int annotParamsColumnIndex = 1;
         private static ValueTable EmptyAnnotationsTable()
         {
             var annotationsTable = new ValueTable();
-            annotationsTable.Columns.Add("Имя");
-            annotationsTable.Columns.Add("Параметры");
+            annotationsTable.Columns.AddUnchecked("Имя");
+            annotationsTable.Columns.AddUnchecked("Параметры");
 
             return annotationsTable;
         }
@@ -153,8 +156,8 @@ namespace OneScript.StandardLibrary
         private static ValueTable CreateAnnotationTable(BslAnnotationAttribute[] annotations)
         {
             var annotationsTable = EmptyAnnotationsTable();
-            var annotationNameColumn = annotationsTable.Columns.FindColumnByName("Имя");
-            var annotationParamsColumn = annotationsTable.Columns.FindColumnByName("Параметры");
+            var annotationNameColumn = annotationsTable.Columns.FindColumnByIndex(annotNameColumnIndex);
+            var annotationParamsColumn = annotationsTable.Columns.FindColumnByIndex(annotParamsColumnIndex);
 
             foreach (var annotation in annotations)
             {
@@ -186,9 +189,10 @@ namespace OneScript.StandardLibrary
                 if (annotationParameter.Value is BslAnnotationValue annotationValue)
                 {
                     var expandedValue = EmptyAnnotationsTable();
+                    var expandedValueColumns = expandedValue.Columns;
                     var row = expandedValue.Add();
-                    row.Set(expandedValue.Columns.FindColumnByName("Имя"), ValueFactory.Create(annotationValue.Name));
-                    row.Set(expandedValue.Columns.FindColumnByName("Параметры"), FillAnnotationParameters(annotationValue.Parameters));
+                    row.Set(expandedValueColumns.FindColumnByIndex(annotNameColumnIndex), ValueFactory.Create(annotationValue.Name));
+                    row.Set(expandedValueColumns.FindColumnByIndex(annotParamsColumnIndex), FillAnnotationParameters(annotationValue.Parameters));
                     parameterRow.Set(parameterValueColumn, row);
                 }
                 else
@@ -197,7 +201,7 @@ namespace OneScript.StandardLibrary
                 }
             }
 
-           return parametersTable;
+            return parametersTable;
         }
 
         private static bool MethodExistsForType(BslTypeValue type, string methodName)
@@ -209,7 +213,7 @@ namespace OneScript.StandardLibrary
         private static Type GetReflectableClrType(BslTypeValue type)
         {
             var clrType = type.TypeValue.ImplementingClass;
-            if(clrType != typeof(AttachedScriptsFactory) && !typeof(IRuntimeContextInstance).IsAssignableFrom(clrType))
+            if (clrType != typeof(AttachedScriptsFactory) && !typeof(IRuntimeContextInstance).IsAssignableFrom(clrType))
             {
                 throw NonReflectableType();
             }
@@ -237,7 +241,7 @@ namespace OneScript.StandardLibrary
         public ValueTable GetMethodsTable(BslValue target)
         {
             var result = new ValueTable();
-            if(target is BslObjectValue)
+            if (target is BslObjectValue)
                 FillMethodsTableForObject(target.AsObject(), result);
             else if (target.SystemType == BasicTypes.Type)
                 FillMethodsTableForType(target as BslTypeValue, result);
@@ -255,7 +259,7 @@ namespace OneScript.StandardLibrary
         private static void FillMethodsTableForType(BslTypeValue type, ValueTable result)
         {
             var clrType = GetReflectableClrType(type);
-            var clrMethods = clrType.GetMethods(BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public);
+            var clrMethods = clrType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             FillMethodsTable(result, clrMethods.Cast<BslMethodInfo>());
         }
 
@@ -264,12 +268,12 @@ namespace OneScript.StandardLibrary
             if (target is ScriptDrivenObject scriptObject)
             {
                 var fieldsQuery = scriptObject.Module.Fields.Cast<BslScriptFieldInfo>();
-                
+
                 if (!withPrivate)
                 {
                     fieldsQuery = fieldsQuery.Where(x => x.IsPublic);
-                }    
-                
+                }
+
                 var fields = fieldsQuery.Select(field => BslPropertyBuilder.Create()
                             .Name(field.Name)
                             .IsExported(field.IsPublic)
@@ -279,10 +283,10 @@ namespace OneScript.StandardLibrary
                         )
                     .OrderBy(p => p.DispatchId)
                     .ToArray();
-                
+
                 var fieldNames = fields.Select(x => x.Name)
                     .ToHashSet();
-                
+
                 var properties = scriptObject.GetProperties()
                     .Where(prop => !fieldNames.Contains(prop.Name));
 
@@ -291,7 +295,7 @@ namespace OneScript.StandardLibrary
                     properties = properties.OfType<BslScriptPropertyInfo>()
                         .Where(p => p.IsExported);
                 }
-                
+
                 FillPropertiesTable(result, properties.Concat(fields));
             }
             else
@@ -300,7 +304,7 @@ namespace OneScript.StandardLibrary
                 FillPropertiesTable(result, objectProperties);
             }
         }
-        
+
         private static void FillPropertiesTableForType(BslTypeValue type, ValueTable result, bool withPrivate)
         {
             var clrType = GetReflectableClrType(type);
@@ -310,7 +314,7 @@ namespace OneScript.StandardLibrary
                                          PropDef = x.GetCustomAttribute<ContextPropertyAttribute>(),
                                          Prop = x
                                      })
-                                     .Where(x=>x.PropDef != null)
+                                     .Where(x => x.PropDef != null)
                                      .Select(x => new ContextPropertyInfo(x.Prop));
 
             var infos = new List<BslPropertyInfo>();
@@ -320,12 +324,12 @@ namespace OneScript.StandardLibrary
 
             if (typeof(ScriptDrivenObject).IsAssignableFrom(clrType.BaseType))
             {
-                var flags = BindingFlags.Instance|BindingFlags.Public;
+                var flags = BindingFlags.Instance | BindingFlags.Public;
                 if (withPrivate)
                     flags |= BindingFlags.NonPublic;
 
                 var nativeFields = clrType.GetFields(flags);
-                foreach(var field in nativeFields)
+                foreach (var field in nativeFields)
                 {
                     var prop = BslPropertyBuilder.Create()
                         .Name(field.Name)
@@ -333,7 +337,7 @@ namespace OneScript.StandardLibrary
                         .SetDispatchingIndex(indices++)
                         .SetAnnotations(field.GetAnnotations())
                         .Build();
-                    
+
                     infos.Add(prop);
                 }
             }
@@ -344,18 +348,18 @@ namespace OneScript.StandardLibrary
 
         private static void FillMethodsTable(ValueTable result, IEnumerable<BslMethodInfo> methods)
         {
-            var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
-            var countColumn = result.Columns.Add("КоличествоПараметров", TypeDescription.IntegerType(), "Количество параметров");
-            var isFunctionColumn = result.Columns.Add("ЭтоФункция", TypeDescription.BooleanType(), "Это функция");
-            var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
-            var paramsColumn = result.Columns.Add("Параметры", new TypeDescription(), "Параметры");
-            var isExportlColumn = result.Columns.Add("Экспорт", TypeDescription.BooleanType(), "Экспорт");
+            var nameColumn = result.Columns.AddUnchecked("Имя");
+            var countColumn = result.Columns.AddUnchecked("КоличествоПараметров", "Количество параметров");
+            var isFunctionColumn = result.Columns.AddUnchecked("ЭтоФункция", "Это функция");
+            var annotationsColumn = result.Columns.AddUnchecked("Аннотации");
+            var paramsColumn = result.Columns.AddUnchecked("Параметры");
+            var isExportlColumn = result.Columns.AddUnchecked("Экспорт");
 
             foreach (var methInfo in methods)
             {
                 var annotations = methInfo.GetAnnotations();
                 var parameters = methInfo.GetBslParameters();
-                
+
                 ValueTableRow new_row = result.Add();
                 new_row.Set(nameColumn, ValueFactory.Create(methInfo.Name));
                 new_row.Set(countColumn, ValueFactory.Create(parameters.Length));
@@ -365,12 +369,11 @@ namespace OneScript.StandardLibrary
                 new_row.Set(annotationsColumn, CreateAnnotationTable(annotations));
 
                 var paramTable = new ValueTable();
-                var paramNameColumn = paramTable.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
-                var paramByValue = paramTable.Columns.Add("ПоЗначению", TypeDescription.BooleanType(), "По значению");
-                var paramHasDefaultValue = paramTable.Columns.Add("ЕстьЗначениеПоУмолчанию", TypeDescription.BooleanType(), "Есть значение по-умолчанию");
-                var paramDefaultValue = paramTable.Columns.Add("ЗначениеПоУмолчанию", new TypeDescription(), "Значение по умолчанию");
-                var paramAnnotationsColumn = paramTable.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
-
+                var paramNameColumn = paramTable.Columns.AddUnchecked("Имя");
+                var paramByValue = paramTable.Columns.AddUnchecked("ПоЗначению", "По значению");
+                var paramHasDefaultValue = paramTable.Columns.AddUnchecked("ЕстьЗначениеПоУмолчанию", "Есть значение по-умолчанию");
+                var paramDefaultValue = paramTable.Columns.AddUnchecked("ЗначениеПоУмолчанию", "Значение по умолчанию");
+                var paramAnnotationsColumn = paramTable.Columns.AddUnchecked("Аннотации");
                 new_row.Set(paramsColumn, paramTable);
 
                 if (parameters.Length != 0)
@@ -401,7 +404,7 @@ namespace OneScript.StandardLibrary
         {
             var result = new ValueTable();
 
-            if(target is BslObjectValue)
+            if (target is BslObjectValue)
                 FillPropertiesTableForObject(result, target, withPrivate);
             else if (target.SystemType == BasicTypes.Type)
             {
@@ -454,10 +457,10 @@ namespace OneScript.StandardLibrary
 
         private static void FillPropertiesTable(ValueTable result, IEnumerable<BslPropertyInfo> properties)
         {
-            var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType(), "Имя");
-            var annotationsColumn = result.Columns.Add("Аннотации", new TypeDescription(), "Аннотации");
-            var isExportedColumn = result.Columns.Add("Экспорт", TypeDescription.BooleanType(), "Экспорт");
-            
+            var nameColumn = result.Columns.AddUnchecked("Имя");
+            var annotationsColumn = result.Columns.AddUnchecked("Аннотации");
+            var isExportedColumn = result.Columns.AddUnchecked("Экспорт");
+
             var systemVarNames = new string[] { "этотобъект", "thisobject" };
 
             foreach (var propInfo in properties)
@@ -531,17 +534,17 @@ namespace OneScript.StandardLibrary
         public ValueTable KnownTypes(StructureImpl filter = default)
         {
             var result = new ValueTable();
-            
-            var nameColumn = result.Columns.Add("Имя", TypeDescription.StringType());
-            var valueColumn = result.Columns.Add("Значение", new TypeDescription(new List<BslTypeValue>() { new BslTypeValue(BasicTypes.Type) }));
-            var primitiveColumn = result.Columns.Add("Примитивный", TypeDescription.BooleanType());
-            var userColumn = result.Columns.Add("Пользовательский", TypeDescription.BooleanType());
-            var collectionColumn = result.Columns.Add("Коллекция", TypeDescription.BooleanType());
-            
+
+            var nameColumn = result.Columns.AddUnchecked("Имя");
+            var valueColumn = result.Columns.AddUnchecked("Значение");
+            var primitiveColumn = result.Columns.AddUnchecked("Примитивный");
+            var userColumn = result.Columns.AddUnchecked("Пользовательский");
+            var collectionColumn = result.Columns.AddUnchecked("Коллекция");
+
             _typeManager.RegisteredTypes().ForEach(descriptor =>
             {
                 var row = result.Add();
-                
+
                 row.Set(nameColumn, ValueFactory.Create(descriptor.ToString()));
                 row.Set(valueColumn, new BslTypeValue(descriptor));
                 row.Set(primitiveColumn, ValueFactory.Create(descriptor.ImplementingClass.IsSubclassOf(typeof(BslPrimitiveValue))));
@@ -555,7 +558,7 @@ namespace OneScript.StandardLibrary
             {
                 result = result.Copy(filter);
             }
-            
+
             return result;
         }
 

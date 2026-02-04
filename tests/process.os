@@ -144,22 +144,29 @@
 	"1Script Execution Engine. Version " + СИ.Версия + "
 	|
 	|Usage:
+	|  oscript.exe [options] <script_path> [script_arguments...]
+	|  oscript.exe <mode> [mode_options] <script_path> [script_arguments...]
 	|
-	|I. Script execution: oscript.exe <script_path> [script arguments..]
+	|Modes:
+	|  -measure           Measures script execution time.
+	|  -compile           Shows compiled module without execution.
+	|  -check             Provides syntax check.
+	|                       Options:
+	|                         -cgi           Syntax check in CGI-mode.
+	|                         -env=<file>    Path to entrypoint file for context.
+	|  -debug             Runs script in debug mode.
+	|                       Options:
+	|                         -port=<port>   Debugger port (default is 2801).
+	|                         -noWait        Do not wait for debugger connection.
+	|  -version, -v       Output version string.
 	|
-	|II. Special mode: oscript.exe <mode> <script_path> [script arguments..]
-	|Mode can be one of these:
-	|  -measure    measures execution time
-	|  -compile    shows compiled module without execution
-	|  -check [-env=<entrypoint-file>]provides syntax check
-	|  -check -cgi provides syntax check in CGI-mode
-	|  -version    output version string
+	|Options:
+	|  -encoding=<name>   Set output encoding (e.g. utf-8).
+	|  -codestat=<file>   Write code execution statistics to file.
 	|
-	|  -encoding=<encoding-name> set output encoding
-	|  -codestat=<filename> write code statistics
-	|
-	|III. Run as CGI application: oscript.exe -cgi <script_path> [script arguments..]
-	|  Runs as CGI application under HTTP-server (Apache/Nginx/IIS/etc...)";
+	|CGI Mode:
+	|  oscript.exe -cgi <script_path> [script_arguments...]
+	|  Runs as CGI application under HTTP-server.";
 	
 	Возврат НормализоватьПереводыСтрок(Текст);
 	

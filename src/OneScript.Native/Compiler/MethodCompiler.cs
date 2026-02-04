@@ -713,7 +713,7 @@ namespace OneScript.Native.Compiler
                 {
                     stack.Push(elif);
                 }
-                else if (stack.Count > 0)
+                else if (stack.Count != 0)
                 {
                     var cond = stack.Pop();
 
@@ -726,7 +726,7 @@ namespace OneScript.Native.Compiler
                 }
             }
 
-            while (stack.Count > 0)
+            while (stack.Count != 0)
             {
                 var elseIfNode = stack.Pop();
                 VisitElseIfNode(elseIfNode);
@@ -1147,7 +1147,7 @@ namespace OneScript.Native.Compiler
         private IEnumerable<Expression> PrepareDynamicCallArguments(BslSyntaxNode argList)
         {
             return argList.Children.Select(passedArg =>
-                passedArg.Children.Count > 0
+                passedArg.Children.Count != 0
                     ? ConvertToExpressionTree(passedArg.Children[0])
                     : Expression.Constant(BslSkippedParameterValue.Instance));
         }
@@ -1414,7 +1414,7 @@ namespace OneScript.Native.Compiler
             }
 
             var parameters = argList.Children.Select(passedArg =>
-                passedArg.Children.Count > 0
+                passedArg.Children.Count != 0
                     ? ConvertToExpressionTree(passedArg.Children[0])
                     : null).ToArray();
 
@@ -1523,7 +1523,7 @@ namespace OneScript.Native.Compiler
             if (node.ConstructorArguments != default)
             {
                 parameters = node.ConstructorArguments.Children.Select(passedArg => 
-                    passedArg.Children.Count > 0 ? 
+                    passedArg.Children.Count != 0 ? 
                         ConvertToExpressionTree(passedArg.Children[0]) :
                         Expression.Default(typeof(BslValue))).ToArray();
             }

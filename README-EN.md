@@ -34,28 +34,23 @@ The OneScript distribution already includes a set of the most commonly used pack
 
 ### Linux ###
 
-- (interactively) download the required package from the [official website](https://oscript.io) or installer from the [Releases](https://github.com/EvilBeaver/OneScript/releases) section and install it.
+- Download the ZIP archive for Linux from the [Releases](https://github.com/EvilBeaver/OneScript/releases) section or from the [official website](https://oscript.io).
+- Extract the archive to a convenient directory.
+- Set executable permissions:
+  ```bash
+  chmod +x oscript
+  ```
 
 ### MacOS ###
 
-There is no interactive installer, but the engine can be installed from the command line:
-
-- install [homebrew](https://brew.sh/index_ru)
-- install mono with the command `brew install mono`
-- download [ovm](https://github.com/oscript-library/ovm/releases). Download the `ovm.exe` file (despite the .exe extension it will work on MacOS)
-- run the command `mono path/to/ovm.exe install stable`
-
-    *Tip: To correctly specify the path to `ovm.exe`, drag the `ovm.exe` file into the terminal. Example of a full command: `mono Users/username/Downloads/ovm.exe install stable`*
-- run the command `mono path/to/ovm.exe use stable`
-- restart the terminal
-
-#### Additional configuration for Self-Contained distribution (does not require dotnet installation)
-
-```
-chmod +x ./oscript
-xattr -d com.apple.quarantine *.dylib oscript
-codesign -s - ./oscript
-```
+- Download the ZIP archive for macOS (x64 or arm64) from the [Releases](https://github.com/EvilBeaver/OneScript/releases) section or from the [official website](https://oscript.io).
+- Extract the archive to a convenient directory.
+- Perform additional configuration to remove quarantine and sign the binary:
+  ```bash
+  chmod +x ./oscript
+  xattr -d com.apple.quarantine *.dylib oscript
+  codesign -s - ./oscript
+  ```
 
 
 # Manual local build

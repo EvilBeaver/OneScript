@@ -52,6 +52,15 @@ namespace OneScript.DebugProtocol
         /// <param name="path"></param>
         /// <returns></returns>
         Variable[] GetVariables(int threadId, int frameIndex, int[] path);
+        
+        /// <summary>
+        /// Получает переменные модуля для указанного фрейма
+        /// </summary>
+        /// <param name="threadId"></param>
+        /// <param name="frameIndex"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        Variable[] GetModuleVariables(int threadId, int frameIndex, int[] path);
 
         /// <summary>
         /// Получает значения переменных вычисленного выражения

@@ -44,12 +44,14 @@ namespace OneScript.Language.LexicalAnalysis
         Async,
         Await,
         Goto,
-        
+
         // operators
-        Plus,
-        Minus,
         UnaryPlus,
         UnaryMinus,
+        // binary begin
+        // recommend to be in continuous block
+        Plus,
+        Minus,
         Multiply,
         Division,
         Modulo,
@@ -61,6 +63,7 @@ namespace OneScript.Language.LexicalAnalysis
         NotEqual,
         And,
         Or,
+        // binary end
         Not,
         Dot,
         OpenPar,

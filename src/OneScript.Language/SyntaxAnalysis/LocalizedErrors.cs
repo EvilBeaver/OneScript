@@ -111,6 +111,9 @@ namespace OneScript.Language.SyntaxAnalysis
         public static CodeError UnexpectedSymbol(char c) =>
             Create($"Неизвестный символ {c}", $"Unexpected character {c}");
 
+        public static CodeError AnnotationNotAllowed() =>
+            Create("Аннотация неприменима в данном месте", "Annotation is not allowed here");
+
         public static CodeError DirectiveNotSupported(string directive) =>
             Create($"Директива {directive} не разрешена в данном месте", $"Directive {directive} is not supported here");
         

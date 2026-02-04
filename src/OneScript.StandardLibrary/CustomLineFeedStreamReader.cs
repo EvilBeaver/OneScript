@@ -56,7 +56,7 @@ namespace OneScript.StandardLibrary
                 _buffer.Dequeue ();
                 UpdateCharQueue ();
 
-                if (_buffer.Count > 0 && _buffer.Peek () == '\n') {
+                if (_buffer.Count != 0 && _buffer.Peek () == '\n') {
                     _buffer.Dequeue ();
                     UpdateCharQueue ();
                 }

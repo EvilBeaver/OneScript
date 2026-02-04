@@ -11,91 +11,78 @@ namespace OneScript.Language.LexicalAnalysis
     {
         public override Lexem ReadNextLexem(SourceCodeIterator iterator)
         {
-            bool isEndOfText = false;
-            char cs = '\0';
-            int start = iterator.Position;
-            int currentLine = iterator.CurrentLine;
-            int currentColumn = iterator.CurrentColumn;
-            while (true)
+            var location = new CodeRange(iterator.CurrentLine, iterator.CurrentColumn);
+
+            do
             {
-                if (!isEndOfText)
-                {
-                    cs = iterator.CurrentSymbol;
-                }
+                if (SpecialChars.IsDelimiter(iterator.CurrentSymbol))
+                    break;
+            }
+            while (iterator.MoveNext());
+
+            var content = iterator.GetContents();
+            Lexem lex;
+
+            switch (LanguageDef.GetWordType(content))
+            {
+                case LanguageDef.WordType.Logical:
+                    lex = new Lexem()
+                    {
+                        Type = LexemType.Operator,
+                        Token = LanguageDef.GetToken(content),
+                        Content = content,
+                        Location = location
+                    };
+                    break;
+
+                case LanguageDef.WordType.Boolean:
+                    lex = new Lexem()
+                    {
+                        Type = LexemType.BooleanLiteral,
+                        Content = content,
+                        Location = location
+                    };
+                    break;
                 
-                if (SpecialChars.IsDelimiter(cs) || isEndOfText)
-                {
-                    var content = iterator.GetContents();
-
-                    Lexem lex;
-
-                    if (LanguageDef.IsLogicalOperatorString(content))
+                case LanguageDef.WordType.Undefined:
+                    lex = new Lexem()
                     {
-                        lex = new Lexem()
-                        {
-                            Type = LexemType.Operator,
-                            Token = LanguageDef.GetToken(content),
-                            Content = content,
-                            Location = new CodeRange(currentLine, currentColumn)
-                        };
-                    }
-                    else if (LanguageDef.IsBooleanLiteralString(content))
-                    {
-                        lex = new Lexem()
-                        {
-                            Type = LexemType.BooleanLiteral,
-                            Content = content,
-                            Location = new CodeRange(currentLine, currentColumn)
-                        };
-                    }
-                    else if (LanguageDef.IsUndefinedString(content))
-                    {
-                        lex = new Lexem()
-                        {
-                            Type = LexemType.UndefinedLiteral,
-                            Content = content,
-                            Location = new CodeRange(currentLine, currentColumn)
-                        };
+                        Type = LexemType.UndefinedLiteral,
+                        Content = content,
+                        Location = location
+                    };
+                    break;
 
-                    }
-                    else if (LanguageDef.IsNullString(content))
+                case LanguageDef.WordType.Null:
+                    lex = new Lexem()
                     {
-                        lex = new Lexem()
-                        {
-                            Type = LexemType.NullLiteral,
-                            Content = content,
-                            Location = new CodeRange(currentLine, currentColumn)
-                        };
+                        Type = LexemType.NullLiteral,
+                        Content = content,
+                        Location = location
+                    };
+                    break;
 
-                    }
-                    else
+                default:
+                    var tok = LanguageDef.GetToken(content);
+                    if (LanguageDef.IsBuiltInFunction(tok))
                     {
-                        lex = new Lexem()
+                        if (iterator.ReadNextChar() != '(')
                         {
-                            Type = LexemType.Identifier,
-                            Content = content,
-                            Token = LanguageDef.GetToken(content),
-                            Location = new CodeRange(currentLine, currentColumn)
-                        };
-
-                        if (LanguageDef.IsBuiltInFunction(lex.Token))
-                        {
-                            iterator.SkipSpaces();
-                            if (iterator.CurrentSymbol != '(')
-                            {
-                                lex.Token = Token.NotAToken;
-                            }
+                            tok = Token.NotAToken;
                         }
                     }
 
-                    return lex;
-                }
-
-                if (!iterator.MoveNext())
-                {
-                    isEndOfText = true;
-                }
+                    lex = new Lexem()
+                    {
+                        Type = LexemType.Identifier,
+                        Content = content,
+                        Token = tok,
+                        Location = location
+                    };
+                    break;
             }
+
+            return lex;
         }
     }
 }

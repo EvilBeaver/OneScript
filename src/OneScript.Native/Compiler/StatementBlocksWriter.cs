@@ -18,7 +18,7 @@ namespace OneScript.Native.Compiler
 
         public void EnterBlock(JumpInformationRecord newJumpStates)
         {
-            var current = _blocks.Count > 0 ? GetCurrentBlock() : null;
+            var current = _blocks.Count != 0 ? GetCurrentBlock() : null;
             if (current != null)
             {
                 newJumpStates.MethodReturn ??= current.MethodReturn;

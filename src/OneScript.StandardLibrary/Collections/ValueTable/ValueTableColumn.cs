@@ -21,17 +21,20 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
     {
         private string _title;
         private string _name;
-        private TypeDescription _valueType;
+        private readonly TypeDescription _valueType;
         private readonly WeakReference _owner;
-        private readonly int _id;
-        
-        public ValueTableColumn(ValueTableColumnCollection owner, int id, string name, string title, TypeDescription type, int width)
+
+        private int _indicesCount = 0;
+        public bool IsIndexable => _indicesCount != 0;
+        public void AddToIndex() { _indicesCount++; }
+        public void DeleteFromIndex() { if (_indicesCount != 0) _indicesCount--; }
+
+        public ValueTableColumn(ValueTableColumnCollection owner, string name, string title, TypeDescription type, int width)
         {
             _name = name;
             _title = title;
             _valueType = type ?? new TypeDescription();
             Width = width;
-            _id = id;
 
             _owner = new WeakReference(owner);
         }
@@ -65,7 +68,6 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                     _title = value;
 
                 _name = value;
-
             }
         }
         /// <summary>

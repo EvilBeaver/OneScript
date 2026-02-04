@@ -17,26 +17,20 @@ namespace OneScript.Language
         
         private class TrieNode
         {
-            public char charL;
-            public char charU;
-            public TrieNode sibl;
-            public TrieNode next;
+            internal char charL;
+            internal char charU;
+            internal TrieNode sibl;
+            internal TrieNode next;
 
-            private T _value;
+            internal T value;
 
-            public T Value
-            {
-                get => _value;
-                set
-                {
-                    HasValue = true;
-                    _value = value;
-                }
-            }
-            
-            public bool HasValue { get; private set; }
-            
-            public TrieNode Find(char ch)
+            internal bool hasValue;
+
+            internal TrieNode() { }
+            internal TrieNode(char ch)
+                { charL = char.ToLower(ch); charU = char.ToUpper(ch); }
+
+            internal TrieNode Find(char ch)
             {
                 var node = sibl;
                 while (node != null)
@@ -47,47 +41,46 @@ namespace OneScript.Language
                 }
                 return null;
             }
-
         }
 
         public void Add(string str, T val)
         {
             var node = _root;
+            TrieNode key = node;
             foreach (char ch in str)
             {
-                var key = node.Find(ch);
-                if (key == null)
+                if (node == null)
                 {
-                    key = new TrieNode
-                    {
-                        charL = char.ToLower(ch),
-                        charU = char.ToUpper(ch),
-                        Value = default(T),
-                        sibl = node.sibl
-                    };
-                    node.sibl = key;
-                    key.next = new TrieNode();
+                    node = new TrieNode(ch);
+                    key.next = node;
+                    key = node;
+                    node = null;
                 }
-                node = key.next;
+                else
+                {
+                    TrieNode last = node;
+                    key = node;
+                    while (key != null && key.charL != ch && key.charU != ch)
+                    {
+                        last = key;
+                        key = key.sibl;
+                    }
+                    if (key == null)
+                    {
+                        key = new TrieNode(ch);
+                        last.sibl = key;
+                    }
+                    node = key.next;
+                }
             }
 
-            node.Value = val;
+            key.value = val;
+            key.hasValue = true;
         }
 
-        public bool ContainsKey(string key)
+        public bool ContainsKey(string str)
         {
-            var node = _root;
-            foreach (char ch in key)
-            {
-                var keyNode = node.Find(ch);
-                if (keyNode == null)
-                {
-                    return false;
-                }
-                node = keyNode.next;
-            }
-
-            return node.next == null && node.HasValue;
+            return TryGetValue(str, out _);
         }
 
         public bool Remove(string key)
@@ -97,20 +90,8 @@ namespace OneScript.Language
 
         public T Get(string str)
         {
-            var node = _root;
-            foreach (char ch in str)
-            {
-                TrieNode key = node.Find(ch);
-                if (key == null)
-                    throw new KeyNotFoundException();
-
-                node = key.next;
-            }
-            
-            if (!node.HasValue)
-                throw new KeyNotFoundException();
-
-            return node.Value;
+            return TryGetValue(str, out var value) ? value
+                : throw new KeyNotFoundException();
         }
 
         public T this[string index]
@@ -124,27 +105,34 @@ namespace OneScript.Language
 
         public bool TryGetValue(string str, out T value)
         {
-            var node = _root;
+            TrieNode key = _root;
+            var node = key.sibl;
             foreach (char ch in str)
             {
-                var key = node.Find(ch);
-                if (key == null)
+                while (node != null && node.charL != ch && node.charU != ch)
+                {
+                    node = node.sibl;
+                }
+                if (node == null)
                 {
                     value = default;
                     return false;
                 }
 
+                key = node;
                 node = key.next;
             }
 
-            if (!node.HasValue)
+            if (key.hasValue)
+            {
+                value = key.value;
+                return true;
+            }
+            else
             {
                 value = default;
                 return false;
             }
-            
-            value = node.Value;
-            return true;
         }
 
         public IEnumerator<KeyValuePair<string, T>> GetEnumerator()

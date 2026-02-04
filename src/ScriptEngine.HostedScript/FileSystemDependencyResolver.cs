@@ -42,6 +42,27 @@ namespace ScriptEngine.HostedScript
             Processed
         }
 
+        private enum LoadStatus
+        {
+            NotFound,   // Каталог библиотеки не существует
+            Empty,      // Каталог найден, но библиотека не содержит исполняемых файлов
+            Success     // Библиотека успешно загружена
+        }
+
+        private class LoadResult
+        {
+            public PackageInfo Package { get; set; }
+            public LoadStatus Status { get; set; }
+            
+            public static LoadResult NotFound() => new LoadResult { Status = LoadStatus.NotFound };
+            public static LoadResult Empty() => new LoadResult { Status = LoadStatus.Empty };
+            public static LoadResult Success(PackageInfo package) => new LoadResult 
+            { 
+                Status = LoadStatus.Success, 
+                Package = package 
+            };
+        }
+
         #endregion
 
         public FileSystemDependencyResolver()
@@ -82,17 +103,25 @@ namespace ScriptEngine.HostedScript
         {
             bool quoted = PrepareQuoted(ref libraryName);
 
-            var lib = quoted ?
+            var result = quoted ?
                 LoadByRelativePath(module, libraryName, process) :
                 LoadByName(libraryName, process);
 
-            if (lib == null)
+            if (result.Status == LoadStatus.NotFound)
+            {
                 throw new CompilerException($"Библиотека не найдена: '{libraryName}'");
+            }
+            else if (result.Status == LoadStatus.Empty)
+            {
+                throw new CompilerException(
+                    $"Библиотека '{libraryName}' найдена, но не содержит исполняемых файлов.\n" +
+                    "Для получения подробной информации установите переменную окружения OS_LIBRARY_LOADER_TRACE=1");
+            }
 
-            return lib;
+            return result.Package;
         }
 
-        private PackageInfo LoadByName(string libraryName, IBslProcess process)
+        private LoadResult LoadByName(string libraryName, IBslProcess process)
         {
             foreach (var path in SearchDirectories)
             {
@@ -100,16 +129,20 @@ namespace ScriptEngine.HostedScript
                     continue;
 
                 var libraryPath = Path.Combine(path, libraryName);
-                var loadAttempt = LoadByPath(libraryPath, process); 
-                if (loadAttempt != null)
-                    return loadAttempt;
+                var result = LoadByPath(libraryPath, process);
+                
+                // Если библиотека найдена (успешно загружена или пуста), сразу возвращаем
+                // Не ищем дальше, так как это более приоритетный путь
+                if (result.Status != LoadStatus.NotFound)
+                    return result;
             }
 
+            // Если в SearchDirectories ничего не нашли, проверяем rootPath
             var rootPath = Path.Combine(LibraryRoot, libraryName);
             return LoadByPath(rootPath, process);
         }
 
-        private PackageInfo LoadByRelativePath(SourceCode module, string libraryPath, IBslProcess process)
+        private LoadResult LoadByRelativePath(SourceCode module, string libraryPath, IBslProcess process)
         {
             string realPath;
 
@@ -197,11 +230,16 @@ namespace ScriptEngine.HostedScript
             return quoted;
         }
 
-        private PackageInfo LoadByPath(string libraryPath, IBslProcess process)
+        private LoadResult LoadByPath(string libraryPath, IBslProcess process)
         {
-            return Directory.Exists(libraryPath) ? 
-                LoadLibraryInternal(libraryPath, process) :
-                null;
+            if (!Directory.Exists(libraryPath))
+                return LoadResult.NotFound();
+
+            var package = LoadLibraryInternal(libraryPath, process);
+            
+            return package == null 
+                ? LoadResult.Empty() 
+                : LoadResult.Success(package);
         }
         
         private PackageInfo LoadLibraryInternal(string libraryPath, IBslProcess process)

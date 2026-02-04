@@ -20,7 +20,7 @@ namespace OneScript.DebugServices
         // NB! должен быть согласован с перечислением TransportProtocols в адаптере
         private const short JSON_FORMAT_MARKER = 2;
         // NB! должен быть согласован с файлом ProtocolVersions в адаптере
-        private const short SUPPORTED_FORMAT_VERSION = 3;
+        private const short SUPPORTED_FORMAT_VERSION = 4;
         
         private readonly IDebugServer _transport;
         private IDebugSession _session;

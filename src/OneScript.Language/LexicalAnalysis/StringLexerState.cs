@@ -15,9 +15,7 @@ namespace OneScript.Language.LexicalAnalysis
         {
             while (true)
             {   /* Пропускаем все пробелы и комментарии */
-                iterator.SkipSpaces();
-
-                if (iterator.CurrentSymbol == '/')
+                if (iterator.ReadNextChar() == '/')
                 {
                     if (!iterator.MoveNext())
                         throw CreateExceptionOnCurrentLine("Некорректный символ", iterator);
@@ -53,7 +51,8 @@ namespace OneScript.Language.LexicalAnalysis
                         if (iterator.CurrentSymbol == SpecialChars.StringQuote)
                         {
                             /* Двойная кавычка */
-                            contentBuilder.Append("\"");
+                            contentBuilder.Append('"');
+                            
                             continue;
                         }
 
@@ -64,34 +63,34 @@ namespace OneScript.Language.LexicalAnalysis
                         {
                             /* Сразу же началась новая строка */
                             contentBuilder.Append('\n');
+                            
                             continue;
                         }
                     }
 
-                    var lex = new Lexem
+                    return new Lexem
                     {
                         Type = LexemType.StringLiteral,
                         Content = contentBuilder.ToString()
                     };
-                    return lex;
                 }
-                
+
                 if (cs == '\n')
                 {
                     iterator.MoveNext();
                     SkipSpacesAndComments(iterator);
 
                     if (iterator.CurrentSymbol != '|')
-                        throw CreateExceptionOnCurrentLine("Некорректный строковый литерал!", iterator);
+                        throw CreateExceptionOnCurrentLine("Некорректный строковый литерал", iterator);
 
                     contentBuilder.Append('\n');
                 }
-                else if(cs != '\r')
+                else if (cs != '\r')
                     contentBuilder.Append(cs);
 
             }
 
-            throw CreateExceptionOnCurrentLine("Незавершённый строковой интервал!", iterator);
+            throw CreateExceptionOnCurrentLine("Незавершённый строковый литерал", iterator);
         }
     }
 }

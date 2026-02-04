@@ -21,18 +21,28 @@ namespace OneScript.StandardLibrary.Collections.Indexes
         private readonly List<IValue> _fields = new List<IValue>();
         private readonly IIndexCollectionSource _source;
 
-        private readonly IDictionary<CollectionIndexKey, HashSet<IValue>> _data =
+        private readonly Dictionary<CollectionIndexKey, HashSet<IValue>> _data =
             new Dictionary<CollectionIndexKey, HashSet<IValue>>();
         
         public CollectionIndex(IIndexCollectionSource source, IEnumerable<IValue> fields)
         {
+            foreach (var field in fields)
+            {
+                if (field is ValueTable.ValueTableColumn column) 
+                    column.AddToIndex();
+                _fields.Add(field);
+            }
+        
             _source = source;
-            _fields.AddRange(fields);
+            foreach (var value in _source)
+            {
+                ElementAdded(value);
+            }
         }
 
         internal bool CanBeUsedFor(IEnumerable<IValue> searchFields)
         {
-            return _fields.Any() && _fields.ToHashSet().IsSubsetOf(searchFields.ToHashSet());
+            return _fields.Count != 0 && _fields.All(f => searchFields.Contains(f));
         }
 
         private CollectionIndexKey IndexKey(PropertyNameIndexAccessor source)
@@ -55,8 +65,23 @@ namespace OneScript.StandardLibrary.Collections.Indexes
         {
             if (_fields.Contains(field))
             {
-                while (_fields.Contains(field)) _fields.Remove(field);
+                while (_fields.Contains(field))
+                {
+                    if (field is ValueTable.ValueTableColumn column)
+                        column.DeleteFromIndex();
+
+                    _fields.Remove(field);
+                }
                 Rebuild();
+            }
+        }
+
+        internal void ExcludeFields()
+        {
+            foreach (var field in _fields)
+            {
+                if (field is ValueTable.ValueTableColumn column)
+                    column.DeleteFromIndex();
             }
         }
 
@@ -82,10 +107,7 @@ namespace OneScript.StandardLibrary.Collections.Indexes
             }
         }
 
-        internal void Clear()
-        {
-            _data.Clear();
-        }
+        internal void Clear() => _data.Clear();
 
         internal void Rebuild()
         {

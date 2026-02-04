@@ -17,5 +17,11 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         {
             Operation = operation.Token;
         }
+
+        public UnaryOperationNode(BslSyntaxNode arg, Lexem operation) : base(NodeKind.UnaryOperation, operation)
+        {
+            Operation = operation.Token;
+            AddChild(arg);
+        }
     }
 }

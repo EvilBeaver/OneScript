@@ -324,7 +324,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         protected virtual void VisitModuleBody(BslSyntaxNode codeBlock)
         {
-            if(codeBlock.Children.Count > 0)
+            if(codeBlock.Children.Count != 0)
                 VisitCodeBlock(codeBlock.Children[0]);
         }
 

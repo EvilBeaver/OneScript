@@ -17,5 +17,13 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         {
             Operation = operation.Token;
         }
+
+        public BinaryOperationNode(BslSyntaxNode firstArg, BslSyntaxNode secondArg, Lexem operation)
+            : base(NodeKind.BinaryOperation, operation)
+        {
+            Operation = operation.Token;
+            AddChild(firstArg);
+            AddChild(secondArg);
+        }
     }
 }

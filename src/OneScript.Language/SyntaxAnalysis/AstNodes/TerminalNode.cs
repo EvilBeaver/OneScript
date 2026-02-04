@@ -26,8 +26,6 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
             Location = lexem.Location;
         }
 
-        public override IReadOnlyList<BslSyntaxNode> Children => EmptyChildren;
-        
-        private static readonly BslSyntaxNode[] EmptyChildren = new BslSyntaxNode[0];
+        public override IReadOnlyList<BslSyntaxNode> Children => System.Array.Empty<BslSyntaxNode>();
     }
 }

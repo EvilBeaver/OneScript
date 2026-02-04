@@ -279,7 +279,9 @@ namespace ScriptEngine.HostedScript
         }
 
         private static Lazy<bool> TraceEnabled =
-            new Lazy<bool>(() => System.Environment.GetEnvironmentVariable("OS_LRE_TRACE") == "1");
+            new Lazy<bool>(() => 
+                System.Environment.GetEnvironmentVariable("OS_LIBRARY_LOADER_TRACE") == "1" ||
+                System.Environment.GetEnvironmentVariable("OS_LRE_TRACE") == "1");  // для обратной совместимости
 
         public static void TraceLoadLibrary(string message)
         {

@@ -155,25 +155,33 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 		public static TypeDescription StringType(int length = 0,
 			AllowedLengthEnum allowedLength = AllowedLengthEnum.Variable)
 		{
-			return TypeDescriptionBuilder.OfType(BasicTypes.String)
-				.SetStringQualifiers(new StringQualifiers(length, allowedLength))
-				.Build();
+            return new TypeDescription(new[] { new BslTypeValue(BasicTypes.String) },
+				new NumberQualifiers(),
+                new StringQualifiers(length, allowedLength),
+				new DateQualifiers(),
+				new BinaryDataQualifiers());
 		}
 
 		public static TypeDescription IntegerType(int length = 10,
 			AllowedSignEnum allowedSign = AllowedSignEnum.Any)
 		{
-			return TypeDescriptionBuilder.OfType(BasicTypes.Number)
-				.SetNumberQualifiers(new NumberQualifiers(length, 0, allowedSign))
-				.Build();
+            return new TypeDescription(new[] { new BslTypeValue(BasicTypes.Number) },
+                 new NumberQualifiers(length, 0, allowedSign),
+                 new StringQualifiers(),
+                 new DateQualifiers(),
+                 new BinaryDataQualifiers());
 		}
 
 		public static TypeDescription BooleanType()
 		{
-			return TypeDescriptionBuilder.OfType(BasicTypes.Boolean).Build();
-		}
+            return new TypeDescription(new[] { new BslTypeValue(BasicTypes.Boolean) },
+                  new NumberQualifiers(),
+                  new StringQualifiers(),
+                  new DateQualifiers(),
+                  new BinaryDataQualifiers());
+        }
 
-		[ScriptConstructor]
+        [ScriptConstructor]
 		public static TypeDescription Constructor(
 			TypeActivationContext context,
 			BslValue source = null,

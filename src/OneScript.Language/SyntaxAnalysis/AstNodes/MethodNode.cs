@@ -30,7 +30,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         public IReadOnlyList<VariableDefinitionNode> VariableDefinitions()
         {
             if (VariableSection == default)
-                return new VariableDefinitionNode[0];
+                return System.Array.Empty<VariableDefinitionNode>();
             
             return VariableSection.Children
                 .Cast<VariableDefinitionNode>()

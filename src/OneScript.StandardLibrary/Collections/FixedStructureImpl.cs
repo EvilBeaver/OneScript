@@ -85,6 +85,11 @@ namespace OneScript.StandardLibrary.Collections
                 .Build();
         }
 
+        public override string GetPropName(int propNum)
+        {
+            return _structure.GetPropName(propNum);
+        }
+
         public override void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
             var binding = _methods.GetCallableDelegate(methodNumber);

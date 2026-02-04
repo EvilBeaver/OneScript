@@ -26,10 +26,12 @@ namespace ScriptEngine.Machine
         public int EntryMethodIndex { get; set; } = -1;
 
         public List<BslPrimitiveValue> Constants { get; } = new List<BslPrimitiveValue>();
+
+        internal List<string> Identifiers { get; } = new List<string>();
         
-        internal IList<ModuleSymbolBinding> VariableRefs { get; } = new List<ModuleSymbolBinding>();
+        internal List<ModuleSymbolBinding> VariableRefs { get; } = new List<ModuleSymbolBinding>();
         
-        internal IList<ModuleSymbolBinding> MethodRefs { get; } = new List<ModuleSymbolBinding>();
+        internal List<ModuleSymbolBinding> MethodRefs { get; } = new List<ModuleSymbolBinding>();
         
         #region IExecutableModule members
 
@@ -52,7 +54,7 @@ namespace ScriptEngine.Machine
 
         public IList<BslScriptMethodInfo> Methods { get; } = new List<BslScriptMethodInfo>();
 
-        public IList<Command> Code { get; } = new List<Command>(512);
+        public List<Command> Code { get; } = new List<Command>(512);
 
         public SourceCode Source { get; set; }
         

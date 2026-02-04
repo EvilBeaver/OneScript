@@ -191,6 +191,20 @@ namespace OneScript.Exceptions
                 "Index is out of range");
         }
 
+        public static RuntimeException ClosedStream()
+        {
+            return new RuntimeException(
+                "Ошибка обращения к закрытому потоку",
+                "Cannot access a closed stream");
+        }
+  
+        public static RuntimeException NonWritableStream()
+        {
+            return new RuntimeException(
+                "Попытка записи в поток не поддерживающий запись",
+                "Cannot write to a stream that does not support writing");
+        }      
+      
         #endregion
     }
 }

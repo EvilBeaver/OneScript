@@ -21,8 +21,9 @@ namespace OneScript.StandardLibrary.TypeDescriptions
         
         private const string TYPE_BINARYDATA_NAME = "ДвоичныеДанные";
 
-        private List<BslTypeValue> _types = new List<BslTypeValue>();
-        
+        private static readonly TypeComparer _comparer = new TypeComparer();
+        private readonly SortedSet<BslTypeValue> _types = new SortedSet<BslTypeValue>(_comparer);
+
         internal TypeDescriptionBuilder()
         {
         }
@@ -38,13 +39,20 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 
         public TypeDescriptionBuilder AddTypes(IEnumerable<BslTypeValue> types)
         {
-            _types.AddRange(types);
+            foreach (var type in types)
+            {
+                if (type.TypeValue.ImplementingClass != typeof(BslUndefinedValue))
+                    _types.Add(type);
+            }
             return this;
         }
 
         public TypeDescriptionBuilder RemoveTypes(IEnumerable<BslTypeValue> types)
         {
-            _types.RemoveAll(types.Contains);
+            foreach (var type in types)
+            {
+                _types.Remove(type);
+            }
             return this;
         }
 
@@ -74,14 +82,11 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 
         public TypeDescription Build()
         {
-            _types = new List<BslTypeValue>(_types.Distinct());
-            _types.RemoveAll(type => type.TypeValue.ImplementingClass == typeof(BslUndefinedValue));
-            _types.Sort(new TypeComparer());
             var hasNumber = _types.Any(type => type.TypeValue == BasicTypes.Number);
-            var hasString =_types.Any(type => type.TypeValue == BasicTypes.String);
+            var hasString = _types.Any(type => type.TypeValue == BasicTypes.String);
             var hasDate = _types.Any(type => type.TypeValue == BasicTypes.Date);
             var hasBinaryData = _types.Any(x => x.TypeValue.Name == TYPE_BINARYDATA_NAME);
-            
+
             if (!hasNumber || _numberQualifiers == null) _numberQualifiers = new NumberQualifiers();
             if (!hasString || _stringQualifiers == null) _stringQualifiers = new StringQualifiers();
             if (!hasDate || _dateQualifiers == null) _dateQualifiers = new DateQualifiers();

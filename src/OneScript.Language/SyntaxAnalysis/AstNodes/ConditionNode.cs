@@ -26,7 +26,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         public IEnumerable<BslSyntaxNode> GetAlternatives()
         {
             if(_alternativesStart == 0)
-                return new BslSyntaxNode[0];
+                return System.Array.Empty<BslSyntaxNode>();
 
             return Children
                 .Skip(_alternativesStart)

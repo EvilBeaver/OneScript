@@ -41,6 +41,11 @@ namespace VSCode.DebugAdapter.Transport
         /// Выделенный тип для параметра в SetExceptionBreakpoints 
         /// </summary>
         public const int Version3 = 3;
+        
+        /// <summary>
+        /// Переменные модуля 
+        /// </summary>
+        public const int Version4 = 4;
 
         /// <summary>
         /// Значение, безопасное для всех версий движка
@@ -50,6 +55,6 @@ namespace VSCode.DebugAdapter.Transport
         /// <summary>
         /// Контрольное значение
         /// </summary>
-        public const int LatestKnownVersion = Version3;
+        public const int LatestKnownVersion = Version4;
     }
 }

@@ -129,6 +129,13 @@ namespace ScriptEngine.Compiler
                 output.WriteLine(
                     $"{i,-3}:type: {item.SystemType.Alias}, val: {item}");
             }
+            output.WriteLine(".identifiers");
+            for (int i = 0; i < module.Identifiers.Count; i++)
+            {
+                var item = module.Identifiers[i];
+                output.WriteLine(
+                    $"{i,-3}: {item}");
+            }
             output.WriteLine(".code");
             for (int i = 0; i < module.Code.Count; i++)
             {

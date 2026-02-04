@@ -138,6 +138,21 @@ namespace OneScript.DebugServices.Internal
 
             return GetDebugVariables(locals);
         }
+        
+        public Variable[] GetModuleVariables(int threadId, int frameIndex, int[] path)
+        {
+            var machine = GetMachine(threadId);
+
+            var moduleVars = machine.GetModuleVariables(frameIndex);
+
+            foreach (var step in path)
+            {
+                var variable = moduleVars[step];
+                moduleVars = GetChildVariables(variable);
+            }
+
+            return GetDebugVariables(moduleVars);
+        }
 
         public Variable[] GetEvaluatedVariables(string expression, int threadId, int frameIndex, int[] path)
         {

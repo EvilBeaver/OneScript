@@ -28,7 +28,7 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
         {
             var paramList = Children.FirstOrDefault(x => x.Kind == NodeKind.MethodParameters);
             if (paramList == default)
-                return new MethodParameterNode[0];
+                return System.Array.Empty<MethodParameterNode>();
 
             return ((NonTerminalNode) paramList).Children.Cast<MethodParameterNode>();
         }

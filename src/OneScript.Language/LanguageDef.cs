@@ -5,10 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Language.LexicalAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using OneScript.Language.LexicalAnalysis;
 
 namespace OneScript.Language
 {
@@ -21,13 +21,19 @@ namespace OneScript.Language
         
         private static readonly IdentifiersTrie<Token> _stringToToken = new IdentifiersTrie<Token>();
 
-        private static readonly IdentifiersTrie<bool> _undefined = new IdentifiersTrie<bool>();
-        private static readonly IdentifiersTrie<bool> _booleans = new IdentifiersTrie<bool>();
-        private static readonly IdentifiersTrie<bool> _logicalOp = new IdentifiersTrie<bool>();
-
-        private static readonly IdentifiersTrie<bool> _preprocImport = new IdentifiersTrie<bool>();
-
         const int BUILTINS_INDEX = (int)Token.ByValParam;
+
+        public enum WordType
+        {
+            Undefined,
+            Boolean,
+            Logical,
+            Null,
+            Preproc,
+            None
+        };
+
+        private static readonly IdentifiersTrie<WordType> _specwords = new IdentifiersTrie<WordType>();
 
         static LanguageDef()
         {
@@ -52,21 +58,26 @@ namespace OneScript.Language
 
             #region constants
 
-            _undefined.Add("Undefined", true);
-            _undefined.Add("Неопределено", true);
+            _specwords.Add("Undefined", WordType.Undefined);
+            _specwords.Add("Неопределено", WordType.Undefined);
 
-            _booleans.Add("True", true);
-            _booleans.Add("False", true);
-            _booleans.Add("Истина", true);
-            _booleans.Add("Ложь", true);
+            _specwords.Add("True", WordType.Boolean);
+            _specwords.Add("False", WordType.Boolean);
+            _specwords.Add("Истина", WordType.Boolean);
+            _specwords.Add("Ложь", WordType.Boolean);
 
-            _logicalOp.Add("And", true);
-            _logicalOp.Add("Or", true);
-            _logicalOp.Add("Not", true);
+            _specwords.Add("And", WordType.Logical);
+            _specwords.Add("Or", WordType.Logical);
+            _specwords.Add("Not", WordType.Logical);
 
-            _logicalOp.Add("И", true);
-            _logicalOp.Add("ИЛИ", true);
-            _logicalOp.Add("НЕ", true);
+            _specwords.Add("И", WordType.Logical);
+            _specwords.Add("ИЛИ", WordType.Logical);
+            _specwords.Add("НЕ", WordType.Logical);
+
+            _specwords.Add("NULL", WordType.Null);
+
+            _specwords.Add("Использовать", WordType.Preproc);
+            _specwords.Add("Use", WordType.Preproc);
 
             #endregion
 
@@ -216,8 +227,6 @@ namespace OneScript.Language
 
             #endregion
 
-            _preprocImport.Add("Использовать", true);
-            _preprocImport.Add("Use", true);
         }
 
         private static void AddToken(Token token, string name)
@@ -247,6 +256,7 @@ namespace OneScript.Language
 
             return Enum.GetName(typeof(Token), token);
         }
+
         public static string GetTokenAlias(Token token)
         {
             if (_keywords.TryGetValue(token,out var strings))
@@ -257,11 +267,9 @@ namespace OneScript.Language
             return Enum.GetName(typeof(Token), token);
         }
 
-
         public static Token GetToken(string tokText)
         {
-            Token result;
-            if (_stringToToken.TryGetValue(tokText, out result))
+            if (_stringToToken.TryGetValue(tokText, out Token result))
             {
                 return result;
             }
@@ -276,6 +284,30 @@ namespace OneScript.Language
             return _priority[op];
         }
 
+        public static int GetBinaryPriority(Token op)
+        {
+            return IsBinaryOperator(op) ? _priority[op] : -1;
+        }
+
+        public static int GetUnaryPriority(Token op)
+        {
+            return op switch
+            {
+                Token.OpenPar => MAX_OPERATION_PRIORITY + 1,
+
+                Token.Not => _priority[op],
+                Token.UnaryMinus => _priority[op],
+                Token.UnaryPlus => _priority[op],
+
+                Token.Minus => _priority[Token.UnaryMinus],
+                Token.Plus => _priority[Token.UnaryPlus],
+
+                _ => MAX_OPERATION_PRIORITY
+            };
+        }
+
+
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsBuiltInFunction(Token token)
         {
@@ -285,19 +317,25 @@ namespace OneScript.Language
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsBinaryOperator(Token token)
         {
-            return token == Token.Plus
-                   || token == Token.Minus
-                   || token == Token.Multiply
-                   || token == Token.Division
-                   || token == Token.Modulo
-                   || token == Token.And
-                   || token == Token.Or
-                   || token == Token.LessThan
-                   || token == Token.LessOrEqual
-                   || token == Token.MoreThan
-                   || token == Token.MoreOrEqual
-                   || token == Token.Equal
-                   || token == Token.NotEqual;
+            switch (token)
+            {
+                case Token.Plus:
+                case Token.Minus:
+                case Token.Multiply:
+                case Token.Division:
+                case Token.Modulo:
+                case Token.Equal:
+                case Token.LessThan:
+                case Token.LessOrEqual:
+                case Token.MoreThan:
+                case Token.MoreOrEqual:
+                case Token.NotEqual:
+                case Token.And:
+                case Token.Or:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -315,24 +353,42 @@ namespace OneScript.Language
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLiteral(in Lexem lex)
         {
-            return lex.Type == LexemType.StringLiteral
-                   || lex.Type == LexemType.NumberLiteral
-                   || lex.Type == LexemType.BooleanLiteral
-                   || lex.Type == LexemType.DateLiteral
-                   || lex.Type == LexemType.UndefinedLiteral
-                   || lex.Type == LexemType.NullLiteral;
+            switch (lex.Type)
+            {
+                case LexemType.StringLiteral:
+                case LexemType.NumberLiteral:
+                case LexemType.BooleanLiteral:
+                case LexemType.DateLiteral:
+                case LexemType.UndefinedLiteral:
+                case LexemType.NullLiteral:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsValidPropertyName(in Lexem lex)
         {
-            return lex.Type == LexemType.Identifier 
-                   || lex.Type == LexemType.BooleanLiteral
-                   || lex.Type == LexemType.NullLiteral
-                   || lex.Type == LexemType.UndefinedLiteral
-                   || lex.Token == Token.And
-                   || lex.Token == Token.Or
-                   || lex.Token == Token.Not;
+            switch (lex.Type)
+            {
+                case LexemType.Identifier:
+                case LexemType.BooleanLiteral:
+                case LexemType.NullLiteral:
+                case LexemType.UndefinedLiteral:
+                    return true;
+
+                default:
+                    switch (lex.Token)
+                    {
+                        case Token.And:
+                        case Token.Or:
+                        case Token.Not:
+                            return true;
+                        default:
+                            return false;
+                    }
+            }
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -395,28 +451,39 @@ namespace OneScript.Language
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEndOfBlockToken(Token token)
         {
-            return token == Token.EndIf
-                   || token == Token.EndProcedure
-                   || token == Token.EndFunction
-                   || token == Token.Else
-                   || token == Token.EndLoop
-                   || token == Token.EndTry
-                   || token == Token.EndOfText
-                   || token == Token.ElseIf
-                   || token == Token.Exception
-                   ;
+            switch (token)
+            {
+                case Token.EndIf:
+                case Token.EndProcedure:
+                case Token.EndFunction:
+                case Token.Else:
+                case Token.EndLoop:
+                case Token.EndTry:
+                case Token.EndOfText:
+                case Token.ElseIf:
+                case Token.Exception:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+
+        public static WordType GetWordType(string value)
+        {
+            return _specwords.TryGetValue(value, out var wordType)? wordType : WordType.None;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsBooleanLiteralString(string value)
         {
-            return _booleans.TryGetValue(value, out var nodeIsFilled) && nodeIsFilled;
+            return _specwords.TryGetValue(value, out var wordType) && wordType == WordType.Boolean;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsUndefinedString(string value)
         {
-            return _undefined.TryGetValue(value, out var nodeIsFilled) && nodeIsFilled;
+            return _specwords.TryGetValue(value, out var wordType) && wordType == WordType.Undefined;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -428,13 +495,13 @@ namespace OneScript.Language
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLogicalOperatorString(string content)
         {
-            return _logicalOp.TryGetValue(content, out var nodeIsFilled) && nodeIsFilled;
+            return _specwords.TryGetValue(content, out var wordType) && wordType == WordType.Logical;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsImportDirective(string value)
         {
-            return _preprocImport.TryGetValue(value, out var nodeIsFilled) && nodeIsFilled;
+            return _specwords.TryGetValue(value, out var wordType) && wordType == WordType.Preproc;
         }
     }
 }

@@ -24,11 +24,8 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
             _owner = owner;
         }
 
-        public int Count()
-        {
-            return _owner.Columns.Count();
-        }
-        
+        public int Count() => _owner.Columns.Count();
+
         public int Count(IBslProcess process) => Count();
         
         /// <summary>
@@ -89,9 +86,14 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
 
         public void Set(ValueTableColumn column, IValue value)
         {
-            _owner.Indexes.ElementRemoved(this);
-            _data[column] = column.ValueType.AdjustValue(value);
-            _owner.Indexes.ElementAdded(this);
+            if (column.IsIndexable)
+            {
+                _owner.Indexes.ElementRemoved(this);
+                _data[column] = column.ValueType.AdjustValue(value);
+                _owner.Indexes.ElementAdded(this);
+            }
+            else
+                _data[column] = column.ValueType.AdjustValue(value);
         }
 
         public void OnOwnerColumnRemoval(ValueTableColumn column)

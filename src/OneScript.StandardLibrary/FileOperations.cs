@@ -138,6 +138,11 @@ namespace OneScript.StandardLibrary
         [ContextMethod("НайтиФайлы", "FindFiles")]
         public ArrayImpl FindFiles(string dir, string mask = null, bool recursive = false)
         {
+            // Strip null characters that can be added by Windows WebDAV client
+            // to maintain compatibility with 1.x behavior
+            dir = PathHelper.StripNullCharacters(dir);
+            mask = PathHelper.StripNullCharacters(mask);
+            
             if (mask == null)
             {
                 // fix 225, 227, 228

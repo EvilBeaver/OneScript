@@ -362,9 +362,9 @@ namespace VSCode.DebugAdapter
 
         }
 
-        public void FillVariables(IVariableLocator locator)
+        public Variable[] FetchVariables(IVariablesProvider provider)
         {
-            locator.Hydrate(_debugger);
+            return provider.FetchVariables(_debugger);
         }
 
         public Variable Evaluate(StackFrame frame, string expression)

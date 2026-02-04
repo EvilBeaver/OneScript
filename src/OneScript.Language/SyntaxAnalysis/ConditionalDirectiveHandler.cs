@@ -297,7 +297,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void PopBlock()
         {
-            if (_blocks.Count > 0)
+            if (_blocks.Count != 0)
                 _blocks.Pop();
             else
                 AddError(LocalizedErrors.DirectiveIsMissing("Если"));

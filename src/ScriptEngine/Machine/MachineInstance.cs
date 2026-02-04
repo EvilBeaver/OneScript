@@ -681,7 +681,7 @@ namespace ScriptEngine.Machine
             _operationStack.Push(_module.Constants[arg]);
             NextInstruction();
         }
-        
+
         private void PushBool(int arg)
         {
             _operationStack.Push(BslBooleanValue.Create(arg == 1));
@@ -1011,7 +1011,7 @@ namespace ScriptEngine.Machine
             var objIValue = _operationStack.Pop();
             
             var context = objIValue.AsObject();
-            var propName = _module.Constants[arg].ToString(_process);
+            var propName = _module.Identifiers[arg];
             var propNum = context.GetPropertyNumber(propName);
 
             var propReference = Variable.CreateContextPropertyReference(context, propNum, "stackvar");
@@ -1048,7 +1048,7 @@ namespace ScriptEngine.Machine
  
             var objIValue = _operationStack.Pop();
             context = objIValue.AsObject();
-            var methodName = _module.Constants[arg].ToString(_process);
+            var methodName = _module.Identifiers[arg];
             methodId = context.GetMethodNumber(methodName);
             
             if (context.DynamicMethodSignatures)
@@ -1133,7 +1133,7 @@ namespace ScriptEngine.Machine
             if (_currentFrame.DiscardReturnValue)
                 _operationStack.Pop();
 
-            while(_exceptionsStack.Count > 0 && _exceptionsStack.Peek().HandlerFrame == _currentFrame)
+            while(_exceptionsStack.Count != 0 && _exceptionsStack.Peek().HandlerFrame == _currentFrame)
             {
                 _exceptionsStack.Pop();
             }
@@ -1180,8 +1180,9 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
-        private void NewInstance(int argCount)
+        private void NewInstance(int arg)
         {
+            int argCount = (int)_operationStack.Pop().AsNumber();
             IValue[] argValues = new IValue[argCount];
             // fact args
             for (int i = argCount - 1; i >= 0; i--)
@@ -1191,24 +1192,8 @@ namespace ScriptEngine.Machine
                     argValues[i] = RawValue(argValue);
             }
 
-            var typeName = PopRawBslValue().ToString(_process);
-            if (!_typeManager.TryGetType(typeName, out var type))
-            {
-                throw RuntimeException.TypeIsNotDefined(typeName);
-            }
-            
-            // TODO убрать cast после рефакторинга ITypeFactory
-            var factory = (TypeFactory)_typeManager.GetFactoryFor(type);
-            var context = new TypeActivationContext
-            {
-                TypeName = typeName,
-                TypeManager = _typeManager,
-                Services = _process.Services,
-                CurrentProcess = _process
-            };
-            
-            var instance = (IValue)factory.Activate(context, argValues);
-            _operationStack.Push(instance);
+            var typeName = _module.Identifiers[arg];
+            _operationStack.Push(CreateInstance(typeName, argValues));
             NextInstruction();
         }
 
@@ -1262,7 +1247,7 @@ namespace ScriptEngine.Machine
 
         private void EndTry(int arg)
         {
-            if (_exceptionsStack.Count > 0)
+            if (_exceptionsStack.Count != 0)
             {
                 var jmpInfo = _exceptionsStack.Peek();
                 if (jmpInfo.HandlerFrame == _currentFrame && arg == jmpInfo.HandlerAddress)
@@ -1385,7 +1370,7 @@ namespace ScriptEngine.Machine
         {
             var code = PopRawBslValue().ToString(_process);
             var module = CompileCached(code, CompileExecutionBatchModule);
-            if (!module.Methods.Any())
+            if (module.Methods.Count == 0)
             {
                 NextInstruction();
                 return;
@@ -2395,13 +2380,19 @@ namespace ScriptEngine.Machine
                 else
                     argValues = Array.Empty<IValue>();
             }
-            
+
             var typeName = PopRawBslValue().ToString(_process);
+            _operationStack.Push(CreateInstance(typeName, argValues));
+            NextInstruction();
+        }
+
+        private IValue CreateInstance(string typeName, IValue[] args)
+        {
             if (!_typeManager.TryGetType(typeName, out var type))
             {
                 throw RuntimeException.TypeIsNotDefined(typeName);
             }
-            
+
             // TODO убрать cast после рефакторинга ITypeFactory
             var factory = (TypeFactory)_typeManager.GetFactoryFor(type);
             var context = new TypeActivationContext
@@ -2411,10 +2402,7 @@ namespace ScriptEngine.Machine
                 Services = _process.Services,
                 CurrentProcess = _process
             };
-
-            var instance = factory.Activate(context, argValues);
-            _operationStack.Push(instance);
-            NextInstruction();
+            return factory.Activate(context, args);
         }
 
         #endregion
@@ -2575,6 +2563,24 @@ namespace ScriptEngine.Machine
 
             var frame = _fullCallstackCache[frameId];
             return frame.FrameObject.Locals;
+        }
+
+        public IList<IVariable> GetModuleVariables(int frameId)
+        {
+            Debug.Assert(_fullCallstackCache != null);
+            if (frameId < 0 || frameId >= _fullCallstackCache.Count)
+                return Array.Empty<IVariable>();
+
+            var frame = _fullCallstackCache[frameId].FrameObject;
+            var thisScope = frame.ThisScope;
+
+            var variables = new List<IVariable>(thisScope.VariablesCount);
+            for (int i = 0; i < thisScope.VariablesCount; i++)
+            {
+                variables.Add(thisScope.GetVariable(i));
+            }
+            
+            return variables;
         }
 
         private static ExecutionFrameInfo FrameInfo(StackRuntimeModule module, ExecutionFrame frame)

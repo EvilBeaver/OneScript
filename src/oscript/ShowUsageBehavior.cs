@@ -14,22 +14,37 @@ namespace oscript
             Output.WriteLine($"1Script Execution Engine. Version {Program.GetVersion()}");
             Output.WriteLine();
             Output.WriteLine("Usage:");
+            Output.WriteLine("  oscript.exe [options] <script_path> [script_arguments...]");
+            Output.WriteLine("  oscript.exe <mode> [mode_options] <script_path> [script_arguments...]");
             Output.WriteLine();
-            Output.WriteLine("I. Script execution: oscript.exe <script_path> [script arguments..]");
+
+            const int modeWidth = -18;
+            const int subOptionWidth = -14;
+
+            Output.WriteLine("Modes:");
+            Output.WriteLine($"  {"-measure",modeWidth} Measures script execution time.");
+            Output.WriteLine($"  {"-compile",modeWidth} Shows compiled module without execution.");
+            Output.WriteLine($"  {"-check",modeWidth} Provides syntax check.");
+            Output.WriteLine($"  {"",modeWidth}   Options:");
+            Output.WriteLine($"  {"",modeWidth}     {"-cgi",subOptionWidth} Syntax check in CGI-mode.");
+            Output.WriteLine($"  {"",modeWidth}     {"-env=<file>",subOptionWidth} Path to entrypoint file for context.");
+            
+            Output.WriteLine($"  {"-debug",modeWidth} Runs script in debug mode.");
+            Output.WriteLine($"  {"",modeWidth}   Options:");
+            Output.WriteLine($"  {"",modeWidth}     {"-port=<port>",subOptionWidth} Debugger port (default is 2801).");
+            Output.WriteLine($"  {"",modeWidth}     {"-noWait",subOptionWidth} Do not wait for debugger connection.");
+            
+            Output.WriteLine($"  {"-version, -v",modeWidth} Output version string.");
             Output.WriteLine();
-            Output.WriteLine("II. Special mode: oscript.exe <mode> <script_path> [script arguments..]");
-            Output.WriteLine("Mode can be one of these:");
-            Output.WriteLine($"  {"-measure",-12}measures execution time");
-            Output.WriteLine($"  {"-compile",-12}shows compiled module without execution");
-            Output.WriteLine($"  {"-check [-env=<entrypoint-file>]",-12}provides syntax check");
-            Output.WriteLine($"  {"-check -cgi",-12}provides syntax check in CGI-mode");
-            Output.WriteLine($"  {"-version",-12}output version string");
+            
+            Output.WriteLine("Options:");
+            Output.WriteLine($"  {"-encoding=<name>",modeWidth} Set output encoding (e.g. utf-8).");
+            Output.WriteLine($"  {"-codestat=<file>",modeWidth} Write code execution statistics to file.");
             Output.WriteLine();
-            Output.WriteLine("  -encoding=<encoding-name> set output encoding");
-            Output.WriteLine("  -codestat=<filename> write code statistics");
-            Output.WriteLine();
-            Output.WriteLine("III. Run as CGI application: oscript.exe -cgi <script_path> [script arguments..]");
-            Output.WriteLine("  Runs as CGI application under HTTP-server (Apache/Nginx/IIS/etc...)");
+            
+            Output.WriteLine("CGI Mode:");
+            Output.WriteLine("  oscript.exe -cgi <script_path> [script_arguments...]");
+            Output.WriteLine("  Runs as CGI application under HTTP-server.");
 
 			return 0;
 		}

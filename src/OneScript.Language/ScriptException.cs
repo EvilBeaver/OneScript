@@ -98,7 +98,11 @@ namespace OneScript.Language
             {
                 var sb = new StringBuilder(MessageWithoutCodeFragment);
                 sb.AppendLine();
-                var codeLine = Code?.Replace('\t', ' ').TrimEnd();
+                var codeLine = Code?.Replace('\t', ' ')?.TrimEnd() ?? String.Empty;
+                if (ColumnNumber > codeLine.Length)
+                {
+                    ColumnNumber = codeLine.Length;
+                }
 
                 if (ColumnNumber != ErrorPositionInfo.OUT_OF_TEXT)
                 {

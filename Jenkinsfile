@@ -4,8 +4,8 @@ pipeline {
     agent none
 
     environment {
-        VersionPrefix = '2.0.0'
-        VersionSuffix = 'rc.10'
+        VersionPrefix = '2.0.1'
+        VersionSuffix = 'rc.1'
         outputEnc = '65001'
     }
 
@@ -240,6 +240,29 @@ pipeline {
             }
         }
         
+        stage ('Publishing latest') {
+            when { 
+                anyOf {
+                    branch 'release/latest';
+                }
+            }
+            agent { label 'master' }
+            options { skipDefaultCheckout() }
+            
+            steps {
+                cleanWs()
+                checkout scm // чтобы получить файл release-notes
+                unstash 'dist'
+                unstash 'vsix'
+                
+                // Положит описание для сайта
+                publishReleaseNotes('latest')
+                
+                // Положит файлы дистрибутива в целевую папку
+                publishRelease('latest', true)
+            }
+        }
+        
         stage ('Publishing artifacts to clouds') {
             when {
                 anyOf { 
@@ -247,13 +270,13 @@ pipeline {
                     branch 'release/preview';
                 } 
             }
-            
+
             agent { label 'windows' }
 
             steps{
-                
+
                 unstash 'buildResults'
-                
+
                 withCredentials([string(credentialsId: 'NuGetToken', variable: 'NUGET_TOKEN')]) {
                     bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:PublishNuget /p:NugetToken=$NUGET_TOKEN"
                 }
@@ -266,7 +289,7 @@ pipeline {
                     agent { label 'linux' }
                     when { 
                         anyOf {
-                            branch 'release/latest'
+                            branch 'release/lts'
                             expression { 
                                 return env.TAG_NAME && env.TAG_NAME.startsWith('v1.')
                             }
@@ -274,7 +297,7 @@ pipeline {
                     }
                     steps {
                         script {
-                            def codename = env.TAG_NAME ? env.TAG_NAME : 'latest'
+                            def codename = env.TAG_NAME ? env.TAG_NAME : 'lts'
                             publishDockerImage('v1', codename)
                         }
                     }
@@ -285,14 +308,20 @@ pipeline {
                     when { 
                         anyOf {
                             branch 'develop'
-                            expression { 
-                                return env.TAG_NAME && env.TAG_NAME.startsWith('v2.')
-                            }
+                            branch 'release/latest'
                         }
                     }
                     steps {
                         script {
-                            def codename = env.TAG_NAME ? env.TAG_NAME : 'dev'
+                            def codename = ''
+                            if (env.VersionSuffix != null && !env.VersionSuffix.isEmpty()) {
+                                codename = 'dev'
+                            }
+                            else
+                            {
+                                codename = fullVersionNumber()
+                            }
+                            
                             publishDockerImage('v2', codename)
                         }
                     }
@@ -300,6 +329,20 @@ pipeline {
             }
         }
     }
+}
+
+def fullVersionNumber() {
+    def version = env.VersionPrefix
+    if (env.VersionSuffix != null && !env.VersionSuffix.isEmpty())
+    {
+        version = version + "-${env.VersionSuffix}"
+    }
+    
+    return version
+}
+
+def underscoredVersion() {
+    return fullVersionNumber().replaceAll("\\.", "_")
 }
 
 def publishRelease(codename, isNumbered) {
@@ -317,7 +360,8 @@ def publishRelease(codename, isNumbered) {
         """.stripIndent()
         
         if (isNumbered) {
-            def version="${env.VersionPrefix}-${env.VersionSuffix}".replaceAll("\\.", "_")
+        
+            def version = underscoredVersion()
             
             sh """
             TARGET="/var/www/oscript.io/download/versions/${version}/"
@@ -330,7 +374,7 @@ def publishRelease(codename, isNumbered) {
 
 def publishReleaseNotes(codename) {
     dir('markdownContent') {
-        def version="${env.VersionPrefix}-${env.VersionSuffix}".replaceAll("\\.", "_")
+        def version=underscoredVersion()
         def targetDir='/var/www/oscript.io/markdown/versions'
         
         sh """

@@ -12,7 +12,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
 using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
@@ -126,7 +125,7 @@ namespace ScriptEngine.Compiler
 
         private void CheckForwardedDeclarations()
         {
-            if (_forwardedMethods.Count > 0)
+            if (_forwardedMethods.Count != 0)
             {
                 foreach (var item in _forwardedMethods)
                 {
@@ -388,7 +387,8 @@ namespace ScriptEngine.Compiler
             var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
             
             VisitCodeBlock(node.Children[1]);
-
+            VisitBlockEnd(node.EndLocation);
+            
             AddCommand(OperationCode.Jmp, conditionIndex);
             var endLoop = AddCommand(OperationCode.Nop);
             CorrectCommandArgument(jumpFalseIndex, endLoop);
@@ -411,10 +411,9 @@ namespace ScriptEngine.Compiler
             _nestedLoops.Push(loopRecord);
             
             VisitIteratorLoopBody(node.LoopBody);
+            VisitBlockEnd(node.EndLocation);
             
             AddCommand(OperationCode.Jmp, loopBegin);
-            
-            VisitBlockEnd(node.EndLocation);
             
             var indexLoopEnd = AddCommand(OperationCode.StopIterator);
             CorrectCommandArgument(condition, indexLoopEnd);
@@ -477,7 +476,7 @@ namespace ScriptEngine.Compiler
 
         protected override void VisitReturnNode(BslSyntaxNode node)
         {
-            if (node.Children.Count > 0)
+            if (node.Children.Count != 0)
             {
                 VisitExpression(node.Children[0]);
                 AddCommand(OperationCode.MakeRawValue);
@@ -489,7 +488,7 @@ namespace ScriptEngine.Compiler
         protected override void VisitRaiseNode(BslSyntaxNode node)
         {
             int arg = -1;
-            if (node.Children.Any())
+            if (node.Children.Count != 0)
             {
                 VisitExpression(node.Children[0]);
                 arg = 0;
@@ -728,24 +727,17 @@ namespace ScriptEngine.Compiler
             
             PushCallArguments(args);
             
-            var cDef = new ConstDefinition();
-            cDef.Type = DataType.String;
-            cDef.Presentation = name.GetIdentifier();
-            int lastIdentifierConst = GetConstNumber(cDef);
+            int lastIdentifierIndex = GetIdentNumber(name.GetIdentifier());
             
             if (asFunction)
-                AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierConst);
+                AddCommand(OperationCode.ResolveMethodFunc, lastIdentifierIndex);
             else
-                AddCommand(OperationCode.ResolveMethodProc, lastIdentifierConst);
+                AddCommand(OperationCode.ResolveMethodProc, lastIdentifierIndex);
         }
         
         private void ResolveProperty(string identifier)
         {
-            var cDef = new ConstDefinition();
-            cDef.Type = DataType.String;
-            cDef.Presentation = identifier;
-            var identifierConstIndex = GetConstNumber(cDef);
-            AddCommand(OperationCode.ResolveProp, identifierConstIndex);
+            AddCommand(OperationCode.ResolveProp, GetIdentNumber(identifier));
         }
 
         private int PushVariable(TerminalNode node)
@@ -863,11 +855,13 @@ namespace ScriptEngine.Compiler
             else
             {
                 // can be defined later
-                var forwarded = new ForwardedMethodDecl();
-                forwarded.identifier = identifier;
-                forwarded.asFunction = asFunction;
-                forwarded.location = identifierNode.Location;
-                forwarded.factArguments = argList;
+                var forwarded = new ForwardedMethodDecl
+                {
+                    identifier = identifier,
+                    asFunction = asFunction,
+                    location = identifierNode.Location,
+                    factArguments = argList
+                };
 
                 PushCallArguments(call.ArgumentList);
                 
@@ -885,17 +879,17 @@ namespace ScriptEngine.Compiler
 
         private void PushArgumentsList(BslSyntaxNode argList)
         {
-            for (int i = 0; i < argList.Children.Count; i++)
+            var arguments = argList.Children;
+            for (int i = 0; i < arguments.Count; i++)
             {
-                var passedArg = argList.Children[i];
-                VisitCallArgument(passedArg);
+                VisitCallArgument(arguments[i]);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void VisitCallArgument(BslSyntaxNode passedArg)
         {
-            if (passedArg.Children.Count > 0)
+            if (passedArg.Children.Count != 0)
             {
                 VisitExpression(passedArg.Children[0]);
             }
@@ -1056,7 +1050,7 @@ namespace ScriptEngine.Compiler
             var argsPassed = node.ConstructorArguments.Children.Count;
             if (argsPassed == 1)
             {
-                PushArgumentsList(node.ConstructorArguments);
+                VisitCallArgument(node.ConstructorArguments.Children[0]); ;
             }
             else if (argsPassed > 1)
             {
@@ -1068,21 +1062,17 @@ namespace ScriptEngine.Compiler
         
         private void MakeNewObjectStatic(NewObjectNode node)
         {
-            var cDef = new ConstDefinition()
-            {
-                Type = DataType.String,
-                Presentation = node.TypeNameNode.GetIdentifier()
-            };
-            AddCommand(OperationCode.PushConst, GetConstNumber(cDef));
-
-            var callArgs = 0;
             if (node.ConstructorArguments != default)
             {
-                PushArgumentsList(node.ConstructorArguments);
-                callArgs = node.ConstructorArguments.Children.Count;
+                PushCallArguments(node.ConstructorArguments);
+            }
+            else
+            {
+                AddCommand(OperationCode.ArgNum, 0);
             }
 
-            AddCommand(OperationCode.NewInstance, callArgs);
+            var idNum = GetIdentNumber(node.TypeNameNode.GetIdentifier());
+            AddCommand(OperationCode.NewInstance, idNum);
         }
 
         private void ExitTryBlocks()
@@ -1094,7 +1084,7 @@ namespace ScriptEngine.Compiler
 
         private void PushTryNesting()
         {
-            if (_nestedLoops.Count > 0)
+            if (_nestedLoops.Count != 0)
             {
                 _nestedLoops.Peek().tryNesting++;
             }
@@ -1102,7 +1092,7 @@ namespace ScriptEngine.Compiler
         
         private void PopTryNesting()
         {
-            if (_nestedLoops.Count > 0)
+            if (_nestedLoops.Count != 0)
             {
                 _nestedLoops.Peek().tryNesting--;
             }
@@ -1327,6 +1317,18 @@ namespace ScriptEngine.Compiler
             }
             return idx;
         }
+
+        private int GetIdentNumber(string ident)
+        {
+            var idx = _module.Identifiers.IndexOf(ident);
+            if (idx < 0)
+            {
+                idx = _module.Identifiers.Count;
+                _module.Identifiers.Add(ident);
+            }
+            return idx;
+        }
+
 
         private int GetMethodRefNumber(in SymbolBinding methodBinding)
         {

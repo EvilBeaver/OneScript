@@ -47,6 +47,9 @@ namespace ScriptEngine.Machine
             if (obj is BslUndefinedValue)
                 return obj.GetHashCode();
 
+            if (obj is BslNullValue)
+                return obj.GetHashCode();
+
             try
             {
                 CLR_obj = ContextValuesMarshaller.ConvertToClrObject(obj);
@@ -55,6 +58,9 @@ namespace ScriptEngine.Machine
             {
                 CLR_obj = obj;
             }
+
+            if (CLR_obj == null)
+                return 0;
 
             return CLR_obj.GetHashCode();
         }

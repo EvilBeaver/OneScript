@@ -18,6 +18,6 @@ namespace OneScript.Language.SyntaxAnalysis.AstNodes
             Kind = kind;
         }
         
-        public override IReadOnlyList<BslSyntaxNode> Children => new BslSyntaxNode[0];
+        public override IReadOnlyList<BslSyntaxNode> Children => System.Array.Empty<BslSyntaxNode>();
     }
 }

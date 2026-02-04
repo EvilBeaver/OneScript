@@ -25,14 +25,38 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
     [ContextClass("КоллекцияКолонокТаблицыЗначений", "ValueTableColumnCollection")]
     public class ValueTableColumnCollection : AutoContext<ValueTableColumnCollection>, ICollectionContext<ValueTableColumn>, IDebugPresentationAcceptor
     {
+        private static readonly StringComparer _namesComparer = StringComparer.OrdinalIgnoreCase;
+
         private readonly List<ValueTableColumn> _columns = new List<ValueTableColumn>();
-        private readonly StringComparer _namesComparer = StringComparer.OrdinalIgnoreCase;
         private readonly ValueTable _owner;
-        private int maxColumnId = 0;
 
         public ValueTableColumnCollection(ValueTable owner)
         {
             _owner = owner;
+        }
+
+        public ValueTableColumn AddUnchecked(string name, string title, TypeDescription type = null)
+        {
+            var column = new ValueTableColumn(this, name, title, type, 0);
+            _columns.Add(column);
+            return column;
+        }
+
+        public ValueTableColumn AddUnchecked(string name, string title = null)
+        {
+            var column = new ValueTableColumn(this, name, title ?? name, null, 0);
+            _columns.Add(column);
+            return column;
+        }
+
+
+        private void CheckColumnName(string name)
+        {
+            if (!Utils.IsValidIdentifier(name))
+                throw ColumnException.WrongColumnName(name);
+
+            if (FindColumnByName(name) != null)
+                throw ColumnException.DuplicatedColumnName(name);
         }
 
         /// <summary>
@@ -46,13 +70,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Добавить", "Add")]
         public ValueTableColumn Add(string name, TypeDescription type = null, string title = null, int width = 0)
         {
-            if (!Utils.IsValidIdentifier(name))
-                throw ColumnException.WrongColumnName(name);
+            CheckColumnName(name);
 
-            if (FindColumnByName(name) != null)
-                throw ColumnException.DuplicatedColumnName(name);
-
-            var column = new ValueTableColumn(this, ++maxColumnId, name, title, type, width);
+            var column = new ValueTableColumn(this, name, title, type, width);
             _columns.Add(column);
 
             return column;
@@ -70,13 +90,9 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Вставить", "Insert")]
         public ValueTableColumn Insert(int index, string name, TypeDescription type = null, string title = null, int width = 0)
         {
-            if (!Utils.IsValidIdentifier(name))
-                throw ColumnException.WrongColumnName(name);
+            CheckColumnName(name);
 
-            if (FindColumnByName(name) != null)
-                throw ColumnException.DuplicatedColumnName(name);
-
-            ValueTableColumn column = new ValueTableColumn(this, ++maxColumnId, name, title, type, width);
+            ValueTableColumn column = new ValueTableColumn(this, name, title, type, width);
             _columns.Insert(index, column);
 
             return column;
@@ -113,10 +129,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("Найти", "Find")]
         public IValue Find(string name)
         {
-            ValueTableColumn Column = FindColumnByName(name);
-            if (Column == null)
-                return ValueFactory.Create();
-            return Column;
+            return FindColumnByName(name) ?? ValueFactory.Create();
         }
 
         /// <summary>

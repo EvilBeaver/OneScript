@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.IO;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -135,6 +136,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("Записать", "Write")]
         public void Write(BinaryDataBuffer buffer, int positionInBuffer, int number)
         {
+            if (!CanWrite)
+                throw new RuntimeException("Попытка записи в поток не поддерживающий запись", "Cannot write to a stream that does not support writing");
             _commonImpl.Write(buffer, positionInBuffer, number);
         }
 
@@ -271,6 +274,8 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("УстановитьРазмер", "SetSize")]
         public void SetSize(long size)
         {
+            if (!CanWrite)
+                throw new RuntimeException("Попытка записи в поток не поддерживающий запись", "Cannot write to a stream that does not support writing");
             _commonImpl.SetSize(size);
         }
 

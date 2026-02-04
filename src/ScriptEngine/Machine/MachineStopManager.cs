@@ -22,11 +22,19 @@ namespace ScriptEngine.Machine
 
     internal class MachineStopManager
     {
+        private struct StopPoint
+        {
+            public ExecutionFrame frame;
+            public int line;
+        }
+
         private DebugState _currentState = DebugState.Running;
         private readonly IBreakpointManager _breakpoints;
         private readonly MachineInstance _machine;
         private readonly IThreadEventsListener _threadManager;
         private ExecutionFrame[] _stopFrames;
+
+        private StopPoint _lastStopPoint;
         
         public MachineStopManager(MachineInstance runner, IThreadEventsListener threadManager, IBreakpointManager breakpoints)
         {
@@ -76,32 +84,47 @@ namespace ScriptEngine.Machine
 
             if (mustStop)
             {
-                if (_currentState == DebugState.Running)
+                // здесь мы уже останавливались?
+                if (_lastStopPoint.frame != currentFrame || _lastStopPoint.line != currentFrame.LineNumber)
                 {
-                    LastStopReason = MachineStopReason.Breakpoint;
-
-                    // Проверим существование условия остановки
-                    var condition = Breakpoints.GetCondition(module, currentFrame.LineNumber);
-
-                    if (!string.IsNullOrEmpty(condition))
+                    if (_currentState == DebugState.Running)
                     {
-                        try
+                        LastStopReason = MachineStopReason.Breakpoint;
+
+                        // Проверим существование условия остановки
+                        var condition = Breakpoints.GetCondition(module, currentFrame.LineNumber);
+
+                        if (!string.IsNullOrEmpty(condition))
                         {
-                            mustStop = _machine.EvaluateInFrame(condition, currentFrame).AsBoolean();
-                        }
-                        catch (Exception ex)
-                        {
-                            // Остановим и сообщим, что остановка произошла не по условию, а в результате ошибки вычисления
-                            mustStop = true;
-                            LastStopReason = MachineStopReason.BreakpointConditionError;
-                            LastStopErrorMessage = $"Не удалось выполнить условие точки останова: {ex.Message}";
+                            try
+                            {
+                                mustStop = _machine.EvaluateInFrame(condition, currentFrame).AsBoolean();
+                            }
+                            catch (Exception ex)
+                            {
+                                // Остановим и сообщим, что остановка произошла не по условию, а в результате ошибки вычисления
+                                mustStop = true;
+                                LastStopReason = MachineStopReason.BreakpointConditionError;
+                                LastStopErrorMessage = $"Не удалось выполнить условие точки останова: {ex.Message}";
+                            }
                         }
                     }
+                    else
+                    {
+                        LastStopReason = MachineStopReason.Step;
+                    }
+
+                    _lastStopPoint = new StopPoint()
+                    {
+                        frame = currentFrame,
+                        line = currentFrame.LineNumber
+                    };
+                    _currentState = DebugState.Running;
                 }
                 else
-                    LastStopReason = MachineStopReason.Step;
-
-                _currentState = DebugState.Running;
+                {
+                    mustStop = false;
+                }
             }
 
             return mustStop;

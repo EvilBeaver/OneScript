@@ -111,9 +111,10 @@ namespace OneScript.Contexts
                   .Any(x => includeDeprecations || (x as ContextMethodAttribute)?.IsDeprecated == false);
         }
 
-        private static bool MarkedAsContextProperty(MemberInfo member, bool includeDeprecations = false)
+        private static bool MarkedAsContextProperty(PropertyInfo member, bool includeDeprecations = false)
         {
-            return member.GetCustomAttributes(typeof(ContextPropertyAttribute), false).Any();
+            return member.GetCustomAttributes(typeof(ContextPropertyAttribute), false)
+                .Any(x => includeDeprecations || (x as ContextPropertyAttribute)?.IsDeprecated == false);
         }
 
         public ClassBuilder ExportConstructor(MethodInfo info)

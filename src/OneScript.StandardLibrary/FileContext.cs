@@ -24,6 +24,10 @@ namespace OneScript.StandardLibrary
 
         public FileContext(string name)
         {
+            // Strip null characters that can be added by Windows WebDAV client
+            // to maintain compatibility with 1.x behavior
+            name = PathHelper.StripNullCharacters(name);
+            
             if (String.IsNullOrWhiteSpace(name))
             {
                 _name = "";

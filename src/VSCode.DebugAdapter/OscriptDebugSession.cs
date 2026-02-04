@@ -372,40 +372,55 @@ namespace VSCode.DebugAdapter
                 return;
             }
 
-            var frameVariablesHandle = _threadState.RegisterVariableContainer(frame); 
-            var localScope = new Scope("Локальные переменные", frameVariablesHandle);
-            SendResponse(response, new ScopesResponseBody(new Scope[] {localScope}));
+            var scopes = new List<Scope>();
+            
+            // Scope 1: Локальные переменные
+            var localProvider = new LocalScopeProvider(frame.ThreadId, frame.Index);
+            var localHandle = _threadState.RegisterVariablesProvider(localProvider);
+            scopes.Add(new Scope("Локальные переменные", localHandle));
+            
+            // Scope 2: Переменные модуля (начиная с протокола версии 4)
+            if (_debuggee.ProtocolVersion >= ProtocolVersions.Version4)
+            {
+                var moduleProvider = new ModuleScopeProvider(frame.ThreadId, frame.Index);
+                var moduleHandle = _threadState.RegisterVariablesProvider(moduleProvider);
+                scopes.Add(new Scope("Переменные модуля", moduleHandle));
+            }
+            
+            SendResponse(response, new ScopesResponseBody(scopes.ToArray()));
         }
 
         public override void Variables(Response response, dynamic arguments)
         {
             LogCommandReceived();
             int varsHandle = GetFromContainer(arguments, "variablesReference", 0);
-            var variables = _threadState.GetVariableContainerById(varsHandle);
-            if (variables == null)
+            var provider = _threadState.GetVariablesProviderById(varsHandle);
+            if (provider == null)
             {
-                SendErrorResponse(response, 10001, "No active stackframe");
+                SendErrorResponse(response, 10001, "Invalid variables reference");
                 return;
             }
 
-            _debuggee.FillVariables(variables);
-
-            var responseArray = new VSCodeDebug.Variable[variables.Count];
+            // Получаем переменные через провайдер
+            var variables = _debuggee.FetchVariables(provider);
+            var responseArray = new VSCodeDebug.Variable[variables.Length];
 
             for (int i = 0; i < responseArray.Length; i++)
             {
                 var variable = variables[i];
+                int childHandle = 0;
 
-                if (variable.IsStructured && variable.ChildrenHandleID == 0)
+                if (variable.IsStructured)
                 {
-                    variable.ChildrenHandleID = _threadState.RegisterVariableContainer(variables.CreateChildLocator(i));
+                    var childProvider = provider.CreateChildProvider(i);
+                    childHandle = _threadState.RegisterVariablesProvider(childProvider);
                 }
 
                 responseArray[i] = new VSCodeDebug.Variable(
                     variable.Name,
                     variable.Presentation,
                     variable.TypeName,
-                    variable.ChildrenHandleID);
+                    childHandle);
             }
 
             SendResponse(response, new VariablesResponseBody(responseArray));
@@ -441,7 +456,7 @@ namespace VSCode.DebugAdapter
             
             Log.Debug("Evaluate {Expression} in {Context}", expression, context);
              
-            int id = -1;
+            int id = 0;
             OneScript.DebugProtocol.Variable evalResult;
             try
             {
@@ -449,8 +464,8 @@ namespace VSCode.DebugAdapter
 
                 if (evalResult.IsStructured)
                 {
-                    var loc = new EvaluatedVariableLocator(expression, frame.ThreadId, frame.Index);
-                    id = _threadState.RegisterVariableContainer(loc);
+                    var provider = new EvaluatedExpressionProvider(expression, frame.ThreadId, frame.Index);
+                    id = _threadState.RegisterVariablesProvider(provider);
                 }
             }
             catch (Exception e)

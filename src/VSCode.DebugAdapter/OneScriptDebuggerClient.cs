@@ -132,6 +132,18 @@ namespace VSCode.DebugAdapter
 
             return GetResponse<Variable[]>();
         }
+        
+        public Variable[] GetModuleVariables(int threadId, int frameIndex, int[] path)
+        {
+            WriteCommand(new object[]
+            {
+                threadId,
+                frameIndex,
+                path
+            });
+
+            return GetResponse<Variable[]>();
+        }
 
         public Variable[] GetEvaluatedVariables(string expression, int threadId, int frameIndex, int[] path)
         {

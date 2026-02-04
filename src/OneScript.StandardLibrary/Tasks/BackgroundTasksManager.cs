@@ -120,7 +120,7 @@ namespace OneScript.StandardLibrary.Tasks
                 var failedTasks = _tasks.Where(x => x.State == TaskStateEnum.CompletedWithErrors)
                     .ToList();
                 
-                if (failedTasks.Any())
+                if (failedTasks.Count != 0)
                 {
                     throw new ParametrizedRuntimeException(
                         Locale.NStr("ru = 'Задания завершились с ошибками';en = 'Tasks are completed with errors'"),

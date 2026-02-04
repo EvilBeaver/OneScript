@@ -11,22 +11,20 @@ namespace VSCode.DebugAdapter
     public class ThreadStateContainer
     {
         private readonly Handles<StackFrame> _framesHandles = new Handles<StackFrame>();
-        private readonly Handles<IVariableLocator> _variableHandles = new Handles<IVariableLocator>();
+        private readonly Handles<IVariablesProvider> _variablesHandles = new Handles<IVariablesProvider>();
 
         public void Reset()
         {
             _framesHandles.Reset();
-            _variableHandles.Reset();
+            _variablesHandles.Reset();
         }
 
         public int RegisterFrame(StackFrame processFrame) => _framesHandles.Create(processFrame);
 
         public StackFrame GetFrameById(int id) => _framesHandles.Get(id, null);
 
-        public int RegisterVariableContainer(StackFrame frame) => _variableHandles.Create(frame);
+        public int RegisterVariablesProvider(IVariablesProvider provider) => _variablesHandles.Create(provider);
         
-        public int RegisterVariableContainer(IVariableLocator parent) => _variableHandles.Create(parent);
-        
-        public IVariableLocator GetVariableContainerById(int id) => _variableHandles.Get(id, null);
+        public IVariablesProvider GetVariablesProviderById(int id) => _variablesHandles.Get(id, null);
     }
 }
