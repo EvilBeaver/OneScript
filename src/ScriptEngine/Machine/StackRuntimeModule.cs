@@ -57,7 +57,7 @@ namespace ScriptEngine.Machine
         public List<Command> Code { get; } = new List<Command>(512);
 
         public SourceCode Source { get; set; }
-        
+
         public IDictionary<Type, object> Interfaces { get; } = new Dictionary<Type, object>();
 
         #endregion

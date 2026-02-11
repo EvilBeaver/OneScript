@@ -1,4 +1,5 @@
 using MessagePack;
+using ScriptEngine.Serialization;
 
 namespace ScriptEngine.Machine.Serialization
 {
@@ -29,5 +30,11 @@ namespace ScriptEngine.Machine.Serialization
         public SymbolicBinding[] MethodBindings { get; set; }
         [Key(11)]
         public int EntryMethodIndex { get; set; }
+
+        [Key(12)]
+        public CodeSourceImage SourceInfo { get; set; }
+
+        [Key(13)]
+        public string[] Dependencies { get; set; }
     }
 }

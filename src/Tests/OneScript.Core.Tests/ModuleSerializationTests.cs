@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using FluentAssertions;
+using MessagePack;
 using Moq;
 using Xunit;
 using OneScript.Compilation.Binding;
@@ -25,6 +26,7 @@ using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Serialization;
+using ScriptEngine.Serialization;
 
 namespace OneScript.Core.Tests
 {
@@ -115,10 +117,58 @@ namespace OneScript.Core.Tests
             restored.Fields.Should().HaveCount(1);
         }
 
+        [Fact]
+        public void Should_Serialize_And_Deserialize_SourceInfo_And_Dependencies()
+        {
+            var code = "Var A;\n" +
+                       "Procedure Test() Export\n" +
+                       "EndProcedure";
+
+            var tempFile = Path.GetTempFileName();
+            File.WriteAllText(tempFile, code);
+
+            try
+            {
+                var source = SourceCodeBuilder.Create()
+                    .FromSource(new FileCodeSource(tempFile))
+                    .WithName("TestModule")
+                    .Build();
+
+                var environment = new RuntimeEnvironment();
+                var original = BuildModule(source, environment, out var symbolTable);
+
+                var providers = new ICodeSourceImageProvider[] { new FileCodeSourceImageProvider() };
+                var imageSerializer = new CodeSourceImageSerializer(providers);
+                var dependencies = new[] { "lib-one", "lib-two" };
+
+                var serializer = new ModuleSerializer(imageSerializer);
+                var data = serializer.Serialize(original, symbolTable, source, dependencies);
+
+                var deserializer = new ModuleDeserializer(imageSerializer);
+                var restored = deserializer.Deserialize(data, environment);
+                var image = MessagePackSerializer.Deserialize<ModuleImage>(data);
+
+                restored.Source.Should().NotBeNull();
+                restored.Source.Name.Should().Be("TestModule");
+                restored.Source.Location.Should().Be(Path.GetFullPath(tempFile));
+                image.Dependencies.Should().BeEquivalentTo(dependencies);
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+        }
+
         private static StackRuntimeModule BuildModule(string code, IRuntimeEnvironment environment, out SymbolTable symbolTable)
         {
+            var source = SourceCodeBuilder.Create().FromString(code).Build();
+            return BuildModule(source, environment, out symbolTable);
+        }
+
+        private static StackRuntimeModule BuildModule(SourceCode source, IRuntimeEnvironment environment, out SymbolTable symbolTable)
+        {
             var lexer = new DefaultLexer();
-            lexer.Iterator = SourceCodeBuilder.Create().FromString(code).Build().CreateIterator();
+            lexer.Iterator = source.CreateIterator();
             var errSink = new ThrowingErrorSink();
             var parser = new DefaultBslParser(
                 lexer,
@@ -129,7 +179,6 @@ namespace OneScript.Core.Tests
             node.Should().NotBeNull();
 
             var compiler = new StackMachineCodeGenerator(errSink, ExplicitImportsBehavior.Disabled);
-            var source = SourceCodeBuilder.Create().FromString(code).Build();
             symbolTable = environment.GetSymbolTable();
             
             // Add ThisScope for the module being compiled

@@ -35,6 +35,8 @@ namespace OneScript.Sources
 
         public string Location => _source.Location;
         
+        public ICodeSource Source => _source;
+        
         public string Name { get; }
         
         /// <summary>

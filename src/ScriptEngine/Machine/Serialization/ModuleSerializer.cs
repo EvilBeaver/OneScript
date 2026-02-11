@@ -8,11 +8,24 @@ using ScriptEngine.Machine;
 using OneScript.Execution;
 using OneScript.Contexts;
 using OneScript.Compilation.Binding;
+using OneScript.Sources;
+using ScriptEngine.Serialization;
 
 namespace ScriptEngine.Machine.Serialization
 {
     public class ModuleSerializer
     {
+        private readonly CodeSourceImageSerializer _codeSourceImageSerializer;
+
+        public ModuleSerializer()
+        {
+        }
+
+        public ModuleSerializer(CodeSourceImageSerializer codeSourceImageSerializer)
+        {
+            _codeSourceImageSerializer = codeSourceImageSerializer;
+        }
+
         public byte[] Serialize(StackRuntimeModule module, SymbolTable symbolTable)
         {
             using (var ms = new MemoryStream())
@@ -25,6 +38,21 @@ namespace ScriptEngine.Machine.Serialization
         public void Serialize(StackRuntimeModule module, SymbolTable symbolTable, Stream output)
         {
             var image = CreateImage(module, symbolTable);
+            MessagePackSerializer.Serialize(output, image);
+        }
+
+        public byte[] Serialize(StackRuntimeModule module, SymbolTable symbolTable, SourceCode sourceCode, IEnumerable<string> dependencies)
+        {
+            using (var ms = new MemoryStream())
+            {
+                Serialize(module, symbolTable, sourceCode, dependencies, ms);
+                return ms.ToArray();
+            }
+        }
+
+        public void Serialize(StackRuntimeModule module, SymbolTable symbolTable, SourceCode sourceCode, IEnumerable<string> dependencies, Stream output)
+        {
+            var image = CreateImage(module, symbolTable, sourceCode, dependencies);
             MessagePackSerializer.Serialize(output, image);
         }
 
@@ -45,6 +73,37 @@ namespace ScriptEngine.Machine.Serialization
                 MethodBindings = module.MethodRefs.Select(b => ConvertBinding(b, symbolTable, true)).ToArray(),
                 EntryMethodIndex = module.EntryMethodIndex
             };
+        }
+
+        private ModuleImage CreateImage(StackRuntimeModule module, SymbolTable symbolTable, SourceCode sourceCode, IEnumerable<string> dependencies)
+        {
+            if (_codeSourceImageSerializer == null)
+                throw new CodeSourceImageException("Реестр провайдеров источников кода не задан.");
+
+            var image = CreateImage(module, symbolTable);
+            image.FormatVersion = 2;
+            var actualSource = sourceCode ?? module?.Source;
+            if (actualSource == null)
+                throw new CodeSourceImageException("Не задан источник кода для сериализации.");
+
+            if (!_codeSourceImageSerializer.TryCreate(actualSource, out var sourceInfo))
+                throw new CodeSourceImageException("Не удалось сформировать образ источника кода.");
+
+            image.SourceInfo = sourceInfo;
+
+            image.Dependencies = NormalizeDependencies(dependencies);
+            return image;
+        }
+
+        private static string[] NormalizeDependencies(IEnumerable<string> dependencies)
+        {
+            if (dependencies == null)
+                return Array.Empty<string>();
+
+            return dependencies
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
         }
 
         private SymbolicBinding ConvertBinding(ModuleSymbolBinding binding, SymbolTable symbolTable, bool isMethod)
@@ -68,7 +127,8 @@ namespace ScriptEngine.Machine.Serialization
             else if (binding.Kind == ScopeBindingKind.ThisScope || binding.Kind == ScopeBindingKind.FrameScope)
             {
                 // For non-static bindings, get symbol name from SymbolTable
-                var scope = symbolTable.GetScope(binding.ScopeIndex);
+                var scopeIndex = binding.ScopeIndex < 0 ? symbolTable.ScopeCount - 1 : binding.ScopeIndex;
+                var scope = symbolTable.GetScope(scopeIndex);
                 result.SymbolName = isMethod
                     ? scope.Methods[binding.MemberNumber].Name
                     : scope.Variables[binding.MemberNumber].Name;

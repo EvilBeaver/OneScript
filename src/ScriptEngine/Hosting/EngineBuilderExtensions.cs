@@ -18,6 +18,7 @@ using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Debugger;
 using ScriptEngine.Machine.Interfaces;
+using ScriptEngine.Serialization;
 
 namespace ScriptEngine.Hosting
 {
@@ -60,6 +61,9 @@ namespace ScriptEngine.Hosting
             services.RegisterScoped<StackMachineProvider>();
             
             services.Register<IDependencyResolver, NullDependencyResolver>();
+
+            services.RegisterEnumerable<ICodeSourceImageProvider, FileCodeSourceImageProvider>();
+            services.RegisterSingleton<CodeSourceImageSerializer>();
             
             services.RegisterEnumerable<IExecutorProvider, StackMachineExecutor>();
             services.RegisterEnumerable<IDirectiveHandler, ConditionalDirectiveHandler>();

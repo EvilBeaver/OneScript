@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Collections.Generic;
 using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
@@ -13,6 +14,7 @@ using OneScript.Execution;
 using OneScript.Language;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
+using ScriptEngine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine.Debugger;
 
@@ -25,6 +27,7 @@ namespace ScriptEngine.Compiler
     public class CompilerFrontend : CompilerFrontendBase
     {
         private readonly IDependencyResolver _dependencyResolver;
+        private readonly DependencyResolverWrapper _dependencyResolverWrapper;
         private readonly PredefinedInterfaceResolver _interfaceResolver;
         private readonly OneScriptCoreOptions _options;
         private readonly CompilerBackendSelector _backendSelector;
@@ -38,6 +41,7 @@ namespace ScriptEngine.Compiler
             OneScriptCoreOptions options) : base(handlers, errorSink, services)
         {
             _dependencyResolver = dependencyResolver;
+            _dependencyResolverWrapper = new DependencyResolverWrapper(_dependencyResolver);
             _interfaceResolver = interfaceResolver;
             _options = options;
 
@@ -65,7 +69,7 @@ namespace ScriptEngine.Compiler
             
             var backend = new DefaultCompilerBackend(ErrorSink, actualBehavior);
             SetDefaultOptions(backend);
-            backend.DependencyResolver = _dependencyResolver;
+            backend.DependencyResolver = _dependencyResolverWrapper;
 
             return backend;
         }
@@ -86,6 +90,7 @@ namespace ScriptEngine.Compiler
 
         protected override IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType, IBslProcess process)
         {
+            _dependencyResolverWrapper.Reset();
             var backend = _backendSelector.Select(parsedModule);
             backend.Symbols = symbols;
             
@@ -98,6 +103,7 @@ namespace ScriptEngine.Compiler
 
         protected override IExecutableModule CompileExpressionInternal(SymbolTable symbols, ModuleNode parsedModule)
         {
+            _dependencyResolverWrapper.Reset();
             var backend = _backendSelector.Select(parsedModule);
             backend.Symbols = symbols;
             return backend.Compile(parsedModule, typeof(UserScriptContextInstance), ForbiddenBslProcess.Instance);
@@ -105,9 +111,12 @@ namespace ScriptEngine.Compiler
 
         protected override IExecutableModule CompileBatchInternal(SymbolTable symbols, ModuleNode parsedModule)
         {
+            _dependencyResolverWrapper.Reset();
             var backend = _backendSelector.Select(parsedModule);
             backend.Symbols = symbols;
             return backend.Compile(parsedModule, typeof(UserScriptContextInstance), ForbiddenBslProcess.Instance);
         }
+
+        public IReadOnlyCollection<string> LastCompilationDependencies => _dependencyResolverWrapper.Dependencies;
     }
 }

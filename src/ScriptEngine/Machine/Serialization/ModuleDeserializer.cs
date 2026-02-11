@@ -8,11 +8,24 @@ using ScriptEngine.Machine;
 using OneScript.Execution;
 using OneScript.Contexts;
 using OneScript.Compilation.Binding;
+using OneScript.Sources;
+using ScriptEngine.Serialization;
 
 namespace ScriptEngine.Machine.Serialization
 {
     public class ModuleDeserializer
     {
+        private readonly CodeSourceImageSerializer _codeSourceImageSerializer;
+
+        public ModuleDeserializer()
+        {
+        }
+
+        public ModuleDeserializer(CodeSourceImageSerializer codeSourceImageSerializer)
+        {
+            _codeSourceImageSerializer = codeSourceImageSerializer;
+        }
+
         public StackRuntimeModule Deserialize(byte[] data, IRuntimeEnvironment environment)
         {
             using (var ms = new MemoryStream(data))
@@ -79,7 +92,35 @@ namespace ScriptEngine.Machine.Serialization
 
             module.EntryMethodIndex = image.EntryMethodIndex;
 
+            RestoreSourceInfo(image, module);
             return module;
+        }
+
+        private void RestoreSourceInfo(ModuleImage image, StackRuntimeModule module)
+        {
+            if (image?.SourceInfo == null)
+                return;
+
+            if (_codeSourceImageSerializer == null)
+                throw new SourceCodeRestorationException("Реестр провайдеров источников кода не сконфигурирован.");
+
+            if (!_codeSourceImageSerializer.TryRestore(image.SourceInfo, out var codeSource, out var error))
+            {
+                var message = "Не удалось восстановить исходный код модуля из сериализованного образа.";
+                if (!string.IsNullOrWhiteSpace(error))
+                    message = $"{message} {error}";
+
+                throw new SourceCodeRestorationException(message);
+            }
+
+            var builder = SourceCodeBuilder.Create().FromSource(codeSource);
+            if (!string.IsNullOrWhiteSpace(image.SourceInfo.Name))
+                builder.WithName(image.SourceInfo.Name);
+
+            if (!string.IsNullOrWhiteSpace(image.SourceInfo.OwnerPackageId))
+                builder.WithOwnerPackage(image.SourceInfo.OwnerPackageId);
+
+            module.Source = builder.Build();
         }
 
         private BslPrimitiveValue RestoreConstant(ConstantImage image)
