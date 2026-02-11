@@ -25,7 +25,7 @@ namespace ScriptEngine.HostedScript.Extensions
                     FilePath = configFile,
                     Required = required
                 };
-                providers.Add(reader.GetProvider());
+                providers.Add(reader);
             }
 
             return providers;
@@ -61,7 +61,7 @@ namespace ScriptEngine.HostedScript.Extensions
         public static ConfigurationProviders UseEnvironmentVariableConfig(this ConfigurationProviders providers, string varName)
         {
             var reader = new EnvironmentVariableConfigProvider(varName);
-            providers.Add(reader.GetProvider());
+            providers.Add(reader);
             return providers;
         }
         

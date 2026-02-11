@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using OneScript.Commons;
+using ScriptEngine.Hosting;
 
 namespace ScriptEngine.HostedScript
 {
@@ -19,13 +20,30 @@ namespace ScriptEngine.HostedScript
         {
             _variableName = variableName;
         }
-        
+
+        public string SourceId => _variableName;
+
+        public IReadOnlyDictionary<string, string> Load()
+        {
+            var envValue = Environment.GetEnvironmentVariable(_variableName);
+            if (string.IsNullOrEmpty(envValue))
+                return new Dictionary<string, string>();
+
+            var paramList = new FormatParametersList(envValue);
+            return (IReadOnlyDictionary<string, string>)paramList.ToDictionary();
+        }
+
+        public string ResolveRelativePath(string path)
+        {
+            return path;
+        }
+
+        [Obsolete("Используйте метод Load()")]
         public Func<IDictionary<string, string>> GetProvider()
         {
             var varName = _variableName;
             return () =>
             {
-                // Читаем переменную окружения динамически при каждом вызове
                 var envValue = Environment.GetEnvironmentVariable(varName);
                 if (string.IsNullOrEmpty(envValue))
                     return new Dictionary<string, string>();
