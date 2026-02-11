@@ -30,27 +30,12 @@ namespace ScriptEngine.HostedScript
                 return new Dictionary<string, string>();
 
             var paramList = new FormatParametersList(envValue);
-            return (IReadOnlyDictionary<string, string>)paramList.ToDictionary();
+            return paramList.ToDictionary();
         }
 
         public string ResolveRelativePath(string path)
         {
             return path;
-        }
-
-        [Obsolete("Используйте метод Load()")]
-        public Func<IDictionary<string, string>> GetProvider()
-        {
-            var varName = _variableName;
-            return () =>
-            {
-                var envValue = Environment.GetEnvironmentVariable(varName);
-                if (string.IsNullOrEmpty(envValue))
-                    return new Dictionary<string, string>();
-                
-                var paramList = new FormatParametersList(envValue);
-                return paramList.ToDictionary();
-            };
         }
     }
 }

@@ -30,14 +30,7 @@ namespace ScriptEngine.HostedScript
         public string ResolveRelativePath(string path)
         {
             var confDir = Path.GetDirectoryName(FilePath);
-            return Path.GetFullPath(Path.Combine(confDir, path));
-        }
-
-        [Obsolete("Используйте метод Load()")]
-        public Func<IDictionary<string, string>> GetProvider()
-        {
-            var localCopy = FilePath;
-            return () => ReadConfigFile(localCopy);
+            return Path.Combine(confDir, path);
         }
         
         private IDictionary<string, string> ReadConfigFile(string configPath)

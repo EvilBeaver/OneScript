@@ -13,10 +13,9 @@ namespace ScriptEngine.Hosting
     public interface IConfigProvider
     {
         string SourceId { get; }
+        
         IReadOnlyDictionary<string, string> Load();
+        
         string ResolveRelativePath(string path);
-
-        [Obsolete("Используйте метод Load()")]
-        Func<IDictionary<string, string>> GetProvider();
     }
 }

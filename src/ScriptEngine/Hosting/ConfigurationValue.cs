@@ -28,12 +28,7 @@ namespace ScriptEngine.Hosting
         /// </summary>
         public string ResolvePath()
         {
-            if (string.IsNullOrEmpty(RawValue))
-                return RawValue;
-
-            return Path.IsPathRooted(RawValue)
-                ? RawValue
-                : Source.ResolveRelativePath(RawValue);
+            return string.IsNullOrEmpty(RawValue) ? RawValue : Source.ResolveRelativePath(RawValue.Trim());
         }
 
         /// <summary>
@@ -48,9 +43,7 @@ namespace ScriptEngine.Hosting
                 .Select(path =>
                 {
                     var trimmed = path.Trim();
-                    return Path.IsPathRooted(trimmed)
-                        ? trimmed
-                        : Source.ResolveRelativePath(trimmed);
+                    return Source.ResolveRelativePath(trimmed);
                 });
         }
     }

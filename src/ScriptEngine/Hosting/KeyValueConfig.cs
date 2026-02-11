@@ -14,20 +14,6 @@ namespace ScriptEngine.Hosting
     {
         private readonly Dictionary<string, ConfigurationValue> _values = new Dictionary<string, ConfigurationValue>(StringComparer.InvariantCultureIgnoreCase);
 
-        public KeyValueConfig()
-        { 
-        }
-
-        public KeyValueConfig(IDictionary<string, string> source)
-        {
-            Merge(source);
-        }
-
-        public void Merge(IDictionary<string, string> source)
-        {
-            Merge(source, null);
-        }
-
         public void Merge(IDictionary<string, string> source, IConfigProvider sourceProvider)
         {
             foreach (var keyValue in source)

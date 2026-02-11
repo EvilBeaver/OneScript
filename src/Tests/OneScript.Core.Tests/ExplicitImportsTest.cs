@@ -216,10 +216,10 @@ namespace OneScript.Core.Tests
                     .Create()
                     .SetupConfiguration(p =>
                     {
-                        p.Add(() => new Dictionary<string, string>
+                        p.Add(new DictionaryConfigProvider(new Dictionary<string, string>
                         {
                             { "lang.explicitImports", configValue }
-                        });
+                        }));
                     })
                     .SetDefaultOptions();
 
@@ -312,6 +312,27 @@ namespace OneScript.Core.Tests
                 }
                 
                 return null;
+            }
+        }
+        
+        private class DictionaryConfigProvider : IConfigProvider
+        {
+            private readonly Dictionary<string, string> _config;
+            public string SourceId => "dictionary";
+
+            public DictionaryConfigProvider(Dictionary<string, string> config)
+            {
+                _config = config;
+            }
+
+            public IReadOnlyDictionary<string, string> Load()
+            {
+                return _config;
+            }
+
+            public string ResolveRelativePath(string path)
+            {
+                return path;
             }
         }
     }

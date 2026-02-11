@@ -13,18 +13,11 @@ namespace ScriptEngine.Hosting
 {
     public class ConfigurationProviders
     {
-        private List<IConfigProvider> _providers = new List<IConfigProvider>();
-        private List<Func<IDictionary<string, string>>> _legacyProviders = new List<Func<IDictionary<string, string>>>();
+        private readonly List<IConfigProvider> _providers = new List<IConfigProvider>();
 
         public void Add(IConfigProvider source)
         {
             _providers.Add(source);
-        }
-
-        [Obsolete("Используйте Add(IConfigProvider)")]
-        public void Add(Func<IDictionary<string, string>> configGetter)
-        {
-            _legacyProviders.Add(configGetter);
         }
 
         public KeyValueConfig CreateConfig()
@@ -34,11 +27,6 @@ namespace ScriptEngine.Hosting
             {
                 var values = provider.Load();
                 cfg.Merge((IDictionary<string, string>)values, provider);
-            }
-
-            foreach (var legacy in _legacyProviders)
-            {
-                cfg.Merge(legacy());
             }
 
             return cfg;

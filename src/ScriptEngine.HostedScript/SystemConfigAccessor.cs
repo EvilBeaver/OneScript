@@ -15,13 +15,11 @@ namespace ScriptEngine.HostedScript.Library
     [GlobalContext(Category = "Работа с настройками системы")]
     public class SystemConfigAccessor : GlobalContextBase<SystemConfigAccessor>
     {
-        private KeyValueConfig _config;
-        private readonly ConfigurationProviders _providers;
+        private readonly EngineConfiguration _activeConfig;
 
-        public SystemConfigAccessor(ConfigurationProviders providers)
+        public SystemConfigAccessor(EngineConfiguration activeConfig)
         {
-            _providers = providers;
-            Refresh();
+            _activeConfig = activeConfig;
         }
 
         /// <summary>
@@ -30,7 +28,7 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ОбновитьНастройкиСистемы", "RefreshSystemConfig")]
         public void Refresh()
         {
-            _config = _providers.CreateConfig();
+            _activeConfig.Reload();
         }
 
         /// <summary>
@@ -41,21 +39,16 @@ namespace ScriptEngine.HostedScript.Library
         [ContextMethod("ПолучитьЗначениеСистемнойНастройки", "GetSystemOptionValue")]
         public IValue GetSystemOptionValue(string optionKey)
         {
-            string value = null;
-            if (_config != null)
-            {
-                value = _config[optionKey];
-            }
-
-            if (value != null)
-                return ValueFactory.Create(value);
+            var cfg = _activeConfig.GetConfig();
             
-            return ValueFactory.Create();
+            var value = cfg[optionKey];
+
+            return value != null ? ValueFactory.Create(value) : ValueFactory.Create();
         }
 
-        public static IAttachableContext CreateInstance(ConfigurationProviders providers)
+        public static IAttachableContext CreateInstance(EngineConfiguration configHolder)
         {
-            return new SystemConfigAccessor(providers);
+            return new SystemConfigAccessor(configHolder);
         }
     }
 }
