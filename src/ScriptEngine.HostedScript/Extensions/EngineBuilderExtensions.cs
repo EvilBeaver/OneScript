@@ -7,7 +7,9 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Extensions.DependencyInjection;
 using OneScript.Contexts;
+using OneScript.DependencyInjection;
 using OneScript.Native.Extensions;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
@@ -67,9 +69,9 @@ namespace ScriptEngine.HostedScript.Extensions
         
         public static IEngineBuilder UseFileSystemLibraries(this IEngineBuilder b)
         {
-            b.Services.RegisterSingleton<IDependencyResolver>(sp =>
+            b.Services.AddSingleton<IDependencyResolver>(sp =>
             {
-                var libOptions = sp.Resolve<OneScriptLibraryOptions>();
+                var libOptions = sp.GetRequiredService<OneScriptLibraryOptions>();
                 var searchDirs = new List<string>();
 
                 var sysDir = libOptions.SystemLibraryDir; 
@@ -107,7 +109,7 @@ namespace ScriptEngine.HostedScript.Extensions
 
         public static IEngineBuilder UseNativeRuntime(this IEngineBuilder builder)
         {
-            builder.Services.Register<IScriptInformationFactory, NativeScriptInfoFactory>();
+            builder.Services.AddTransient<IScriptInformationFactory, NativeScriptInfoFactory>();
             builder.Services.UseNativeRuntime();
             
             return builder;
@@ -115,7 +117,7 @@ namespace ScriptEngine.HostedScript.Extensions
 
         public static IEngineBuilder UseEventHandlers(this IEngineBuilder builder)
         {
-            builder.Services.RegisterSingleton<IEventProcessor, DefaultEventProcessor>();
+            builder.Services.AddSingleton<IEventProcessor, DefaultEventProcessor>();
             return builder;
         }
     }

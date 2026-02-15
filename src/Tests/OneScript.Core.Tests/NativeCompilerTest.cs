@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OneScript.Compilation.Binding;
 using OneScript.DependencyInjection;
@@ -33,26 +34,30 @@ namespace OneScript.Core.Tests
 {
     public class NativeCompilerTest
     {
-        private CompiledBlock GetCompiler(Action<ITypeManager, IServiceDefinitions> setup)
+        private CompiledBlock GetCompiler(Action<ITypeManager, IServiceCollection> setup)
         {
             var tm = new DefaultTypeManager();
-            var services = new TinyIocImplementation();
-            services.Register<ITypeManager>(tm);
+            var services = new ServiceCollection();
+            services.AddSingleton<ITypeManager>(tm);
             setup(tm, services);
 
-            return new CompiledBlock(services.CreateContainer());
+            var container = new TinyIocImplementation();
+            ServiceCollectionAdapter.PopulateContainer(services, container);
+            return new CompiledBlock(container);
         }
         
         private CompiledBlock GetCompiler(ITypeManager tm)
         {
-            var services = new TinyIocImplementation();
-            services.Register(tm);
-            services.Register<IExceptionInfoFactory, ExceptionInfoFactory>();
+            var services = new ServiceCollection();
+            services.AddSingleton(tm);
+            services.AddSingleton<IExceptionInfoFactory, ExceptionInfoFactory>();
             var factoryMock = new Mock<IBslProcessFactory>();
             factoryMock.Setup(f => f.NewProcess()).Returns(ForbiddenBslProcess.Instance);
-            services.Register<IBslProcessFactory>(factoryMock.Object);
+            services.AddSingleton<IBslProcessFactory>(factoryMock.Object);
 
-            return new CompiledBlock(services.CreateContainer());
+            var container = new TinyIocImplementation();
+            ServiceCollectionAdapter.PopulateContainer(services, container);
+            return new CompiledBlock(container);
         }
         
         [Fact]
@@ -667,13 +672,15 @@ namespace OneScript.Core.Tests
         [Fact]
         public void Can_Do_TryExcept()
         {
-            var services = new TinyIocImplementation();
-            services.Register<IExceptionInfoFactory, ExceptionInfoFactory>();
+            var services = new ServiceCollection();
+            services.AddSingleton<IExceptionInfoFactory, ExceptionInfoFactory>();
             var factoryMock = new Mock<IBslProcessFactory>();
             factoryMock.Setup(f => f.NewProcess()).Returns(ForbiddenBslProcess.Instance);
-            services.Register<IBslProcessFactory>(factoryMock.Object);
+            services.AddSingleton<IBslProcessFactory>(factoryMock.Object);
             
-            var block = new CompiledBlock(services);
+            var container = new TinyIocImplementation();
+            ServiceCollectionAdapter.PopulateContainer(services, container);
+            var block = new CompiledBlock(container);
             block.Parameters.Insert("Ф", new BslTypeValue(BasicTypes.Number));
             block.CodeBlock = 
                 "Попытка Если Ф = 1 Тогда Возврат 1; КонецЕсли;" +
@@ -784,10 +791,12 @@ namespace OneScript.Core.Tests
             var tm = new DefaultTypeManager();
             tm.RegisterClass(typeof(ArrayImpl));
 
-            var services = new TinyIocImplementation();
-            services.Register<ITypeManager>(tm);
+            var services = new ServiceCollection();
+            services.AddSingleton<ITypeManager>(tm);
             
-            var block = new CompiledBlock(services.CreateContainer());
+            var container = new TinyIocImplementation();
+            ServiceCollectionAdapter.PopulateContainer(services, container);
+            var block = new CompiledBlock(container);
             block.Parameters.Insert("Размер", new BslTypeValue(BasicTypes.Number));
             block.CodeBlock = "Возврат Новый Массив(Размер)";
 
@@ -803,10 +812,12 @@ namespace OneScript.Core.Tests
             var tm = new DefaultTypeManager();
             tm.RegisterClass(typeof(TextReadImpl));
 
-            var services = new TinyIocImplementation();
-            services.Register<ITypeManager>(tm);
+            var services = new ServiceCollection();
+            services.AddSingleton<ITypeManager>(tm);
             
-            var block = new CompiledBlock(services.CreateContainer());
+            var container = new TinyIocImplementation();
+            ServiceCollectionAdapter.PopulateContainer(services, container);
+            var block = new CompiledBlock(container);
             block.Parameters.Insert("Путь", new BslTypeValue(BasicTypes.String));
             block.CodeBlock = "Возврат Новый ЧтениеТекста(Путь,,,,Истина)";
 
@@ -892,9 +903,11 @@ namespace OneScript.Core.Tests
         {
             var tm = new DefaultTypeManager();
             var arrayType = tm.RegisterClass(typeof(ArrayImpl));
-            var services = new TinyIocImplementation();
-            services.Register<ITypeManager>(tm);
-            var block = new CompiledBlock(services);
+            var services = new ServiceCollection();
+            services.AddSingleton<ITypeManager>(tm);
+            var container = new TinyIocImplementation();
+            ServiceCollectionAdapter.PopulateContainer(services, container);
+            var block = new CompiledBlock(container);
             block.Parameters.Insert("Массив", new BslTypeValue(arrayType));
             block.CodeBlock = "Массив.Добавить();";
 

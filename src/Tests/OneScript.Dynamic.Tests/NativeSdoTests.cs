@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
@@ -6,6 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 using OneScript.Compilation;
 using OneScript.Compilation.Binding;
@@ -35,17 +37,16 @@ namespace OneScript.Dynamic.Tests
 {
     public class NativeSdoTests
     {
-        private IServiceDefinitions testServices;
+        private IServiceCollection testServices;
         
         public NativeSdoTests()
         {
-            testServices = new TinyIocImplementation();
-            testServices.Register(sp => sp);
-            testServices.RegisterSingleton<ITypeManager, DefaultTypeManager>();
-            testServices.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
-            testServices.RegisterSingleton<TypeSymbolsProviderFactory>();
-            testServices.RegisterEnumerable<IDirectiveHandler, EmptyDirectiveHandler>();
-            testServices.Register<IErrorSink, ThrowingErrorSink>();
+            testServices = new ServiceCollection();
+            testServices.AddSingleton<ITypeManager, DefaultTypeManager>();
+            testServices.AddSingleton<IGlobalsManager, GlobalInstancesManager>();
+            testServices.AddSingleton<TypeSymbolsProviderFactory>();
+            testServices.TryAddEnumerable<IDirectiveHandler, EmptyDirectiveHandler>();
+            testServices.AddTransient<IErrorSink, ThrowingErrorSink>();
             testServices.UseImports();
         }
 
@@ -87,7 +88,7 @@ namespace OneScript.Dynamic.Tests
                 new TypeDescriptor(typeof(UserScriptContextInstance), "TestClass", default));
             
             sdo.InitOwnData();
-            sdo.Initialize(GetProcess(testServices.CreateContainer()));
+            sdo.Initialize(GetProcess(CreateContainer()));
         }
 
         private IBslProcess GetProcess(IServiceContainer serviceContainer)
@@ -103,7 +104,7 @@ namespace OneScript.Dynamic.Tests
         {
             var symbols = new SymbolTable();
 
-            var serviceContainer = testServices.CreateContainer();
+            var serviceContainer = CreateContainer();
             var module = CreateModule(
                 @"Перем Ы Экспорт;
 
@@ -129,7 +130,7 @@ namespace OneScript.Dynamic.Tests
         {
             var symbols = new SymbolTable();
 
-            var serviceContainer = testServices.CreateContainer();
+            var serviceContainer = CreateContainer();
             var discoverer = serviceContainer.Resolve<ContextDiscoverer>();
             discoverer.DiscoverClasses(typeof(StructureImpl).Assembly);
             var module = CreateModule(
@@ -161,7 +162,7 @@ namespace OneScript.Dynamic.Tests
         public void Test_Can_Read_Module_Variables()
         {
             var symbols = new SymbolTable();
-            var serviceContainer = testServices.CreateContainer();
+            var serviceContainer = CreateContainer();
             var module = CreateModule(
                 @"Перем М Экспорт;
 
@@ -194,7 +195,7 @@ namespace OneScript.Dynamic.Tests
                 A = 1;
                 N = 4;";
             
-            var services = testServices.CreateContainer();
+            var services = CreateContainer();
             var compiler = services.Resolve<CompilerFrontend>();
 
             var source = SourceCodeBuilder.Create().FromString(code).Build();
@@ -207,7 +208,7 @@ namespace OneScript.Dynamic.Tests
         public void Test_Can_Call_ForwardedDeclarationCall()
         {
             var symbols = new SymbolTable();
-            var serviceContainer = testServices.CreateContainer();
+            var serviceContainer = CreateContainer();
             var module = CreateModule(
                 @"Процедура Процедура1()
 	                Процедура2();
@@ -232,7 +233,7 @@ namespace OneScript.Dynamic.Tests
                 "Соответствие[\"1\"] = \"2\";"
             );
 
-            var services = testServices.CreateContainer();
+            var services = CreateContainer();
             services.Resolve<ITypeManager>().RegisterClass(typeof(MapImpl));
             CreateModule(code, services, new SymbolTable());
         }
@@ -246,7 +247,7 @@ namespace OneScript.Dynamic.Tests
                 "Рез = Соответствие[\"1\"];"
             );
 
-            var services = testServices.CreateContainer();
+            var services = CreateContainer();
             services.Resolve<ITypeManager>().RegisterClass(typeof(MapImpl));
             CreateModule(code, services, new SymbolTable());
         }
@@ -268,7 +269,7 @@ namespace OneScript.Dynamic.Tests
             var sdo = new UserScriptContextInstance(module,
                 new TypeDescriptor(typeof(UserScriptContextInstance), "TestClass"));
             sdo.InitOwnData();
-            sdo.Initialize(GetProcess(testServices.CreateContainer()));
+            sdo.Initialize(GetProcess(CreateContainer()));
         }
         
         [Fact]
@@ -284,7 +285,7 @@ namespace OneScript.Dynamic.Tests
             var sdo = new UserScriptContextInstance(module,
                 new TypeDescriptor(typeof(UserScriptContextInstance), "TestClass"));
             sdo.InitOwnData();
-            sdo.Initialize(GetProcess(testServices.CreateContainer()));
+            sdo.Initialize(GetProcess(CreateContainer()));
         }
         
         [Fact]
@@ -302,7 +303,7 @@ namespace OneScript.Dynamic.Tests
             var sdo = new UserScriptContextInstance(module,
                 new TypeDescriptor(typeof(UserScriptContextInstance), "TestClass"));
             sdo.InitOwnData();
-            sdo.Initialize(GetProcess(testServices.CreateContainer()));
+            sdo.Initialize(GetProcess(CreateContainer()));
         }
 
         [Fact]
@@ -315,7 +316,7 @@ namespace OneScript.Dynamic.Tests
                   Таблица.Колонки.Добавить(""Имя"", Новый ОписаниеТипов(""Строка""));
               КонецПроцедуры";
             
-            var services = testServices.CreateContainer();
+            var services = CreateContainer();
             var typeManager = services.Resolve<ITypeManager>(); 
             typeManager.RegisterClass(typeof(ValueTable));
             typeManager.RegisterClass(typeof(ValueTableColumnCollection));
@@ -329,7 +330,7 @@ namespace OneScript.Dynamic.Tests
         {
             var code = "Массив = СтрРазделить(\"А,Б,В\", \",\", Ложь)";
             
-            var services = testServices.CreateContainer();
+            var services = CreateContainer();
             var stringOperations = new StringOperations();
             var symbols = new SymbolTable();
             symbols.PushObject(stringOperations);
@@ -345,7 +346,7 @@ namespace OneScript.Dynamic.Tests
 	              Возврат ?(Число<0,-1, 1);
               КонецФункции";
 
-            var services = testServices.CreateContainer();
+            var services = CreateContainer();
             var stringOperations = new StringOperations();
             var symbols = new SymbolTable();
             symbols.PushObject(stringOperations);
@@ -365,7 +366,7 @@ namespace OneScript.Dynamic.Tests
               КонецФункции
             ";
 
-            var services = testServices.CreateContainer();
+            var services = CreateContainer();
             var stringOperations = new StringOperations();
             var symbols = new SymbolTable();
             symbols.PushObject(stringOperations);
@@ -377,7 +378,7 @@ namespace OneScript.Dynamic.Tests
         public void Conditional_Expression_With_Arbitrary_Value()
         {
             var symbols = new SymbolTable();
-            var serviceContainer = testServices.CreateContainer();
+            var serviceContainer = CreateContainer();
             var module = CreateModule(
             @"Перем Рез0 Экспорт;
               Перем Рез1 Экспорт;
@@ -425,7 +426,7 @@ namespace OneScript.Dynamic.Tests
             var symbols = new SymbolTable();
 
             testServices.UseNativeRuntime();
-            var serviceContainer = testServices.CreateContainer();
+            var serviceContainer = CreateContainer();
             var discoverer = serviceContainer.Resolve<ContextDiscoverer>();
             discoverer.DiscoverClasses(typeof(RegExpImpl).Assembly);
             var module = CreateModule(code, serviceContainer, symbols);
@@ -434,7 +435,7 @@ namespace OneScript.Dynamic.Tests
                 new TypeDescriptor(typeof(UserScriptContextInstance), "TestClass"),
                 new IValue[] { new RegExpImpl(".") });
             sdo.InitOwnData();
-            sdo.Initialize(GetProcess(testServices.CreateContainer()));
+            sdo.Initialize(GetProcess(CreateContainer()));
         }
 
         [Fact(Skip = "Выходные параметры не поддерживаются нативной средой")]
@@ -450,7 +451,7 @@ namespace OneScript.Dynamic.Tests
             var symbols = new SymbolTable();
 
             testServices.UseNativeRuntime();
-            var serviceContainer = testServices.CreateContainer();
+            var serviceContainer = CreateContainer();
             var discoverer = serviceContainer.Resolve<ContextDiscoverer>();
             discoverer.DiscoverClasses(typeof(RegExpImpl).Assembly);
             var module = CreateModule(code, serviceContainer, symbols);
@@ -458,7 +459,7 @@ namespace OneScript.Dynamic.Tests
             var sdo = new UserScriptContextInstance(module,
                 new TypeDescriptor(typeof(UserScriptContextInstance), "TestClass"));
             sdo.InitOwnData();
-            var process = GetProcess(testServices.CreateContainer());
+            var process = GetProcess(CreateContainer());
             sdo.Initialize(process);
             sdo.ToString(process).Should().Be("Привет");
         }
@@ -469,7 +470,14 @@ namespace OneScript.Dynamic.Tests
             Assert.True(false);
         }
 
-        private DynamicModule CreateModule(string code) => CreateModule(code, testServices.CreateContainer(), new SymbolTable());
+        private IServiceContainer CreateContainer()
+        {
+            var container = new TinyIocImplementation();
+            ServiceCollectionAdapter.PopulateContainer(testServices, container);
+            return container;
+        }
+
+        private DynamicModule CreateModule(string code) => CreateModule(code, CreateContainer(), new SymbolTable());
         
         private DynamicModule CreateModule(string code, IServiceContainer services, SymbolTable symbols)
         {

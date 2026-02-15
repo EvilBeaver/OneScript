@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using OneScript.DependencyInjection;
 using ScriptEngine.Machine;
 
@@ -27,7 +29,7 @@ namespace ScriptEngine.Hosting
 
         public EnvironmentProviders EnvironmentProviders { get; } = new EnvironmentProviders();
         
-        public IServiceDefinitions Services { get; set; } = new TinyIocImplementation();
+        public IServiceCollection Services { get; set; } = new ServiceCollection();
         
         public virtual ScriptingEngine Build()
         {
@@ -46,7 +48,14 @@ namespace ScriptEngine.Hosting
 
         protected virtual IServiceContainer GetContainer()
         {
-            return Services.CreateContainer();
+            if (!Services.Any(s => s.ServiceType == typeof(ConfigurationProviders)))
+            {
+                Services.AddSingleton(ConfigurationProviders);
+            }
+
+            var container = new TinyIocImplementation();
+            ServiceCollectionAdapter.PopulateContainer(Services, container);
+            return container;
         }
     }
 }

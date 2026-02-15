@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
@@ -12,114 +12,72 @@ using TinyIoC;
 
 namespace ScriptEngine.Hosting
 {
-    public class TinyIocImplementation : IServiceDefinitions, IServiceContainer
+    public class TinyIocImplementation : IServiceContainer
     {
         private readonly TinyIoCContainer _container;
         private readonly Dictionary<Type, List<Type>> _multiRegistrations = new Dictionary<Type, List<Type>>();
         
         private readonly ISet<Type> _scopedRegistrations = new HashSet<Type>();
 
-        #region Registration API
-
         public TinyIocImplementation()
         {
             _container = new TinyIoCContainer();
         }
 
-        private TinyIocImplementation(TinyIoCContainer container)
+        private TinyIocImplementation(TinyIoCContainer container, ISet<Type> scopedRegistrations)
         {
             _container = container;
+            _scopedRegistrations = scopedRegistrations;
         }
         
-        public IServiceContainer CreateContainer()
+        public void RegisterTransient(Type serviceType, Type implementationType)
+        {
+            _container.Register(serviceType, implementationType).AsMultiInstance();
+        }
+        
+        public void RegisterTransient(Type serviceType, Func<IServiceProvider, object> factory)
+        {
+            _container.Register(serviceType, (c, p) => factory(new ServiceProviderAdapter(this)));
+        }
+
+        public void RegisterSingleton(Type serviceType, Type implementationType)
+        {
+            _container.Register(serviceType, implementationType).AsSingleton();
+        }
+        
+        public void RegisterSingleton(Type serviceType, object instance)
+        {
+            _container.Register(serviceType, instance);
+        }
+
+        public void RegisterSingleton(Type serviceType, Func<IServiceProvider, object> factory)
+        {
+            _container.Register(serviceType, (c, p) => factory(new ServiceProviderAdapter(this))).AsSingleton();
+        }
+
+        public void RegisterScoped(Type serviceType, Type implementationType)
+        {
+            _scopedRegistrations.Add(serviceType);
+        }
+
+        public void RegisterEnumerable(Type serviceType, Type implementationType)
+        {
+            if (!_multiRegistrations.TryGetValue(serviceType, out var list))
+            {
+                list = new List<Type>();
+                _multiRegistrations[serviceType] = list;
+            }
+            
+            list.Add(implementationType);
+        }
+
+        public void FinalizeRegistrations()
         {
             foreach (var registration in _multiRegistrations)
             {
                 _container.RegisterMultiple(registration.Key, registration.Value).AsMultiInstance();
             }
-            
-            return this;
         }
-
-        public void Register(Type knownType)
-        {
-            _container.Register(knownType).AsMultiInstance();
-        }
-
-        public void Register(Type interfaceType, Type implementation)
-        {
-            _container.Register(interfaceType, implementation).AsMultiInstance();
-        }
-
-        public void Register<T>() where T : class
-        {
-            _container.Register<T>().AsMultiInstance();
-        }
-
-        public void Register<T>(T instance) where T : class
-        {
-            _container.Register<T>(instance);
-        }
-
-        public void Register<T, TImpl>() where T : class where TImpl : class, T
-        {
-            _container.Register<T, TImpl>().AsMultiInstance();
-        }
-
-        public void Register<T>(Func<IServiceContainer, T> factory) where T : class
-        {
-            _container.Register<T>((t,p) => factory(this));
-        }
-
-        public void RegisterSingleton(Type knownType)
-        {
-            _container.Register(knownType).AsSingleton();
-        }
-
-        public void RegisterSingleton(Type interfaceType, Type implementation)
-        {
-            _container.Register(interfaceType, implementation).AsSingleton();
-        }
-
-        public void RegisterSingleton<T>() where T : class
-        {
-            _container.Register<T>().AsSingleton();
-        }
-
-        public void RegisterSingleton<T>(T instance) where T : class
-        {
-            _container.Register<T>(instance);
-        }
-
-        public void RegisterSingleton<T, TImpl>() where T : class where TImpl : class, T
-        {
-            _container.Register<T, TImpl>().AsSingleton();
-        }
-
-        public void RegisterSingleton<T>(Func<IServiceContainer, T> factory) where T : class
-        {
-            _container.Register<T>((t, p) => factory(this)).AsSingleton();
-        }
-
-        public void RegisterScoped<T>() where T : class
-        {
-            _scopedRegistrations.Add(typeof(T));
-        }
-
-        public void RegisterEnumerable<T, TImpl>() where T : class where TImpl : class, T
-        {
-            if (!_multiRegistrations.TryGetValue(typeof(T), out var list))
-            {
-                list = new List<Type>();
-                _multiRegistrations[typeof(T)] = list;
-            }
-            
-            list.Add(typeof(TImpl));
-        }
-
-        #endregion
-
-        #region Resolution API
 
         public object Resolve(Type type)
         {
@@ -149,7 +107,7 @@ namespace ScriptEngine.Hosting
 
         public IServiceContainer CreateScope()
         {
-            var child = new TinyIocImplementation(_container.GetChildContainer());
+            var child = new TinyIocImplementation(_container.GetChildContainer(), _scopedRegistrations);
             foreach (var scopedRegistration in _scopedRegistrations)
             {
                 child._container.Register(scopedRegistration).AsSingleton();
@@ -158,11 +116,24 @@ namespace ScriptEngine.Hosting
             return child;
         }
 
-        #endregion
-
         public void Dispose()
         {
             _container.Dispose();
+        }
+        
+        private class ServiceProviderAdapter : IServiceProvider
+        {
+            private readonly IServiceContainer _container;
+
+            public ServiceProviderAdapter(IServiceContainer container)
+            {
+                _container = container;
+            }
+
+            public object GetService(Type serviceType)
+            {
+                return _container.TryResolve(serviceType);
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
@@ -8,8 +8,10 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using OneScript.DependencyInjection;
 using ScriptEngine;
+using ScriptEngine.Hosting;
 using Xunit;
 
 namespace OneScript.Core.Tests
@@ -21,16 +23,13 @@ namespace OneScript.Core.Tests
         [Fact]
         public void Scoped_Gets_Same_Instance_As_Global()
         {
-            var privateType = typeof(ScriptingEngine).Assembly.GetTypes()
-                .First(t => t.Name == "TinyIocImplementation");
+            var services = new ServiceCollection();
+            services.AddSingleton<TestService>();
 
-            privateType.Should().NotBeNull();
-
-            var s = (IServiceDefinitions)Activator.CreateInstance(privateType);
+            var container = new TinyIocImplementation();
+            ServiceCollectionAdapter.PopulateContainer(services, container);
             
-            s.RegisterSingleton<TestService>();
-
-            var parent = s.CreateContainer();
+            var parent = container;
             var child = parent.CreateScope();
 
             var parentInstance = parent.Resolve<TestService>();

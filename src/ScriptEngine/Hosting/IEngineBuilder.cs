@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ScriptEngine.Hosting
 {
@@ -15,7 +15,7 @@ namespace ScriptEngine.Hosting
         
         EnvironmentProviders EnvironmentProviders { get; }
         
-        IServiceDefinitions Services { get; set; }
+        IServiceCollection Services { get; set; }
         
         ScriptingEngine Build();
     }
