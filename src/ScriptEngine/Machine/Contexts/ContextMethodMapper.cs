@@ -11,6 +11,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using OneScript.Contexts;
+using OneScript.Contexts.Converters;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Language;
@@ -260,7 +261,14 @@ namespace ScriptEngine.Machine.Contexts
                 for (int bslIndex = 0,clrIndex = clrIndexStart; bslIndex < argsLen; bslIndex++, clrIndex++)
                 {
                     var targetType = parameters[clrIndex].ParameterType;
-                    var convertMethod = ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType);
+
+                    var converterAttr = parameters[clrIndex].GetCustomAttribute<BslValueConverterAttribute>();
+                    var converterType = converterAttr?.ConverterType;
+
+                    var convertMethod =
+                        converterType == null
+                            ? ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType)
+                            : ConverterCallFacility.ConvertParamMethod;
                     
                     Expression defaultArg;
                     if (parameters[clrIndex].HasDefaultValue)
@@ -273,10 +281,24 @@ namespace ScriptEngine.Machine.Contexts
                     }
 
                     var indexedArg = Expression.ArrayIndex(argsParam, Expression.Constant(bslIndex));
-                    var conversionCall = Expression.Call(convertMethod,
+
+                    MethodCallExpression conversionCall;
+                    if (converterType == null)
+                    {
+                        conversionCall = Expression.Call(convertMethod,
                         indexedArg,
                         defaultArg,
                         processParam);
+                    }
+                    else
+                    {
+                        conversionCall = Expression.Call(convertMethod,
+                            indexedArg,
+                            defaultArg,
+                            Expression.Constant(converterType),
+                            Expression.Constant(targetType),
+                            processParam);
+                    }
                     
                     argsPass.Add(Expression.Convert(conversionCall, targetType));
                 }

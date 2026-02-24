@@ -270,7 +270,7 @@ namespace ScriptEngine.Machine.Contexts
             return valueObj;
         }
 
-        private static IValue ConvertReturnValue(object objParam, Type type)
+        public static IValue ConvertReturnValue(object objParam, Type type)
         {
             if (objParam == null)
                 return ValueFactory.Create();
