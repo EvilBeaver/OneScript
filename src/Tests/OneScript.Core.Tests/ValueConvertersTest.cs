@@ -32,7 +32,7 @@ namespace OneScript.Core.Tests
             
             var module = engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, code, context, engine.NewProcess());
             
-            var instance = engine.NewObject(module, engine.NewProcess());
+            var instance = engine.NewObject(module, engine.NewProcess(), context);
             var result = instance.GetPropValue("Результат");
             result.SystemType.Should().Be(BasicTypes.Number);
             result.AsNumber().Should().Be(8);

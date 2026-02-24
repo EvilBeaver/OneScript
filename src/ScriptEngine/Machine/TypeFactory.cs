@@ -11,8 +11,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using OneScript.Types;
 using OneScript.Contexts;
+using OneScript.Contexts.Converters;
 using OneScript.Exceptions;
 using ScriptEngine.Types;
 using Refl = System.Reflection;
@@ -122,23 +124,35 @@ namespace ScriptEngine.Machine
                 {
                     var conversionArg = Expression.ArrayIndex(argsParam, Expression.Constant(i));
                     var targetType = parameters[paramIndex].ParameterType;
-                    var convertMethod = ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType);
+                    
+                    var converterAttr = parameters[paramIndex].GetCustomAttribute<BslValueConverterAttribute>();
+                    var converterType = converterAttr?.ConverterType;
+                    
+                    var convertMethod =
+                        converterType == null
+                            ? ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType)
+                            : ConverterCallFacility.ConvertParamMethod;
+                    
+                    var defaultArg = parameters[paramIndex].HasDefaultValue ? 
+                        Expression.Constant(parameters[paramIndex].DefaultValue, targetType) :
+                        ContextValuesMarshaller.GetDefaultBslValueConstant(targetType);
 
-                    Expression marshalledArg;
-                    if (parameters[paramIndex].HasDefaultValue)
+                    Expression conversionCall;
+                    if (converterType == null)
                     {
-                        var defaultArg = Expression.Constant(parameters[paramIndex].DefaultValue, targetType);
-                        marshalledArg = Expression.Call(convertMethod, conversionArg, defaultArg, bslProcessParameter);
+                        conversionCall = Expression.Call(convertMethod, conversionArg, defaultArg, bslProcessParameter);
                     }
                     else
                     {
-                        marshalledArg = Expression.Call(
-                            convertMethod,
+                        conversionCall = Expression.Call(convertMethod,
                             conversionArg,
-                            ContextValuesMarshaller.GetDefaultBslValueConstant(targetType),
+                            defaultArg,
+                            Expression.Constant(converterType),
+                            Expression.Constant(targetType),
                             bslProcessParameter);
                     }
-                    argsToPass.Add(Expression.Convert(marshalledArg, targetType));
+                    
+                    argsToPass.Add(Expression.Convert(conversionCall, targetType));
                 }
 
                 ++paramIndex;

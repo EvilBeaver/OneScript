@@ -269,16 +269,10 @@ namespace ScriptEngine.Machine.Contexts
                         converterType == null
                             ? ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType)
                             : ConverterCallFacility.ConvertParamMethod;
-                    
-                    Expression defaultArg;
-                    if (parameters[clrIndex].HasDefaultValue)
-                    {
-                        defaultArg = Expression.Constant(parameters[clrIndex].DefaultValue, targetType);
-                    }
-                    else
-                    {
-                        defaultArg = ContextValuesMarshaller.GetDefaultBslValueConstant(targetType);
-                    }
+
+                    var defaultArg = parameters[clrIndex].HasDefaultValue ? 
+                        Expression.Constant(parameters[clrIndex].DefaultValue, targetType) :
+                        ContextValuesMarshaller.GetDefaultBslValueConstant(targetType);
 
                     var indexedArg = Expression.ArrayIndex(argsParam, Expression.Constant(bslIndex));
 
@@ -286,9 +280,9 @@ namespace ScriptEngine.Machine.Contexts
                     if (converterType == null)
                     {
                         conversionCall = Expression.Call(convertMethod,
-                        indexedArg,
-                        defaultArg,
-                        processParam);
+                            indexedArg,
+                            defaultArg,
+                            processParam);
                     }
                     else
                     {
