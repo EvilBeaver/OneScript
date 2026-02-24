@@ -196,10 +196,15 @@ namespace OneScript.StandardLibrary.Processes
 
         [ContextProperty("Имя", "Name")] public string Name => _p.ProcessName;
 
-        [ContextMethod("Завершить","Stop")]
-        public void Stop()
+        /// <summary>
+        /// Завершить процесс и, опционально, все его дочерние процессы.
+        /// </summary>
+        /// <param name="entireProcessTree">Булево. Завершить все дочерние процессы.</param>
+        /// <exception cref="AggregateException">Не все дочерние процессы удалось завершить (только при entireProcessTree = true).</exception>
+        [ContextMethod("Завершить", "Stop")]
+        public void Stop(bool entireProcessTree = false)
         {
-            _p.Kill();
+            _p.Kill(entireProcessTree);
         }
 
         public void Dispose()
