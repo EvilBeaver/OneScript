@@ -26,6 +26,13 @@ public class TestClassWithConverters : AutoContext<TestClassWithConverters>
         return dto.Integer;
     }
 
+    [ContextMethod("КонвертацияВозвращаемогоЗначения")]
+    [BslValueConverter(typeof(TestDtoConverter))]
+    public TestDto ReturnValueConversion()
+    {
+        return new TestDto { Integer = 42 };
+    }
+
     [ScriptConstructor]
     public static IValue DefaultConstructor([BslValueConverter(typeof(TestDtoConverter))] TestDto dto)
     {

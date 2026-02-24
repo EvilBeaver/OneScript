@@ -12,7 +12,7 @@ namespace OneScript.Contexts.Converters
     /// <summary>
     /// Атрибут задающий тип конвертера значения
     /// </summary>
-    [AttributeUsage(AttributeTargets.Parameter|AttributeTargets.ReturnValue|AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Parameter|AttributeTargets.Method|AttributeTargets.Property)]
     public class BslValueConverterAttribute : Attribute
     {
         /// <summary>

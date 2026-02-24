@@ -33,16 +33,18 @@ namespace ScriptEngine.Machine.Contexts
             return converted ?? defaultValue;
         }
 
-        public static IValue ConvertReturnValue(object objParam, Type converterType, Type targetType)
+        public static IValue ConvertReturnValue(object objParam, Type converterType, Type targetType, IBslProcess process)
         {
-            throw new NotImplementedException();
+            var factory = process.Services.Resolve<IValueConverterFactory>();
+            var converter = factory.CreateConverter(converterType);
+            return converter.ToBslValue(objParam, DefaultConverter.Instance, process);
         }
 
         public static MethodInfo ConvertParamMethod { get; } = typeof(ConverterCallFacility)
             .GetMethod(nameof(ConvertParam), BindingFlags.Static | BindingFlags.Public);
 
         public static MethodInfo ConvertRetValueMethod { get; } = typeof(ConverterCallFacility)
-            .GetMethod(nameof(ConvertRetValueMethod), BindingFlags.Static | BindingFlags.Public);
+            .GetMethod(nameof(ConvertReturnValue), BindingFlags.Static | BindingFlags.Public);
 
         private class DefaultConverter : IBslValueConverter
         {

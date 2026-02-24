@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using FluentAssertions;
 using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using ScriptEngine;
 using ScriptEngine.Hosting;
@@ -54,6 +55,27 @@ namespace OneScript.Core.Tests
             var result = instance.GetPropValue("Результат") as TestClassWithConverters;
             result.Should().NotBeNull();
             result!.ValueFromConstructor.Integer.Should().Be(8);
+        }
+
+        [Fact]
+        public void CallsConverterForReturnValue()
+        {
+            var engine = CreateEngine();
+            var compiler = engine.GetCompilerService();
+            
+            var code = engine.Loader.FromString(
+                "Перем Результат Экспорт;\n" +
+                "Результат = Instance.КонвертацияВозвращаемогоЗначения();");
+
+            var context = new ExternalContextData();
+            context.Add("Instance", new TestClassWithConverters());
+            
+            var module = engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, code, context, engine.NewProcess());
+            
+            var instance = engine.NewObject(module, engine.NewProcess(), context);
+            var result = instance.GetPropValue("Результат") as StructureImpl;
+            result.Should().NotBeNull();
+            result!.GetIndexedValue(ValueFactory.Create("Integer")).AsNumber().Should().Be(42);
         }
 
         private static ScriptingEngine CreateEngine()

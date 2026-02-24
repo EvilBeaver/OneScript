@@ -10,6 +10,7 @@
 - Добавление нового BSL‑класса (контекста)
 - Добавление свойства
 - Добавление метода
+- Конвертеры значений при маршаллинге
 - Создание глобального контекста и глобальных методов
 - Регистрация библиотек и package‑loader.os
 - i18n для API (двуязычные имена)
@@ -132,7 +133,106 @@ public int DoubleNumber(int number)
 - Для передачи аргумента по ссылке: используйте тип IVariable — в него можно присвоить новое значение через .Value.
 - По значению: используйте типы C# напрямую, если они поддерживаются маршаллером, или IValue.
 
-5. Создание глобального контекста и глобальных методов
+5. Конвертеры значений при маршаллинге
+
+По умолчанию маршаллер `ContextValuesMarshaller` самостоятельно преобразует примитивные типы C# (`int`, `string`, `decimal`, `bool`, `DateTime`) и типы, реализующие `IValue`/`BslValue`, в значения BSL и обратно. Если нужно перехватить это преобразование для произвольного CLR-типа — используется механизм конвертеров.
+
+5.1. Интерфейс `IBslValueConverter`
+
+```csharp
+public interface IBslValueConverter
+{
+    // CLR-объект → BSL-значение (например, при возврате из метода или чтении свойства)
+    BslValue ToBslValue(object value, IBslValueConverter defaultConverter, IBslProcess process);
+
+    // BSL-значение → CLR-объект (например, при передаче параметра или записи свойства)
+    object ToClrValue(BslValue value, IBslValueConverter defaultConverter, IBslProcess process);
+}
+```
+
+Параметр `defaultConverter` позволяет делегировать обработку вложенных значений маршаллеру по умолчанию.
+
+5.2. Атрибут `BslValueConverterAttribute`
+
+Атрибут задаёт конвертер для конкретного параметра метода, возвращаемого значения или свойства:
+
+```csharp
+[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method | AttributeTargets.Property)]
+public class BslValueConverterAttribute : Attribute
+{
+    public BslValueConverterAttribute(Type converterType) { ... }
+    public Type ConverterType { get; }
+}
+```
+
+Правила применения:
+- На **параметре** — конвертер вызывается при передаче аргумента из BSL (BSL → CLR, метод `ToClrValue`).
+- На **методе** — конвертер вызывается для возвращаемого значения (CLR → BSL, метод `ToBslValue`).
+- На **свойстве** — конвертер вызывается в обоих направлениях: `ToClrValue` при записи из BSL, `ToBslValue` при чтении из BSL.
+
+5.3. Конвертер на параметре метода
+
+```csharp
+[ContextMethod("ОбработатьДанные", "ProcessData")]
+public void ProcessData([BslValueConverter(typeof(MyDtoConverter))] MyDto dto)
+{
+    // dto уже преобразован из BSL-значения конвертером MyDtoConverter.ToClrValue
+}
+```
+
+5.4. Конвертер на возвращаемом значении
+
+Атрибут размещается на самом методе — это означает конвертацию возвращаемого значения:
+
+```csharp
+[ContextMethod("ПолучитьДанные", "GetData")]
+[BslValueConverter(typeof(MyDtoConverter))]
+public MyDto GetData()
+{
+    // возвращаемый объект будет преобразован в BSL-значение конвертером MyDtoConverter.ToBslValue
+    return new MyDto { Value = 42 };
+}
+```
+
+5.5. Конвертер на свойстве
+
+```csharp
+[ContextProperty("Данные", "Data")]
+[BslValueConverter(typeof(MyDtoConverter))]
+public MyDto Data
+{
+    get => _data;              // ToBslValue вызывается при чтении из BSL
+    set => _data = value;      // ToClrValue вызывается при записи из BSL
+}
+```
+
+5.6. Пример полного конвертера
+
+```csharp
+public class MyDtoConverter : IBslValueConverter
+{
+    public BslValue ToBslValue(object value, IBslValueConverter defaultConverter, IBslProcess process)
+    {
+        var dto = (MyDto)value;
+        var structure = new StructureImpl();
+        structure.Insert("Value", BslNumericValue.Create(dto.Value));
+        return structure;
+    }
+
+    public object ToClrValue(BslValue value, IBslValueConverter defaultConverter, IBslProcess process)
+    {
+        var structure = (StructureImpl)value;
+        var num = structure.GetIndexedValue(ValueFactory.Create("Value")).AsNumber();
+        return new MyDto { Value = (int)num };
+    }
+}
+```
+
+5.7. Регистрация фабрики конвертеров
+
+Движок использует сервис `IValueConverterFactory` для создания экземпляров конвертеров. Реализация по умолчанию регистрируется автоматически при инициализации движка через `DefaultEngineBuilder`. Если нужна собственная логика создания конвертеров (например, через DI-контейнер приложения), зарегистрируйте свою реализацию `IValueConverterFactory` в контейнере сервисов движка.
+
+6. Создание глобального контекста и глобальных методов
 
 Глобальный контекст
 
@@ -165,7 +265,7 @@ public class MyGlobals : GlobalContextBase<MyGlobals>
 - Например, StandardGlobalContext: добавьте [ContextMethod] в соответствующий класс и реализуйте логику.
 - Внимание: изменение публичного API стандартной библиотеки требует обсуждения с мэйнтейнерами.
 
-6. Регистрация библиотек и package‑loader.os
+7. Регистрация библиотек и package‑loader.os
 
 - HostedScript ищет библиотеку и вызывает package‑loader.os (дефолтный или кастомный).
 - Основные операции загрузчика (см. src/ScriptEngine.HostedScript/LibraryLoader.cs):

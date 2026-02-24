@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
@@ -195,9 +195,23 @@ namespace ScriptEngine.Machine.Contexts
             {
                 var methodCall = MethodCallExpression(target, out var instParam, out var argsParam, out var processParam);
 
-                var convertRetMethod = ContextValuesMarshaller.BslReturnValueGenericConverter.MakeGenericMethod(target.ReturnType);
-                var convertReturnCall = Expression.Call(convertRetMethod, methodCall);
-                var body = convertReturnCall;
+                var returnConverter = target.GetWrappedMethod().GetCustomAttribute<BslValueConverterAttribute>();
+                Expression body;
+                if (returnConverter == null)
+                {
+                    var convertRetMethod = ContextValuesMarshaller.BslReturnValueGenericConverter.MakeGenericMethod(target.ReturnType);
+                    body = Expression.Call(convertRetMethod, methodCall);
+                }
+                else
+                {
+                    var convertRetMethod = ConverterCallFacility.ConvertRetValueMethod;
+                    body = Expression.Call(
+                        convertRetMethod,
+                        methodCall,
+                        Expression.Constant(returnConverter.ConverterType),
+                        Expression.Constant(target.ReturnType),
+                        processParam);
+                }
 
                 var l = Expression.Lambda<ContextCallableDelegate<TInstance>>(body, instParam, argsParam, processParam);
 
