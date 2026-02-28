@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -16,6 +16,7 @@ using OneScript.Types;
 using OneScript.Contexts;
 using OneScript.Contexts.Converters;
 using OneScript.Exceptions;
+using OneScript.Values;
 using ScriptEngine.Types;
 using Refl = System.Reflection;
 
@@ -128,11 +129,6 @@ namespace ScriptEngine.Machine
                     var converterAttr = parameters[paramIndex].GetCustomAttribute<BslValueConverterAttribute>();
                     var converterType = converterAttr?.ConverterType;
                     
-                    var convertMethod =
-                        converterType == null
-                            ? ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType)
-                            : ConverterCallFacility.ConvertParamMethod;
-                    
                     var defaultArg = parameters[paramIndex].HasDefaultValue ? 
                         Expression.Constant(parameters[paramIndex].DefaultValue, targetType) :
                         ContextValuesMarshaller.GetDefaultBslValueConstant(targetType);
@@ -140,16 +136,21 @@ namespace ScriptEngine.Machine
                     Expression conversionCall;
                     if (converterType == null)
                     {
+                        var convertMethod = ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType);
                         conversionCall = Expression.Call(convertMethod, conversionArg, defaultArg, bslProcessParameter);
                     }
                     else
                     {
-                        conversionCall = Expression.Call(convertMethod,
-                            conversionArg,
-                            defaultArg,
-                            Expression.Constant(converterType),
-                            Expression.Constant(targetType),
-                            bslProcessParameter);
+                        var toClrMethod = ConverterMethodHelper.GetToClrValueMethod(converterType);
+                        var isNullOrSkipped = Expression.OrElse(
+                            Expression.Equal(conversionArg, Expression.Constant(null, typeof(IValue))),
+                            Expression.Call(ConverterMethodHelper.IsSkippedArgumentMethod, conversionArg));
+                        var toClrCallExpr = Expression.Call(toClrMethod,
+                            Expression.Convert(conversionArg, typeof(BslValue)));
+                        conversionCall = Expression.Condition(
+                            isNullOrSkipped,
+                            Expression.Convert(defaultArg, typeof(object)),
+                            toClrCallExpr);
                     }
                     
                     argsToPass.Add(Expression.Convert(conversionCall, targetType));

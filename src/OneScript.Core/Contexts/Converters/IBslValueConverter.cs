@@ -5,32 +5,29 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.Execution;
 using OneScript.Values;
 
 namespace OneScript.Contexts.Converters
 {
     /// <summary>
-    /// Базовый класс конвертации произвольного значения в BslValue и обратно
+    /// Контракт конвертера произвольного CLR-значения в BslValue и обратно.
+    /// Реализующий тип должен быть обычным sealed-классом (не static) со статическими методами.
+    /// Экземпляр конвертера никогда не создаётся.
     /// </summary>
     public interface IBslValueConverter
     {
         /// <summary>
         /// Превращает объект CLR в BslValue
         /// </summary>
-        /// <param name="value">значение для обертки в BslValue</param>
-        /// <param name="defaultConverter">Стандартный системный конвертер. Можно использовать, как сервис конвертации</param>
-        /// <param name="process">Текущий bsl-процесс</param>
+        /// <param name="value">значение для обёртки в BslValue</param>
         /// <returns>Значение Bsl-машины</returns>
-        public BslValue ToBslValue(object value, IBslValueConverter defaultConverter, IBslProcess process);
-        
+        static abstract BslValue ToBslValue(object value);
+
         /// <summary>
-        /// Превращает значение Bsl в стандартный объект Clr
+        /// Превращает значение Bsl в стандартный объект CLR
         /// </summary>
         /// <param name="value">Значение</param>
-        /// <param name="defaultConverter">Стандартный системный конвертер. Можно использовать, как сервис конвертации</param>
-        /// <param name="process">Текущий bsl-процесс</param>
         /// <returns>Объект CLR</returns>
-        public object ToClrValue(BslValue value, IBslValueConverter defaultConverter, IBslProcess process);
+        static abstract object ToClrValue(BslValue value);
     }
 }

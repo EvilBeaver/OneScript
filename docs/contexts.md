@@ -139,30 +139,30 @@ public int DoubleNumber(int number)
 
 5.1. Интерфейс `IBslValueConverter`
 
+Конвертеры реализуют статические методы (C# 12 / `static abstract`):
+
 ```csharp
 public interface IBslValueConverter
 {
-    // CLR-объект → BSL-значение (например, при возврате из метода или чтении свойства)
-    BslValue ToBslValue(object value, IBslValueConverter defaultConverter, IBslProcess process);
+    // CLR-объект → BSL-значение (при возврате из метода или чтении свойства)
+    static abstract BslValue ToBslValue(object value);
 
-    // BSL-значение → CLR-объект (например, при передаче параметра или записи свойства)
-    object ToClrValue(BslValue value, IBslValueConverter defaultConverter, IBslProcess process);
+    // BSL-значение → CLR-объект (при передаче параметра или записи свойства)
+    static abstract object ToClrValue(BslValue value);
 }
 ```
 
-Параметр `defaultConverter` позволяет делегировать обработку вложенных значений маршаллеру по умолчанию.
+Реализующий тип — обычный `sealed class` (не `static`), методы объявлены как `static`. Экземпляр конвертера никогда не создаётся. Если нужна стандартная конвертация вложенных значений — вызывайте `ContextValuesMarshaller` напрямую (он публичный и статический).
 
 5.2. Атрибут `BslValueConverterAttribute`
 
-Атрибут задаёт конвертер для конкретного параметра метода, возвращаемого значения или свойства:
+Атрибут задаёт конвертер для конкретного параметра метода, возвращаемого значения или свойства. Рекомендуется использовать generic-форму — она обеспечивает компайл-тайм валидацию:
 
 ```csharp
-[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method | AttributeTargets.Property)]
-public class BslValueConverterAttribute : Attribute
-{
-    public BslValueConverterAttribute(Type converterType) { ... }
-    public Type ConverterType { get; }
-}
+// Generic-форма (рекомендуется): ошибка компиляции, если T не реализует IBslValueConverter
+[BslValueConverter<MyDtoConverter>]
+
+// Базовый абстрактный класс используется только для рефлексии внутри движка
 ```
 
 Правила применения:
@@ -174,7 +174,7 @@ public class BslValueConverterAttribute : Attribute
 
 ```csharp
 [ContextMethod("ОбработатьДанные", "ProcessData")]
-public void ProcessData([BslValueConverter(typeof(MyDtoConverter))] MyDto dto)
+public void ProcessData([BslValueConverter<MyDtoConverter>] MyDto dto)
 {
     // dto уже преобразован из BSL-значения конвертером MyDtoConverter.ToClrValue
 }
@@ -186,7 +186,7 @@ public void ProcessData([BslValueConverter(typeof(MyDtoConverter))] MyDto dto)
 
 ```csharp
 [ContextMethod("ПолучитьДанные", "GetData")]
-[BslValueConverter(typeof(MyDtoConverter))]
+[BslValueConverter<MyDtoConverter>]
 public MyDto GetData()
 {
     // возвращаемый объект будет преобразован в BSL-значение конвертером MyDtoConverter.ToBslValue
@@ -198,7 +198,7 @@ public MyDto GetData()
 
 ```csharp
 [ContextProperty("Данные", "Data")]
-[BslValueConverter(typeof(MyDtoConverter))]
+[BslValueConverter<MyDtoConverter>]
 public MyDto Data
 {
     get => _data;              // ToBslValue вызывается при чтении из BSL
@@ -209,9 +209,9 @@ public MyDto Data
 5.6. Пример полного конвертера
 
 ```csharp
-public class MyDtoConverter : IBslValueConverter
+public sealed class MyDtoConverter : IBslValueConverter
 {
-    public BslValue ToBslValue(object value, IBslValueConverter defaultConverter, IBslProcess process)
+    public static BslValue ToBslValue(object value)
     {
         var dto = (MyDto)value;
         var structure = new StructureImpl();
@@ -219,7 +219,7 @@ public class MyDtoConverter : IBslValueConverter
         return structure;
     }
 
-    public object ToClrValue(BslValue value, IBslValueConverter defaultConverter, IBslProcess process)
+    public static object ToClrValue(BslValue value)
     {
         var structure = (StructureImpl)value;
         var num = structure.GetIndexedValue(ValueFactory.Create("Value")).AsNumber();
@@ -227,10 +227,6 @@ public class MyDtoConverter : IBslValueConverter
     }
 }
 ```
-
-5.7. Регистрация фабрики конвертеров
-
-Движок использует сервис `IValueConverterFactory` для создания экземпляров конвертеров. Реализация по умолчанию регистрируется автоматически при инициализации движка через `DefaultEngineBuilder`. Если нужна собственная логика создания конвертеров (например, через DI-контейнер приложения), зарегистрируйте свою реализацию `IValueConverterFactory` в контейнере сервисов движка.
 
 6. Создание глобального контекста и глобальных методов
 

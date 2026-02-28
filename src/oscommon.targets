@@ -6,7 +6,7 @@
         <BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
         <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
         <Platform Condition="'$(Platform)' == ''">x86</Platform>
-        <LangVersion>8.0</LangVersion>
+        <LangVersion>latest</LangVersion>
         <TargetFrameworkVersion>net8.0</TargetFrameworkVersion>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
         <IncludeSourceRevisionInInformationalVersion>False</IncludeSourceRevisionInInformationalVersion>

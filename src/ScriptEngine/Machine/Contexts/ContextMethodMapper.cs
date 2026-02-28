@@ -15,6 +15,7 @@ using OneScript.Contexts.Converters;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Language;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -204,13 +205,10 @@ namespace ScriptEngine.Machine.Contexts
                 }
                 else
                 {
-                    var convertRetMethod = ConverterCallFacility.ConvertRetValueMethod;
-                    body = Expression.Call(
-                        convertRetMethod,
-                        methodCall,
-                        Expression.Constant(returnConverter.ConverterType),
-                        Expression.Constant(target.ReturnType),
-                        processParam);
+                    var toBslMethod = ConverterMethodHelper.GetToBslValueMethod(returnConverter.ConverterType);
+                    body = Expression.Convert(
+                        Expression.Call(toBslMethod, Expression.Convert(methodCall, typeof(object))),
+                        typeof(IValue));
                 }
 
                 var l = Expression.Lambda<ContextCallableDelegate<TInstance>>(body, instParam, argsParam, processParam);
@@ -279,20 +277,16 @@ namespace ScriptEngine.Machine.Contexts
                     var converterAttr = parameters[clrIndex].GetCustomAttribute<BslValueConverterAttribute>();
                     var converterType = converterAttr?.ConverterType;
 
-                    var convertMethod =
-                        converterType == null
-                            ? ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType)
-                            : ConverterCallFacility.ConvertParamMethod;
-
                     var defaultArg = parameters[clrIndex].HasDefaultValue ? 
                         Expression.Constant(parameters[clrIndex].DefaultValue, targetType) :
                         ContextValuesMarshaller.GetDefaultBslValueConstant(targetType);
 
                     var indexedArg = Expression.ArrayIndex(argsParam, Expression.Constant(bslIndex));
 
-                    MethodCallExpression conversionCall;
+                    Expression conversionCall;
                     if (converterType == null)
                     {
+                        var convertMethod = ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType);
                         conversionCall = Expression.Call(convertMethod,
                             indexedArg,
                             defaultArg,
@@ -300,12 +294,16 @@ namespace ScriptEngine.Machine.Contexts
                     }
                     else
                     {
-                        conversionCall = Expression.Call(convertMethod,
-                            indexedArg,
-                            defaultArg,
-                            Expression.Constant(converterType),
-                            Expression.Constant(targetType),
-                            processParam);
+                        var toClrMethod = ConverterMethodHelper.GetToClrValueMethod(converterType);
+                        var isNullOrSkipped = Expression.OrElse(
+                            Expression.Equal(indexedArg, Expression.Constant(null, typeof(IValue))),
+                            Expression.Call(ConverterMethodHelper.IsSkippedArgumentMethod, indexedArg));
+                        var toClrCallExpr = Expression.Call(toClrMethod,
+                            Expression.Convert(indexedArg, typeof(BslValue)));
+                        conversionCall = Expression.Condition(
+                            isNullOrSkipped,
+                            Expression.Convert(defaultArg, typeof(object)),
+                            toClrCallExpr);
                     }
                     
                     argsPass.Add(Expression.Convert(conversionCall, targetType));

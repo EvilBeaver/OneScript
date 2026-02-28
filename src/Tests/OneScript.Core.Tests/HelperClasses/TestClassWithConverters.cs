@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using OneScript.Contexts;
 using OneScript.Contexts.Converters;
-using OneScript.Execution;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -21,20 +20,28 @@ public class TestClassWithConverters : AutoContext<TestClassWithConverters>
     public TestDto ValueFromConstructor { get; set; }
 
     [ContextMethod("КонвертацияПараметра")]
-    public int ParameterConversion([BslValueConverter(typeof(TestDtoConverter))] TestDto dto)
+    public int ParameterConversion([BslValueConverter<TestDtoConverter>] TestDto dto)
     {
         return dto.Integer;
     }
 
     [ContextMethod("КонвертацияВозвращаемогоЗначения")]
-    [BslValueConverter(typeof(TestDtoConverter))]
+    [BslValueConverter<TestDtoConverter>]
     public TestDto ReturnValueConversion()
     {
         return new TestDto { Integer = 42 };
     }
 
+    [ContextProperty("ДТО", "Dto")]
+    [BslValueConverter<TestDtoConverter>]
+    public TestDto DtoProperty { get; set; }
+
+    [ContextProperty("ДТОТолькоЧтение", "DtoReadOnly", CanWrite = false)]
+    [BslValueConverter<TestDtoConverter>]
+    public TestDto DtoReadOnlyProperty => new TestDto { Integer = 100 };
+
     [ScriptConstructor]
-    public static IValue DefaultConstructor([BslValueConverter(typeof(TestDtoConverter))] TestDto dto)
+    public static IValue DefaultConstructor([BslValueConverter<TestDtoConverter>] TestDto dto)
     {
         var instance = new TestClassWithConverters
         {
@@ -44,21 +51,19 @@ public class TestClassWithConverters : AutoContext<TestClassWithConverters>
     }
 }
 
-public class TestDtoConverter : IBslValueConverter
+public sealed class TestDtoConverter : IBslValueConverter
 {
-    public BslValue ToBslValue(object value, IBslValueConverter defaultConverter, IBslProcess process)
+    public static BslValue ToBslValue(object value)
     {
         var realValue = (TestDto)value;
         var wrapper = new StructureImpl();
         wrapper.Insert("Integer", BslNumericValue.Create(realValue.Integer));
-        
         return wrapper;
     }
 
-    public object ToClrValue(BslValue value, IBslValueConverter defaultConverter, IBslProcess process)
+    public static object ToClrValue(BslValue value)
     {
         var integer = ((StructureImpl)value).GetIndexedValue(ValueFactory.Create("Integer")).AsNumber();
-
         return new TestDto
         {
             Integer = (int)integer

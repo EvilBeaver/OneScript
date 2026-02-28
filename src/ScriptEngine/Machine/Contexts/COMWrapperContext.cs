@@ -39,7 +39,7 @@ namespace ScriptEngine.Machine.Contexts
 
         private static Type FindTypeByName(string typeName)
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Reverse())
+            foreach (var assembly in ((IEnumerable<Assembly>)AppDomain.CurrentDomain.GetAssemblies()).Reverse())
             {
                 var tt = assembly.GetType(typeName, throwOnError:false, ignoreCase:true);
                 if (tt != null)

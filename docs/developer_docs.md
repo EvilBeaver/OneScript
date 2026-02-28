@@ -88,7 +88,7 @@ OneScript.Core — система типов и контекстная моде�
   - Hosting/* — DefaultEngineBuilder, DI (TinyIoC), EngineBuilderExtensions (регистрация сервисов, предобработчики).
   - ScriptingEngine.cs — фасад движка: загрузка сборок, Initialize, NewProcess, компиляция.
   - ContextValuesMarshaller — маршаллер (преобразователь) типов C# в типы BSL и обратно.
-  - Конвертеры значений: `IBslValueConverter` / `BslValueConverterAttribute` / `IValueConverterFactory` — механизм пользовательского маршаллинга для произвольных CLR-типов. Атрибут `BslValueConverterAttribute` можно разместить на параметре метода, возвращаемом значении (`[return: BslValueConverter(...)]`) или свойстве. Подробнее — см. раздел 5 в docs/contexts.md.
+  - Конвертеры значений: `IBslValueConverter` / `BslValueConverterAttribute<T>` — механизм пользовательского маршаллинга для произвольных CLR-типов. Контракт использует `static abstract` методы (C# 12): `ToBslValue(object)` и `ToClrValue(BslValue)`. Атрибут `[BslValueConverter<MyConverter>]` можно разместить на параметре метода, возвращаемом значении или свойстве. Подробнее — см. раздел 5 в docs/contexts.md.
 - Точки расширения:
   - дополнительные IExecutorProvider (альтернативные рантаймы);
   - предопределённые интерфейсы/итераторы (Interfaces/Iterables handlers);
@@ -191,7 +191,7 @@ OneScript.Core — система типов и контекстная моде�
 - Добавить функцию в стандартную библиотеку: соответствующий раздел OneScript.StandardLibrary (например, Json/ или Collections/), плюс экспорт в общий контекст (StandardGlobalContext.cs или SymbolsContext.cs, если нужно).
 - Встроенная функция языка/операция: OneScript.Native/Runtime/BuiltInFunctions.cs и/или Compiler/*, при необходимости — поддержка в ScriptEngine/Machine.
 - Отладка: DebugServices/DebugProtocol — добавление/изменение событий или представления переменных; VSCode.DebugAdapter — проксирование.
-- Пользовательский маршаллинг CLR-типа: реализуйте `IBslValueConverter` и разместите `BslValueConverterAttribute` на параметре, возвращаемом значении или свойстве (OneScript.Core/Contexts/Converters/*). Подробнее — docs/contexts.md, раздел 5.
+- Пользовательский маршаллинг CLR-типа: реализуйте `IBslValueConverter` (статические методы `ToBslValue`/`ToClrValue`) и разместите `[BslValueConverter<MyConverter>]` на параметре, возвращаемом значении или свойстве (OneScript.Core/Contexts/Converters/*). Подробнее — docs/contexts.md, раздел 5.
 
 ## 6 Навигация по тестам
 - C#-тесты: src/Tests/*:

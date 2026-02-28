@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
@@ -9,7 +9,9 @@ using System;
 using System.Linq;
 using System.Reflection;
 using OneScript.Contexts;
+using OneScript.Contexts.Converters;
 using OneScript.Exceptions;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -17,6 +19,9 @@ namespace ScriptEngine.Machine.Contexts
     {
         private readonly ContextPropertyInfo _propertyInfo;
         private volatile bool _deprecationIsWarned = false;
+
+        private readonly Func<object, BslValue> _toBslValue;
+        private readonly Func<BslValue, object> _toClrValue;
 
         internal PropertyTarget(ContextPropertyInfo propInfo)
         {
@@ -26,6 +31,21 @@ namespace ScriptEngine.Machine.Contexts
             
             if (string.IsNullOrEmpty(Alias))
                 Alias = propInfo.Name;
+
+            var converterAttr = propInfo.GetCustomAttribute<BslValueConverterAttribute>();
+            if (converterAttr != null)
+            {
+                var toBslMethod = ConverterMethodHelper.GetToBslValueMethod(converterAttr.ConverterType);
+                _toBslValue = (Func<object, BslValue>)Delegate.CreateDelegate(
+                    typeof(Func<object, BslValue>), toBslMethod);
+
+                if (_propertyInfo.CanWrite)
+                {
+                    var toClrMethod = ConverterMethodHelper.GetToClrValueMethod(converterAttr.ConverterType);
+                    _toClrValue = (Func<BslValue, object>)Delegate.CreateDelegate(
+                        typeof(Func<BslValue, object>), toClrMethod);
+                }
+            }
 
             IValue CantReadAction(TInstance inst)
             {
@@ -107,6 +127,24 @@ namespace ScriptEngine.Machine.Contexts
             {
                 return inst => throw RuntimeException.DeprecatedPropertyAccess(Name); 
             }
+
+            if (_toBslValue != null)
+            {
+                var toBsl = _toBslValue;
+                if (_propertyInfo.IsDeprecated)
+                {
+                    return inst =>
+                    {
+                        if (!_deprecationIsWarned)
+                        {
+                            SystemLogger.Write($"ВНИМАНИЕ! Обращение к устаревшему свойству {Name}");
+                            _deprecationIsWarned = true;
+                        }
+                        return toBsl(method(inst));
+                    };
+                }
+                return inst => toBsl(method(inst));
+            }
             
             if (_propertyInfo.IsDeprecated)
             {
@@ -134,6 +172,24 @@ namespace ScriptEngine.Machine.Contexts
             if (_propertyInfo.IsForbiddenToUse)
             {
                 return (inst, val) => throw RuntimeException.DeprecatedPropertyAccess(Name);
+            }
+
+            if (_toClrValue != null)
+            {
+                var toClr = _toClrValue;
+                if (_propertyInfo.IsDeprecated)
+                {
+                    return (inst, val) =>
+                    {
+                        if (!_deprecationIsWarned)
+                        {
+                            SystemLogger.Write($"ВНИМАНИЕ! Обращение к устаревшему свойству {Name}");
+                            _deprecationIsWarned = true;
+                        }
+                        method(inst, (T)toClr((BslValue)val));
+                    };
+                }
+                return (inst, val) => method(inst, (T)toClr((BslValue)val));
             }
             
             if (_propertyInfo.IsDeprecated)

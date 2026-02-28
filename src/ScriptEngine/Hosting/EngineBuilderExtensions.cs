@@ -9,7 +9,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using OneScript.Compilation;
 using OneScript.Contexts;
-using OneScript.Contexts.Converters;
 using OneScript.DependencyInjection;
 using OneScript.Exceptions;
 using OneScript.Execution;
@@ -59,8 +58,6 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<IBslProcessFactory, BslProcessFactory>();
             services.RegisterSingleton<IDebugger, DisabledDebugger>();
             
-            services.RegisterSingleton<IValueConverterFactory, CachedConverterFactory>();
-
             services.RegisterScoped<StackMachineProvider>();
             
             services.Register<IDependencyResolver, NullDependencyResolver>();

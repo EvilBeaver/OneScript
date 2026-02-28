@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
     <Import Project="$(MSBuildProjectDirectory)/../../oscommon.targets" />
     <PropertyGroup>
         <TargetFramework>$(TargetFrameworkVersion)</TargetFramework>
@@ -6,7 +6,7 @@
         <IsPackable>false</IsPackable>
 
         <Configurations>Debug;Release;LinuxDebug</Configurations>
-        <LangVersion>10.0</LangVersion>
+        <LangVersion>latest</LangVersion>
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 

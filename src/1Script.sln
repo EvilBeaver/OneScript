@@ -65,6 +65,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OneScript.Web.Server", "One
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumenterTests", "Tests\DocumenterTests\DocumenterTests.csproj", "{BD385142-E9B4-43C1-8F88-067F24E5AF6D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneScript.Contexts.Adapters", "OneScript.Contexts.Adapters\OneScript.Contexts.Adapters.csproj", "{C7DCCAC6-1721-4931-8A60-309026240800}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -331,6 +333,18 @@ Global
 		{BD385142-E9B4-43C1-8F88-067F24E5AF6D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BD385142-E9B4-43C1-8F88-067F24E5AF6D}.Release|x86.ActiveCfg = Release|Any CPU
 		{BD385142-E9B4-43C1-8F88-067F24E5AF6D}.Release|x86.Build.0 = Release|Any CPU
+		{C7DCCAC6-1721-4931-8A60-309026240800}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7DCCAC6-1721-4931-8A60-309026240800}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7DCCAC6-1721-4931-8A60-309026240800}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C7DCCAC6-1721-4931-8A60-309026240800}.Debug|x86.Build.0 = Debug|Any CPU
+		{C7DCCAC6-1721-4931-8A60-309026240800}.LinuxDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7DCCAC6-1721-4931-8A60-309026240800}.LinuxDebug|Any CPU.Build.0 = Debug|Any CPU
+		{C7DCCAC6-1721-4931-8A60-309026240800}.LinuxDebug|x86.ActiveCfg = Debug|Any CPU
+		{C7DCCAC6-1721-4931-8A60-309026240800}.LinuxDebug|x86.Build.0 = Debug|Any CPU
+		{C7DCCAC6-1721-4931-8A60-309026240800}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7DCCAC6-1721-4931-8A60-309026240800}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7DCCAC6-1721-4931-8A60-309026240800}.Release|x86.ActiveCfg = Release|Any CPU
+		{C7DCCAC6-1721-4931-8A60-309026240800}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

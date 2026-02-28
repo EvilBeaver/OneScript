@@ -10,24 +10,27 @@ using System;
 namespace OneScript.Contexts.Converters
 {
     /// <summary>
-    /// Атрибут задающий тип конвертера значения
+    /// Базовый класс атрибута, задающего тип конвертера значения.
+    /// Используется для рефлексии в маперах (находит и generic-наследника).
     /// </summary>
-    [AttributeUsage(AttributeTargets.Parameter|AttributeTargets.Method|AttributeTargets.Property)]
-    public class BslValueConverterAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method | AttributeTargets.Property)]
+    public abstract class BslValueConverterAttribute : Attribute
     {
         /// <summary>
-        /// Основной конструктор
-        /// </summary>
-        /// <param name="converterType">Тип конвертера, преобразующего значение.
-        /// Обязан реализовывать <see cref="IBslValueConverter"/></param>
-        public BslValueConverterAttribute(Type converterType)
-        {
-            ConverterType = converterType;
-        }
-        
-        /// <summary>
         /// Тип конвертера, преобразующего значение.
+        /// Обязан реализовывать <see cref="IBslValueConverter"/>.
         /// </summary>
-        public Type ConverterType { get; }
+        public abstract Type ConverterType { get; }
+    }
+
+    /// <summary>
+    /// Generic-вариант атрибута конвертера значения.
+    /// Обеспечивает компайл-тайм валидацию: T обязан реализовывать <see cref="IBslValueConverter"/>.
+    /// </summary>
+    /// <typeparam name="T">Тип конвертера</typeparam>
+    public sealed class BslValueConverterAttribute<T> : BslValueConverterAttribute
+        where T : IBslValueConverter
+    {
+        public override Type ConverterType => typeof(T);
     }
 }

@@ -2,4 +2,4 @@
 alwaysApply: true
 ---
 
-Проект использует .net 8.0 и LangVersion 8, поэтому при генерации кода не используй языковые фичи C#, которые отсутствуют в C# 8.
+Проект использует .net 8.0 и LangVersion latest (C# 12). При генерации кода используй актуальные возможности C# 12, включая static abstract interface members и generic-атрибуты.
