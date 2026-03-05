@@ -5,6 +5,7 @@
         <TargetFramework>$(TargetFrameworkVersion)</TargetFramework>
         <Configurations>Debug;Release;LinuxDebug</Configurations>
         <Platforms>AnyCPU</Platforms>
+        <LangVersion>12</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup>

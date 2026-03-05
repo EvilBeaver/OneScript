@@ -79,18 +79,42 @@ namespace OneScript.Core.Tests
         }
 
         [Fact]
-        public void CallsConverterForPropertyReadWrite()
+        public void CallsConverterForPropertyWrite()
         {
             var engine = CreateEngine();
             var compiler = engine.GetCompilerService();
 
             var code = engine.Loader.FromString(
                 "Перем Результат Экспорт;\n" +
-                "Instance.ДТО = Новый Структура(\"Integer\", 77);\n" +
-                "Результат = Instance.ДТО;");
+                "Instance.ДТО = Новый Структура(\"Integer\", 77);\n");
 
             var context = new ExternalContextData();
             context.Add("Instance", new TestClassWithConverters());
+
+            var module = engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, code, context, engine.NewProcess());
+
+            engine.NewObject(module, engine.NewProcess(), context);
+
+            context["Instance"].As<TestClassWithConverters>().DtoProperty.Integer.Should().Be(77);
+        }
+
+        [Fact]
+        public void CallsConverterForPropertyRead()
+        {
+            var engine = CreateEngine();
+            var compiler = engine.GetCompilerService();
+
+            var code = engine.Loader.FromString("Перем Результат Экспорт;\n" +
+                                                "Результат = Instance.ДТО;");
+
+            var context = new ExternalContextData();
+            context.Add("Instance", new TestClassWithConverters
+            {
+                DtoProperty = new TestDto
+                {
+                    Integer = 77
+                }
+            });
 
             var module = engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, code, context, engine.NewProcess());
 
@@ -98,27 +122,6 @@ namespace OneScript.Core.Tests
             var result = instance.GetPropValue("Результат") as StructureImpl;
             result.Should().NotBeNull();
             result!.GetIndexedValue(ValueFactory.Create("Integer")).AsNumber().Should().Be(77);
-        }
-
-        [Fact]
-        public void CallsConverterForReadOnlyProperty()
-        {
-            var engine = CreateEngine();
-            var compiler = engine.GetCompilerService();
-
-            var code = engine.Loader.FromString(
-                "Перем Результат Экспорт;\n" +
-                "Результат = Instance.ДТОТолькоЧтение;");
-
-            var context = new ExternalContextData();
-            context.Add("Instance", new TestClassWithConverters());
-
-            var module = engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, code, context, engine.NewProcess());
-
-            var instance = engine.NewObject(module, engine.NewProcess(), context);
-            var result = instance.GetPropValue("Результат") as StructureImpl;
-            result.Should().NotBeNull();
-            result!.GetIndexedValue(ValueFactory.Create("Integer")).AsNumber().Should().Be(100);
         }
 
         private static ScriptingEngine CreateEngine()

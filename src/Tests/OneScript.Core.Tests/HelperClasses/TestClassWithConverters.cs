@@ -36,10 +36,6 @@ public class TestClassWithConverters : AutoContext<TestClassWithConverters>
     [BslValueConverter<TestDtoConverter>]
     public TestDto DtoProperty { get; set; }
 
-    [ContextProperty("ДТОТолькоЧтение", "DtoReadOnly", CanWrite = false)]
-    [BslValueConverter<TestDtoConverter>]
-    public TestDto DtoReadOnlyProperty => new TestDto { Integer = 100 };
-
     [ScriptConstructor]
     public static IValue DefaultConstructor([BslValueConverter<TestDtoConverter>] TestDto dto)
     {
