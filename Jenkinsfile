@@ -5,7 +5,6 @@ pipeline {
 
     environment {
         VersionPrefix = '2.0.1'
-        VersionSuffix = 'rc.2'+"+${BUILD_NUMBER}"
         outputEnc = '65001'
     }
 
