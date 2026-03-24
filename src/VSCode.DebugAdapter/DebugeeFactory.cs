@@ -25,5 +25,13 @@ namespace VSCode.DebugAdapter
             
             throw new ArgumentOutOfRangeException(nameof(adapterId), adapterId, "Unsupported debugger");
         }
+
+        public static DebugeeProcess CreateAttachableProcess(string adapterId, PathHandlingStrategy pathStrategy)
+        {
+            // Для аттача нам не важно, консольный это процесс или веб-сервер, 
+            // так как мы не запускаем его, а только подключаемся.
+            // Но нам нужен экземпляр DebugeeProcess. ConsoleProcess подойдет.
+            return new ConsoleProcess(pathStrategy);
+        }
     }
 }

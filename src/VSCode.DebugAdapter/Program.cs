@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -55,13 +55,10 @@ namespace VSCode.DebugAdapter
             var adapter = new OneScriptDebugAdapter(factory.CreateLogger("OneScriptDebugAdapter"));
             var dapServer = new DapServer(new BufferedTransport(input, output), adapter, factory);
             
-            
-            var session = new OscriptDebugSession();
-            
             try
             {
                 Log.Logger.Information("Starting debug adapter");
-                session.Start(input, output);
+                dapServer.RunAsync(System.Threading.CancellationToken.None).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
