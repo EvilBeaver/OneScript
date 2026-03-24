@@ -8,7 +8,8 @@ at http://mozilla.org/MPL/2.0/.
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using Newtonsoft.Json.Linq;
+using EvilBeaver.DAP.Dto.Requests;
+using EvilBeaver.DAP.Dto.Serialization;
 
 namespace VSCode.DebugAdapter
 {
@@ -51,10 +52,13 @@ namespace VSCode.DebugAdapter
             return process;
         }
 
-        protected override void InitInternal(JObject args)
+        public override void Init(LaunchRequestArguments args)
         {
-            var options = args.ToObject<WebLaunchOptions>();
-            
+            InitInternal(args.DeserializeAdditionalProperties<WebLaunchOptions>());
+        }
+
+        private void InitInternal(WebLaunchOptions options)
+        {
             // validate argument 'cwd'
             var workingDirectory = options.AppDir;
             if (workingDirectory != null)

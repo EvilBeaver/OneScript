@@ -5,10 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using Newtonsoft.Json.Linq;
+using EvilBeaver.DAP.Dto.Requests;
+using EvilBeaver.DAP.Dto.Serialization;
 using Serilog;
 
 namespace VSCode.DebugAdapter
@@ -30,10 +32,15 @@ namespace VSCode.DebugAdapter
         public string RuntimeArguments { get; set; }
 
         public IDictionary<string, string> Environment { get; set; } = new Dictionary<string, string>();
-        
-        protected override void InitInternal(JObject args)
+
+        public override void Init(LaunchRequestArguments args)
         {
-            var options = args.ToObject<ConsoleLaunchOptions>();
+            var options = args.DeserializeAdditionalProperties<ConsoleLaunchOptions>();
+            InitInternal(options);
+        }
+        
+        private void InitInternal(ConsoleLaunchOptions options)
+        {
             if (options.Program == null)
             {
                 throw new InvalidDebugeeOptionsException(1001, "Property 'program' is missing or empty.");
