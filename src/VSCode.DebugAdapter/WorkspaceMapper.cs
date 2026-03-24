@@ -12,7 +12,6 @@ namespace VSCode.DebugAdapter
 {
     public class WorkspaceMapper
     {
-
         private Workspace _localWorkspace;
         private Workspace _remoteWorkspace;
 

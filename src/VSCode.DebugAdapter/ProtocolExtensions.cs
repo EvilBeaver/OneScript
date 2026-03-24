@@ -5,7 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using VSCodeDebug;
+using System.IO;
+using EvilBeaver.DAP.Dto.Types;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 
 namespace VSCode.DebugAdapter
@@ -23,14 +24,19 @@ namespace VSCode.DebugAdapter
         {
             if (frame.IsStringModule())
             {
-                return new Source(frame.Source, null)
+                return new Source
                 {
-                    origin = frame.Source,
-                    presentationHint = "deemphasize"
+                    Name = frame.Source,
+                    Origin = frame.Source,
+                    PresentationHint = "deemphasize"
                 };
             }
             
-            return new Source(frame.Source);
+            return new Source
+            {
+                Name = Path.GetFileName(frame.Source),
+                Path = frame.Source
+            };
         }
     }
 }

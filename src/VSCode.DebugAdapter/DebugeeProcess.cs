@@ -121,17 +121,17 @@ namespace VSCode.DebugAdapter
 
         public abstract void Init(LaunchRequestArguments args);
         
-        public void InitPathsMapper(JObject args)
+        public void InitPathsMapper(AttachRequestArguments args)
         {
-            if (args == null)
+            if (!args.AdditionalData?.ContainsKey("pathsMapping") ?? false)
             {
                 PathsMapper = null;
                 return;
             }
-
+            
             try
             {
-                var mappingToken = args["pathsMapping"];
+                var mappingToken = args.AdditionalData?["pathsMapping"];
                 if (mappingToken == null || mappingToken.Type == JTokenType.Null)
                 {
                     PathsMapper = null;

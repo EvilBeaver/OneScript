@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -65,6 +66,15 @@ namespace VSCode.DebugAdapter
             }
 
             return Encoding.GetEncoding(optionsValue);
+        }
+        
+        public static string NormalizeDriveLetter(string path)
+        {
+            if (Path.IsPathRooted(path))
+                return path[0].ToString().ToUpperInvariant() + path.Substring(1);
+            else
+                return path;
+
         }
     }
 }

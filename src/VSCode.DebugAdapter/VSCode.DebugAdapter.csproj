@@ -22,9 +22,10 @@
   <ItemGroup>
     <PackageReference Include="Serilog" Version="3.0.1" />
     <PackageReference Include="Serilog.Settings.AppSettings" Version="2.2.2" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <Reference Include="Microsoft.CSharp" />
-	<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+	<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
   <ItemGroup>
     <None Include="package.json">
@@ -43,4 +44,9 @@
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\dap\EvilBeaver.DAP.Server\EvilBeaver.DAP.Server.csproj" />
+  </ItemGroup>
+  
 </Project>

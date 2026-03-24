@@ -9,7 +9,10 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using EvilBeaver.DAP.Server;
+using EvilBeaver.DAP.Server.Transport;
 using Serilog;
+using Serilog.Extensions.Logging;
 
 namespace VSCode.DebugAdapter
 {
@@ -47,6 +50,11 @@ namespace VSCode.DebugAdapter
                     .WriteTo.File(file, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj} ({SourceContext}){NewLine}{Exception}")
                     .CreateLogger();
             }
+
+            var factory = new SerilogLoggerFactory(Log.Logger);
+            var adapter = new OneScriptDebugAdapter(factory.CreateLogger("OneScriptDebugAdapter"));
+            var dapServer = new DapServer(new BufferedTransport(input, output), adapter, factory);
+            
             
             var session = new OscriptDebugSession();
             

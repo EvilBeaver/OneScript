@@ -1,25 +1,26 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System.Runtime.CompilerServices;
+using EvilBeaver.DAP.Dto.Events;
+using EvilBeaver.DAP.Server;
 using OneScript.DebugProtocol;
 using Serilog;
-using VSCodeDebug;
 
 namespace VSCode.DebugAdapter
 {
     public class OscriptDebugEventsListener : IDebugEventListener
     {
-        private readonly DebugSession _session;
+        private readonly IClientChannel _channel;
         private readonly ThreadStateContainer _threadState;
         private readonly ILogger Log = Serilog.Log.ForContext<OscriptDebugEventsListener>();
 
-        public OscriptDebugEventsListener(DebugSession session, ThreadStateContainer threadState)
+        public OscriptDebugEventsListener(IClientChannel channel, ThreadStateContainer threadState)
         {
-            _session = session;
+            _channel = channel;
             _threadState = threadState;
         }
 
@@ -27,7 +28,15 @@ namespace VSCode.DebugAdapter
         {
             LogEventOccured();
             _threadState.Reset();
-            _session.SendEvent(new StoppedEvent(threadId, reason.ToString()));
+            _channel.SendEventAsync(new StoppedEvent
+            {
+                Body = new StoppedEventBody
+                {
+                    ThreadId = threadId,
+                    Reason = reason.ToString(),
+                    AllThreadsStopped = true
+                }
+            });
         }
         
         public void ThreadStoppedEx(int threadId, ThreadStopReason reason, string errorMessage)
@@ -38,13 +47,27 @@ namespace VSCode.DebugAdapter
             if (!string.IsNullOrEmpty(errorMessage))
                 SendOutput("stderr", errorMessage);
 
-            _session.SendEvent(new StoppedEvent(threadId, reason.ToString()));
+            _channel.SendEventAsync(new StoppedEvent
+            {
+                Body = new StoppedEventBody
+                {
+                    ThreadId = threadId,
+                    Reason = reason.ToString(),
+                    AllThreadsStopped = true
+                }
+            });
         }
         
         public void ProcessExited(int exitCode)
         {
             LogEventOccured();
-            _session.SendEvent(new ExitedEvent(exitCode));
+            _channel.SendEventAsync(new ExitedEvent
+            {
+                Body = new ExitedEventBody
+                {
+                    ExitCode = exitCode
+                }
+            });
         }
         
         private void SendOutput(string category, string data)
@@ -55,7 +78,14 @@ namespace VSCode.DebugAdapter
                 {
                     data += '\n';
                 }
-                _session.SendEvent(new OutputEvent(category, data));
+                _channel.SendEventAsync(new OutputEvent
+                {
+                    Body = new OutputEventBody
+                    {
+                        Category = category,
+                        Output = data
+                    }
+                });
             }
         }
         
