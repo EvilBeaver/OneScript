@@ -35,6 +35,17 @@ namespace VSCode.DebugAdapter
 
         protected override async Task<InitializeResponse> OnInitializeAsync(InitializeRequest request, CancellationToken ct)
         {
+            var pathStrategy = new PathHandlingStrategy
+            {
+                ClientLinesStartAt1 = Client.LinesStartAt1,
+                ClientPathsAreUri = Client.PathFormat == "uri",
+                DebuggerLinesStartAt1 = true,
+                DebuggerPathsAreUri = false
+            };
+            
+            _debuggee = DebugeeFactory.CreateProcess(Client.AdapterId, pathStrategy);
+            Log.LogDebug("Debuggee created");
+            
             await EventsChannel.SendEventAsync(new InitializedEvent(), ct);
             
             return new InitializeResponse()
@@ -338,15 +349,6 @@ namespace VSCode.DebugAdapter
         {
             var options = request.Arguments.DeserializeAdditionalProperties<AttachOptions>();
 
-            var pathStrategy = new PathHandlingStrategy
-            {
-                ClientLinesStartAt1 = Client.LinesStartAt1,
-                ClientPathsAreUri = Client.PathFormat == "uri",
-                DebuggerLinesStartAt1 = true,
-                DebuggerPathsAreUri = false
-            };
-
-            _debuggee = DebugeeFactory.CreateAttachableProcess(Client.AdapterId, pathStrategy);
             _debuggee.DebugPort = options.DebugPort;
             _debuggee.PathsMapper = options.PathsMapping;
 
@@ -428,15 +430,7 @@ namespace VSCode.DebugAdapter
             try
             {
                 Log.LogDebug("Initializing process settings");
-                var pathStrategy = new PathHandlingStrategy
-                {
-                    ClientLinesStartAt1 = Client.LinesStartAt1,
-                    ClientPathsAreUri = Client.PathFormat == "uri",
-                    DebuggerLinesStartAt1 = true,
-                    DebuggerPathsAreUri = false
-                };
-
-                _debuggee = DebugeeFactory.CreateProcess(Client.AdapterId, pathStrategy);
+                
                 _debuggee.Init(request.Arguments);
             }
             catch (InvalidDebugeeOptionsException e)
