@@ -5,13 +5,14 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using System;
+using System.Collections.Generic;
 
 namespace OneScript.StandardLibrary.Collections
 {
@@ -23,6 +24,11 @@ namespace OneScript.StandardLibrary.Collections
         public ArrayImpl()
         {
             _values = new List<IValue>();
+        }
+        
+        public ArrayImpl(int size)
+        {
+            _values = new List<IValue>(size);
         }
 
         public ArrayImpl(IEnumerable<IValue> values)
@@ -165,20 +171,20 @@ namespace OneScript.StandardLibrary.Collections
             }
         }
 
-        private static void FillArray(ArrayImpl currentArray, int bound)
+        private static void FillArray(ArrayImpl array, int bound)
         {
             for (int i = 0; i < bound; i++)
             {
-                currentArray._values.Add(ValueFactory.Create());
+                array._values.Add(ValueFactory.Create());
             }
         }
 
         private static IValue CloneArray(ArrayImpl cloneable)
         {
-            ArrayImpl clone = new ArrayImpl();
+            ArrayImpl clone = new ArrayImpl(cloneable._values.Count);
             foreach (var item in cloneable._values)
             {
-                clone._values.Add(item ?? ValueFactory.Create());
+                clone._values.Add(item is ArrayImpl arr ? CloneArray(arr) : item );
             }
             return clone;
         }
@@ -198,35 +204,38 @@ namespace OneScript.StandardLibrary.Collections
         public static ArrayImpl Constructor(IValue[] dimensions)
         {
             if (dimensions.Length == 1 && dimensions[0] is FixedArrayImpl fa)
-            {
-                return Constructor(fa);
+            { 
+                    return Constructor(fa);
             }
-            
-            ArrayImpl cloneable = null;
-            for (int dim = dimensions.Length - 1; dim >= 0; dim--)
+
+            // fail fast
+            for (int dim = 0; dim < dimensions.Length; dim++)
             {
                 if (dimensions[dim] == null)
                     throw RuntimeException.InvalidNthArgumentType(dim + 1);
 
-                int bound = (int)dimensions[dim].AsNumber();
-                if (bound <= 0)
+                if ((int)dimensions[dim].AsNumber() <= 0)
                     throw RuntimeException.InvalidNthArgumentValue(dim + 1);
-
-                var newInst = new ArrayImpl();
-                FillArray(newInst, bound);
-                if(cloneable != null)
-                {
-                    for (int i = 0; i < bound; i++)
-                    {
-                        newInst._values[i] = CloneArray(cloneable);
-                    }
-                }
-                cloneable = newInst;
-                
             }
 
-            return cloneable;
+            int bound = (int)dimensions[^1].AsNumber();
+            var newInst = new ArrayImpl(bound);
+            FillArray(newInst, bound);
 
+            ArrayImpl nested;
+            for (int dim = dimensions.Length - 2; dim >= 0; dim--) // если размерность >= 2
+            {
+                nested = newInst;
+                bound = (int)dimensions[dim].AsNumber();
+ 
+                newInst = new ArrayImpl(bound);
+                for (int i = 0; i < bound; i++)
+                {
+                    newInst._values.Add(CloneArray(nested));
+                }
+            }
+
+            return newInst;
         }
 
         [ScriptConstructor(Name = "На основании фиксированного массива")]
