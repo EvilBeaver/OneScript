@@ -11,7 +11,6 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
-using System;
 using System.Collections.Generic;
 
 namespace OneScript.StandardLibrary.Collections
@@ -95,10 +94,7 @@ namespace OneScript.StandardLibrary.Collections
         [ContextMethod("Добавить", "Add")]
         public void Add(IValue value = null)
         {
-            if (value == null)
-                _values.Add(ValueFactory.Create());
-            else 
-                _values.Add(value);
+           _values.Add(value ?? ValueFactory.Create());
         }
 
         [ContextMethod("Вставить", "Insert")]
@@ -110,24 +106,14 @@ namespace OneScript.StandardLibrary.Collections
             if (index > _values.Count)
                 Extend(index - _values.Count);
 
-            if (value == null)
-                _values.Insert(index, ValueFactory.Create());
-            else
-                _values.Insert(index, value);
+            _values.Insert(index, value ?? ValueFactory.Create());
         }
 
         [ContextMethod("Найти", "Find")]
         public IValue Find(IValue what)
         {
             var idx = _values.FindIndex(x => x.StrictEquals(what));
-            if(idx < 0)
-            {
-                return ValueFactory.Create();
-            }
-            else
-            {
-                return ValueFactory.Create(idx);
-            }
+            return idx>=0 ? ValueFactory.Create(idx) : ValueFactory.Create();    
         }
 
         [ContextMethod("Удалить", "Delete")]
@@ -171,15 +157,17 @@ namespace OneScript.StandardLibrary.Collections
             }
         }
 
-        private static void FillArray(ArrayImpl array, int bound)
+        private static ArrayImpl CreateArray(int bound)
         {
+            var array = new ArrayImpl(bound);
             for (int i = 0; i < bound; i++)
             {
                 array._values.Add(ValueFactory.Create());
             }
+            return array;
         }
 
-        private static IValue CloneArray(ArrayImpl cloneable)
+        private static ArrayImpl CloneArray(ArrayImpl cloneable)
         {
             ArrayImpl clone = new ArrayImpl(cloneable._values.Count);
             foreach (var item in cloneable._values)
@@ -209,24 +197,23 @@ namespace OneScript.StandardLibrary.Collections
             }
 
             // fail fast
+            int size = 0;
             for (int dim = 0; dim < dimensions.Length; dim++)
             {
                 if (dimensions[dim] == null)
                     throw RuntimeException.InvalidNthArgumentType(dim + 1);
 
-                if ((int)dimensions[dim].AsNumber() <= 0)
+                size = (int)dimensions[dim].AsNumber();
+                if (size <= 0)
                     throw RuntimeException.InvalidNthArgumentValue(dim + 1);
             }
 
-            int bound = (int)dimensions[^1].AsNumber();
-            var newInst = new ArrayImpl(bound);
-            FillArray(newInst, bound);
+            var newInst = CreateArray(size); // длина по последней размерности
 
-            ArrayImpl nested;
             for (int dim = dimensions.Length - 2; dim >= 0; dim--) // если размерность >= 2
             {
-                nested = newInst;
-                bound = (int)dimensions[dim].AsNumber();
+                ArrayImpl nested = newInst;
+                int bound = (int)dimensions[dim].AsNumber();
  
                 newInst = new ArrayImpl(bound);
                 for (int i = 0; i < bound; i++)
