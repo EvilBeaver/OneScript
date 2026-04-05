@@ -15,6 +15,11 @@ using System.Collections.Generic;
 
 namespace OneScript.StandardLibrary.Collections
 {
+    /// <summary>
+    /// Коллекция элементов произвольного типа.
+    /// Возможно обращение к значениям элементов по числовому индексу (нумерация начинается с 0).
+    /// Доступен обход в цикле <c>Для Каждого Из</c>.
+    /// </summary>
     [ContextClass("Массив", "Array")]
     public class ArrayImpl : AutoCollectionContext<ArrayImpl, IValue>, IValueArray
     {
@@ -64,13 +69,20 @@ namespace OneScript.StandardLibrary.Collections
         }
 
         #region ICollectionContext Members
-        
+
+        /// <summary>
+        /// Получает количество элементов в массиве
+        /// </summary>
+        /// <returns>Количество элементов массива</returns>
         [ContextMethod("Количество", "Count")]
         public override int Count()
         {
             return _values.Count;
         }
 
+        /// <summary>
+        /// Удаляет все элементы из массива
+        /// </summary>
         [ContextMethod("Очистить", "Clear")]
         public void Clear()
         {
@@ -91,12 +103,23 @@ namespace OneScript.StandardLibrary.Collections
 
         #endregion
 
+        /// <summary>
+        /// Добавляет элемент в конец массива
+        /// </summary>
+        /// <param name="value">Произвольный: Добавляемое значение. Если не указано, то добавляется Неопределено</param>
         [ContextMethod("Добавить", "Add")]
         public void Add(IValue value = null)
         {
            _values.Add(value ?? ValueFactory.Create());
         }
 
+        /// <summary>
+        /// Вставляет значение в массив по указанному индексу
+        /// </summary>
+        /// <param name="index">Число: Индекс вставляемого значения.
+        /// Если индекс превышает размер массива, то массив дополняется элементами Неопределено до указанного индекса.
+        /// Если индекс отрицательный, то выбрасывается исключение</param>
+        /// <param name="value">Произвольный: Вставляемое значение. Если не указано, то вставляется Неопределено</param>
         [ContextMethod("Вставить", "Insert")]
         public void Insert(int index, IValue value = null)
         {
@@ -109,6 +132,11 @@ namespace OneScript.StandardLibrary.Collections
             _values.Insert(index, value ?? ValueFactory.Create());
         }
 
+        /// <summary>
+        /// Выполняет поиск элемента в массиве
+        /// </summary>
+        /// <param name="what">Произвольный: Искомое значение</param>
+        /// <returns>Если элемент найден, возвращается его индекс, иначе Неопределено</returns>
         [ContextMethod("Найти", "Find")]
         public IValue Find(IValue what)
         {
@@ -116,6 +144,12 @@ namespace OneScript.StandardLibrary.Collections
             return idx>=0 ? ValueFactory.Create(idx) : ValueFactory.Create();    
         }
 
+        /// <summary>
+        /// Удаляет значение из массива
+        /// </summary>
+        /// <param name="index">Число: Индекс удаляемого элемента.
+        /// Если индекс находится за границами массива, то выбрасывается исключение
+        /// </param>
         [ContextMethod("Удалить", "Delete")]
         public void Remove(int index)
         {
@@ -125,12 +159,23 @@ namespace OneScript.StandardLibrary.Collections
             _values.RemoveAt(index);
         }
 
+        /// <summary>
+        /// Получает наибольший индекс элемента массива
+        /// </summary>
+        /// <returns>Наибольший индекс в массиве. Если количество элементов массива равно 0, возвращает -1</returns>
         [ContextMethod("ВГраница", "UBound")]
         public int UpperBound()
         {
             return _values.Count - 1;
         }
 
+        /// <summary>
+        /// Получает значение из массива по индексу
+        /// </summary>
+        /// <param name="index">Число: Индекс элемента.
+        /// Если индекс находится за границами массива, то выбрасывается исключение
+        /// </param>
+        /// <returns>Значение элемента массива</returns>
         [ContextMethod("Получить", "Get")]
         public IValue Get(int index)
         {
@@ -140,6 +185,13 @@ namespace OneScript.StandardLibrary.Collections
             return _values[index];
         }
 
+        /// <summary>
+        /// Устанавливает значение в массиве по индексу
+        /// </summary>
+        /// <param name="index">Число: Индекс элемента.
+        /// Если индекс находится за границами массива, то выбрасывается исключение
+        /// </param>
+        /// <param name="value">Произвольный: Устанавливаемое значение</param>
         [ContextMethod("Установить", "Set")]
         public void Set(int index, IValue value)
         {
