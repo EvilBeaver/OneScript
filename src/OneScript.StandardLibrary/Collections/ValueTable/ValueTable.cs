@@ -149,7 +149,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("ВыгрузитьКолонку", "UnloadColumn")]
         public ArrayImpl UnloadColumn(IValue column)
         {
-            var result = new ArrayImpl();
+            var result = new ArrayImpl(_rows.Count);
 
             foreach (var row in _rows)
             {

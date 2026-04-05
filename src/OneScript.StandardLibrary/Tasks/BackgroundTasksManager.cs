@@ -135,7 +135,7 @@ namespace OneScript.StandardLibrary.Tasks
         public ArrayImpl GetBackgroundJobs(StructureImpl filter = default)
         {
             if(filter == default)
-                return new ArrayImpl(_tasks.ToArray());
+                return new ArrayImpl(_tasks);
 
             var arr = new ArrayImpl();
             foreach (var task in _tasks)

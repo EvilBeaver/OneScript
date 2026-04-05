@@ -172,8 +172,8 @@ namespace OneScript.StandardLibrary
         {
             get
             {
-                var arr = new ArrayImpl();
                 var data = Environment.GetLogicalDrives();
+                var arr = new ArrayImpl(data.Length);
                 foreach (var itm in data)
                 {
                     arr.Add(ValueFactory.Create(itm));

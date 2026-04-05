@@ -30,9 +30,9 @@ namespace OneScript.StandardLibrary.Collections
             _values = new List<IValue>();
         }
         
-        public ArrayImpl(int size)
+        public ArrayImpl(int capacity)
         {
-            _values = new List<IValue>(size);
+            _values = new List<IValue>(capacity);
         }
 
         public ArrayImpl(IEnumerable<IValue> values)

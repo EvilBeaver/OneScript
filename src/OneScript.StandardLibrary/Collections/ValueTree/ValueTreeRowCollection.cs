@@ -146,7 +146,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTree
         [ContextMethod("ВыгрузитьКолонку", "UnloadColumn")]
         public ArrayImpl UnloadColumn(IValue column)
         {
-            ArrayImpl result = new ArrayImpl();
+            ArrayImpl result = new ArrayImpl(_rows.Count);
 
             foreach (ValueTreeRow row in _rows)
             {
