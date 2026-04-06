@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -304,6 +304,22 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         public IValue Find(IValue value, string columnNames = null)
         {
             var processing_list = GetProcessingColumnList(columnNames);
+
+            if (processing_list.Count == 1)
+            {
+                var col = processing_list[0];
+                var searchAccessor = new SingleColumnSearchAccessor(col, value);
+                var suitableIndex = Indexes.FindSuitableIndex(new IValue[] { col });
+                var dataToScan = suitableIndex?.GetData(searchAccessor) ?? (IEnumerable<IValue>)_rows;
+                foreach (var element in dataToScan)
+                {
+                    var row = (ValueTableRow)element;
+                    if (value.StrictEquals(row.Get(col)))
+                        return row;
+                }
+                return ValueFactory.Create();
+            }
+
             foreach (ValueTableRow row in _rows)
             {
                 foreach (var col in processing_list)
@@ -314,6 +330,31 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
                 }
             }
             return ValueFactory.Create();
+        }
+
+        private sealed class SingleColumnSearchAccessor : PropertyNameIndexAccessor
+        {
+            private readonly ValueTableColumn _column;
+            private readonly IValue _value;
+
+            public SingleColumnSearchAccessor(ValueTableColumn column, IValue value)
+            {
+                _column = column;
+                _value = value;
+            }
+
+            public override IValue GetIndexedValue(IValue index)
+            {
+                if (index is ValueTableColumn col && col == _column)
+                    return _value;
+                return base.GetIndexedValue(index);
+            }
+
+            public override int GetPropertyNumber(string name) => -1;
+
+            public override int GetPropCount() => 0;
+
+            public override string GetPropName(int propNum) => string.Empty;
         }
  
         private ValueTableColumn GetColumnOrThrow(string column_name)
