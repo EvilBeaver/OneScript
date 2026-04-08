@@ -41,6 +41,20 @@ namespace ScriptEngine.Compiler
         
         private readonly List<ForwardedMethodDecl> _forwardedMethods = new List<ForwardedMethodDecl>();
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
+        private readonly Dictionary<string, LabelInfo> _labels = new Dictionary<string, LabelInfo>(StringComparer.OrdinalIgnoreCase);
+        private readonly List<PendingGoto> _pendingGotos = new List<PendingGoto>();
+        private readonly List<(string type, int id)> _blockStack = new List<(string type, int id)>();
+        private int _tryNestingCount;
+        private int _blockIdCounter;
+
+        private const string BlockWhile = "while";
+        private const string BlockForEach = "foreach";
+        private const string BlockFor = "for";
+        private const string BlockIf = "if";
+        private const string BlockElseIf = "elseif";
+        private const string BlockElse = "else";
+        private const string BlockTry = "try";
+        private const string BlockExcept = "except";
 
         private IBslProcess _compilerProcess;
         
@@ -197,6 +211,7 @@ namespace ScriptEngine.Compiler
             if (child.Children.Count == 0)
                 return;
 
+            ResetLabelState();
             var entry = _module.Code.Count;
             var localCtx = new SymbolScope();
             _ctx.PushScope(localCtx, ScopeBindingDescriptor.ThisScope());
@@ -211,6 +226,7 @@ namespace ScriptEngine.Compiler
                 throw;
             }
 
+            FinalizePendingGotos();
             _ctx.PopScope();
             
             var topIdx = _ctx.ScopeCount - 1;
@@ -249,12 +265,118 @@ namespace ScriptEngine.Compiler
         
         protected override void VisitGotoNode(NonTerminalNode node)
         {
-            throw new NotSupportedException();
+            var labelNode = (LabelNode)node.Children[0];
+            var labelName = labelNode.LabelName;
+
+            if (_labels.TryGetValue(labelName, out var labelInfo) && labelInfo.codeIndex != DUMMY_ADDRESS)
+            {
+                // Backward goto — label already known
+                var currentStack = SnapshotBlockStack();
+                if (!IsValidGotoTarget(currentStack, labelInfo.blockStack))
+                {
+                    AddError(CompilerErrors.InvalidGotoTarget(labelName), node.Location);
+                    return;
+                }
+
+                GenerateLoopCleanup(currentStack, labelInfo.blockStack);
+
+                var tryDiff = _tryNestingCount - labelInfo.tryNesting;
+                if (tryDiff > 0)
+                    AddCommand(OperationCode.ExitTry, tryDiff);
+
+                AddCommand(OperationCode.Jmp, labelInfo.codeIndex);
+            }
+            else
+            {
+                // Forward goto — label not yet known
+                if (!_labels.ContainsKey(labelName))
+                    _labels[labelName] = new LabelInfo();
+
+                var currentStack = SnapshotBlockStack();
+
+                // Reserve cleanup slots for loops (innermost to outermost)
+                var cleanupSlots = new List<(int commandIndex, string loopType, int blockId)>();
+                for (int i = currentStack.Count - 1; i >= 0; i--)
+                {
+                    var block = currentStack[i];
+                    if (block.type == BlockForEach || block.type == BlockFor)
+                    {
+                        var idx = AddCommand(OperationCode.Nop);
+                        cleanupSlots.Add((idx, block.type, block.id));
+                    }
+                }
+
+                var exitTryIndex = _tryNestingCount > 0
+                    ? AddCommand(OperationCode.ExitTry, 0)
+                    : -1;
+                var jmpIndex = AddCommand(OperationCode.Jmp, DUMMY_ADDRESS);
+
+                _pendingGotos.Add(new PendingGoto
+                {
+                    commandIndex = jmpIndex,
+                    exitTryIndex = exitTryIndex,
+                    labelName = labelName,
+                    blockStack = currentStack,
+                    loopCleanupSlots = cleanupSlots,
+                    location = node.Location,
+                    tryNesting = _tryNestingCount
+                });
+            }
         }
 
         protected override void VisitLabelNode(LabelNode node)
         {
-            throw new NotSupportedException();
+            var labelName = node.LabelName;
+
+            if (_labels.TryGetValue(labelName, out var existing) && existing.codeIndex != DUMMY_ADDRESS)
+            {
+                AddError(CompilerErrors.DuplicateLabelDefinition(labelName), node.Location);
+                return;
+            }
+
+            var labelInfo = existing ?? new LabelInfo();
+            labelInfo.codeIndex = _module.Code.Count;
+            labelInfo.blockStack = SnapshotBlockStack();
+            labelInfo.tryNesting = _tryNestingCount;
+            _labels[labelName] = labelInfo;
+
+            // Resolve pending forward gotos targeting this label
+            for (int i = _pendingGotos.Count - 1; i >= 0; i--)
+            {
+                var pending = _pendingGotos[i];
+                if (!string.Equals(pending.labelName, labelName, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (!IsValidGotoTarget(pending.blockStack, labelInfo.blockStack))
+                {
+                    AddError(CompilerErrors.InvalidGotoTarget(labelName), pending.location);
+                }
+                else
+                {
+                    // Patch loop cleanup slots
+                    var exitedBlockIds = new HashSet<int>();
+                    for (int j = labelInfo.blockStack.Count; j < pending.blockStack.Count; j++)
+                        exitedBlockIds.Add(pending.blockStack[j].id);
+
+                    foreach (var slot in pending.loopCleanupSlots)
+                    {
+                        if (exitedBlockIds.Contains(slot.blockId))
+                        {
+                            if (slot.loopType == BlockForEach)
+                                CorrectCommand(slot.commandIndex, OperationCode.StopIterator, 0);
+                            else if (slot.loopType == BlockFor)
+                                CorrectCommand(slot.commandIndex, OperationCode.PopTmp, 1);
+                        }
+                    }
+
+                    var tryDiff = pending.tryNesting - labelInfo.tryNesting;
+                    if (tryDiff > 0 && pending.exitTryIndex != -1)
+                        CorrectCommandArgument(pending.exitTryIndex, tryDiff);
+                    CorrectCommandArgument(pending.commandIndex, labelInfo.codeIndex);
+                }
+
+                _pendingGotos.RemoveAt(i);
+            }
         }
 
         protected override void VisitMethod(MethodNode methodNode)
@@ -332,23 +454,25 @@ namespace ScriptEngine.Compiler
 
         protected override void VisitMethodBody(MethodNode methodNode)
         {
+            ResetLabelState();
             var codeStart = _module.Code.Count;
-            
+
             foreach (var variableDefinition in methodNode.VariableDefinitions())
             {
                 VisitMethodVariable(methodNode, variableDefinition);
             }
 
             VisitCodeBlock(methodNode.MethodBody);
-            
+
             if (methodNode.Signature.IsFunction)
             {
                 // неявный возврат Undefined
                 AddCommand(OperationCode.PushUndef);
             }
-            
+
             var codeEnd = _module.Code.Count;
-            
+            FinalizePendingGotos();
+
             VisitBlockEnd(methodNode.EndLocation); // debug last line num
             
             AddCommand(OperationCode.Return);
@@ -383,15 +507,17 @@ namespace ScriptEngine.Compiler
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = conditionIndex;
             _nestedLoops.Push(loopRecord);
+            PushBlock(BlockWhile);
             base.VisitExpression(node.Children[0]);
             var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
-            
+
             VisitCodeBlock(node.Children[1]);
             VisitBlockEnd(node.EndLocation);
-            
+
             AddCommand(OperationCode.Jmp, conditionIndex);
             var endLoop = AddCommand(OperationCode.Nop);
             CorrectCommandArgument(jumpFalseIndex, endLoop);
+            PopBlock();
             CorrectBreakStatements(_nestedLoops.Pop(), endLoop);
         }
 
@@ -409,14 +535,16 @@ namespace ScriptEngine.Compiler
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = loopBegin;
             _nestedLoops.Push(loopRecord);
-            
+            PushBlock(BlockForEach);
+
             VisitIteratorLoopBody(node.LoopBody);
             VisitBlockEnd(node.EndLocation);
-            
+
             AddCommand(OperationCode.Jmp, loopBegin);
-            
+
             var indexLoopEnd = AddCommand(OperationCode.StopIterator);
             CorrectCommandArgument(condition, indexLoopEnd);
+            PopBlock();
             CorrectBreakStatements(_nestedLoops.Pop(), indexLoopEnd);
         }
 
@@ -447,6 +575,7 @@ namespace ScriptEngine.Compiler
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = indexLoopBegin;
             _nestedLoops.Push(loopRecord);
+            PushBlock(BlockFor);
 
             VisitCodeBlock(node.LoopBody);
             VisitBlockEnd(node.EndLocation);
@@ -456,6 +585,7 @@ namespace ScriptEngine.Compiler
 
             var indexLoopEnd = AddCommand(OperationCode.PopTmp, 1);
             CorrectCommandArgument(conditionIndex, indexLoopEnd);
+            PopBlock();
             CorrectBreakStatements(_nestedLoops.Pop(), indexLoopEnd);
         }
 
@@ -504,11 +634,13 @@ namespace ScriptEngine.Compiler
             
             var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
 
+            PushBlock(BlockIf);
             VisitIfTruePart(node.TruePart);
+            PopBlock();
             exitIndices.Add(AddCommand(OperationCode.Jmp, DUMMY_ADDRESS));
 
             bool hasAlternativeBranches = false;
-            
+
             foreach (var alternative in node.GetAlternatives())
             {
                 CorrectCommandArgument(jumpFalseIndex, _module.Code.Count);
@@ -517,7 +649,9 @@ namespace ScriptEngine.Compiler
                     AddLineNumber(alternative.Location.LineNumber);
                     VisitIfExpression(elif.Expression);
                     jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
+                    PushBlock(BlockElseIf);
                     VisitIfTruePart(elif.TruePart);
+                    PopBlock();
                     exitIndices.Add(AddCommand(OperationCode.Jmp, DUMMY_ADDRESS));
                 }
                 else
@@ -525,7 +659,9 @@ namespace ScriptEngine.Compiler
                     hasAlternativeBranches = true;
                     CorrectCommandArgument(jumpFalseIndex, _module.Code.Count);
                     AddLineNumber(alternative.Location.LineNumber, CodeGenerationFlags.CodeStatistics);
+                    PushBlock(BlockElse);
                     VisitCodeBlock(alternative);
+                    PopBlock();
                 }
             }
 
@@ -850,7 +986,7 @@ namespace ScriptEngine.Compiler
                 if (asFunction)
                     AddCommand(OperationCode.CallFunc, GetMethodRefNumber(methBinding));
                 else
-                    AddCommand(OperationCode.CallProc, GetMethodRefNumber(methBinding)); 
+                    AddCommand(OperationCode.CallProc, GetMethodRefNumber(methBinding));
             }
             else
             {
@@ -965,8 +1101,17 @@ namespace ScriptEngine.Compiler
         protected override void VisitTryBlock(CodeBatchNode node)
         {
             PushTryNesting();
+            PushBlock(BlockTry);
             base.VisitTryBlock(node);
+            PopBlock();
             PopTryNesting();
+        }
+
+        protected override void VisitExceptBlock(CodeBatchNode node)
+        {
+            PushBlock(BlockExcept);
+            base.VisitExceptBlock(node);
+            PopBlock();
         }
 
         protected override void VisitExecuteStatement(BslSyntaxNode node)
@@ -1097,7 +1242,74 @@ namespace ScriptEngine.Compiler
                 _nestedLoops.Peek().tryNesting--;
             }
         }
-        
+
+        private void PushBlock(string blockType)
+        {
+            _blockStack.Add((blockType, _blockIdCounter++));
+            if (blockType == BlockTry)
+                _tryNestingCount++;
+        }
+
+        private void PopBlock()
+        {
+            var last = _blockStack[_blockStack.Count - 1];
+            _blockStack.RemoveAt(_blockStack.Count - 1);
+            if (last.type == BlockTry)
+                _tryNestingCount--;
+        }
+
+        private List<(string type, int id)> SnapshotBlockStack()
+        {
+            return new List<(string type, int id)>(_blockStack);
+        }
+
+        private static bool IsValidGotoTarget(List<(string type, int id)> gotoStack, List<(string type, int id)> labelStack)
+        {
+            if (labelStack.Count > gotoStack.Count)
+                return false;
+            for (int i = 0; i < labelStack.Count; i++)
+            {
+                if (labelStack[i].type != gotoStack[i].type || labelStack[i].id != gotoStack[i].id)
+                    return false;
+            }
+            return true;
+        }
+
+        private void ResetLabelState()
+        {
+            _labels.Clear();
+            _pendingGotos.Clear();
+            _blockStack.Clear();
+            _tryNestingCount = 0;
+            _blockIdCounter = 0;
+        }
+
+        private void GenerateLoopCleanup(List<(string type, int id)> gotoStack, List<(string type, int id)> labelStack)
+        {
+            // Generate cleanup from innermost to outermost for exited loops
+            for (int i = gotoStack.Count - 1; i >= labelStack.Count; i--)
+            {
+                if (gotoStack[i].type == BlockForEach)
+                    AddCommand(OperationCode.StopIterator);
+                else if (gotoStack[i].type == BlockFor)
+                    AddCommand(OperationCode.PopTmp, 1);
+            }
+        }
+
+        private void CorrectCommand(int index, OperationCode code, int argument)
+        {
+            _module.Code[index] = new Command { Code = code, Argument = argument };
+        }
+
+        private void FinalizePendingGotos()
+        {
+            foreach (var pending in _pendingGotos)
+            {
+                AddError(CompilerErrors.UndefinedLabel(pending.labelName), pending.location);
+            }
+            _pendingGotos.Clear();
+        }
+
         private void CorrectCommandArgument(int index, int newArgument)
         {
             var cmd = _module.Code[index];

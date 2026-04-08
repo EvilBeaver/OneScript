@@ -42,5 +42,23 @@ namespace ScriptEngine.Compiler
             public List<int> breakStatements;
             public int tryNesting;
         }
+
+        private class LabelInfo
+        {
+            public int codeIndex = DUMMY_ADDRESS;
+            public List<(string type, int id)> blockStack;
+            public int tryNesting;
+        }
+
+        private struct PendingGoto
+        {
+            public int commandIndex;
+            public int exitTryIndex;
+            public string labelName;
+            public List<(string type, int id)> blockStack;
+            public List<(int commandIndex, string loopType, int blockId)> loopCleanupSlots;
+            public CodeRange location;
+            public int tryNesting;
+        }
     }
 }
