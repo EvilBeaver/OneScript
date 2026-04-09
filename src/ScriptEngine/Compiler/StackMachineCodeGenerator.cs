@@ -43,18 +43,9 @@ namespace ScriptEngine.Compiler
         private readonly Stack<NestedLoopInfo> _nestedLoops = new Stack<NestedLoopInfo>();
         private readonly Dictionary<string, LabelInfo> _labels = new Dictionary<string, LabelInfo>(StringComparer.OrdinalIgnoreCase);
         private readonly List<PendingGoto> _pendingGotos = new List<PendingGoto>();
-        private readonly List<(string type, int id)> _blockStack = new List<(string type, int id)>();
+        private readonly List<(BlockType type, int id)> _blockStack = new List<(BlockType type, int id)>();
         private int _tryNestingCount;
         private int _blockIdCounter;
-
-        private const string BlockWhile = "while";
-        private const string BlockForEach = "foreach";
-        private const string BlockFor = "for";
-        private const string BlockIf = "if";
-        private const string BlockElseIf = "elseif";
-        private const string BlockElse = "else";
-        private const string BlockTry = "try";
-        private const string BlockExcept = "except";
 
         private IBslProcess _compilerProcess;
         
@@ -270,7 +261,7 @@ namespace ScriptEngine.Compiler
 
             if (_labels.TryGetValue(labelName, out var labelInfo) && labelInfo.codeIndex != DUMMY_ADDRESS)
             {
-                // Backward goto — label already known
+                // Обратный переход, метка уже определена
                 var currentStack = SnapshotBlockStack();
                 if (!IsValidGotoTarget(currentStack, labelInfo.blockStack))
                 {
@@ -288,18 +279,18 @@ namespace ScriptEngine.Compiler
             }
             else
             {
-                // Forward goto — label not yet known
+                // Прямой переход, метка еще не определена
                 if (!_labels.ContainsKey(labelName))
                     _labels[labelName] = new LabelInfo();
 
                 var currentStack = SnapshotBlockStack();
 
-                // Reserve cleanup slots for loops (innermost to outermost)
-                var cleanupSlots = new List<(int commandIndex, string loopType, int blockId)>();
+                // Резервируем слоты очистки для циклов (от внутреннего к внешнему)
+                var cleanupSlots = new List<(int commandIndex, BlockType loopType, int blockId)>();
                 for (int i = currentStack.Count - 1; i >= 0; i--)
                 {
                     var block = currentStack[i];
-                    if (block.type == BlockForEach || block.type == BlockFor)
+                    if (block.type == BlockType.ForEach || block.type == BlockType.For)
                     {
                         var idx = AddCommand(OperationCode.Nop);
                         cleanupSlots.Add((idx, block.type, block.id));
@@ -340,7 +331,7 @@ namespace ScriptEngine.Compiler
             labelInfo.tryNesting = _tryNestingCount;
             _labels[labelName] = labelInfo;
 
-            // Resolve pending forward gotos targeting this label
+            // Разрешаем отложенные прямые переходы, указывающие на эту метку
             for (int i = _pendingGotos.Count - 1; i >= 0; i--)
             {
                 var pending = _pendingGotos[i];
@@ -353,7 +344,7 @@ namespace ScriptEngine.Compiler
                 }
                 else
                 {
-                    // Patch loop cleanup slots
+                    // Заполняем слоты очистки циклов
                     var exitedBlockIds = new HashSet<int>();
                     for (int j = labelInfo.blockStack.Count; j < pending.blockStack.Count; j++)
                         exitedBlockIds.Add(pending.blockStack[j].id);
@@ -362,9 +353,9 @@ namespace ScriptEngine.Compiler
                     {
                         if (exitedBlockIds.Contains(slot.blockId))
                         {
-                            if (slot.loopType == BlockForEach)
+                            if (slot.loopType == BlockType.ForEach)
                                 CorrectCommand(slot.commandIndex, OperationCode.StopIterator, 0);
-                            else if (slot.loopType == BlockFor)
+                            else if (slot.loopType == BlockType.For)
                                 CorrectCommand(slot.commandIndex, OperationCode.PopTmp, 1);
                         }
                     }
@@ -507,7 +498,7 @@ namespace ScriptEngine.Compiler
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = conditionIndex;
             _nestedLoops.Push(loopRecord);
-            PushBlock(BlockWhile);
+            PushBlock(BlockType.While);
             base.VisitExpression(node.Children[0]);
             var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
 
@@ -535,7 +526,7 @@ namespace ScriptEngine.Compiler
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = loopBegin;
             _nestedLoops.Push(loopRecord);
-            PushBlock(BlockForEach);
+            PushBlock(BlockType.ForEach);
 
             VisitIteratorLoopBody(node.LoopBody);
             VisitBlockEnd(node.EndLocation);
@@ -575,7 +566,7 @@ namespace ScriptEngine.Compiler
             var loopRecord = NestedLoopInfo.New();
             loopRecord.startPoint = indexLoopBegin;
             _nestedLoops.Push(loopRecord);
-            PushBlock(BlockFor);
+            PushBlock(BlockType.For);
 
             VisitCodeBlock(node.LoopBody);
             VisitBlockEnd(node.EndLocation);
@@ -634,7 +625,7 @@ namespace ScriptEngine.Compiler
             
             var jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
 
-            PushBlock(BlockIf);
+            PushBlock(BlockType.If);
             VisitIfTruePart(node.TruePart);
             PopBlock();
             exitIndices.Add(AddCommand(OperationCode.Jmp, DUMMY_ADDRESS));
@@ -649,7 +640,7 @@ namespace ScriptEngine.Compiler
                     AddLineNumber(alternative.Location.LineNumber);
                     VisitIfExpression(elif.Expression);
                     jumpFalseIndex = AddCommand(OperationCode.JmpFalse, DUMMY_ADDRESS);
-                    PushBlock(BlockElseIf);
+                    PushBlock(BlockType.ElseIf);
                     VisitIfTruePart(elif.TruePart);
                     PopBlock();
                     exitIndices.Add(AddCommand(OperationCode.Jmp, DUMMY_ADDRESS));
@@ -659,7 +650,7 @@ namespace ScriptEngine.Compiler
                     hasAlternativeBranches = true;
                     CorrectCommandArgument(jumpFalseIndex, _module.Code.Count);
                     AddLineNumber(alternative.Location.LineNumber, CodeGenerationFlags.CodeStatistics);
-                    PushBlock(BlockElse);
+                    PushBlock(BlockType.Else);
                     VisitCodeBlock(alternative);
                     PopBlock();
                 }
@@ -1101,7 +1092,7 @@ namespace ScriptEngine.Compiler
         protected override void VisitTryBlock(CodeBatchNode node)
         {
             PushTryNesting();
-            PushBlock(BlockTry);
+            PushBlock(BlockType.Try);
             base.VisitTryBlock(node);
             PopBlock();
             PopTryNesting();
@@ -1109,7 +1100,7 @@ namespace ScriptEngine.Compiler
 
         protected override void VisitExceptBlock(CodeBatchNode node)
         {
-            PushBlock(BlockExcept);
+            PushBlock(BlockType.Except);
             base.VisitExceptBlock(node);
             PopBlock();
         }
@@ -1243,10 +1234,10 @@ namespace ScriptEngine.Compiler
             }
         }
 
-        private void PushBlock(string blockType)
+        private void PushBlock(BlockType blockType)
         {
             _blockStack.Add((blockType, _blockIdCounter++));
-            if (blockType == BlockTry)
+            if (blockType == BlockType.Try)
                 _tryNestingCount++;
         }
 
@@ -1254,16 +1245,16 @@ namespace ScriptEngine.Compiler
         {
             var last = _blockStack[_blockStack.Count - 1];
             _blockStack.RemoveAt(_blockStack.Count - 1);
-            if (last.type == BlockTry)
+            if (last.type == BlockType.Try)
                 _tryNestingCount--;
         }
 
-        private List<(string type, int id)> SnapshotBlockStack()
+        private List<(BlockType type, int id)> SnapshotBlockStack()
         {
-            return new List<(string type, int id)>(_blockStack);
+            return new List<(BlockType type, int id)>(_blockStack);
         }
 
-        private static bool IsValidGotoTarget(List<(string type, int id)> gotoStack, List<(string type, int id)> labelStack)
+        private static bool IsValidGotoTarget(List<(BlockType type, int id)> gotoStack, List<(BlockType type, int id)> labelStack)
         {
             if (labelStack.Count > gotoStack.Count)
                 return false;
@@ -1284,14 +1275,14 @@ namespace ScriptEngine.Compiler
             _blockIdCounter = 0;
         }
 
-        private void GenerateLoopCleanup(List<(string type, int id)> gotoStack, List<(string type, int id)> labelStack)
+        private void GenerateLoopCleanup(List<(BlockType type, int id)> gotoStack, List<(BlockType type, int id)> labelStack)
         {
-            // Generate cleanup from innermost to outermost for exited loops
+            // Генерация очистки стека от внутреннего цикла к внешнему при выходе через Перейти
             for (int i = gotoStack.Count - 1; i >= labelStack.Count; i--)
             {
-                if (gotoStack[i].type == BlockForEach)
+                if (gotoStack[i].type == BlockType.ForEach)
                     AddCommand(OperationCode.StopIterator);
-                else if (gotoStack[i].type == BlockFor)
+                else if (gotoStack[i].type == BlockType.For)
                     AddCommand(OperationCode.PopTmp, 1);
             }
         }
