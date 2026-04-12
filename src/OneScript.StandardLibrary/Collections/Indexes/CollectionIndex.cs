@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -44,6 +44,11 @@ namespace OneScript.StandardLibrary.Collections.Indexes
         {
             return _fields.Count != 0 && _fields.All(f => searchFields.Contains(f));
         }
+
+        /// <summary>
+        /// Поля, входящие в индекс (в порядке объявления индекса).
+        /// </summary>
+        internal IReadOnlyList<IValue> GetIndexedFields() => _fields;
 
         private CollectionIndexKey IndexKey(PropertyNameIndexAccessor source)
         {
