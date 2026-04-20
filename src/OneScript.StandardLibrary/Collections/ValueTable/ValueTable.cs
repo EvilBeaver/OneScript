@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -149,7 +149,7 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         [ContextMethod("ВыгрузитьКолонку", "UnloadColumn")]
         public ArrayImpl UnloadColumn(IValue column)
         {
-            var result = new ArrayImpl();
+            var result = new ArrayImpl(_rows.Count);
 
             foreach (var row in _rows)
             {
@@ -304,16 +304,64 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         public IValue Find(IValue value, string columnNames = null)
         {
             var processing_list = GetProcessingColumnList(columnNames);
+            var bestIndex = Indexes.FindBestContainedIndex(processing_list);
+
+            if (processing_list.Count == 1 && bestIndex != null)
+            {
+                var col = processing_list[0];
+                var criteria = BuildIndexSearchMap(bestIndex, value);
+                foreach (var element in bestIndex.GetData(criteria))
+                {
+                    var row = (ValueTableRow)element;
+                    if (value.StrictEquals(row.Get(col)))
+                        return row;
+                }
+
+                return ValueFactory.Create();
+            }
+
+            // Поиск по нескольким колонкам — по ИЛИ (любая колонка). Нельзя сузить выборку только
+            // строками из GetData по части колонок: иначе теряются совпадения в неиндексированных полях.
+            // Если среди полей индекса ровно одно и оно есть в списке поиска, используем индекс как
+            // множество строк с нужным значением в этом поле и обходим таблицу в исходном порядке строк.
+            HashSet<ValueTableRow> rowsMatchingSingleIndexedField = null;
+            IValue singleIndexedField = null;
+            if (processing_list.Count > 1 && bestIndex != null && bestIndex.Count() == 1)
+            {
+                var indexedFields = bestIndex.GetIndexedFields();
+                singleIndexedField = indexedFields[0];
+                rowsMatchingSingleIndexedField = new HashSet<ValueTableRow>();
+                var criteria = BuildIndexSearchMap(bestIndex, value);
+                foreach (var element in bestIndex.GetData(criteria))
+                    rowsMatchingSingleIndexedField.Add((ValueTableRow)element);
+            }
+
             foreach (ValueTableRow row in _rows)
             {
                 foreach (var col in processing_list)
                 {
-                    var current = row.Get(col);
-                    if (value.StrictEquals(current))
+                    if (rowsMatchingSingleIndexedField != null
+                        && ReferenceEquals(col, singleIndexedField)
+                        && rowsMatchingSingleIndexedField.Contains(row))
+                    {
+                        return row;
+                    }
+
+                    if (value.StrictEquals(row.Get(col)))
                         return row;
                 }
             }
+
             return ValueFactory.Create();
+        }
+
+        private static MapImpl BuildIndexSearchMap(CollectionIndex index, IValue searchValue)
+        {
+            var map = new MapImpl();
+            foreach (var field in index.GetIndexedFields())
+                map.Insert(field, searchValue);
+
+            return map;
         }
  
         private ValueTableColumn GetColumnOrThrow(string column_name)

@@ -26,7 +26,10 @@ namespace ScriptEngine.Hosting
             foreach (var provider in _providers)
             {
                 var values = provider.Load();
-                cfg.Merge((IDictionary<string, string>)values, provider);
+                if (values != null && values.Count > 0)
+                {
+                    cfg.Merge((IDictionary<string, string>)values, provider);
+                }
             }
 
             return cfg;

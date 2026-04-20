@@ -1,4 +1,4 @@
-﻿/*----------------------------------------------------------
+/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the 
 Mozilla Public License, v.2.0. If a copy of the MPL 
 was not distributed with this file, You can obtain one 
@@ -132,6 +132,30 @@ namespace OneScript.StandardLibrary.Collections.ValueTable
         public CollectionIndex FindSuitableIndex(IEnumerable<IValue> searchFields)
         {
             return _indexes.FirstOrDefault(index => index.CanBeUsedFor(searchFields));
+        }
+
+        /// <summary>
+        /// Индекс, все поля которого содержатся в <paramref name="searchColumns"/>,
+        /// с максимальным числом полей (более узкий состав ключа — предпочтительнее).
+        /// </summary>
+        public CollectionIndex FindBestContainedIndex(IEnumerable<IValue> searchColumns)
+        {
+            CollectionIndex best = null;
+            var bestFieldCount = -1;
+            foreach (var index in _indexes)
+            {
+                if (!index.CanBeUsedFor(searchColumns))
+                    continue;
+
+                var n = index.Count();
+                if (n > bestFieldCount)
+                {
+                    bestFieldCount = n;
+                    best = index;
+                }
+            }
+
+            return best;
         }
 
         private static List<IValue> BuildFieldList(IIndexCollectionSource source, string fieldList)
