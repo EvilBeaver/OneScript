@@ -57,50 +57,96 @@ OneScript позволяет создавать и выполнять текст
 
 ## Подготовка
 
-Ниже приведены ссылки на дистрибутивы, однако, учтите, что ссылки могут меняться со временем и их актуальность не гарантируется. Нужен dotnet SDK и компилятор C++, скачать можно из любого места, которое нагуглится.
+Для сборки потребуется:
 
-* Установить [MS BuildTools](https://visualstudio.microsoft.com/ru/thank-you-downloading-visual-studio/?sku=buildtools&rel=16), при установке включить таргетинг на .net6, .net4.8, установить компилятор C++.
+* [.NET SDK 8.0](https://dotnet.microsoft.com/download/dotnet/8.0) (целевой фреймворк проекта — `net8.0`).
+* Компилятор C++ — нужен только для сборки нативного моста `ScriptEngine.NativeApi` (поддержка внешних компонент стандарта 1С NativeApi). На Windows проще всего получить его, поставив [MS Build Tools](https://visualstudio.microsoft.com/visual-studio-build-tools/) или Visual Studio с компонентом «Разработка классических приложений на C++». Если C++ компилятора нет, см. параметр `NoCppCompiler` ниже.
+
+> Ссылки на дистрибутивы могут меняться со временем, их актуальность не гарантируется.
 
 ## Сборка
 
-Запустить Developer Command Prompt (появится в меню Пуск после установки MSBuildTools или Visual Studio). Перейти в каталог репозитория OneScript. Далее приведены команды в консоли Developer Command Prompt
-Сборка выполняется с помощью msbuild. Таргеты:
+Сборка выполняется с помощью MSBuild и сценария `Build.csproj` в корне репозитория. Команды можно запускать как через `msbuild` (Developer Command Prompt после установки MS Build Tools/Visual Studio), так и через `dotnet msbuild` (кросс-платформенно).
 
-* CleanAll - очистка результатов предыдущих сборок
-* BuildAll - подготовить файлы для поставки
-* MakeCPP;MakeFDD;MakeSCD;BuildDebugger - отдельные таргеты сборки для подготовки разных типов поставки
-* PrepareDistributionFiles - сборка полных пакетов поставки (включая библиотеки)
-* PackDistributions - подготовка ZIP архивов поставки
-* CreateNuget - создать пакеты для публикации в NuGet
+Основные таргеты:
+
+* `CleanAll` — очистка результатов предыдущих сборок;
+* `BuildAll` — собрать бинарные файлы для поставки (FDD, SCD, отладчик; при наличии C++ — нативные компоненты);
+* `MakeCPP`, `MakeFDD`, `MakeSCD`, `BuildDebugger` — отдельные таргеты сборки разных частей поставки;
+* `GatherLibrary` — скачать и сложить базовый набор библиотек (`opm`, `asserts`, `logos`, `fs`, `tempfiles`, `cli`);
+* `PrepareDistributionFiles` — собрать полные содержимые дистрибутивов (вкл. библиотеки и документацию);
+* `PackDistributions` — упаковать содержимое в ZIP-архивы под все поддерживаемые платформы;
+* `BuildDocumentation` — сгенерировать справку по платформе (markdown + json);
+* `CreateNuget` / `PublishNuget` — собрать и опубликовать NuGet-пакеты;
+* `Test` (`UnitTests`, `ScriptedTests`) — прогнать модульные и приёмочные (BSL) тесты.
 
 **Параметры сборки**
 
-* VersionPrefix - префикс номера релиза, его основная часть, например, 2.0.0
-* VersionSuffix - суффикс номера, который обычно выступает в качестве произвольного суффикса версионирования по semver, например, beta-786 (необязателен)
-* NoCppCompiler - если True - не установлен компилятор C++, в сборку не будут добавлены компоненты C++ (поддержка NativeApi)
+* `VersionPrefix` — основная часть номера релиза, например `2.0.0` (по умолчанию `2.0.0`);
+* `VersionSuffix` — необязательный suffix по SemVer, например `beta-786`;
+* `NoCppCompiler` — если `True`, нативные компоненты C++ (NativeApi) не собираются и не включаются в дистрибутив (используйте, если компилятор C++ не установлен);
+* `Configuration` — конфигурация сборки, по умолчанию `Release`. Для отладочной сборки на Linux используется `LinuxDebug`.
 
-Все поставляемые файлы будут размещены в каталоге `built` в корне репозитория 1Script
+Все артефакты сборки размещаются в каталоге `built` в корне репозитория.
 
 ### Сборка содержимого дистрибутивов в отдельном каталоге
 
 ```bat
-msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles
+dotnet msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles
 ```
 
 ### Сборка с ручным указанием версии
 
 ```bat
-msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles /p:VersionPrefix=2.0.0
+dotnet msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles /p:VersionPrefix=2.0.0
 ```
 
 ### Сборка ZIP-дистрибутивов
 
 ```bat
-msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles;PackDistributions /p:VersionPrefix=2.0.0 /p:VersionSuffix=preview223
+dotnet msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles;PackDistributions /p:VersionPrefix=2.0.0 /p:VersionSuffix=preview223
+```
+
+### Сборка без C++-компонент (без NativeApi)
+
+```bat
+dotnet msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles /p:NoCppCompiler=True
 ```
 
 ### Генерация документации
 
 ```bat
-msbuild Build.csproj /t:BuildDocumentation
+dotnet msbuild Build.csproj /t:BuildDocumentation
 ```
+
+# Тестирование
+
+В проекте есть два уровня тестов:
+
+* **Модульные тесты на C#** — расположены в `src/Tests/*` (xUnit/NUnit), запускаются через `dotnet test` в каталоге соответствующего тестового проекта или одной командой:
+  ```bat
+  dotnet msbuild Build.csproj /t:UnitTests
+  ```
+* **Приёмочные тесты на BSL** — расположены в каталоге `tests/` и запускаются через `testrunner.os` на свежесобранном `oscript`. Для удобства в репозитории есть скрипты-обёртки:
+  ```bat
+  rem Windows
+  tests\run-bsl-tests.cmd src\oscript\bin\Debug\net8.0\oscript.exe
+  ```
+
+  ```bash
+  # Linux/macOS
+  tests/run-bsl-tests.sh src/oscript/bin/Debug/net8.0/oscript
+  ```
+
+  Перед запуском приёмочных тестов нужно собрать `oscript`:
+  ```bat
+  dotnet build src/oscript/oscript.csproj
+  ```
+
+# Документация для разработчиков
+
+Если вы хотите контрибьютить в проект, познакомьтесь с дополнительными документами в каталоге [`docs/`](docs/):
+
+* [`docs/developer_docs.md`](docs/developer_docs.md) — архитектура проекта, состав решения и навигация по исходному коду.
+* [`docs/contexts.md`](docs/contexts.md) — практическое руководство по добавлению BSL-контекстов, методов, свойств и глобальных функций.
+* [`CODESTYLE.md`](CODESTYLE.md) — требования к стилю кода на C#.
