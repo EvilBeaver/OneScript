@@ -79,6 +79,9 @@ namespace ScriptEngine.Hosting
                 var holder = sp.Resolve<EngineConfiguration>();
                 return holder.GetConfig();
             });
+
+            services.RegisterSingleton<IBinaryDataMemoryLimit>(sp =>
+                new BinaryDataMemoryLimitFromOptions(sp.Resolve<OneScriptCoreOptions>()));
             
             services.Register<ScriptingEngine>();
 

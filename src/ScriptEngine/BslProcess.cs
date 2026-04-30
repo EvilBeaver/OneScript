@@ -42,6 +42,7 @@ namespace ScriptEngine
             var notifyExecutors = !_isRunning;
             if (notifyExecutors)
             {
+                BinaryDataRuntimeSettings.PushFromServices(Services);
                 Array.ForEach(_executorProviders, e => e.BeforeProcessStart(this));
             }
 
@@ -56,6 +57,7 @@ namespace ScriptEngine
                 if (notifyExecutors)
                 {
                     Array.ForEach(_executorProviders, e => e.AfterProcessExit(this));
+                    BinaryDataRuntimeSettings.Pop();
                     _isRunning = false;
                 }
             }

@@ -49,7 +49,7 @@ namespace OneScript.StandardLibrary.Binary
         
         private void ReadFromStream(Stream stream)
         {
-            if (stream.Length < FileBackingConstants.DEFAULT_MEMORY_LIMIT)
+            if (stream.Length < BinaryDataRuntimeSettings.GetEffectiveInMemoryMaxBytes())
             {
                 LoadToBuffer(stream);
             }

@@ -15,6 +15,7 @@ using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Text;
 using oscript.Web.Multipart;
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -27,8 +28,15 @@ namespace oscript.Web
 
 		private FileBackingStream _postBody;
 
-		public WebRequestContext()
+		private readonly int _postBodyInMemoryMaxBytes;
+
+		public WebRequestContext() : this(BinaryDataConfigurationDefaults.InMemoryMaxBytes)
 		{
+		}
+
+		public WebRequestContext(int postBodyInMemoryMaxBytes)
+		{
+			_postBodyInMemoryMaxBytes = postBodyInMemoryMaxBytes;
 			var get = Environment.GetEnvironmentVariable("QUERY_STRING");
 			if (get != null) FillGetMap(get);
 
@@ -68,7 +76,7 @@ namespace oscript.Web
 			var type = Environment.GetEnvironmentVariable("CONTENT_TYPE");
 			
 			using var stdin = Console.OpenStandardInput();
-			var dest = new FileBackingStream(FileBackingConstants.DEFAULT_MEMORY_LIMIT, len);
+			var dest = new FileBackingStream(_postBodyInMemoryMaxBytes, len);
 			stdin.CopyTo(dest);
 			dest.Position = 0;
 			
