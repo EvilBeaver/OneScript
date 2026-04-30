@@ -57,50 +57,97 @@ The OneScript distribution already includes a set of the most commonly used pack
 
 ## Preparation
 
-Links to distributions are provided below, however, please note that links may change over time and their relevance is not guaranteed. You need dotnet SDK and C++ compiler, which can be downloaded from anywhere you can find.
+To build the project you need:
 
-* Install [MS BuildTools](https://visualstudio.microsoft.com/ru/thank-you-downloading-visual-studio/?sku=buildtools&rel=16), when installing enable targeting for .net6, .net4.8, install C++ compiler.
+* [.NET SDK 8.0](https://dotnet.microsoft.com/download/dotnet/8.0) (the project's target framework is `net8.0`).
+* A C++ compiler — only required to build the native bridge `ScriptEngine.NativeApi` (support for native add-ins compatible with the 1C NativeApi). On Windows the easiest way to get one is to install [MS Build Tools](https://visualstudio.microsoft.com/visual-studio-build-tools/) or Visual Studio with the "Desktop development with C++" workload. If a C++ compiler is not available, see the `NoCppCompiler` parameter below.
+
+> Distribution links may change over time, their relevance is not guaranteed.
 
 ## Build
 
-Launch Developer Command Prompt (will appear in the Start menu after installing MSBuildTools or Visual Studio). Navigate to the OneScript repository directory. The following are commands in the Developer Command Prompt console.
-Build is performed using msbuild. Targets:
+The build is driven by MSBuild via the `Build.csproj` script in the repository root. Commands can be run with `msbuild` (Developer Command Prompt installed together with MS Build Tools/Visual Studio) or with `dotnet msbuild` (cross-platform).
 
-* CleanAll - clean previous build results
-* BuildAll - prepare files for distribution
-* MakeCPP;MakeFDD;MakeSCD;BuildDebugger - separate build targets for preparing different types of distributions
-* PrepareDistributionFiles - build full distribution packages (including libraries)
-* PackDistributions - prepare ZIP archives for distribution
-* CreateNuget - create packages for publishing to NuGet
+Main targets:
+
+* `CleanAll` — clean previous build results;
+* `BuildAll` — build binary files for distribution (FDD, SCD, debugger; native components are also built when a C++ compiler is available);
+* `MakeCPP`, `MakeFDD`, `MakeSCD`, `BuildDebugger` — individual targets that build specific parts of the distribution;
+* `GatherLibrary` — download and stage the base set of libraries (`opm`, `asserts`, `logos`, `fs`, `tempfiles`, `cli`);
+* `PrepareDistributionFiles` — build full distribution contents (including libraries and documentation);
+* `PackDistributions` — pack the distribution contents into ZIP archives for all supported platforms;
+* `BuildDocumentation` — generate the platform reference (markdown + json);
+* `CreateNuget` / `PublishNuget` — build and publish NuGet packages;
+* `Test` (`UnitTests`, `ScriptedTests`) — run unit and acceptance (BSL) tests.
 
 **Build parameters**
 
-* VersionPrefix - release number prefix, its main part, for example, 2.0.0
-* VersionSuffix - version suffix, which usually acts as an arbitrary versioning suffix according to semver, for example, beta-786 (optional)
-* NoCppCompiler - if True - C++ compiler is not installed, C++ components (NativeApi support) will not be added to the build
+* `VersionPrefix` — main part of the release number, for example `2.0.0` (defaults to `2.0.0`);
+* `VersionSuffix` — optional SemVer suffix, for example `beta-786`;
+* `NoCppCompiler` — when set to `True`, native C++ components (NativeApi) are not built and not included in the distribution (use it when no C++ compiler is installed);
+* `Configuration` — build configuration, defaults to `Release`. For a debug build on Linux use `LinuxDebug`.
 
-All distribution files will be placed in the `built` directory at the root of the 1Script repository
+All build artifacts are placed in the `built` directory at the repository root.
 
 ### Building distribution contents in a separate directory
 
 ```bat
-msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles
+dotnet msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles
 ```
 
 ### Building with manual version specification
 
 ```bat
-msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles /p:VersionPrefix=2.0.0
+dotnet msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles /p:VersionPrefix=2.0.0
 ```
 
 ### Building ZIP distributions
 
 ```bat
-msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles;PackDistributions /p:VersionPrefix=2.0.0 /p:VersionSuffix=preview223
+dotnet msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles;PackDistributions /p:VersionPrefix=2.0.0 /p:VersionSuffix=preview223
+```
+
+### Building without C++ components (no NativeApi)
+
+```bat
+dotnet msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles /p:NoCppCompiler=True
 ```
 
 ### Documentation generation
 
 ```bat
-msbuild Build.csproj /t:BuildDocumentation
+dotnet msbuild Build.csproj /t:BuildDocumentation
 ```
+
+# Testing
+
+The project has two layers of tests:
+
+* **C# unit tests** — located in `src/Tests/*` (xUnit/NUnit). Run them via `dotnet test` in the corresponding test project directory or all at once:
+  ```bat
+  dotnet msbuild Build.csproj /t:UnitTests
+  ```
+* **BSL acceptance tests** — located in the `tests/` directory and executed by `testrunner.os` against a freshly built `oscript`. The repository includes wrapper scripts:
+  ```bat
+  rem Windows
+  tests\run-bsl-tests.cmd src\oscript\bin\Debug\net8.0\oscript.exe
+  ```
+
+  ```bash
+  # Linux/macOS
+  tests/run-bsl-tests.sh src/oscript/bin/Debug/net8.0/oscript
+  ```
+
+  Before running the acceptance tests, build `oscript`:
+  ```bat
+  dotnet build src/oscript/oscript.csproj
+  ```
+
+# Developer documentation
+
+If you want to contribute to the project, take a look at the additional documents in the [`docs/`](docs/) directory:
+
+* [`docs/developer_docs.md`](docs/developer_docs.md) — project architecture, solution layout and guided tour of the source code.
+* [`docs/contexts.md`](docs/contexts.md) — a practical guide to adding BSL contexts, methods, properties and global functions.
+* [`CODESTYLE.md`](CODESTYLE.md) — C# code style requirements.
+
