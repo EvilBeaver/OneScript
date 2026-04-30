@@ -34,7 +34,7 @@ The OneScript distribution already includes a set of the most commonly used pack
 
 ### Linux ###
 
-#### v2.x (current branch) — .NET 8.0 based
+#### v2.x (current branch) — .NET 8.0 based ####
 
 Two ZIP archive variants are available:
 
@@ -48,12 +48,12 @@ Installation steps:
 - Extract the archive to a convenient directory.
 - Set executable permissions:
   ```bash
-  chmod +x oscript
+  chmod +x ./oscript
   ```
 
 The FDD variant requires .NET Runtime 8.0 — see installation instructions for your distribution at [learn.microsoft.com/dotnet/core/install/linux](https://learn.microsoft.com/dotnet/core/install/linux).
 
-#### v1.x LTS — deb package (Mono)
+#### v1.x LTS — deb package (Mono) ####
 
 The LTS branch is distributed as a `.deb` package and runs on Mono. The package automatically installs the minimum required Mono components; however, **the debugger requires `mono-complete`**.
 
