@@ -40,25 +40,33 @@ namespace ScriptEngine
         public BslValue Run(BslObjectValue target, IExecutableModule module, BslScriptMethodInfo method, IValue[] arguments)
         {
             var notifyExecutors = !_isRunning;
-            if (notifyExecutors)
-            {
-                BinaryDataRuntimeSettings.PushFromServices(Services);
-                Array.ForEach(_executorProviders, e => e.BeforeProcessStart(this));
-            }
 
-            _isRunning = true;
+            if (notifyExecutors)
+                BinaryDataRuntimeSettings.PushFromServices(Services);
 
             try
             {
+                if (notifyExecutors)
+                    Array.ForEach(_executorProviders, e => e.BeforeProcessStart(this));
+
+                _isRunning = true;
+
                 return _bslExecutorsByModule[module.GetType()](this, target, module, method, arguments);
             }
             finally
             {
                 if (notifyExecutors)
                 {
-                    Array.ForEach(_executorProviders, e => e.AfterProcessExit(this));
-                    BinaryDataRuntimeSettings.Pop();
-                    _isRunning = false;
+                    try
+                    {
+                        if (_isRunning)
+                            Array.ForEach(_executorProviders, e => e.AfterProcessExit(this));
+                    }
+                    finally
+                    {
+                        BinaryDataRuntimeSettings.Pop();
+                        _isRunning = false;
+                    }
                 }
             }
         }

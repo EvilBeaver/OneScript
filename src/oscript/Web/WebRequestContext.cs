@@ -36,6 +36,9 @@ namespace oscript.Web
 
 		public WebRequestContext(int postBodyInMemoryMaxBytes)
 		{
+			if (postBodyInMemoryMaxBytes <= 0)
+				throw new ArgumentOutOfRangeException(nameof(postBodyInMemoryMaxBytes),
+					"Лимит памяти для тела POST-запроса должен быть положительным числом байт.");
 			_postBodyInMemoryMaxBytes = postBodyInMemoryMaxBytes;
 			var get = Environment.GetEnvironmentVariable("QUERY_STRING");
 			if (get != null) FillGetMap(get);
@@ -76,7 +79,8 @@ namespace oscript.Web
 			var type = Environment.GetEnvironmentVariable("CONTENT_TYPE");
 			
 			using var stdin = Console.OpenStandardInput();
-			var dest = new FileBackingStream(_postBodyInMemoryMaxBytes, len);
+			var initialCapacity = Math.Min(len, _postBodyInMemoryMaxBytes);
+			var dest = new FileBackingStream(_postBodyInMemoryMaxBytes, initialCapacity);
 			stdin.CopyTo(dest);
 			dest.Position = 0;
 			

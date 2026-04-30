@@ -69,7 +69,11 @@ namespace oscript
 
 			var engine = ConsoleHostBuilder.Build(builder);
 
-			var binaryMemoryLimit = engine.Services.Resolve<IBinaryDataMemoryLimit>().MaxBytesInMemory;
+			var binaryMemoryLimit = engine.Services.TryResolve<IBinaryDataMemoryLimit>()?.MaxBytesInMemory
+				?? BinaryDataConfigurationDefaults.InMemoryMaxBytes;
+			if (binaryMemoryLimit <= 0)
+				binaryMemoryLimit = BinaryDataConfigurationDefaults.InMemoryMaxBytes;
+
 			var request = new WebRequestContext(binaryMemoryLimit);
 			engine.InjectGlobalProperty("ВебЗапрос", "WebRequest", request, true);
 			engine.InjectObject(this);

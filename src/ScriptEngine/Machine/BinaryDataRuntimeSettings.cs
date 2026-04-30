@@ -20,7 +20,10 @@ namespace ScriptEngine.Machine
         internal static void PushFromServices(IServiceContainer services)
         {
             var opts = services.TryResolve<IBinaryDataMemoryLimit>();
-            InMemoryMaxBytes.Value = opts?.MaxBytesInMemory ?? BinaryDataConfigurationDefaults.InMemoryMaxBytes;
+            var maxBytes = opts?.MaxBytesInMemory ?? BinaryDataConfigurationDefaults.InMemoryMaxBytes;
+            if (maxBytes <= 0)
+                maxBytes = BinaryDataConfigurationDefaults.InMemoryMaxBytes;
+            InMemoryMaxBytes.Value = maxBytes;
         }
 
         internal static void Pop()
