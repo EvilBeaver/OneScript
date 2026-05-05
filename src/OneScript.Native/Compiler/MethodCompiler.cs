@@ -1092,6 +1092,13 @@ namespace OneScript.Native.Compiler
             _statementBuildParts.Push(expression);
         }
 
+        private static bool HasProcessParameter(MethodInfo mi)
+        {
+            var p = mi.GetParameters();
+            if (p.Length > 0 && p[0].ParameterType == typeof(IBslProcess)) return true;
+            return false;
+        }
+
         protected override void VisitObjectProcedureCall(BslSyntaxNode node)
         {
             var target = _statementBuildParts.Pop();
@@ -1102,7 +1109,8 @@ namespace OneScript.Native.Compiler
             if (targetType.IsObjectValue())
             {
                 var methodInfo = FindMethodOfType(node, targetType, name);
-                var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters(), methodInfo is ContextMethodInfo { InjectsProcess: true });
+                var injectProcess = methodInfo is ContextMethodInfo { InjectsProcess: true } || HasProcessParameter(methodInfo);
+                var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters(), injectProcess);
 
                 _blocks.Add(Expression.Call(target, methodInfo, args));
             }
