@@ -867,7 +867,44 @@ namespace OneScript.Core.Tests
 
             array.Should().HaveCount(2);
         }
-        
+
+        [Fact]
+        public void Can_Call_Member_ProceduresWithBslProcess()
+        {
+            var tm = new DefaultTypeManager();
+            var testType = tm.RegisterClass(typeof(ValueListImpl));
+
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Список", new BslTypeValue(testType));
+            // в методе SortByValue первым параметром идет IBslProcess process
+            block.CodeBlock = "Список.СортироватьПоЗначению();";
+
+            var method = block.CreateDelegate<Func<ValueListImpl, BslValue>>();
+            var testValue = new ValueListImpl();
+            method(testValue);
+
+        }
+
+        [Fact]
+        public void Can_Call_Member_FunctionsWithBslProcess()
+        {
+            var tm = new DefaultTypeManager();
+            var targetTestType = tm.RegisterClass(typeof(ArrayImpl));
+            var testType = tm.RegisterClass(typeof(ReflectorContext));
+
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Рефлектор", new BslTypeValue(testType));
+            block.Parameters.Insert("Массив", new BslTypeValue(targetTestType));
+            // в методе CallMethod первым параметром идет IBslProcess process
+            block.CodeBlock = "Результат = Рефлектор.ВызватьМетод(Массив, \"Количество\");";
+
+            var method = block.CreateDelegate<Func<ReflectorContext, ArrayImpl, BslValue>>();
+            var reflector = ReflectorContext.CreateNew(new TypeActivationContext() { TypeManager = tm});
+            var array = new ArrayImpl();
+            method(reflector, array);
+
+        }
+
         [Fact]
         public void Can_Call_Member_Procedures_On_Dynamics()
         {
