@@ -1092,10 +1092,17 @@ namespace OneScript.Native.Compiler
             _statementBuildParts.Push(expression);
         }
 
-        private static bool HasProcessParameter(MethodInfo mi)
+        private static bool InjectedProcessNeeded(MethodInfo methodInfo)
         {
-            var p = mi.GetParameters();
-            if (p.Length > 0 && p[0].ParameterType == typeof(IBslProcess)) return true;
+            if (methodInfo is ContextMethodInfo { InjectsProcess: true })
+            {
+                return true;
+            }
+            var p = methodInfo.GetParameters();
+            if (p.Length > 0 && p[0].ParameterType == typeof(IBslProcess))
+            {
+                return true;
+            }
             return false;
         }
 
@@ -1109,7 +1116,7 @@ namespace OneScript.Native.Compiler
             if (targetType.IsObjectValue())
             {
                 var methodInfo = FindMethodOfType(node, targetType, name);
-                var injectProcess = methodInfo is ContextMethodInfo { InjectsProcess: true } || HasProcessParameter(methodInfo);
+                var injectProcess = InjectedProcessNeeded(methodInfo);
                 var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters(), injectProcess);
 
                 _blocks.Add(Expression.Call(target, methodInfo, args));
@@ -1176,8 +1183,8 @@ namespace OneScript.Native.Compiler
                         $"Метод {targetType}.{name} не является функцией",
                         $"Method {targetType}.{name} is not a function"), ToCodePosition(node.Location));
                 }
-            
-                var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters(), methodInfo is ContextMethodInfo { InjectsProcess: true });
+
+                var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters(), InjectedProcessNeeded(methodInfo));
                 _statementBuildParts.Push(Expression.Call(target, methodInfo, args));
             }
             else if (targetType.IsContext())
@@ -1274,7 +1281,7 @@ namespace OneScript.Native.Compiler
             }
 
             var symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
-            var args = PrepareCallArguments(node.ArgumentList, symbol.Method.GetParameters(), symbol.Method is ContextMethodInfo { InjectsProcess: true });
+            var args = PrepareCallArguments(node.ArgumentList, symbol.Method.GetParameters(), InjectedProcessNeeded(symbol.Method));
 
             var methodInfo = symbol.Method;
             if (methodInfo is ContextMethodInfo contextMethod)
