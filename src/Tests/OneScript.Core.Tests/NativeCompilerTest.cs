@@ -868,40 +868,51 @@ namespace OneScript.Core.Tests
             array.Should().HaveCount(2);
         }
 
-        [Fact]
-        public void Can_Call_Member_ProceduresWithBslProcess()
+        [Theory]
+        [InlineData("Объект.Процедура0();")]
+        [InlineData("Объект.Процедура0СПроцессом();")]
+        [InlineData("Объект.Процедура1(1);")]
+        [InlineData("Объект.Процедура1СПроцессом(1);")]
+        [InlineData("Объект.Процедура1СУмолчанием();")]
+        [InlineData("Объект.Процедура1СУмолчаниемСПроцессом();")]
+        [InlineData("Объект.Процедура1СУмолчанием(1);")]
+        [InlineData("Объект.Процедура1СУмолчаниемСПроцессом(1);")]
+        public void Can_Call_Member_ProceduresWithBslProcess(string code)
         {
             var tm = new DefaultTypeManager();
-            var testType = tm.RegisterClass(typeof(ValueListImpl));
+            var testType = tm.RegisterClass(typeof(TestContextClass));
 
             var block = new CompiledBlock(default);
-            block.Parameters.Insert("Список", new BslTypeValue(testType));
-            // в методе SortByValue первым параметром идет IBslProcess process
-            block.CodeBlock = "Список.СортироватьПоЗначению();";
+            block.Parameters.Insert("Объект", new BslTypeValue(testType));
+            block.CodeBlock = code;
 
-            var method = block.CreateDelegate<Func<ValueListImpl, BslValue>>();
-            var testValue = new ValueListImpl();
+            var method = block.CreateDelegate<Func<TestContextClass, BslValue>>();
+            var testValue = new TestContextClass();
             method(testValue);
 
         }
 
-        [Fact]
-        public void Can_Call_Member_FunctionsWithBslProcess()
+        [Theory]
+        [InlineData("Объект.Функция0()")]
+        [InlineData("Объект.Функция0СПроцессом()")]
+        [InlineData("Объект.Функция1(1)")]
+        [InlineData("Объект.Функция1СПроцессом(1)")]
+        [InlineData("Объект.Функция1СУмолчанием()")]
+        [InlineData("Объект.Функция1СУмолчаниемСПроцессом()")]
+        [InlineData("Объект.Функция1СУмолчанием(1)")]
+        [InlineData("Объект.Функция1СУмолчаниемСПроцессом(1)")]
+        public void Can_Call_Member_FunctionsWithBslProcess(string code)
         {
             var tm = new DefaultTypeManager();
-            var targetTestType = tm.RegisterClass(typeof(ArrayImpl));
-            var testType = tm.RegisterClass(typeof(ReflectorContext));
+            var testType = tm.RegisterClass(typeof(TestContextClass));
 
             var block = new CompiledBlock(default);
-            block.Parameters.Insert("Рефлектор", new BslTypeValue(testType));
-            block.Parameters.Insert("Массив", new BslTypeValue(targetTestType));
-            // в методе CallMethod первым параметром идет IBslProcess process
-            block.CodeBlock = "Результат = Рефлектор.ВызватьМетод(Массив, \"Количество\");";
+            block.Parameters.Insert("Объект", new BslTypeValue(testType));
+            block.CodeBlock = $"Результат = {code};";
 
-            var method = block.CreateDelegate<Func<ReflectorContext, ArrayImpl, BslValue>>();
-            var reflector = ReflectorContext.CreateNew(new TypeActivationContext() { TypeManager = tm});
-            var array = new ArrayImpl();
-            method(reflector, array);
+            var method = block.CreateDelegate<Func<TestContextClass, BslValue>>();
+            var testValue = new TestContextClass();
+            method(testValue);
 
         }
 
