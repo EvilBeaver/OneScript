@@ -1433,8 +1433,8 @@ namespace OneScript.Native.Compiler
                     ? ConvertToExpressionTree(passedArg.Children[0])
                     : null).ToArray();
 
-            var parametersToProcess = declaredParameters.Length;
             var declStart = injectsProcess ? 1 : 0;
+            var parametersToProcess = declaredParameters.Length - declStart;
             for (int i = 0, decl = declStart; i < parameters.Length; i++, decl++)
             {
                 if (parametersToProcess == 0)
