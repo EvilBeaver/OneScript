@@ -889,7 +889,6 @@ namespace OneScript.Core.Tests
             var method = block.CreateDelegate<Func<TestContextClass, BslValue>>();
             var testValue = new TestContextClass();
             method(testValue);
-
         }
 
         [Theory]
@@ -913,7 +912,26 @@ namespace OneScript.Core.Tests
             var method = block.CreateDelegate<Func<TestContextClass, BslValue>>();
             var testValue = new TestContextClass();
             method(testValue);
+        }
 
+        [Theory]
+        [InlineData("Объект.Процедура0СПроцессом(1)")]
+        [InlineData("Объект.Функция0СПроцессом(1)")]
+        [InlineData("Объект.Функция1СУмолчаниемСПроцессом(1, 2)")]
+        [InlineData("Объект.Процедура1СУмолчаниемСПроцессом(1, 2, 3);")]
+        public void Cannot_Call_Member_Procedures_With_Wrong_Argument_Count(string code)
+        {
+            var tm = new DefaultTypeManager();
+            var testType = tm.RegisterClass(typeof(TestContextClass));
+
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Объект", new BslTypeValue(testType));
+            block.CodeBlock = code;
+
+            var runtimeException = Assert.ThrowsAny<RuntimeException>(() => {
+                var method = block.CreateDelegate<Func<TestContextClass, BslValue>>();
+            });
+            Assert.Contains("Слишком много фактических параметров", runtimeException.Message);
         }
 
         [Fact]
