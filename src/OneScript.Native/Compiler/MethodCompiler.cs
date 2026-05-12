@@ -1310,7 +1310,7 @@ namespace OneScript.Native.Compiler
                     result = DirectConversionCall(node, typeof(string));
                     break;
                 case Token.Date:
-                    result = DirectConversionCall(node, typeof(string));
+                    result = DirectConversionCall(node, typeof(DateTime));
                     break;
                 case Token.Type:
                     CheckArgumentsCount(node.ArgumentList, 1);
