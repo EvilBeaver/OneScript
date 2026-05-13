@@ -5,15 +5,16 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
-using System.IO;
 using Newtonsoft.Json;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using System;
+using System.IO;
 
 namespace OneScript.StandardLibrary.Json
 {
@@ -261,6 +262,38 @@ namespace OneScript.StandardLibrary.Json
             }
 
             _reader = new JsonReaderInternal(_fileReader)
+            {
+                SupportMultipleContent = true
+            };
+        }
+
+        /// <summary>
+        /// Устанавливает поток для чтения JSON данным объектом.
+        /// Если перед вызовом данного метода уже производилось чтение JSON из другого файла, строки или потока,
+        /// то чтение прекращается и объект инициализируется для чтения из указанного потока.
+        /// </summary>
+        /// <param name="stream">
+        /// Поток для чтения текста JSON.</param>
+        /// <param name="encoding">
+        /// Позволяет задать кодировку входного потока.</param>
+        [ContextMethod("ОткрытьПоток", "OpenStream")]
+        public void OpenStream(IValue streamContext, IValue encoding = null)
+        {
+            if (IsOpen())
+                Close();
+
+            var stream = streamContext switch
+            {
+                GenericStream s => s.GetUnderlyingStream(),
+                FileStreamContext s => s.GetUnderlyingStream(),
+                MemoryStreamContext s => s.GetUnderlyingStream(),
+
+                _ => throw RuntimeException.InvalidNthArgumentType(1)
+            };
+
+            var enc = encoding != null ? TextEncodingEnum.GetEncoding(encoding) : System.Text.Encoding.UTF8;
+
+            _reader = new JsonReaderInternal(new StreamReader(stream, enc))
             {
                 SupportMultipleContent = true
             };
