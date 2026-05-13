@@ -272,25 +272,17 @@ namespace OneScript.StandardLibrary.Json
         /// Если перед вызовом данного метода уже производилось чтение JSON из другого файла, строки или потока,
         /// то чтение прекращается и объект инициализируется для чтения из указанного потока.
         /// </summary>
-        /// <param name="stream">
+        /// <param name="streamContext">
         /// Поток для чтения текста JSON.</param>
         /// <param name="encoding">
         /// Позволяет задать кодировку входного потока.</param>
         [ContextMethod("ОткрытьПоток", "OpenStream")]
-        public void OpenStream(IValue streamContext, IValue encoding = null)
+        public void OpenStream(IStreamWrapper streamContext, IValue encoding = null)
         {
             if (IsOpen())
                 Close();
 
-            var stream = streamContext switch
-            {
-                GenericStream s => s.GetUnderlyingStream(),
-                FileStreamContext s => s.GetUnderlyingStream(),
-                MemoryStreamContext s => s.GetUnderlyingStream(),
-
-                _ => throw RuntimeException.InvalidNthArgumentType(1)
-            };
-
+            var stream = streamContext.GetUnderlyingStream();
             var enc = encoding != null ? TextEncodingEnum.GetEncoding(encoding) : System.Text.Encoding.UTF8;
 
             _reader = new JsonReaderInternal(new StreamReader(stream, enc))
