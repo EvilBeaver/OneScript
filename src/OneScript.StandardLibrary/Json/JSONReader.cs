@@ -244,8 +244,7 @@ namespace OneScript.StandardLibrary.Json
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string JSONFileName, IValue encoding = null)
         {
-            if (IsOpen())
-                Close();
+            Close();
 
             StreamReader _fileReader;
 
@@ -279,13 +278,12 @@ namespace OneScript.StandardLibrary.Json
         [ContextMethod("ОткрытьПоток", "OpenStream")]
         public void OpenStream(IStreamWrapper streamContext, IValue encoding = null)
         {
-            if (IsOpen())
-                Close();
+            Close();
 
             var stream = streamContext.GetUnderlyingStream();
             var enc = encoding != null ? TextEncodingEnum.GetEncoding(encoding) : System.Text.Encoding.UTF8;
 
-            _reader = new JsonReaderInternal(new StreamReader(stream, enc))
+            _reader = new JsonReaderInternal(new StreamReader(stream, enc, leaveOpen:true))
             {
                 SupportMultipleContent = true
             };
@@ -333,8 +331,7 @@ namespace OneScript.StandardLibrary.Json
         [ContextMethod("УстановитьСтроку", "SetString")]
         public void SetString(string JSONString)
         {
-            if (IsOpen())
-                Close();
+            Close();
 
             _reader = new JsonReaderInternal(new StringReader(JSONString))
             {
