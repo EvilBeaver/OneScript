@@ -5,15 +5,16 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
-using System.IO;
 using Newtonsoft.Json;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Text;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using System;
+using System.IO;
 
 namespace OneScript.StandardLibrary.Json
 {
@@ -40,7 +41,6 @@ namespace OneScript.StandardLibrary.Json
     }
 
     /// <summary>
-    /// 
     /// Предназначен для последовательного чтения JSON-данных из файла или строки.
     /// </summary>
     [ContextClass("ЧтениеJSON", "JSONReader")]
@@ -50,7 +50,6 @@ namespace OneScript.StandardLibrary.Json
         private JsonReaderInternal _reader;
 
         /// <summary>
-        /// 
         /// Возвращает true если для объекта чтения json был задан текст для парсинга.
         /// </summary>
         private bool IsOpen() => _reader != null;
@@ -71,49 +70,25 @@ namespace OneScript.StandardLibrary.Json
         }
 
         /// <summary>
-        /// 
         /// Указывает на позицию, находящуюся сразу после прочитанного значения.
         /// При ошибке чтение остается на позиции последнего успешно считанного символа.
         /// </summary>
         /// <value>Число (Number), Неопределено (Undefined)</value>
         [ContextProperty("ТекущаяПозиция", "CurrentPosition")]
         public IValue CurrentPosition
-        {
-            get
-            {
-                if (IsOpen())
-                {
-                    return ValueFactory.Create(_reader.LinePosition);
-                }
-
-                return ValueFactory.Create(); // Неопределено 
-            }
-        }
+            => IsOpen() ? ValueFactory.Create(_reader.LinePosition) : ValueFactory.Create();
 
         /// <summary>
-        /// 
         /// Указывает на позицию сразу после прочитанного значения.
         /// Например, перед чтением первого элемента - 0, после чтения первого элемента -1 .
         /// </summary>
         /// <value>Число (Number), Неопределено (Undefined)</value>
         [ContextProperty("ТекущаяСтрока", "CurrentLine")]
         public IValue CurrentLine
-        {
-            get
-            {
-                if (IsOpen())
-                {
-                    return ValueFactory.Create(_reader.LineNumber);
-                }
-
-                return ValueFactory.Create(); // Неопределено
-            }
-        }
+            => IsOpen() ? ValueFactory.Create(_reader.LineNumber) : ValueFactory.Create();
 
         /// <summary>
-        /// 
         /// Содержит текущее значение:
-        /// 
         ///  - Число - если ТипТекущегоЗначения имеет значение Число;
         ///  - Строка - если ТипТекущегоЗначения имеет одно из следующих значений:
         ///    - Комментарий,
@@ -160,7 +135,6 @@ namespace OneScript.StandardLibrary.Json
 
                     default:
                         throw JSONReaderException.CannotGetValue();
-                        ;
                 }
             }
         }
@@ -168,7 +142,6 @@ namespace OneScript.StandardLibrary.Json
         public object ReaderValue => _reader.Value;
 
         /// <summary>
-        /// 
         /// Тип текущего значения в документе JSON во внутреннем формате.
         /// null - если чтение еще не началось или достигнут конец файла.
         /// </summary>
@@ -183,7 +156,6 @@ namespace OneScript.StandardLibrary.Json
         }
 
         /// <summary>
-        /// 
         /// Тип текущего значения в документе JSON.
         /// Неопределено - если чтение еще не началось или достигнут конец файла.
         /// </summary>
@@ -217,10 +189,8 @@ namespace OneScript.StandardLibrary.Json
         }
 
         /// <summary>
-        /// 
         /// Завершает чтение текста JSON из файла или строки.
         /// </summary>
-        ///
         [ContextMethod("Закрыть", "Close")]
         public void Close()
         {
@@ -232,10 +202,10 @@ namespace OneScript.StandardLibrary.Json
         }
 
         /// <summary>
-        /// 
-        /// Открывает JSON-файл для чтения данным объектом. Если перед вызовом данного метода уже производилось чтение JSON из другого файла или строки, то чтение прекращается и объект инициализируется для чтения из указанного файла.
+        /// Открывает JSON-файл для чтения данным объектом.
+        /// Если перед вызовом данного метода уже производилось чтение JSON из другого файла или строки,
+        /// то чтение прекращается и объект инициализируется для чтения из указанного файла.
         /// </summary>
-        ///
         /// <param name="JSONFileName">
         /// Имя файла, содержащего текст JSON. </param>
         /// <param name="encoding">
@@ -243,17 +213,14 @@ namespace OneScript.StandardLibrary.Json
         [ContextMethod("ОткрытьФайл", "OpenFile")]
         public void OpenFile(string JSONFileName, IValue encoding = null)
         {
-            if (IsOpen())
-                Close();
+            Close();
 
             StreamReader _fileReader;
 
             try
             {
-                if (encoding != null)
-                    _fileReader = FileOpener.OpenReader(JSONFileName, TextEncodingEnum.GetEncoding(encoding));
-                else
-                    _fileReader = FileOpener.OpenReader(JSONFileName, System.Text.Encoding.UTF8);
+                var enc = encoding != null ? TextEncodingEnum.GetEncoding(encoding) : System.Text.Encoding.UTF8;
+                _fileReader = FileOpener.OpenReader(JSONFileName, enc);
             }
             catch (Exception e)
             {
@@ -267,10 +234,34 @@ namespace OneScript.StandardLibrary.Json
         }
 
         /// <summary>
+        /// Устанавливает поток для чтения JSON данным объектом.
+        /// Если перед вызовом данного метода уже производилось чтение JSON из другого файла, строки или потока,
+        /// то чтение прекращается и объект инициализируется для чтения из указанного потока.
+        /// </summary>
+        /// <param name="streamContext">
+        /// Поток для чтения текста JSON.</param>
+        /// <param name="encoding">
+        /// Позволяет задать кодировку входного потока.</param>
+        [ContextMethod("ОткрытьПоток", "OpenStream")]
+        public void OpenStream(IStreamWrapper streamContext, IValue encoding = null)
+        {
+            Close();
+
+            var stream = streamContext?.GetUnderlyingStream() 
+                ?? throw new ArgumentNullException(nameof(streamContext));
+
+            var enc = encoding != null ? TextEncodingEnum.GetEncoding(encoding) : System.Text.Encoding.UTF8;
+
+            _reader = new JsonReaderInternal(new StreamReader(stream, enc, leaveOpen:true))
+            {
+                SupportMultipleContent = true
+            };
+        }
+
+        /// <summary>
         /// Если текущее значение – начало массива или объекта, то пропускает его содержимое и конец.
         /// Для остальных типов значений работает аналогично методу Прочитать().
         /// </summary>
-        ///
         [ContextMethod("Пропустить", "Skip")]
         public bool Skip()
         {
@@ -287,29 +278,22 @@ namespace OneScript.StandardLibrary.Json
         /// <summary>
         /// Выполняет чтение значения JSON.
         /// </summary>
-        ///
         [ContextMethod("Прочитать", "Read")]
         public bool Read()
         {
             CheckIfOpen();
             return _reader.Read();
-
         }
 
         /// <summary>
-        /// 
         /// Устанавливает строку, содержащую текст JSON для чтения данным объектом. Если перед вызовом данного метода уже производилось чтение JSON из другого файла или строки, то чтение прекращается и объект инициализируется для чтения из указанной строки.
         /// </summary>
-        ///
         /// <param name="JSONString">
         /// Строка, содержащая текст в формате JSON. </param>
-        ///
-        ///
         [ContextMethod("УстановитьСтроку", "SetString")]
         public void SetString(string JSONString)
         {
-            if (IsOpen())
-                Close();
+            Close();
 
             _reader = new JsonReaderInternal(new StringReader(JSONString))
             {
