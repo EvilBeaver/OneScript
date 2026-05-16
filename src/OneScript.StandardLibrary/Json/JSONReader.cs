@@ -23,6 +23,8 @@ namespace OneScript.StandardLibrary.Json
         public JsonReaderInternal(TextReader reader) : base(reader)
         {
             Finished = false;
+            SupportMultipleContent = true;
+            DateParseHandling = DateParseHandling.None;
         }
 
         public override bool Read()
@@ -227,11 +229,7 @@ namespace OneScript.StandardLibrary.Json
                 throw new RuntimeException(e.Message, e);
             }
 
-            _reader = new JsonReaderInternal(_fileReader)
-            {
-                SupportMultipleContent = true
-                ,DateParseHandling = DateParseHandling.None
-            };
+            _reader = new JsonReaderInternal(_fileReader);
         }
 
         /// <summary>
@@ -253,11 +251,7 @@ namespace OneScript.StandardLibrary.Json
 
             var enc = encoding != null ? TextEncodingEnum.GetEncoding(encoding) : System.Text.Encoding.UTF8;
 
-            _reader = new JsonReaderInternal(new StreamReader(stream, enc, leaveOpen:true))
-            {
-                SupportMultipleContent = true
-                ,DateParseHandling = DateParseHandling.None
-            };
+            _reader = new JsonReaderInternal(new StreamReader(stream, enc, leaveOpen:true));
         }
 
         /// <summary>
@@ -297,11 +291,7 @@ namespace OneScript.StandardLibrary.Json
         {
             Close();
 
-            _reader = new JsonReaderInternal(new StringReader(JSONString))
-            {
-                SupportMultipleContent = true
-                ,DateParseHandling = DateParseHandling.None
-            };
+            _reader = new JsonReaderInternal(new StringReader(JSONString));
         }
 
     }
