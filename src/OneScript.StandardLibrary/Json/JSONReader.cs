@@ -230,6 +230,7 @@ namespace OneScript.StandardLibrary.Json
             _reader = new JsonReaderInternal(_fileReader)
             {
                 SupportMultipleContent = true
+                ,DateParseHandling = DateParseHandling.None
             };
         }
 
@@ -255,6 +256,7 @@ namespace OneScript.StandardLibrary.Json
             _reader = new JsonReaderInternal(new StreamReader(stream, enc, leaveOpen:true))
             {
                 SupportMultipleContent = true
+                ,DateParseHandling = DateParseHandling.None
             };
         }
 
@@ -298,6 +300,7 @@ namespace OneScript.StandardLibrary.Json
             _reader = new JsonReaderInternal(new StringReader(JSONString))
             {
                 SupportMultipleContent = true
+                ,DateParseHandling = DateParseHandling.None
             };
         }
 
