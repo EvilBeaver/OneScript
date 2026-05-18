@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace ScriptEngine
+namespace OneScript.BinaryData
 {
     /// <summary>
     /// Значения по умолчанию для буферизации двоичных данных в памяти до перехода на временный файл.

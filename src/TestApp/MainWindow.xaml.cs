@@ -137,6 +137,7 @@ namespace TestApp
             var builder = DefaultEngineBuilder
                 .Create()
                 .SetDefaultOptions()
+                .RegisterBinaryDataMemoryLimitFromConfig()
                 .UseNativeRuntime()
                 .UseImports()
                 .SetupEnvironment(e =>

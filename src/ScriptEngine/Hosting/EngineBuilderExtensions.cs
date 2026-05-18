@@ -80,9 +80,6 @@ namespace ScriptEngine.Hosting
                 return holder.GetConfig();
             });
 
-            services.RegisterSingleton<IBinaryDataMemoryLimit>(sp =>
-                new BinaryDataMemoryLimitFromOptions(sp.Resolve<OneScriptCoreOptions>()));
-            
             services.Register<ScriptingEngine>();
 
             return builder;

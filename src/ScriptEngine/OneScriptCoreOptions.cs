@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
 using OneScript.Commons;
 using OneScript.Native.Compiler;
@@ -22,7 +21,6 @@ namespace ScriptEngine
         private const string PREPROCESSOR_DEFINITIONS_KEY = "preprocessor.define";
         private const string DEFAULT_RUNTIME_KEY = "runtime.default";
         private const string EXPLICIT_IMPORT = "lang.explicitImports";
-        private const string BINARY_DATA_IN_MEMORY_MAX = "binaryData.inMemoryMaxBytes";
 
         public OneScriptCoreOptions(KeyValueConfig config)
         {
@@ -31,7 +29,6 @@ namespace ScriptEngine
             PreprocessorDefinitions = SetupDefinitions(config[PREPROCESSOR_DEFINITIONS_KEY]);
             UseNativeAsDefaultRuntime = SetupDefaultRuntime(config[DEFAULT_RUNTIME_KEY]);
             ExplicitImports = SetupExplicitImports(config[EXPLICIT_IMPORT]);
-            BinaryDataInMemoryMaxBytes = SetupBinaryDataInMemoryMax(config[BINARY_DATA_IN_MEMORY_MAX]);
         }
 
         public string SystemLanguage { get; }
@@ -43,12 +40,6 @@ namespace ScriptEngine
         public IEnumerable<string> PreprocessorDefinitions { get; }
         
         public ExplicitImportsBehavior ExplicitImports { get; }
-
-        /// <summary>
-        /// Максимальный объём двоичных данных в памяти до перехода на временный файл (байты).
-        /// Задаётся ключом binaryData.inMemoryMaxBytes в конфигурации.
-        /// </summary>
-        public int BinaryDataInMemoryMaxBytes { get; }
 
         private static IEnumerable<string> SetupDefinitions(string s)
         {
@@ -87,26 +78,6 @@ namespace ScriptEngine
                     SystemLogger.Write($"Unknown value for {EXPLICIT_IMPORT}: {keyValue}");
                     return ExplicitImportsBehavior.Warn;
             }
-        }
-
-        private static int SetupBinaryDataInMemoryMax(string rawValue)
-        {
-            if (string.IsNullOrWhiteSpace(rawValue))
-                return BinaryDataConfigurationDefaults.InMemoryMaxBytes;
-
-            if (!int.TryParse(rawValue.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var bytes))
-            {
-                SystemLogger.Write($"Invalid value for {BINARY_DATA_IN_MEMORY_MAX}: {rawValue}");
-                return BinaryDataConfigurationDefaults.InMemoryMaxBytes;
-            }
-
-            if (bytes <= 0 || bytes == int.MaxValue)
-            {
-                SystemLogger.Write($"Value for {BINARY_DATA_IN_MEMORY_MAX} must be between 1 and {int.MaxValue - 1}: {bytes}");
-                return BinaryDataConfigurationDefaults.InMemoryMaxBytes;
-            }
-
-            return bytes;
         }
     }
 }

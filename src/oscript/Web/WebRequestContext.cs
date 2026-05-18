@@ -10,6 +10,7 @@ using System.Collections;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using OneScript.BinaryData;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
@@ -36,9 +37,9 @@ namespace oscript.Web
 
 		public WebRequestContext(int postBodyInMemoryMaxBytes)
 		{
-			if (postBodyInMemoryMaxBytes <= 0)
+			if (postBodyInMemoryMaxBytes <= 0 || postBodyInMemoryMaxBytes == int.MaxValue)
 				throw new ArgumentOutOfRangeException(nameof(postBodyInMemoryMaxBytes),
-					"Лимит памяти для тела POST-запроса должен быть положительным числом байт.");
+					"Лимит памяти для тела POST-запроса должен быть положительным числом байт и меньше Int32.MaxValue.");
 			_postBodyInMemoryMaxBytes = postBodyInMemoryMaxBytes;
 			var get = Environment.GetEnvironmentVariable("QUERY_STRING");
 			if (get != null) FillGetMap(get);

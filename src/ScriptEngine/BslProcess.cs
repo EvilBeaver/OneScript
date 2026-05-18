@@ -1,7 +1,6 @@
 ﻿/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
-Mozilla Public License, v.2.0. If a copy of the MPL
-was not distributed with this file, You can obtain one
+Mozilla Public License, v.2.0. If a copy of the MPL was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
@@ -40,14 +39,19 @@ namespace ScriptEngine
         public BslValue Run(BslObjectValue target, IExecutableModule module, BslScriptMethodInfo method, IValue[] arguments)
         {
             var notifyExecutors = !_isRunning;
-
-            if (notifyExecutors)
-                BinaryDataRuntimeSettings.PushFromServices(Services);
+            List<IExecutorProvider> startedExecutors = null;
 
             try
             {
                 if (notifyExecutors)
-                    Array.ForEach(_executorProviders, e => e.BeforeProcessStart(this));
+                {
+                    startedExecutors = new List<IExecutorProvider>(_executorProviders.Length);
+                    foreach (var executor in _executorProviders)
+                    {
+                        executor.BeforeProcessStart(this);
+                        startedExecutors.Add(executor);
+                    }
+                }
 
                 _isRunning = true;
 
@@ -59,12 +63,14 @@ namespace ScriptEngine
                 {
                     try
                     {
-                        if (_isRunning)
-                            Array.ForEach(_executorProviders, e => e.AfterProcessExit(this));
+                        if (startedExecutors != null)
+                        {
+                            for (var i = startedExecutors.Count - 1; i >= 0; i--)
+                                startedExecutors[i].AfterProcessExit(this);
+                        }
                     }
                     finally
                     {
-                        BinaryDataRuntimeSettings.Pop();
                         _isRunning = false;
                     }
                 }

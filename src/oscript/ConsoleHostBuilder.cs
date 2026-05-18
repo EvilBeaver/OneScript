@@ -48,6 +48,7 @@ namespace oscript
         private static void BuildUpWithIoC(IEngineBuilder builder)
         {
             builder.SetDefaultOptions()
+                .RegisterBinaryDataMemoryLimitFromConfig()
                 .UseImports()
                 .UseFileSystemLibraries()
                 .UseNativeRuntime()
