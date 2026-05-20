@@ -16,7 +16,7 @@ namespace OneScript.StandardLibrary
     public static class EngineBuilderExtensions
     {
         /// <summary>
-        /// Регистрирует лимит памяти для «ДвоичныеДанные» из конфигурации движка (ключ <see cref="BinaryDataMemoryLimitConfiguration.InMemoryMaxBytesConfigKey"/>).
+        /// Регистрирует лимит памяти для «ДвоичныеДанные» из конфигурации движка (ключ <see cref="BinaryDataMemoryLimitConfiguration.InMemoryMaxSizeConfigKey"/>).
         /// Вызывайте после <c>SetDefaultOptions</c> из <c>ScriptEngine.Hosting.EngineBuilderExtensions</c>.
         /// </summary>
         public static IEngineBuilder RegisterBinaryDataMemoryLimitFromConfig(this IEngineBuilder builder)
@@ -24,7 +24,7 @@ namespace OneScript.StandardLibrary
             builder.Services.RegisterSingleton<IBinaryDataMemoryLimit>(sp =>
             {
                 var cfg = sp.Resolve<KeyValueConfig>();
-                var raw = cfg[BinaryDataMemoryLimitConfiguration.InMemoryMaxBytesConfigKey];
+                var raw = cfg[BinaryDataMemoryLimitConfiguration.InMemoryMaxSizeConfigKey];
                 var bytes = BinaryDataMemoryLimitConfiguration.ResolveFromConfigString(raw, SystemLogger.Write);
                 return new BinaryDataMemoryLimit(bytes);
             });

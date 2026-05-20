@@ -23,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\OneScript.BinaryData\OneScript.BinaryData.csproj" />
       <ProjectReference Include="..\..\OneScript.StandardLibrary\OneScript.StandardLibrary.csproj" />
     </ItemGroup>
 

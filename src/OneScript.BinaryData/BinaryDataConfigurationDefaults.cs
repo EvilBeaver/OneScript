@@ -13,7 +13,7 @@ namespace OneScript.BinaryData
     public static class BinaryDataConfigurationDefaults
     {
         /// <summary>
-        /// Лимит по умолчанию (50 МБ), если в конфигурации не задан ключ binaryData.inMemoryMaxBytes.
+        /// Лимит по умолчанию (50 МБ), если в конфигурации не задан ключ binaryData.inMemoryMaxSize.
         /// </summary>
         public const int InMemoryMaxBytes = 1024 * 1024 * 50;
     }
