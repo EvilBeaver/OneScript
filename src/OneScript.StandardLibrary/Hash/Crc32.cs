@@ -62,7 +62,7 @@ namespace OneScript.StandardLibrary.Hash
 
         protected override void HashCore(byte[] array, int ibStart, int cbSize)
         {
-            for (var i = ibStart; i < cbSize - ibStart; i++)
+            for (var i = ibStart; i < ibStart + cbSize; i++)
                 _crc = (_crc >> 8) ^ table[array[i] ^ _crc & 0xff];
         }
 
