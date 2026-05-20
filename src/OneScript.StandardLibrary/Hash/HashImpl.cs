@@ -34,10 +34,11 @@ namespace OneScript.StandardLibrary.Hash
             _provider = provider;
             _enumValue = enumValue;
             _calculated = false;
-            if (enumValue == HashFunctionEnum.CRC32 || provider==null)
+            if (enumValue == HashFunctionEnum.CRC32)
             {
                 _crc32 = new Crc32();
             }
+            else ArgumentNullException.ThrowIfNull(provider);
         }
 
         [ContextProperty("ХешФункция", "HashFunction")]
@@ -63,6 +64,9 @@ namespace OneScript.StandardLibrary.Hash
         {
             get
             {
+                if (!_calculated)
+                    return "0";
+
                 if (_crc32 != null)
                     return _crc32.GetCurrentHashAsUInt32().ToString("X8");
 
@@ -132,10 +136,10 @@ namespace OneScript.StandardLibrary.Hash
                     break;
                 case IStreamWrapper wrapper:
                     var stream = wrapper.GetUnderlyingStream();
-                    if (count == 0)
+                    if (count <= 0)
                         AppendStream(stream);
                     else
-                        AppendStream(stream, count);
+                    AppendStream(stream, count);
                     break;
                 case BinaryDataContext binaryData:
                     AppendStream(binaryData.GetStream());
@@ -150,9 +154,9 @@ namespace OneScript.StandardLibrary.Hash
         {
             if (!File.Exists(path))
                 throw RuntimeException.InvalidArgumentType();
-            var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             AppendStream(stream);
-            stream.Close();
         }
 
         [ScriptConstructor(Name = "По указанной хеш-функции")]
