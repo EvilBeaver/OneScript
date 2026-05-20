@@ -5,45 +5,38 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
-using System.IO;
-using System.Security.Cryptography;
-using System.Text;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Binary;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using System;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace OneScript.StandardLibrary.Hash
 {
     [ContextClass("ХешированиеДанных", "DataHashing")]
-    public class HashImpl : AutoContext<HashImpl>, IDisposable
+    public class HashImpl : AutoContext<HashImpl>
     {
-        private HashAlgorithm _provider;
-        private HashFunctionEnum _enumValue;
-        private CombinedStream _toCalculate=new CombinedStream();
+        private const int BUFFER_SIZE = (1024 * 32);
+
+        private readonly Crc32 _crc32;
+        private readonly IncrementalHash _provider;
+        private readonly HashFunctionEnum _enumValue;
         private bool _calculated;
         private byte[] _hash;
 
-        public HashImpl(HashAlgorithm provider, HashFunctionEnum enumValue)
+        public HashImpl(IncrementalHash provider, HashFunctionEnum enumValue)
         {
             _provider = provider;
             _enumValue = enumValue;
             _calculated = false;
-        }
-
-        public byte[] InternalHash
-        {
-            get
+            if (enumValue == HashFunctionEnum.CRC32 || provider==null)
             {
-                if (!_calculated)
-                {
-                    _hash = _provider.ComputeHash(_toCalculate);
-                    _calculated = true;
-                }
-                return _hash;
+                _crc32 = new Crc32();
             }
         }
 
@@ -55,16 +48,13 @@ namespace OneScript.StandardLibrary.Hash
         {
             get
             {
-                if (_provider is Crc32)
-                {
-                    var buffer = new byte[4];
-                    Array.Copy(InternalHash, buffer, 4);
-                    if (BitConverter.IsLittleEndian)
-                        Array.Reverse(buffer);
-                    var ret = BitConverter.ToUInt32(buffer, 0);
-                    return ValueFactory.Create((decimal)ret);
-                }
-                return new BinaryDataContext(InternalHash);
+                if(!_calculated)
+                    return ValueFactory.Create(0);
+
+                if (_crc32 != null)
+                   return ValueFactory.Create(_crc32.GetCurrentHashAsUInt32());
+                
+                return new BinaryDataContext(_hash);
             }
         }
 
@@ -73,34 +63,85 @@ namespace OneScript.StandardLibrary.Hash
         {
             get
             {
+                if (_crc32 != null)
+                    return _crc32.GetCurrentHashAsUInt32().ToString("X8");
+
                 var sb = new StringBuilder();
-                for (int i = 0; i < InternalHash.Length; i++)
-                    sb.Append(InternalHash[i].ToString("X2"));
+                for (int i = 0; i < _hash.Length; i++)
+                    sb.Append(_hash[i].ToString("X2"));
                 return sb.ToString();
             }
         }
 
+        private void AppendData(byte[] data)
+        {
+            AppendData(data, data.Length);
+        }
+
+        private void AppendData(byte[] data, int count)
+        {
+            if (_crc32 != null)
+            {
+                _crc32.AppendData(data,0,count);
+            }
+            else
+            {
+                _provider.AppendData(data,0,count);
+                _hash = _provider.GetCurrentHash();
+            }
+
+            _calculated = true;
+        }
+
+        private void AppendStream(Stream stream)
+        {
+            var buffer = new byte[BUFFER_SIZE];
+            while (true)
+            {
+                var read = stream.Read(buffer,0, BUFFER_SIZE);
+                if (read == 0)
+                    break;
+
+                AppendData(buffer, read);
+            }
+         }
+
+        private void AppendStream(Stream stream, int count)
+        {
+            int bufSize = Math.Min(BUFFER_SIZE, count);
+            var buffer = new byte[bufSize];
+            int toRead = count;
+            while (toRead > 0)
+            {
+                var read = stream.Read(buffer,0, Math.Min(toRead, bufSize));
+                if (read == 0)
+                    break;
+
+                AppendData(buffer, read);
+                toRead -= read;
+            }
+        }
 
         [ContextMethod("Добавить", "Append")]
-        public void Append(BslValue toAdd, uint count = 0)
+        public void Append(BslValue toAdd, int count = 0)
         {
             switch (toAdd)
             {
                 case BslStringValue s:
-                    AddStream(new MemoryStream(Encoding.UTF8.GetBytes((string)s)));
+                    AppendData(Encoding.UTF8.GetBytes((string)s));
                     break;
-                case BslObjectValue obj when obj is IStreamWrapper wrapper:
+                case IStreamWrapper wrapper:
                     var stream = wrapper.GetUnderlyingStream();
-                    var readByte = (int)Math.Min(count == 0 ? stream.Length : count, stream.Length - stream.Position);
-                    var buffer = new byte[readByte];
-                    stream.Read(buffer, 0, readByte);
-                    AddStream(new MemoryStream(buffer));
+                    if (count == 0)
+                        AppendStream(stream);
+                    else
+                        AppendStream(stream, count);
                     break;
-                case BslObjectValue obj when obj is BinaryDataContext binaryData:
-                    AddStream(binaryData.GetStream());
+                case BinaryDataContext binaryData:
+                    AppendStream(binaryData.GetStream());
                     break;
                 default:
-                    throw RuntimeException.InvalidArgumentType(nameof(toAdd));
+                    throw RuntimeException.InvalidNthArgumentType(1);
             }
         }
 
@@ -109,52 +150,33 @@ namespace OneScript.StandardLibrary.Hash
         {
             if (!File.Exists(path))
                 throw RuntimeException.InvalidArgumentType();
-            AddStream(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+            var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            AppendStream(stream);
+            stream.Close();
         }
-
-        [ContextMethod("Очистить", "Clear")]
-        public void Clear()
-        {
-            _toCalculate.Close();
-            _toCalculate.Dispose();
-            _toCalculate = new CombinedStream();
-            _calculated = false;
-        }
-
 
         [ScriptConstructor(Name = "По указанной хеш-функции")]
         public static HashImpl Constructor(HashFunctionEnum providerEnum)
         {
-            var objectProvider = GetProvider(providerEnum);
+            if (providerEnum == HashFunctionEnum.CRC32)
+                return new HashImpl(null, providerEnum);
+
+            var objectProvider = IncrementalHash.CreateHash(GetAlgorithmName(providerEnum));
             return new HashImpl(objectProvider, providerEnum);
         }
 
-        private static HashAlgorithm GetProvider(HashFunctionEnum algo)
+        private static HashAlgorithmName GetAlgorithmName(HashFunctionEnum algo)
         {
-            switch (algo)
+            return algo switch
             {
-                case HashFunctionEnum.CRC32:
-                    return new Crc32();
-                default:
-                    var ret = HashAlgorithm.Create(algo.ToString());
-                    if (ret == null)
-                        throw RuntimeException.InvalidArgumentType();
-                    return ret;
-            }
+                HashFunctionEnum.MD5 => HashAlgorithmName.MD5,
+                HashFunctionEnum.SHA1 => HashAlgorithmName.SHA1,
+                HashFunctionEnum.SHA256 => HashAlgorithmName.SHA256,
+                HashFunctionEnum.SHA384 => HashAlgorithmName.SHA384,
+                HashFunctionEnum.SHA512 => HashAlgorithmName.SHA512,
+                _ => throw RuntimeException.InvalidArgumentValue()
+            };
         }
 
-        public void Dispose()
-        {
-            _toCalculate.Close();
-            _toCalculate.Dispose();
-        }
-
-        private void AddStream(Stream stream)
-        {
-            _toCalculate.AddStream(stream);
-            _toCalculate.Seek(0, SeekOrigin.Begin);
-            _calculated = false;
-            
-        }
     }
 }

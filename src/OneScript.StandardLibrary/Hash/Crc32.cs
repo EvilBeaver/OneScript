@@ -69,12 +69,31 @@ namespace OneScript.StandardLibrary.Hash
         protected override byte[] HashFinal()
         {
             var result = BitConverter.GetBytes(~_crc);
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(result);
 
             HashValue = result;
             return result;
         }
 
+        #region IncrementalHash
+        public void AppendData(byte[] array)
+        {
+            HashCore(array, 0, array.Length);
+        }
+
+        public void AppendData(byte[] array, int offset, int count)
+        {
+            HashCore(array, offset, count);
+        }
+
+        public byte[] GetCurrentHash()
+        {
+            return BitConverter.GetBytes(~_crc);
+        }
+
+        public UInt32 GetCurrentHashAsUInt32()
+        {
+            return ~_crc;
+        }
+        #endregion
     }
 }
