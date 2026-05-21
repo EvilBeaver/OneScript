@@ -19,7 +19,7 @@ using System.Text;
 namespace OneScript.StandardLibrary.Hash
 {
     [ContextClass("ХешированиеДанных", "DataHashing")]
-    public class HashImpl : AutoContext<HashImpl>
+    public class HashImpl : AutoContext<HashImpl>, IDisposable
     {
         private const int BUFFER_SIZE = (1024 * 32);
 
@@ -131,7 +131,7 @@ namespace OneScript.StandardLibrary.Hash
                     if (count <= 0)
                         AppendStream(stream);
                     else
-                    AppendStream(stream, count);
+                        AppendStream(stream, count);
                     break;
                 case BinaryDataContext binaryData:
                     AppendStream(binaryData.GetStream());
@@ -147,11 +147,8 @@ namespace OneScript.StandardLibrary.Hash
             if (!File.Exists(path))
                 throw RuntimeException.InvalidArgumentType();
 
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            {
-                AppendStream(stream);
-                stream.Close();
-            }
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            AppendStream(stream);
         }
 
         [ScriptConstructor(Name = "По указанной хеш-функции")]
@@ -177,5 +174,9 @@ namespace OneScript.StandardLibrary.Hash
             };
         }
 
+        public void Dispose()
+        {
+            _provider?.Dispose();
+        }
     }
 }
