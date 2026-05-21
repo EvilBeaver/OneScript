@@ -10,7 +10,6 @@ using System.Collections;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using OneScript.BinaryData;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
@@ -30,10 +29,6 @@ namespace oscript.Web
 		private FileBackingStream _postBody;
 
 		private readonly int _postBodyInMemoryMaxBytes;
-
-		public WebRequestContext() : this(BinaryDataConfigurationDefaults.InMemoryMaxBytes)
-		{
-		}
 
 		public WebRequestContext(int postBodyInMemoryMaxBytes)
 		{
@@ -120,7 +115,7 @@ namespace oscript.Web
 		public BinaryDataContext GetBodyAsBinaryData()
 		{
 			_postBody.Position = 0;
-			return new BinaryDataContext(_postBody);
+			return new BinaryDataContext(_postBody, _postBodyInMemoryMaxBytes);
 		}
 
 		[ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]

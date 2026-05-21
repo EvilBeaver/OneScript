@@ -8,7 +8,6 @@ using System;
 using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
-using OneScript.BinaryData;
 using OneScript.Execution;
 using OneScript.Types;
 using ScriptEngine.Machine;
@@ -52,8 +51,6 @@ namespace ScriptEngine
             }
             
             Loader.ReaderEncoding = options.FileReaderEncoding;
-
-            BinaryDataRuntimeSettings.ApplyFromServices(services);
         }
 
         public IServiceContainer Services { get; }

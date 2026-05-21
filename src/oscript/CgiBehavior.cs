@@ -11,9 +11,9 @@ using System.IO;
 using System.Text;
 using OneScript.Contexts;
 using OneScript.Exceptions;
-using OneScript.BinaryData;
 using OneScript.Execution;
 using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.Binary;
 using oscript.Web;
 
 using ScriptEngine;
@@ -70,7 +70,7 @@ namespace oscript
 
 			var engine = ConsoleHostBuilder.Build(builder);
 
-			var request = new WebRequestContext(BinaryDataRuntimeSettings.GetEffectiveInMemoryMaxBytes());
+			var request = new WebRequestContext(engine.Services.Resolve<IBinaryDataMemoryLimit>().MaxBytesInMemory);
 			engine.InjectGlobalProperty("ВебЗапрос", "WebRequest", request, true);
 			engine.InjectObject(this);
 

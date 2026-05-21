@@ -6,12 +6,15 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Text;
+using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -23,10 +26,12 @@ namespace OneScript.StandardLibrary.Http
     [ContextClass("HTTPЗапрос", "HTTPRequest")]
     public class HttpRequestContext : AutoContext<HttpRequestContext>, IDisposable
     {
+        private readonly int _inMemoryBodyLimit;
         private IHttpRequestBody _body;
 
-        private HttpRequestContext()
+        private HttpRequestContext(int inMemoryBodyLimit)
         {
+            _inMemoryBodyLimit = inMemoryBodyLimit;
             ResourceAddress = "";
             Headers = new MapImpl();
         }
@@ -80,7 +85,7 @@ namespace OneScript.StandardLibrary.Http
         [ContextMethod("УстановитьТелоИзДвоичныхДанных", "SetBodyFromBinaryData")]
         public void SetBodyFromBinary(BinaryDataContext data)
         {
-            SetBody(new HttpRequestBodyBinary(data));
+            SetBody(new HttpRequestBodyBinary(_inMemoryBodyLimit, data));
         }
 
         [DeprecatedName("GetBodyAsBinary")]
@@ -99,7 +104,27 @@ namespace OneScript.StandardLibrary.Http
         [ContextMethod("УстановитьТелоИзСтроки", "SetBodyFromString")]
         public void SetBodyFromString(string data, IValue encoding = null, ByteOrderMarkUsageEnum bomUsage = ByteOrderMarkUsageEnum.Auto)
         {
-            SetBody(new HttpRequestBodyBinary(data, encoding, bomUsage));
+            var useBom = bomUsage == ByteOrderMarkUsageEnum.Auto ||
+                         bomUsage == ByteOrderMarkUsageEnum.Use;
+            
+            Encoding encoder;
+            if (encoding == null)
+            {
+                encoder = new UTF8Encoding(useBom);
+            }
+            else if (encoding.SystemType == BasicTypes.String)
+            {
+                var utfs = new List<string> {"utf-16", "utf-32"};
+                encoder = TextEncodingEnum.GetEncoding(encoding, utfs.Contains(encoding.ToString()) && useBom);
+            }
+            else
+            {
+                encoder = TextEncodingEnum.GetEncoding(encoding);
+            }
+
+            var byteArray = encoder.GetBytes(data);
+            
+            SetBody(new HttpRequestBodyBinary(_inMemoryBodyLimit, new BinaryDataContext(byteArray)));
         }
 
         [ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]
@@ -111,20 +136,24 @@ namespace OneScript.StandardLibrary.Http
         [ContextMethod("ПолучитьТелоКакПоток", "GetBodyAsStream")]
         public GenericStream GetBodyAsStream()
         {
-            _body = _body ?? new HttpRequestBodyBinary();
+            _body ??= new HttpRequestBodyBinary(_inMemoryBodyLimit);
             return new GenericStream(_body.GetDataStream());
         }
 
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
-        public static HttpRequestContext Constructor()
+        public static HttpRequestContext Constructor(TypeActivationContext context)
         {
-            return new HttpRequestContext();
+            return new HttpRequestContext(context.Services.Resolve<IBinaryDataMemoryLimit>().MaxBytesInMemory);
         }
 
         [ScriptConstructor(Name = "По адресу ресурса и заголовкам")]
-        public static HttpRequestContext Constructor(string resource, IValue headers = null)
+        public static HttpRequestContext Constructor(TypeActivationContext context, string resource, IValue headers = null)
         {
-            var ctx = new HttpRequestContext {ResourceAddress = resource};
+            var ctx = new HttpRequestContext(context.Services.Resolve<IBinaryDataMemoryLimit>().MaxBytesInMemory)
+            {
+                ResourceAddress = resource
+            };
+            
             if (headers == null) 
                 return ctx;
 

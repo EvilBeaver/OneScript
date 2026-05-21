@@ -7,13 +7,28 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using FluentAssertions;
-using OneScript.BinaryData;
+using Moq;
+using OneScript.StandardLibrary.Binary;
+using ScriptEngine;
+using ScriptEngine.Hosting;
 using Xunit;
 
 namespace OneScript.StandardLibrary.Tests
 {
+    [Collection("SystemLogger")]
     public class BinaryDataMemoryLimitConfigurationTests
     {
+        List<string> _messages = new List<string>();
+        
+        public BinaryDataMemoryLimitConfigurationTests()
+        {
+            var mock = new Mock<ISystemLogWriter>();
+            mock.Setup(x => x.Write(It.IsAny<string>()))
+                .Callback<string>(str => _messages.Add(str));
+            
+            SystemLogger.SetWriter(mock.Object);
+        }
+
         [Theory]
         [InlineData("52428800", 52428800)]
         [InlineData("512k", 512 * 1024)]
@@ -24,12 +39,21 @@ namespace OneScript.StandardLibrary.Tests
         [InlineData("1G", 1024 * 1024 * 1024)]
         public void ResolvesByteSizeWithOptionalSuffix(string rawValue, int expectedBytes)
         {
-            var warnings = new List<string>();
-
-            var bytes = BinaryDataMemoryLimitConfiguration.ResolveFromConfigString(rawValue, warnings.Add);
+            var bytes = MockConfig(rawValue).MaxBytesInMemory;
 
             bytes.Should().Be(expectedBytes);
-            warnings.Should().BeEmpty();
+            _messages.Should().BeEmpty();
+        }
+
+        private static IBinaryDataMemoryLimit MockConfig(string rawValue)
+        {
+            var kvStore = new KeyValueConfig();
+            kvStore.Merge(new Dictionary<string, string>
+            {
+                {BinaryDataOptions.IN_MEMORY_LIMIT_KEY_NAME, rawValue}
+            }, Mock.Of<IConfigProvider>());
+            
+            return new BinaryDataOptions(kvStore);
         }
 
         [Theory]
@@ -38,9 +62,9 @@ namespace OneScript.StandardLibrary.Tests
         [InlineData("   ")]
         public void UsesDefaultWhenValueIsMissing(string rawValue)
         {
-            var bytes = BinaryDataMemoryLimitConfiguration.ResolveFromConfigString(rawValue, _ => { });
+            var bytes = MockConfig(rawValue).MaxBytesInMemory;
 
-            bytes.Should().Be(BinaryDataConfigurationDefaults.InMemoryMaxBytes);
+            bytes.Should().Be(BinaryDataConstants.DEFAULT_IN_MEMORY_LIMIT);
         }
 
         [Theory]
@@ -51,12 +75,16 @@ namespace OneScript.StandardLibrary.Tests
         [InlineData("2g")]
         public void UsesDefaultForInvalidValue(string rawValue)
         {
-            var warnings = new List<string>();
+            var bytes = MockConfig(rawValue).MaxBytesInMemory;
 
-            var bytes = BinaryDataMemoryLimitConfiguration.ResolveFromConfigString(rawValue, warnings.Add);
+            bytes.Should().Be(BinaryDataConstants.DEFAULT_IN_MEMORY_LIMIT);
+            _messages.Should().NotBeEmpty();
+        }
 
-            bytes.Should().Be(BinaryDataConfigurationDefaults.InMemoryMaxBytes);
-            warnings.Should().NotBeEmpty();
+        [Fact]
+        public void TestMagicMaxValue()
+        {
+            MockConfig(BinaryDataOptions.IN_MEMORY_MAX_MAGIC).MaxBytesInMemory.Should().Be(BinaryDataConstants.SYSTEM_IN_MEMORY_LIMIT);
         }
     }
 }

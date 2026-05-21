@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-namespace OneScript.BinaryData
+namespace OneScript.StandardLibrary.Binary
 {
     /// <summary>
     /// Лимит объёма данных в памяти для объектов «ДвоичныеДанные» и смежных потоков

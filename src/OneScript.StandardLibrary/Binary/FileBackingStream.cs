@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.IO;
-using OneScript.BinaryData;
 
 namespace OneScript.StandardLibrary.Binary
 {
@@ -21,13 +20,9 @@ namespace OneScript.StandardLibrary.Binary
 
         private string _backingFileName;
         
-        public FileBackingStream() : this(BinaryDataRuntimeSettings.GetEffectiveInMemoryMaxBytes())
-        {
-        }
-
         public FileBackingStream(int inMemoryLimit, int capacity = 0)
         {
-            if (inMemoryLimit == FileBackingConstants.SYSTEM_IN_MEMORY_LIMIT)
+            if (inMemoryLimit == BinaryDataConstants.SYSTEM_IN_MEMORY_LIMIT)
                 throw new ArgumentException("Use MemoryStream instead");
             
             _inMemoryLimit = inMemoryLimit;
@@ -86,6 +81,7 @@ namespace OneScript.StandardLibrary.Binary
         public bool HasBackingFile => _backingFileName != null;
 
         public string FileName => _backingFileName;
+        public int InMemoryThreshold => _inMemoryLimit;
 
         public void SwitchToMemory()
         {

@@ -5,9 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using OneScript.BinaryData;
+using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
-using ScriptEngine;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 
@@ -15,23 +14,12 @@ namespace OneScript.StandardLibrary
 {
     public static class EngineBuilderExtensions
     {
-        /// <summary>
-        /// Регистрирует лимит памяти для «ДвоичныеДанные» из конфигурации движка (ключ <see cref="BinaryDataMemoryLimitConfiguration.InMemoryMaxSizeConfigKey"/>).
-        /// Вызывайте после <c>SetDefaultOptions</c> из <c>ScriptEngine.Hosting.EngineBuilderExtensions</c>.
-        /// </summary>
-        public static IEngineBuilder RegisterBinaryDataMemoryLimitFromConfig(this IEngineBuilder builder)
+        public static IEngineBuilder UseBinaryDataOptions(this IEngineBuilder builder)
         {
-            builder.Services.RegisterSingleton<IBinaryDataMemoryLimit>(sp =>
-            {
-                var cfg = sp.Resolve<KeyValueConfig>();
-                var raw = cfg[BinaryDataMemoryLimitConfiguration.InMemoryMaxSizeConfigKey];
-                var bytes = BinaryDataMemoryLimitConfiguration.ResolveFromConfigString(raw, SystemLogger.Write);
-                return new BinaryDataMemoryLimit(bytes);
-            });
-
+            builder.Services.RegisterSingleton<IBinaryDataMemoryLimit, BinaryDataOptions>();
             return builder;
         }
-
+        
         public static ExecutionContext AddStandardLibrary(this ExecutionContext env)
         {
             return env.AddAssembly(typeof(ArrayImpl).Assembly);

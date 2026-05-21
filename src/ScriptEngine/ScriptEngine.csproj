@@ -41,7 +41,6 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\OneScript.BinaryData\OneScript.BinaryData.csproj" />
     <ProjectReference Include="..\OneScript.Core\OneScript.Core.csproj" />
     <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
     <ProjectReference Include="..\OneScript.Native\OneScript.Native.csproj" />
