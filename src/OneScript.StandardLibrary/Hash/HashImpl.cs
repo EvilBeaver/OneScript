@@ -26,19 +26,19 @@ namespace OneScript.StandardLibrary.Hash
         private readonly Crc32 _crc32;
         private readonly IncrementalHash _provider;
         private readonly HashFunctionEnum _enumValue;
-        private bool _calculated;
         private byte[] _hash;
 
         public HashImpl(IncrementalHash provider, HashFunctionEnum enumValue)
         {
             _provider = provider;
             _enumValue = enumValue;
-            _calculated = false;
             if (enumValue == HashFunctionEnum.CRC32)
             {
                 _crc32 = new Crc32();
             }
             else ArgumentNullException.ThrowIfNull(provider);
+
+            AppendData(Array.Empty<byte>());
         }
 
         [ContextProperty("ХешФункция", "HashFunction")]
@@ -49,9 +49,6 @@ namespace OneScript.StandardLibrary.Hash
         {
             get
             {
-                if(!_calculated)
-                    return ValueFactory.Create(0);
-
                 if (_crc32 != null)
                    return ValueFactory.Create(_crc32.GetCurrentHashAsUInt32());
                 
@@ -64,9 +61,6 @@ namespace OneScript.StandardLibrary.Hash
         {
             get
             {
-                if (!_calculated)
-                    return "0";
-
                 if (_crc32 != null)
                     return _crc32.GetCurrentHashAsUInt32().ToString("X8");
 
@@ -93,8 +87,6 @@ namespace OneScript.StandardLibrary.Hash
                 _provider.AppendData(data,0,count);
                 _hash = _provider.GetCurrentHash();
             }
-
-            _calculated = true;
         }
 
         private void AppendStream(Stream stream)
@@ -155,8 +147,11 @@ namespace OneScript.StandardLibrary.Hash
             if (!File.Exists(path))
                 throw RuntimeException.InvalidArgumentType();
 
-            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            AppendStream(stream);
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                AppendStream(stream);
+                stream.Close();
+            }
         }
 
         [ScriptConstructor(Name = "По указанной хеш-функции")]
