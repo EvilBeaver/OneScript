@@ -13,12 +13,15 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.IO;
-using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace OneScript.StandardLibrary.Hash
 {
+    /// <summary>
+    /// Реализует инкрементальный расчет хеш-суммы по добавленным данным.
+    /// Тип вычисляемого значения определяются типом хеш-функции.
+    /// </summary>
     [ContextClass("ХешированиеДанных", "DataHashing")]
     public class HashImpl : AutoContext<HashImpl>, IDisposable
     {
@@ -42,9 +45,19 @@ namespace OneScript.StandardLibrary.Hash
             AppendData(Array.Empty<byte>());
         }
 
+        /// <summary>
+        /// Вид хеш-функции, определяющий способ вычисления хеш-суммы.
+        /// Только для чтения
+        /// </summary>
+        /// <value>Перечисление ХешФункция</value>
         [ContextProperty("ХешФункция", "HashFunction")]
-        public HashFunctionEnum Extension => _enumValue;
+        public HashFunctionEnum HashFunction => _enumValue;
 
+        /// <summary>
+        /// Текущее значение хеш-суммы. Только для чтения
+        /// </summary>
+        /// <value>Для хеш-функции CRC32 - Число, для остальных - ДвоичныеДанные
+        /// </value>
         [ContextProperty("ХешСумма", "HashSum")]
         public IValue Hash
         {
@@ -57,6 +70,11 @@ namespace OneScript.StandardLibrary.Hash
             }
         }
 
+        /// <summary>
+        /// Нестандартное расширение!
+        /// Строковое представление текущего значения хеш-суммы. Только для чтения
+        /// </summary>
+        /// <value>Для хеш-функции CRC32 - Число, для остальных - ДвоичныеДанные</value>
         [ContextProperty("ХешСуммаСтрокой", "HashSumOfString")]
         public string HashString
         {
@@ -125,6 +143,14 @@ namespace OneScript.StandardLibrary.Hash
             }
         }
 
+        /// <summary>
+        /// Добавляет данные и  обновляет хеш-сумму
+        /// </summary>
+        /// <param name="toAdd">Источник данных. Строка, ДвоичныеДанные или Поток</param>
+        /// <param name="count">Для источника данных типов Строка или ДвоичныеДанные - игнорируется.
+        /// Для источника данных типа Поток - Количество байтов, которые читаются из потока.
+        /// Если количество не задано, нулевое <b>или отрицательное</b>, то читаются все данные до конца потока.
+        /// </param>
         [ContextMethod("Добавить", "Append")]
         public void Append(BslValue toAdd, BslValue count = null)
         {
@@ -167,6 +193,10 @@ namespace OneScript.StandardLibrary.Hash
             }
         }
 
+        /// <summary>
+        /// Добавляет двоичные данные из файла и обновляет хеш-сумму
+        /// </summary>
+        /// <param name="path">Имя файла, из которого читаются данные. Тип: Строка</param>
         [ContextMethod("ДобавитьФайл", "AppendFile")]
         public void AppendFile(string path)
         {
