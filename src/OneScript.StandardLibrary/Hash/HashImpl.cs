@@ -13,6 +13,7 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.IO;
+using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -104,6 +105,12 @@ namespace OneScript.StandardLibrary.Hash
 
         private void AppendStream(Stream stream, int count)
         {
+            if (count <= 0)
+            {
+                AppendStream(stream);
+                return;
+            }
+
             int bufSize = Math.Min(BUFFER_SIZE, count);
             var buffer = new byte[bufSize];
             int toRead = count;
@@ -119,23 +126,42 @@ namespace OneScript.StandardLibrary.Hash
         }
 
         [ContextMethod("Добавить", "Append")]
-        public void Append(BslValue toAdd, int count = 0)
+        public void Append(BslValue toAdd, BslValue count = null)
         {
             switch (toAdd)
             {
                 case BslStringValue s:
                     AppendData(Encoding.UTF8.GetBytes((string)s));
                     break;
-                case IStreamWrapper wrapper:
-                    var stream = wrapper.GetUnderlyingStream();
-                    if (count <= 0)
-                        AppendStream(stream);
-                    else
-                        AppendStream(stream, count);
-                    break;
                 case BinaryDataContext binaryData:
                     AppendStream(binaryData.GetStream());
                     break;
+
+                case IStreamWrapper wrapper:
+                    var stream = wrapper.GetUnderlyingStream();
+                    if (count == null)
+                    {
+                        AppendStream(stream);
+                    }
+                    else
+                    {
+                        int cnt;
+                        try
+                        {
+                            cnt = (int)count;
+                        }
+                        catch
+                        {
+                            if (count is BslStringValue)
+                                throw RuntimeException.InvalidNthArgumentValue(2);
+                            else
+                                throw RuntimeException.InvalidNthArgumentType(2);
+                        }
+
+                        AppendStream(stream, cnt);
+                    }
+                    break;
+
                 default:
                     throw RuntimeException.InvalidNthArgumentType(1);
             }
