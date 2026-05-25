@@ -867,7 +867,73 @@ namespace OneScript.Core.Tests
 
             array.Should().HaveCount(2);
         }
-        
+
+        [Theory]
+        [InlineData("Объект.Процедура0();")]
+        [InlineData("Объект.Процедура0СПроцессом();")]
+        [InlineData("Объект.Процедура1(1);")]
+        [InlineData("Объект.Процедура1СПроцессом(1);")]
+        [InlineData("Объект.Процедура1СУмолчанием();")]
+        [InlineData("Объект.Процедура1СУмолчаниемСПроцессом();")]
+        [InlineData("Объект.Процедура1СУмолчанием(1);")]
+        [InlineData("Объект.Процедура1СУмолчаниемСПроцессом(1);")]
+        public void Can_Call_Member_ProceduresWithBslProcess(string code)
+        {
+            var tm = new DefaultTypeManager();
+            var testType = tm.RegisterClass(typeof(TestContextClass));
+
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Объект", new BslTypeValue(testType));
+            block.CodeBlock = code;
+
+            var method = block.CreateDelegate<Func<TestContextClass, BslValue>>();
+            var testValue = new TestContextClass();
+            method(testValue);
+        }
+
+        [Theory]
+        [InlineData("Объект.Функция0()")]
+        [InlineData("Объект.Функция0СПроцессом()")]
+        [InlineData("Объект.Функция1(1)")]
+        [InlineData("Объект.Функция1СПроцессом(1)")]
+        [InlineData("Объект.Функция1СУмолчанием()")]
+        [InlineData("Объект.Функция1СУмолчаниемСПроцессом()")]
+        [InlineData("Объект.Функция1СУмолчанием(1)")]
+        [InlineData("Объект.Функция1СУмолчаниемСПроцессом(1)")]
+        public void Can_Call_Member_FunctionsWithBslProcess(string code)
+        {
+            var tm = new DefaultTypeManager();
+            var testType = tm.RegisterClass(typeof(TestContextClass));
+
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Объект", new BslTypeValue(testType));
+            block.CodeBlock = $"Результат = {code};";
+
+            var method = block.CreateDelegate<Func<TestContextClass, BslValue>>();
+            var testValue = new TestContextClass();
+            method(testValue);
+        }
+
+        [Theory]
+        [InlineData("Объект.Процедура0СПроцессом(1)")]
+        [InlineData("Объект.Функция0СПроцессом(1)")]
+        [InlineData("Объект.Функция1СУмолчаниемСПроцессом(1, 2)")]
+        [InlineData("Объект.Процедура1СУмолчаниемСПроцессом(1, 2, 3);")]
+        public void Cannot_Call_Member_Procedures_With_Wrong_Argument_Count(string code)
+        {
+            var tm = new DefaultTypeManager();
+            var testType = tm.RegisterClass(typeof(TestContextClass));
+
+            var block = new CompiledBlock(default);
+            block.Parameters.Insert("Объект", new BslTypeValue(testType));
+            block.CodeBlock = code;
+
+            var runtimeException = Assert.ThrowsAny<RuntimeException>(() => {
+                var method = block.CreateDelegate<Func<TestContextClass, BslValue>>();
+            });
+            Assert.Contains("Слишком много фактических параметров", runtimeException.Message);
+        }
+
         [Fact]
         public void Can_Call_Member_Procedures_On_Dynamics()
         {
