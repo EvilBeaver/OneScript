@@ -17,40 +17,17 @@ namespace OneScript.StandardLibrary.Http
 {
     class HttpRequestBodyBinary : IHttpRequestBody
     {
-        private readonly FileBackingStream _storage = new FileBackingStream();
+        private readonly FileBackingStream _storage;
 
-        public HttpRequestBodyBinary()
+        internal HttpRequestBodyBinary(int inMemoryBodyLimit)
         {
+            _storage = new FileBackingStream(inMemoryBodyLimit);
         }
 
-        public HttpRequestBodyBinary(BinaryDataContext data)
+        internal HttpRequestBodyBinary(int inMemoryBodyLimit, BinaryDataContext data)
         {
+            _storage = new FileBackingStream(inMemoryBodyLimit);
             data.CopyTo(_storage);
-        }
-
-        public HttpRequestBodyBinary(string body, IValue encoding = null,
-            ByteOrderMarkUsageEnum bomUsage = ByteOrderMarkUsageEnum.Auto)
-        {
-            var useBom = bomUsage == ByteOrderMarkUsageEnum.Auto ||
-                         bomUsage == ByteOrderMarkUsageEnum.Use;
-            
-            Encoding encoder;
-            if (encoding == null)
-            {
-                encoder = new UTF8Encoding(useBom);
-            }
-            else if (encoding.SystemType == BasicTypes.String)
-            {
-                var utfs = new List<string> {"utf-16", "utf-32"};
-                encoder = TextEncodingEnum.GetEncoding(encoding, utfs.Contains(encoding.ToString()) && useBom);
-            }
-            else
-            {
-                encoder = TextEncodingEnum.GetEncoding(encoding);
-            }
-
-            var byteArray = encoder.GetBytes(body);
-            _storage.Write(byteArray, 0, byteArray.Length);
         }
 
         public IValue GetAsString()
@@ -63,7 +40,7 @@ namespace OneScript.StandardLibrary.Http
         public IValue GetAsBinary()
         {
             _storage.Seek(0, SeekOrigin.Begin);
-            return new BinaryDataContext(_storage);
+            return new BinaryDataContext(_storage, _storage.InMemoryThreshold);
         }
 
         public IValue GetAsFilename()
