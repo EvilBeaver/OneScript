@@ -73,27 +73,17 @@ namespace OneScript.StandardLibrary
             StructureImpl externalContext = null)
         {
             var compiler = _engine.GetCompilerService();
-            if (externalContext == null)
+            try
             {
-                return _engine.AttachedScriptsFactory.LoadFromString(compiler, code, process);
+                if (externalContext == null)
+                    return _engine.AttachedScriptsFactory.LoadFromString(compiler, code, process);
+
+                var extData = CreateContextData(externalContext);
+                return _engine.AttachedScriptsFactory.LoadFromString(compiler, code, process, extData);
             }
-            else
+            catch (Exception e) when (e is SyntaxErrorException || e is CompilerException)
             {
-                var extData = new ExternalContextData();
-
-                foreach (var item in externalContext)
-                {
-                    extData.Add(item.Key.ToString()!, item.Value);
-                }
-
-                try
-                {
-                    return _engine.AttachedScriptsFactory.LoadFromString(compiler, code, process, extData);
-                }
-                catch (Exception e) when (e is SyntaxErrorException || e is CompilerException)
-                {
-                    throw ScriptCompilingException(e);
-                }
+                throw ScriptCompilingException(e);
             }
         }
 
@@ -117,22 +107,29 @@ namespace OneScript.StandardLibrary
             {
                 if(externalContext == null)
                     return _engine.AttachedScriptsFactory.LoadFromPath(compiler, path, process);
-                else
-                {
-                    ExternalContextData extData = new ExternalContextData();
 
-                    foreach (var item in externalContext)
-                    {
-                        extData.Add(item.Key.ToString()!, item.Value);
-                    }
-
-                    return _engine.AttachedScriptsFactory.LoadFromPath(compiler, path, extData, process);
-                }
+                var extData = CreateContextData(externalContext);
+                return _engine.AttachedScriptsFactory.LoadFromPath(compiler, path, extData, process);
             }
             catch (Exception e) when (e is SyntaxErrorException || e is CompilerException)
             {
                 throw ScriptCompilingException(e);
             }
+        }
+
+        private static ExternalContextData CreateContextData(StructureImpl externalContext)
+        {
+            if (externalContext == null)
+                return null;
+
+            ExternalContextData extData = new ExternalContextData();
+
+            foreach (var item in externalContext)
+            {
+                extData.Add(item.Key.ToString()!, item.Value);
+            }
+
+            return extData;
         }
 
         /// <summary>
@@ -182,7 +179,7 @@ namespace OneScript.StandardLibrary
         {
             return new RuntimeException(BilingualString.Localize(
                 "Ошибка компиляции подключаемого сценария:\n",
-                "Error compiling attached script:\n") + e.Message);
+                "Error compiling attached script:\n") + e.Message, e);
         }
     }
 }
