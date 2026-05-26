@@ -1611,6 +1611,22 @@ namespace OneScript.Language.Tests
                 .ChildItself().Value.Should().Be("Асинх");
         }
 
+        [Fact]
+        public void Throws_When_Error_In_Module_Body()
+        {
+            var code = @"Function F()
+                            Return 0
+                        EndFunction
+                        EndFunction";
+
+            var parser = PrepareParser(code);
+            parser.ParseStatefulModule();
+
+            parser.Errors.Should().NotBeEmpty("Expression syntax error");
+            parser.Errors.First().ErrorId.Should().Be("UnexpectedKeyword");
+        }
+
+
         private static void CatchParsingError(string code)
         {
             var parser = PrepareParser(code);
