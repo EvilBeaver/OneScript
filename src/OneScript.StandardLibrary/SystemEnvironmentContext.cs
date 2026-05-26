@@ -41,6 +41,12 @@ namespace OneScript.StandardLibrary
         /// </summary>
         [ContextProperty("ВерсияОС", "OSVersion")]
         public string OSVersion => Environment.OSVersion.VersionString;
+        
+        /// <summary>
+        /// Полная командная строка выполняемого приложения, включая исполняемый файл и все аргументы командной строки.
+        /// </summary>
+        [ContextProperty("ПолнаяКоманднаяСтрока", "FullCommandLine")]
+        public string FullCommandLine => Environment.CommandLine;
 
         /// <summary>
         /// Имя ядра ОС/
