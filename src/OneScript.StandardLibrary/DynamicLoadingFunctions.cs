@@ -11,11 +11,13 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Language;
+using OneScript.Localization;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.NativeApi;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using System;
 
 namespace OneScript.StandardLibrary
 {
@@ -48,19 +50,9 @@ namespace OneScript.StandardLibrary
             {
                 _engine.AttachedScriptsFactory.AttachByPath(compiler, path, typeName, process);
             }
-            catch (SyntaxErrorException e)
+            catch (Exception e) when (e is SyntaxErrorException || e is CompilerException)
             {
-                // обернем в RuntimeException
-                throw new RuntimeException(
-                    Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
-                    e);
-            }
-            catch (Compilation.CompilerException e)
-            {
-                // обернем в RuntimeException
-                throw new RuntimeException(
-                    Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
-                    e);
+                throw ScriptCompilingException(e);
             }
         }
 
@@ -98,19 +90,9 @@ namespace OneScript.StandardLibrary
                 {
                     return _engine.AttachedScriptsFactory.LoadFromString(compiler, code, process, extData);
                 }
-                catch (SyntaxErrorException e)
+                catch (Exception e) when (e is SyntaxErrorException || e is CompilerException)
                 {
-                    // обернем в RuntimeException
-                    throw new RuntimeException(
-                        Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
-                        e);
-                }
-                catch (CompilerException e)
-                {
-                    // обернем в RuntimeException
-                    throw new RuntimeException(
-                        Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
-                        e);
+                    throw ScriptCompilingException(e);
                 }
             }
         }
@@ -128,22 +110,28 @@ namespace OneScript.StandardLibrary
         /// // В коде скрипта somescript.os будет доступна глобальная переменная "ЧислоПи"
         /// Объект = ЗагрузитьСценарий("somescript.os", Контекст);</example>
         [ContextMethod("ЗагрузитьСценарий", "LoadScript")]
-        public IRuntimeContextInstance LoadScript(IBslProcess process, string path, StructureImpl externalContext = null)
+        public UserScriptContextInstance LoadScript(IBslProcess process, string path, StructureImpl externalContext = null)
         {
             var compiler = _engine.GetCompilerService();
-            if(externalContext == null)
-                return _engine.AttachedScriptsFactory.LoadFromPath(compiler, path, process);
-            else
+            try
             {
-                ExternalContextData extData = new ExternalContextData();
-
-                foreach (var item in externalContext)
+                if(externalContext == null)
+                    return _engine.AttachedScriptsFactory.LoadFromPath(compiler, path, process);
+                else
                 {
-                    extData.Add(item.Key.ToString()!, item.Value);
+                    ExternalContextData extData = new ExternalContextData();
+
+                    foreach (var item in externalContext)
+                    {
+                        extData.Add(item.Key.ToString()!, item.Value);
+                    }
+
+                    return _engine.AttachedScriptsFactory.LoadFromPath(compiler, path, extData, process);
                 }
-
-                return _engine.AttachedScriptsFactory.LoadFromPath(compiler, path, extData, process);
-
+            }
+            catch (Exception e) when (e is SyntaxErrorException || e is CompilerException)
+            {
+                throw ScriptCompilingException(e);
             }
         }
 
@@ -188,6 +176,13 @@ namespace OneScript.StandardLibrary
                 }
                 return NativeApiFactory.Register(dllPath, name, _engine.TypeManager);
             }
+        }
+
+        private static RuntimeException ScriptCompilingException(Exception e)
+        {
+            return new RuntimeException(BilingualString.Localize(
+                "Ошибка компиляции подключаемого сценария:\n",
+                "Error compiling attached script:\n") + e.Message);
         }
     }
 }
