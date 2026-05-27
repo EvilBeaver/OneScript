@@ -6,7 +6,6 @@
         <IsPackable>false</IsPackable>
 
         <Configurations>Debug;Release;LinuxDebug</Configurations>
-        <LangVersion>10.0</LangVersion>
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 

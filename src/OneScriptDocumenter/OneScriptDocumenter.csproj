@@ -9,7 +9,6 @@
     <Product>OneScript Libraries Documenter</Product>
     <Configurations>Debug;Release;LinuxDebug</Configurations>
     <Platforms>AnyCPU</Platforms>
-    <LangVersion>8</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
