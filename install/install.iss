@@ -9,8 +9,8 @@
 #define VerRelease
 #define Build
 
-#define ArtifactRoot "R:\No-repos\onescript-installer"
-#define OvmExeSource "R:\No-repos\onescript-installer\ovm.exe"
+#define ArtifactRoot "..\built\tmp"
+#define OvmExeSource "ovm.exe"
 
 #define WizardImageSource "WizardImage.bmp"
 #define LicenseSource "..\LICENSE"
