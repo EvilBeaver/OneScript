@@ -595,18 +595,12 @@ namespace OneScript.Native.Compiler
 
         public static Expression AccessModuleVariable(ParameterExpression thisArg, int variableIndex)
         {
-            var contextProperty = PropertiesCache.GetOrAdd(
-                typeof(NativeClassInstanceWrapper),
-                nameof(NativeClassInstanceWrapper.Context),
-                BindingFlags.Instance | BindingFlags.Public);
-            
-            var contextAccess = Expression.Property(thisArg, contextProperty);
             var getVariableMethod = OperationsCache.GetOrAdd(
                 typeof(IAttachableContext),
                 nameof(IAttachableContext.GetVariable),
                 BindingFlags.Instance | BindingFlags.Public);
             
-            var iVariable = Expression.Call(contextAccess, getVariableMethod, Expression.Constant(variableIndex));
+            var iVariable = Expression.Call(thisArg, getVariableMethod, Expression.Constant(variableIndex));
             var valueProperty = PropertiesCache.GetOrAdd(
                 typeof(IValueReference),
                 nameof(IValueReference.BslValue),

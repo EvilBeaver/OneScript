@@ -142,7 +142,7 @@ namespace OneScript.Native.Compiler
         private void FillParameterVariables()
         {
             _declaredParameters = _method.GetBslParameters();
-            _thisParameter = _method.IsInstance ? Expression.Parameter(typeof(NativeClassInstanceWrapper), "$this") : null;
+            _thisParameter = _method.IsInstance ? Expression.Parameter(typeof(IAttachableContext), "$this") : null;
 
             var localScope = Symbols.GetScope(Symbols.ScopeCount-1);
             foreach (var parameter in _declaredParameters)
