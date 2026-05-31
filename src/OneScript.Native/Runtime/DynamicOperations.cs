@@ -33,40 +33,25 @@ namespace OneScript.Native.Runtime
             
             var dLeft = (decimal)left;
             var dRight = (decimal)right;
-            return BslNumericValue.Create(dLeft + dRight);
+            return BslNumericValue.Create(dLeft + dRight); // or throw ConvertToNumberException();
         }
 
         public static BslValue Subtract(BslValue left, BslValue right)
         {
             if (left is BslNumericValue num)
+                return BslNumericValue.Create(num - (decimal)right);
+
+            if (left is BslDateValue date)
             {
-                var result = num - (decimal)right;
-                return BslNumericValue.Create(result);
-            }
-            else if (left is BslDateValue date)
-            {
-                switch (right)
-                {
-                    case BslNumericValue numRight:
-                    {
-                        var result = date - numRight;
-                        return BslDateValue.Create(result);
-                    }
-                    case BslDateValue dateRight:
-                    {
-                        var result = date - dateRight;
-                        return BslNumericValue.Create(result);
-                    }
-                }
-            }
-            else
-            {
-                var dLeft = (decimal)left;
-                var dRight = (decimal)right;
-                return BslNumericValue.Create(dLeft - dRight);
+                if (right is BslDateValue dateRight)
+                    return BslNumericValue.Create(date - dateRight);
+
+                return BslDateValue.Create(date - (decimal)right);
             }
 
-            throw BslExceptions.ConvertToNumberException();
+            var dLeft = (decimal)left;
+            var dRight = (decimal)right;
+            return BslNumericValue.Create(dLeft - dRight); // or throw ConvertToNumberException();
         }
         
         public static bool ToBoolean(BslValue value)
