@@ -28,10 +28,8 @@ namespace OneScript.Native.Runtime
             if (left is BslStringValue str)
                 return BslStringValue.Create(str + right);
             
-            if (left is BslDateValue bslDate && right is BslNumericValue num)
-            {
-                return BslDateValue.Create(bslDate - (decimal) num);
-            }
+            if (left is BslDateValue bslDate)
+                return BslDateValue.Create(bslDate + (decimal)right);
             
             var dLeft = (decimal)left;
             var dRight = (decimal)right;
