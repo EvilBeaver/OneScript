@@ -28,68 +28,39 @@ namespace OneScript.Native.Runtime
             if (left is BslStringValue str)
                 return BslStringValue.Create(str + right);
             
-            if (left is BslDateValue bslDate && right is BslNumericValue num)
-            {
-                return BslDateValue.Create(bslDate - (decimal) num);
-            }
+            if (left is BslDateValue bslDate)
+                return BslDateValue.Create(bslDate + (decimal)right);
             
             var dLeft = (decimal)left;
             var dRight = (decimal)right;
-            return BslNumericValue.Create(dLeft + dRight);
+            return BslNumericValue.Create(dLeft + dRight); // or throw ConvertToNumberException();
         }
 
         public static BslValue Subtract(BslValue left, BslValue right)
         {
             if (left is BslNumericValue num)
+                return BslNumericValue.Create(num - (decimal)right);
+
+            if (left is BslDateValue date)
             {
-                var result = num - (decimal)right;
-                return BslNumericValue.Create(result);
-            }
-            else if (left is BslDateValue date)
-            {
-                switch (right)
-                {
-                    case BslNumericValue numRight:
-                    {
-                        var result = date - numRight;
-                        return BslDateValue.Create(result);
-                    }
-                    case BslDateValue dateRight:
-                    {
-                        var result = date - dateRight;
-                        return BslNumericValue.Create(result);
-                    }
-                }
-            }
-            else
-            {
-                var dLeft = (decimal)left;
-                var dRight = (decimal)right;
-                return BslNumericValue.Create(dLeft - dRight);
+                if (right is BslDateValue dateRight)
+                    return BslNumericValue.Create(date - dateRight);
+
+                return BslDateValue.Create(date - (decimal)right);
             }
 
-            throw BslExceptions.ConvertToNumberException();
+            var dLeft = (decimal)left;
+            var dRight = (decimal)right;
+            return BslNumericValue.Create(dLeft - dRight); // or throw ConvertToNumberException();
         }
-        
-        public static bool ToBoolean(BslValue value)
-        {
-            return (bool)value;
-        }
-        
-        public static decimal ToNumber(BslValue value)
-        {
-            return (decimal)value;
-        }
-        
-        public static DateTime ToDate(BslValue value)
-        {
-            return (DateTime)value;
-        }
-        
-        public static string ToString(BslValue value)
-        {
-            return value.ToString();
-        }
+
+        public static bool ToBoolean(BslValue value) => (bool)value;
+
+        public static decimal ToNumber(BslValue value) => (decimal)value;
+
+        public static DateTime ToDate(BslValue value) => (DateTime)value;
+
+        public static string ToString(BslValue value) => value.ToString();
 
         // FIXME: тут не должно быть Null, но из-за несовершенства мира они тут бывают. Когда задолбает - надо починить и убрать отсюда проверки на null
         public static bool Equality(BslValue left, BslValue right)
@@ -119,29 +90,29 @@ namespace OneScript.Native.Runtime
         {
             return value switch
             {
-                null => BslUndefinedValue.Instance,
-                string s => BslStringValue.Create(s),
-                decimal d => BslNumericValue.Create(d),
+            null => BslUndefinedValue.Instance,
+            string s => BslStringValue.Create(s),
+            decimal d => BslNumericValue.Create(d),
 
-                int n => BslNumericValue.Create(n),
-                uint n => BslNumericValue.Create(n),
-                short n => BslNumericValue.Create(n),
-                ushort n => BslNumericValue.Create(n),
-                byte n => BslNumericValue.Create(n),
-                sbyte n => BslNumericValue.Create(n),
-                long l => BslNumericValue.Create(l),
-                ulong l => BslNumericValue.Create(l),
-                
-                double dbl => BslNumericValue.Create((decimal) dbl),
-                bool boolean => BslBooleanValue.Create(boolean),
-                DateTime date => BslDateValue.Create(date),
-                BslValue bslValue => bslValue,
-                _ => throw new TypeConversionException(new BilingualString(
-                    $"Невозможно преобразовать {value.GetType()} в тип {nameof(BslValue)}",
-                    $"Can't Convert {value.GetType()} to {nameof(BslValue)}"))
+            int n => BslNumericValue.Create(n),
+            uint n => BslNumericValue.Create(n),
+            short n => BslNumericValue.Create(n),
+            ushort n => BslNumericValue.Create(n),
+            byte n => BslNumericValue.Create(n),
+            sbyte n => BslNumericValue.Create(n),
+            long l => BslNumericValue.Create(l),
+            ulong l => BslNumericValue.Create(l),
+
+            double dbl => BslNumericValue.Create((decimal) dbl),
+            bool boolean => BslBooleanValue.Create(boolean),
+            DateTime date => BslDateValue.Create(date),
+            BslValue bslValue => bslValue,
+            _ => throw new TypeConversionException(new BilingualString(
+                $"Невозможно преобразовать {value.GetType()} в тип {nameof(BslValue)}",
+                $"Can't Convert {value.GetType()} to {nameof(BslValue)}"))
             };
         }
-        
+
         public static BslValue ConstructorCall(ITypeManager typeManager, IServiceContainer services, string typeName, IBslProcess process, BslValue[] args)
         {
             var type = typeManager.GetTypeByName(typeName);
@@ -156,38 +127,32 @@ namespace OneScript.Native.Runtime
             
             return (BslValue) factory.Activate(context, args.Cast<IValue>().ToArray());
         }
-        
+
         // TODO: Сделать прямой маппинг на статические фабрики-методы, а не через Factory.Activate
-        public static T StrictConstructorCall<T>(ITypeManager typeManager, IServiceContainer services, string typeName, IBslProcess process, BslValue[] args)
+        public static T StrictConstructorCall<T>(ITypeManager typeManager, IServiceContainer services,
+            string typeName, IBslProcess process, BslValue[] args)
             where T : BslValue
-        {
-            return (T) ConstructorCall(typeManager, services, typeName, process, args);
-        }
+            => (T)ConstructorCall(typeManager, services, typeName, process, args);
 
         public static BslObjectValue GetExceptionInfo(IExceptionInfoFactory factory, Exception e)
-        {
-            return factory.GetExceptionInfo(e);
-        }
+            => factory.GetExceptionInfo(e);
 
         public static BslTypeValue GetTypeByName(ITypeManager manager, string name)
-        {
-            var foundType = manager.GetTypeByName(name);
-            return new BslTypeValue(foundType);
-        }
+            => new(manager.GetTypeByName(name));
 
         public static BslValue GetIndexedValue(object target, BslValue index)
         {
-            if (!(target is IRuntimeContextInstance context) || !context.IsIndexed)
+            if (target is not IRuntimeContextInstance context || !context.IsIndexed)
             {
                 throw RuntimeException.IndexedAccessIsNotSupportedException();
             }
 
-            return (BslValue)context.GetIndexedValue((IValue)index);
+            return (BslValue)context.GetIndexedValue(index);
         }
         
         public static void SetIndexedValue(object target, BslValue index, BslValue value)
         {
-            if (!(target is IRuntimeContextInstance context) || !context.IsIndexed)
+            if (target is not IRuntimeContextInstance context || !context.IsIndexed)
             {
                 throw RuntimeException.IndexedAccessIsNotSupportedException();
             }
@@ -197,7 +162,7 @@ namespace OneScript.Native.Runtime
 
         public static BslValue GetPropertyValue(object target, string propertyName)
         {
-            if (!(target is IRuntimeContextInstance context))
+            if (target is not IRuntimeContextInstance context)
                 throw BslExceptions.ValueIsNotObjectException();
 
             var propIndex = context.GetPropertyNumber(propertyName);
@@ -206,7 +171,7 @@ namespace OneScript.Native.Runtime
 
         public static BslValue TryCallContextMethod(BslValue instance, string methodName, IBslProcess process, BslValue[] arguments)
         {
-            if (!(instance is IRuntimeContextInstance context))
+            if (instance is not IRuntimeContextInstance context)
                 throw BslExceptions.ValueIsNotObjectException();
 
             return CallContextMethod(context, methodName, process, arguments);
