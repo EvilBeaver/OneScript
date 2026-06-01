@@ -33,7 +33,7 @@ namespace OneScript.StandardLibrary.XMLSchema.Enumerations
         KeyRef,
 
         /// <summary>
-        /// Ограничение идентичности по опредению уникальности
+        /// Ограничение идентичности по определению уникальности
         /// </summary>
         /// <see cref="XmlSchemaUnique"/>
         [EnumValue("Уникальность", "Unique")]

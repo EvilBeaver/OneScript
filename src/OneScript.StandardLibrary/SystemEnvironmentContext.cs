@@ -49,7 +49,7 @@ namespace OneScript.StandardLibrary
         public string FullCommandLine => Environment.CommandLine;
 
         /// <summary>
-        /// Имя ядра ОС/
+        /// Имя ядра ОС
         /// </summary>
         [ContextProperty("ИмяЯдра", "KernelName")]
         public string KernelName => _osKernelName; // позволит различать linux/mac/hp-ux/sunos/...
