@@ -516,7 +516,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void BuildModuleBody()
         {
-            if (!_lexer.Iterator.MoveToContent())
+           if (_lastExtractedLexem.Token == Token.EndOfText)
                 return;
 
             var moduleBody = new NonTerminalNode(NodeKind.ModuleBody, _lastExtractedLexem);
@@ -746,7 +746,11 @@ namespace OneScript.Language.SyntaxAnalysis
                     }
                     else
                     {
-                        AddError(LocalizedErrors.TokenExpected(_tokenStack.Peek()));
+                        var expected = _tokenStack.Peek();
+                        if (expected.Length == 1 && expected[0] == Token.EndOfText)
+                            AddError(LocalizedErrors.UnexpectedKeyword(_lastExtractedLexem.Token));
+                        else
+                            AddError(LocalizedErrors.TokenExpected(expected));
                     }
                     break;
             }
@@ -1552,7 +1556,9 @@ namespace OneScript.Language.SyntaxAnalysis
         private void AddError(CodeError err, bool doFastForward = true)
         {
             err.Position = _lexer.GetErrorPosition();
-            err.Position.ColumnNumber -= _lastExtractedLexem.Content?.Length ?? 1;
+            var adjustColumn = _lastExtractedLexem.Content?.Length ?? 1;
+            if (err.Position.ColumnNumber >= adjustColumn)
+                err.Position.ColumnNumber -= adjustColumn;
             ErrorSink.AddError(err);
 
             if (doFastForward)

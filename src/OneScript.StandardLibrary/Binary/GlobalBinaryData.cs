@@ -11,6 +11,7 @@ using OneScript.StandardLibrary.Text;
 using System.Text;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.Binary
@@ -21,6 +22,13 @@ namespace OneScript.StandardLibrary.Binary
     [GlobalContext(Category = "Процедуры и функции работы с двоичными данными")]
     public sealed class GlobalBinaryData : GlobalContextBase<GlobalBinaryData>
     {
+        private readonly int _memoryLimitMaxBytesInMemory;
+
+        private GlobalBinaryData(int memoryLimitMaxBytesInMemory)
+        {
+            _memoryLimitMaxBytesInMemory = memoryLimitMaxBytesInMemory;
+        }
+
         private static byte[] HexStringToByteArray(string hex)
         {
             var newHex = System.Text.RegularExpressions.Regex.Replace(hex, @"[^0-9A-Fa-f]", "");
@@ -142,9 +150,9 @@ namespace OneScript.StandardLibrary.Binary
                 throw RuntimeException.InvalidArgumentType(argNumber, argName);
         }
 
-        public static IAttachableContext CreateInstance()
+        public static IAttachableContext CreateInstance(IBinaryDataMemoryLimit memoryLimit)
         {
-            return new GlobalBinaryData();
+            return new GlobalBinaryData(memoryLimit.MaxBytesInMemory);
         }
 
         /// <summary>
@@ -174,7 +182,7 @@ namespace OneScript.StandardLibrary.Binary
             }
             stream.Position = 0;
 
-            return new BinaryDataContext(stream);
+            return new BinaryDataContext(stream, _memoryLimitMaxBytesInMemory);
         }
 
         /// <summary>
@@ -244,7 +252,7 @@ namespace OneScript.StandardLibrary.Binary
             stream.Write(inputString, 0, inputString.Length);
             stream.Position = 0;
             
-            return new BinaryDataContext(stream);
+            return new BinaryDataContext(stream, _memoryLimitMaxBytesInMemory);
         }
 
         /// <summary>

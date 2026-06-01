@@ -139,6 +139,7 @@ namespace TestApp
                 .SetDefaultOptions()
                 .UseNativeRuntime()
                 .UseImports()
+                .UseDefaultHosting()
                 .SetupEnvironment(e =>
                 {
                     e.AddStandardLibrary();
@@ -149,8 +150,7 @@ namespace TestApp
                     x.UseSystemConfigFile()
                      .UseEntrypointConfigFile(_currentDocPath);
                 });
-
-            builder.UseFileSystemLibraries();
+            
             var engine = builder.Build();
             var mainEngine = new HostedScriptEngine(engine);
 

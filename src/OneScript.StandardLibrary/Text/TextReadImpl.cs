@@ -171,8 +171,7 @@ namespace OneScript.StandardLibrary.Text
         public static TextReadImpl Constructor (IValue input)
         {
             var reader = new TextReadImpl ();
-            reader.AnalyzeDefaultLineFeed = false;
-            reader.Open (input, null, "\n", "\r\n");
+            reader.Open(input);
             return reader;
         }
         
@@ -183,9 +182,7 @@ namespace OneScript.StandardLibrary.Text
         [ScriptConstructor(Name = "Формирование неинициализированного объекта")]
         public static TextReadImpl Constructor()
         {
-            var reader = new TextReadImpl();
-            reader.AnalyzeDefaultLineFeed = false;
-            return reader;
+            return new TextReadImpl();
         }
 
         /// <summary>

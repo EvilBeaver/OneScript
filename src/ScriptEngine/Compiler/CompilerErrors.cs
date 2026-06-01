@@ -29,6 +29,18 @@ namespace ScriptEngine.Compiler
             Create($"Свойство {symbol} принадлежит пакету {libName}, который не импортирован в данном модуле",
                 $"Property {symbol} belongs to package {libName} which is not imported in this module");
 
+        public static CodeError DuplicateLabelDefinition(string name) =>
+            Create($"Дублирование определения метки ~{name}",
+                   $"Duplicate label definition ~{name}");
+
+        public static CodeError UndefinedLabel(string name) =>
+            Create($"Метка не определена ~{name}",
+                   $"Undefined label ~{name}");
+
+        public static CodeError InvalidGotoTarget(string name) =>
+            Create($"На метку с указанным именем имеется недопустимый переход (~{name})",
+                   $"Invalid goto target (~{name})");
+
         private static CodeError Create(string ru, string en, [CallerMemberName] string errorId = default)
         {
             return new CodeError

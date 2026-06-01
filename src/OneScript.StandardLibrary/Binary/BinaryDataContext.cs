@@ -24,10 +24,10 @@ namespace OneScript.StandardLibrary.Binary
         private byte[] _buffer;
         private BackingTemporaryFile _backingFile;
 
-        public BinaryDataContext(string filename)
+        public BinaryDataContext(string filename, int inMemLimit)
         {
             using var fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            ReadFromStream(fs);
+            ReadFromStream(fs, inMemLimit);
         }
 
         public BinaryDataContext(byte[] buffer)
@@ -35,21 +35,21 @@ namespace OneScript.StandardLibrary.Binary
             _buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
         }
 
-        public BinaryDataContext(Stream stream)
+        public BinaryDataContext(Stream stream, int inMemLimit)
         {
             long pos = 0;
-            ReadFromStream(stream);
+            ReadFromStream(stream, inMemLimit);
             stream.Position = pos;
         }
-
+        
         /// <summary>
         /// Признак хранения данных в памяти
         /// </summary>
         public bool InMemory => _backingFile == null;
         
-        private void ReadFromStream(Stream stream)
+        private void ReadFromStream(Stream stream, int inMemLimit)
         {
-            if (stream.Length < FileBackingConstants.DEFAULT_MEMORY_LIMIT)
+            if (stream.Length < inMemLimit)
             {
                 LoadToBuffer(stream);
             }
@@ -197,9 +197,9 @@ namespace OneScript.StandardLibrary.Binary
         }
 
         [ScriptConstructor(Name = "На основании файла")]
-        public static BinaryDataContext Constructor(string filename)
+        public static BinaryDataContext Constructor(TypeActivationContext ctx, string filename)
         {
-            return new BinaryDataContext(filename);
+            return new BinaryDataContext(filename, ctx.Services.Resolve<IBinaryDataMemoryLimit>().MaxBytesInMemory);
         }
 
         public override bool Equals(BslValue other)

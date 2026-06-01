@@ -27,7 +27,7 @@ namespace DocumenterTests
             var exampleNode = doc.Root.Elements("example").First();
 
             var converter = new XmlDocConverter(Mock.Of<IReferenceResolver>());
-            var text = converter.ConvertTextBlock(exampleNode);
+            var text = converter.ConvertTextBlock(exampleNode).ReplaceLineEndings("\n");
             var expected = 
 @"Для Каждого Переменная Из ПеременныеСреды() Цикл
     Сообщить(Переменная.Ключ + "" = "" + Переменная.Значение);

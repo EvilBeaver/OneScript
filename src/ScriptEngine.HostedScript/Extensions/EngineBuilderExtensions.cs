@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using OneScript.Contexts;
 using OneScript.Native.Extensions;
+using OneScript.StandardLibrary;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 
@@ -63,6 +64,12 @@ namespace ScriptEngine.HostedScript.Extensions
             var reader = new EnvironmentVariableConfigProvider(varName);
             providers.Add(reader);
             return providers;
+        }
+
+        public static IEngineBuilder UseDefaultHosting(this IEngineBuilder b)
+        {
+            return b.UseFileSystemLibraries()
+                    .UseBinaryDataOptions();
         }
         
         public static IEngineBuilder UseFileSystemLibraries(this IEngineBuilder b)

@@ -11,8 +11,11 @@ namespace ScriptEngine.HostedScript
 {
     public class FileSourceTemplate : ITemplate
     {
-        public FileSourceTemplate(string file, TemplateKind kind)
+        private readonly int _inMemLimit;
+
+        public FileSourceTemplate(int inMemLimit, string file, TemplateKind kind)
         {
+            _inMemLimit = inMemLimit;
             Kind = kind;
             Filename = file;
         }
@@ -28,7 +31,7 @@ namespace ScriptEngine.HostedScript
 
         public BinaryDataContext GetBinaryData()
         {
-            return new BinaryDataContext(Filename);
+            return new BinaryDataContext(Filename, _inMemLimit);
         }
 
         public void Dispose()
