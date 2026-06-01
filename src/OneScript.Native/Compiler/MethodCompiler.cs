@@ -1363,7 +1363,9 @@ namespace OneScript.Native.Compiler
             var excVariable = _blocks.GetCurrentBlock().CurrentException;
             Expression factoryArgument;
             // нас вызвали вне попытки-исключения
-            factoryArgument = excVariable == null ? Expression.Constant(null, typeof(IRuntimeContextInstance)) : GetRuntimeExceptionObject();
+            //factoryArgument = excVariable == null ? Expression.Constant(null, typeof(IRuntimeContextInstance)) : GetRuntimeExceptionObject();
+            factoryArgument = excVariable == null ? Expression.Constant(null, typeof(IRuntimeContextInstance))
+                : ExpressionHelpers.ConvertToType(GetRuntimeExceptionObject(), typeof(IRuntimeContextInstance));
 
             var factory = Expression.Constant(ExceptionInfoFactory);
             return ExpressionHelpers.CallOfInstanceMethod(
