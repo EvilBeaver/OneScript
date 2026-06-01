@@ -27,7 +27,6 @@ namespace OneScript.DebugProtocol.TcpServer
                     writer.WriteHeader(1, 1);
                     writer.WriteLibrary(typeof(RpcCall).Assembly, 1);
                     writer.WriteClassWithNoFields(typeof(RpcCall), 1, 1);
-                    //writer.WriteInstance(new object[]{Array.Empty<object>(), "$NonExistentMethod$", nameof(IDebuggerService)});
                     writer.WriteEnd();
                 }
 

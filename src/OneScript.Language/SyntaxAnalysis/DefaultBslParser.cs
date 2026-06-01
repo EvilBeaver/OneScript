@@ -564,23 +564,25 @@ namespace OneScript.Language.SyntaxAnalysis
             NextLexem();
 
             if (_lastExtractedLexem.Token != Token.ClosePar)
-            while (true)
             {
-                BuildAnnotationParameter(annotation);
+                while (true)
+                {
+                    BuildAnnotationParameter(annotation);
 
-                if (_lastExtractedLexem.Token == Token.ClosePar)
-                {
-                    break;
-                }
+                    if (_lastExtractedLexem.Token == Token.ClosePar)
+                    {
+                        break;
+                    }
 
-                if (_lastExtractedLexem.Token == Token.Comma)
-                {
-                    NextLexem();
-                }
-                else
-                {
-                    AddError(LocalizedErrors.TokenExpected(Token.ClosePar), false);
-                    return;
+                    if (_lastExtractedLexem.Token == Token.Comma)
+                    {
+                        NextLexem();
+                    }
+                    else
+                    {
+                        AddError(LocalizedErrors.TokenExpected(Token.ClosePar), false);
+                        return;
+                    }
                 }
             }
 
@@ -1194,7 +1196,9 @@ namespace OneScript.Language.SyntaxAnalysis
 
         private void BuildCallArguments(NonTerminalNode node)
         {
-            if (_lastExtractedLexem.Token != Token.ClosePar)
+            if (_lastExtractedLexem.Token == Token.ClosePar) 
+                return;
+            
             while (true)
             {
                 BuildOptionalCallArgument(node);
