@@ -1286,10 +1286,15 @@ namespace OneScript.Native.Compiler
             var methodInfo = symbol.Method;
             if (methodInfo is ContextMethodInfo contextMethod)
             {
-                return DirectClrCall(
+                var call = DirectClrCall(
                     GetMethodBinding(binding, symbol),
                     contextMethod.GetWrappedMethod(),
                     args);
+
+                if (call.Type == typeof(IValue))
+                    return Expression.TypeAs(call, typeof(BslValue));
+
+                return call;
             }
 
             if (methodInfo is BslNativeMethodInfo nativeMethod)
