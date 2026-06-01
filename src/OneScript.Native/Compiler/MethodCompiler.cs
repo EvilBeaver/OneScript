@@ -1328,9 +1328,8 @@ namespace OneScript.Native.Compiler
                     result = DirectConversionCall(node, typeof(DateTime));
                     break;
                 case Token.Type:
-                    CheckArgumentsCount(node.ArgumentList, 1);
-                    result = ExpressionHelpers.TypeByNameCall(CurrentTypeManager,
-                        ConvertToExpressionTree(node.ArgumentList.Children[0].Children[0]));
+                    var strType = DirectConversionCall(node, typeof(string));
+                    result = ExpressionHelpers.TypeByNameCall(CurrentTypeManager, strType);
                     break;
                 case Token.ExceptionInfo:
                     CheckArgumentsCount(node.ArgumentList, 0);
