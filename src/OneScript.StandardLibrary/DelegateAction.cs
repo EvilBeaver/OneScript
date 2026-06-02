@@ -83,6 +83,16 @@ namespace OneScript.StandardLibrary
             _action(process, arguments);
         }
 
+        [ContextMethod("Выполнить")]
+        public BslValue Execute(IBslProcess process, params BslValue[] p)
+        {
+            var retValue = _action(process, p);
+            return retValue is IValueReference r
+                ? r.BslValue
+                : (BslValue)(retValue ?? ValueFactory.Create())
+            ;
+        }
+
         [ScriptConstructor]
         public static DelegateAction Create(IRuntimeContextInstance target, string methodName)
         {
