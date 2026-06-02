@@ -139,6 +139,10 @@ namespace ScriptEngine.Machine
             frame.InstructionPointer = methDescr.EntryPoint;
 
             var parameters = methodInfo.GetBslParameters();
+            if (argValues.Length > parameters.Length)
+            {
+                throw RuntimeException.TooManyArgumentsPassed();
+            }
             var variables = methDescr.LocalVariables;
             var locals = new IVariable[variables.Length];
             int i = 0;
@@ -171,6 +175,10 @@ namespace ScriptEngine.Machine
             for (; i < parameters.Length; i++)
             {
                 var paramDef = parameters[i];
+                if (!paramDef.HasDefaultValue)
+                {
+                    throw RuntimeException.TooFewArgumentsPassed();
+                }
                 var value = paramDef.HasDefaultValue ? (IValue)paramDef.DefaultValue : ValueFactory.Create();
                 locals[i] = Variable.Create(value, variables[i]);
             }
