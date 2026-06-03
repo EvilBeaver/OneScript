@@ -1131,10 +1131,10 @@ namespace OneScript.Native.Compiler
             var targetType = target.Type;
             var name = call.Identifier.GetIdentifier();
 
-            if (targetType.IsObjectValue())
+            if (targetType.IsObjectValue()
+                && TryFindMethodOfType(targetType, name, out var methodInfo))
             {
-                var methodInfo = FindMethodOfType(node, targetType, name);
-                if (asFunction && methodInfo.ReturnType == typeof(void))
+                if (asFunction && methodInfo?.ReturnType == typeof(void))
                 {
                     throw new NativeCompilerException(BilingualString.Localize(
                         $"Метод {targetType}.{name} не является функцией",
@@ -1144,7 +1144,8 @@ namespace OneScript.Native.Compiler
                 var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters(), InjectedProcessNeeded(methodInfo));
                 return Expression.Call(target, methodInfo, args);
             }
-            else if (targetType.IsContext())
+
+            if (targetType.IsContext())
             {
                 return ExpressionHelpers.CallContextMethod(target, name, _processParameter, 
                     PrepareDynamicCallArguments(call.ArgumentList));
@@ -1198,6 +1199,21 @@ namespace OneScript.Native.Compiler
             }
 
             return methodInfo;
+        }
+
+        private bool TryFindMethodOfType(Type targetType, string name, out MethodInfo methodInfo)
+        {
+            try
+            {
+                methodInfo = _methodsCache.GetOrAdd(targetType, name);
+            }
+            catch (InvalidOperationException)
+            {
+                methodInfo = null;
+                return false;
+            }
+
+            return true;
         }
 
         private PropertyInfo TryFindPropertyOfType(BslSyntaxNode node, Type targetType, string name)
