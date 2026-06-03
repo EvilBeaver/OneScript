@@ -1532,12 +1532,12 @@ namespace OneScript.Native.Compiler
             }
             else
             {
-                parameters = new Expression[0];
+                parameters = [];
             }
 
             if (node.IsDynamic)
             {
-                var typeName = ConvertToExpressionTree(node.TypeNameNode);
+                var typeName = ExpressionHelpers.ConvertToType(ConvertToExpressionTree(node.TypeNameNode), typeof(string));
                 var call = ExpressionHelpers.ConstructorCall(CurrentTypeManager, services, typeName, _processParameter, parameters);
                 _statementBuildParts.Push(call);
             }
