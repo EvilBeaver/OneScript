@@ -1257,7 +1257,8 @@ namespace OneScript.Native.Compiler
             }
 
             var symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
-            var args = PrepareCallArguments(node.ArgumentList, symbol.Method.GetParameters(), InjectedProcessNeeded(symbol.Method));
+            var args = PrepareCallArguments(node.ArgumentList, symbol.Method.GetParameters(),
+                InjectedProcessNeeded(symbol.Method), IsModuleScope(binding.ScopeNumber));
 
             var methodInfo = symbol.Method;
             if (methodInfo is ContextMethodInfo contextMethod)
@@ -1401,7 +1402,8 @@ namespace OneScript.Native.Compiler
                 type);
         }
 
-        private List<Expression> PrepareCallArguments(BslSyntaxNode argList, ParameterInfo[] declaredParameters, bool injectsProcess)
+        private List<Expression> PrepareCallArguments(BslSyntaxNode argList, ParameterInfo[] declaredParameters,
+                bool injectsProcess, bool passUndef = false)
         {
             var factArguments = new List<Expression>();
 
@@ -1455,6 +1457,10 @@ namespace OneScript.Native.Compiler
                     else if (declaredParam.HasDefaultValue)
                     {
                         factArguments.Add(Expression.Constant(declaredParam.DefaultValue, declaredParam.ParameterType));
+                    }
+                    else if (passUndef)
+                    {
+                        factArguments.Add(Expression.Constant(BslUndefinedValue.Instance, declaredParam.ParameterType));
                     }
                     else
                     {
