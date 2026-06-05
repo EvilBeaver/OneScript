@@ -99,7 +99,7 @@ namespace ScriptEngine.Machine.Contexts
                 .Name(THISOBJ_RU)
                 .Alias(THISOBJ_EN)
                 .ValueType(typeof(ThisAwareScriptedObjectBase))
-                .SetDispatchingIndex(0)
+                .SetDispatchingIndex(THISOBJ_VARIABLE_INDEX)
                 .Build()
                 .ToSymbol());
         }
