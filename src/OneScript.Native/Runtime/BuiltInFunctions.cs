@@ -266,6 +266,12 @@ namespace OneScript.Native.Runtime
         public static DateTime BegOfMonth(DateTime date) => new DateTime(date.Year, date.Month, 1);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [ContextMethod("НачалоНедели", "BegOfWeek")]
+        public static DateTime BegOfWeek(DateTime date)
+            => new DateTime(date.Year, date.Month, date.Day)
+                .AddDays(-((int)date.DayOfWeek+6)%7);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [ContextMethod("НачалоДня", "BegOfDay")]
         public static DateTime BegOfDay(DateTime date) => new DateTime(date.Year, date.Month, date.Day);
 
@@ -320,6 +326,12 @@ namespace OneScript.Native.Runtime
             var month = date.Month;
             return new DateTime(year, month, DateTime.DaysInMonth(year, month), 23, 59, 59);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [ContextMethod("КонецНедели", "EndOfWeek")]
+        public static DateTime EndOfWeek(DateTime date)
+            => new DateTime(date.Year, date.Month, date.Day, 23, 59, 59)
+                .AddDays((7-(int)date.DayOfWeek) % 7);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [ContextMethod("КонецДня", "EndOfDay")]
