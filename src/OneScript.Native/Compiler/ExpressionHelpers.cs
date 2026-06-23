@@ -297,6 +297,11 @@ namespace OneScript.Native.Compiler
             // если будет ненадежно - поиграем с поиском статических конверсий
             try
             {
+                if (targetType == typeof(string))
+                {
+                    return Expression.Call(value, "ToString", null, null);
+                }
+
                 return Expression.Convert(value, targetType);
             }
             catch (InvalidOperationException)
