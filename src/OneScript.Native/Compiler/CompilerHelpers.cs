@@ -99,8 +99,7 @@ namespace OneScript.Native.Compiler
                 }
                 result = new BslAnnotationParameter(param.Name, runtimeValue);
             }
-            else
-            if (param.Value.Type != LexemType.NotALexem)
+            else if (param.Value.Type != LexemType.NotALexem)
             {
                 var runtimeValue = ValueFromLiteral(param.Value);
                 result = new BslAnnotationParameter(param.Name, runtimeValue);

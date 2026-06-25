@@ -17,8 +17,8 @@ namespace OneScript.Contexts
     {
         private AnnotationHolder _annotations;
 
-        public string Alias => null;
-        
+        public abstract string Alias { get; }
+
         private AnnotationHolder Annotations
         {
             get

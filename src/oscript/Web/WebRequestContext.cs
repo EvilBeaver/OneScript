@@ -15,6 +15,7 @@ using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Text;
 using oscript.Web.Multipart;
+using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -27,8 +28,14 @@ namespace oscript.Web
 
 		private FileBackingStream _postBody;
 
-		public WebRequestContext()
+		private readonly int _postBodyInMemoryMaxBytes;
+
+		public WebRequestContext(int postBodyInMemoryMaxBytes)
 		{
+			if (postBodyInMemoryMaxBytes <= 0 || postBodyInMemoryMaxBytes == int.MaxValue)
+				throw new ArgumentOutOfRangeException(nameof(postBodyInMemoryMaxBytes),
+					"Лимит памяти для тела POST-запроса должен быть положительным числом байт и меньше Int32.MaxValue.");
+			_postBodyInMemoryMaxBytes = postBodyInMemoryMaxBytes;
 			var get = Environment.GetEnvironmentVariable("QUERY_STRING");
 			if (get != null) FillGetMap(get);
 
@@ -68,7 +75,8 @@ namespace oscript.Web
 			var type = Environment.GetEnvironmentVariable("CONTENT_TYPE");
 			
 			using var stdin = Console.OpenStandardInput();
-			var dest = new FileBackingStream(FileBackingConstants.DEFAULT_MEMORY_LIMIT, len);
+			var initialCapacity = Math.Min(len, _postBodyInMemoryMaxBytes);
+			var dest = new FileBackingStream(_postBodyInMemoryMaxBytes, initialCapacity);
 			stdin.CopyTo(dest);
 			dest.Position = 0;
 			
@@ -107,7 +115,7 @@ namespace oscript.Web
 		public BinaryDataContext GetBodyAsBinaryData()
 		{
 			_postBody.Position = 0;
-			return new BinaryDataContext(_postBody);
+			return new BinaryDataContext(_postBody, _postBodyInMemoryMaxBytes);
 		}
 
 		[ContextMethod("ПолучитьТелоКакСтроку", "GetBodyAsString")]

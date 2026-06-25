@@ -79,7 +79,7 @@ namespace ScriptEngine.Hosting
                 var holder = sp.Resolve<EngineConfiguration>();
                 return holder.GetConfig();
             });
-            
+
             services.Register<ScriptingEngine>();
 
             return builder;

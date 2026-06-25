@@ -80,6 +80,10 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public static CodeError NumberExpected() => Create("Ожидается числовая константа", "Numeric constant expected");
 
+        public static CodeError UnexpectedKeyword(Token unexpected) => Create(
+            $"Неожиданное ключевое слово: {LanguageDef.GetTokenName(unexpected)}",
+            $"Unexpected keyword: {LanguageDef.GetTokenAlias(unexpected)}");
+
         public static CodeError UnexpectedEof() =>
             Create("Неожиданный конец модуля", "Unexpected end of text");
 

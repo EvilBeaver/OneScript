@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.Binary;
 using ScriptEngine.HostedScript;
 using ScriptEngine.Hosting;
 using ScriptEngine.HostedScript.Extensions;
@@ -31,7 +32,7 @@ namespace oscript
                 {
                     env.AddStandardLibrary()
                      .AddWebServer()
-                     .UseTemplateFactory(new DefaultTemplatesFactory());
+                     .UseTemplateFactory(new DefaultTemplatesFactory(env.Services.Resolve<IBinaryDataMemoryLimit>()));
                 });
 
             return builder;
@@ -49,7 +50,7 @@ namespace oscript
         {
             builder.SetDefaultOptions()
                 .UseImports()
-                .UseFileSystemLibraries()
+                .UseDefaultHosting()
                 .UseNativeRuntime()
                 .UseEventHandlers();
         }

@@ -11,11 +11,13 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Language;
+using OneScript.Localization;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.NativeApi;
 using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using System;
 
 namespace OneScript.StandardLibrary
 {
@@ -34,7 +36,7 @@ namespace OneScript.StandardLibrary
         
         /// <summary>
         /// Подключает сторонний файл сценария к текущей системе типов.
-        /// Подключенный сценарий выступает, как самостоятельный класс, создаваемый оператором Новый
+        /// Подключенный сценарий выступает как самостоятельный класс, создаваемый оператором Новый
         /// </summary>
         /// <param name="path">Путь к подключаемому сценарию</param>
         /// <param name="typeName">Имя типа, которое будет иметь новый класс. Экземпляры класса создаются оператором Новый. </param>
@@ -48,25 +50,15 @@ namespace OneScript.StandardLibrary
             {
                 _engine.AttachedScriptsFactory.AttachByPath(compiler, path, typeName, process);
             }
-            catch (SyntaxErrorException e)
+            catch (Exception e) when (e is SyntaxErrorException || e is CompilerException)
             {
-                // обернем в RuntimeException
-                throw new RuntimeException(
-                    Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
-                    e);
-            }
-            catch (Compilation.CompilerException e)
-            {
-                // обернем в RuntimeException
-                throw new RuntimeException(
-                    Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
-                    e);
+                throw ScriptCompilingException(e);
             }
         }
 
         /// <summary>
         /// Создает экземпляр объекта на основании стороннего файла сценария.
-        /// Загруженный сценарий возвращается, как самостоятельный объект. 
+        /// Загруженный сценарий возвращается как самостоятельный объект. 
         /// Экспортные свойства и методы скрипта доступны для вызова.
         /// </summary>
         /// <param name="process"></param>
@@ -81,43 +73,23 @@ namespace OneScript.StandardLibrary
             StructureImpl externalContext = null)
         {
             var compiler = _engine.GetCompilerService();
-            if (externalContext == null)
+            try
             {
-                return _engine.AttachedScriptsFactory.LoadFromString(compiler, code, process);
+                if (externalContext == null)
+                    return _engine.AttachedScriptsFactory.LoadFromString(compiler, code, process);
+
+                var extData = CreateContextData(externalContext);
+                return _engine.AttachedScriptsFactory.LoadFromString(compiler, code, process, extData);
             }
-            else
+            catch (Exception e) when (e is SyntaxErrorException || e is CompilerException)
             {
-                var extData = new ExternalContextData();
-
-                foreach (var item in externalContext)
-                {
-                    extData.Add(item.Key.ToString()!, item.Value);
-                }
-
-                try
-                {
-                    return _engine.AttachedScriptsFactory.LoadFromString(compiler, code, process, extData);
-                }
-                catch (SyntaxErrorException e)
-                {
-                    // обернем в RuntimeException
-                    throw new RuntimeException(
-                        Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
-                        e);
-                }
-                catch (CompilerException e)
-                {
-                    // обернем в RuntimeException
-                    throw new RuntimeException(
-                        Locale.NStr("ru = 'Ошибка компиляции подключаемого скрипта';en = 'Error compiling attached script'"),
-                        e);
-                }
+                throw ScriptCompilingException(e);
             }
         }
 
         /// <summary>
         /// Создает экземпляр объекта на основании стороннего файла сценария.
-        /// Загруженный сценарий возвращается, как самостоятельный объект. 
+        /// Загруженный сценарий возвращается как самостоятельный объект. 
         /// Экспортные свойства и методы скрипта доступны для вызова.
         /// </summary>
         /// <param name="path">Путь к подключаемому сценарию</param>
@@ -128,23 +100,36 @@ namespace OneScript.StandardLibrary
         /// // В коде скрипта somescript.os будет доступна глобальная переменная "ЧислоПи"
         /// Объект = ЗагрузитьСценарий("somescript.os", Контекст);</example>
         [ContextMethod("ЗагрузитьСценарий", "LoadScript")]
-        public IRuntimeContextInstance LoadScript(IBslProcess process, string path, StructureImpl externalContext = null)
+        public UserScriptContextInstance LoadScript(IBslProcess process, string path, StructureImpl externalContext = null)
         {
             var compiler = _engine.GetCompilerService();
-            if(externalContext == null)
-                return _engine.AttachedScriptsFactory.LoadFromPath(compiler, path, process);
-            else
+            try
             {
-                ExternalContextData extData = new ExternalContextData();
+                if(externalContext == null)
+                    return _engine.AttachedScriptsFactory.LoadFromPath(compiler, path, process);
 
-                foreach (var item in externalContext)
-                {
-                    extData.Add(item.Key.ToString()!, item.Value);
-                }
-
+                var extData = CreateContextData(externalContext);
                 return _engine.AttachedScriptsFactory.LoadFromPath(compiler, path, extData, process);
-
             }
+            catch (Exception e) when (e is SyntaxErrorException || e is CompilerException)
+            {
+                throw ScriptCompilingException(e);
+            }
+        }
+
+        private static ExternalContextData CreateContextData(StructureImpl externalContext)
+        {
+            if (externalContext == null)
+                return null;
+
+            ExternalContextData extData = new ExternalContextData();
+
+            foreach (var item in externalContext)
+            {
+                extData.Add(item.Key.ToString()!, item.Value);
+            }
+
+            return extData;
         }
 
         /// <summary>
@@ -152,7 +137,7 @@ namespace OneScript.StandardLibrary
         /// Публичные классы, отмеченные в dll атрибутом ContextClass, будут импортированы аналогично встроенным классам 1Script.
         /// Загружаемая сборка должна ссылаться на сборку ScriptEngine.dll
         ///
-        /// Также подключает вншение компонеты, разработанные по технологии Native API,
+        /// Также подключает внешние компоненты, разработанные по технологии Native API,
         /// поставляемые в виде отдельных DLL или упакованные в ZIP-архив.
         ///
         /// </summary>
@@ -181,13 +166,21 @@ namespace OneScript.StandardLibrary
                 _engine.AttachExternalAssembly(assembly);
                 return true;
             }
-            else {
+            else
+            {
                 if (!Utils.IsValidIdentifier(name))
                 {
                     throw RuntimeException.InvalidArgumentValue(name);
                 }
                 return NativeApiFactory.Register(dllPath, name, _engine.TypeManager);
             }
+        }
+
+        private static RuntimeException ScriptCompilingException(Exception e)
+        {
+            return new RuntimeException(BilingualString.Localize(
+                "Ошибка компиляции подключаемого сценария:\n",
+                "Error compiling attached script:\n") + e.Message, e);
         }
     }
 }

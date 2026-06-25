@@ -23,16 +23,19 @@ namespace OneScript.Contexts
         private Type _declaringType;
         private bool _isExported;
         private string _name;
+        private string _alias;
         private Type _dataType = typeof(BslValue);
         private int _dispId = -1;
         
         internal BslScriptFieldInfo(string name)
         {
             _name = name;
+            _alias = null;
         }
 
         public override Type DeclaringType => _declaringType;
         public override string Name => _name;
+        public override string Alias => _alias;
         public override Type ReflectedType => _declaringType;
 
         public int DispatchId => _dispId;
@@ -63,6 +66,7 @@ namespace OneScript.Contexts
 
         void IBuildableMember.SetAlias(string alias)
         {
+            _alias = alias;
         }
 
         void IBuildableMember.SetExportFlag(bool isExport)
