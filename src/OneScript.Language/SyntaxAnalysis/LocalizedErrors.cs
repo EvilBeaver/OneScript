@@ -137,6 +137,10 @@ namespace OneScript.Language.SyntaxAnalysis
         public static CodeError DirectiveIsMissing(string directive) =>
             Create($"Пропущена директива #{directive}", $"Directive #{directive} is missing");
 
+        public static CodeError RuntimeDirectiveAlreadyDefined() =>
+            Create("Директива режима выполнения (#native или #stack) может быть указана только один раз",
+                "Runtime directive (#native or #stack) can be specified only once");
+
         public static CodeError LibraryNameExpected() =>
             Create("Ожидается имя библиотеки", "Library name expected");
         
