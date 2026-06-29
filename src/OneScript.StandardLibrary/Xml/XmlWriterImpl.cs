@@ -25,9 +25,9 @@ namespace OneScript.StandardLibrary.Xml
     {
         private TextWriterWithSettings _internalTextWriter;
         private XmlTextWriter _writer;
-        private XmlWriterSettingsImpl _settings = (XmlWriterSettingsImpl)XmlWriterSettingsImpl.Constructor(); 
+        private XmlWriterSettingsImpl _settings = XmlWriterSettingsImpl.Constructor(); 
         private int _depth;
-        private Stack<Dictionary<string, string>> _nsmap = new Stack<Dictionary<string, string>>();
+        private readonly Stack<Dictionary<string, string>> _nsmap = new();
         private StringBuilder _stringBuffer;
 
         private const string DEFAULT_INDENT_STRING = "    ";
@@ -49,6 +49,12 @@ namespace OneScript.StandardLibrary.Xml
         {
             _nsmap.Pop();
             --_depth;
+        }
+
+        private void CheckIfOpen()
+        {
+            if (_writer == null)
+                throw NotOpenException();
         }
 
         #region Properties
@@ -78,7 +84,8 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("ЗаписатьАтрибут","WriteAttribute")]
         public void WriteAttribute(string localName, string valueOrNamespace, string value = null)
         {
-            if(value == null)
+            CheckIfOpen();
+            if (value == null)
             {
                 _writer.WriteAttributeString(localName, valueOrNamespace);
             }
@@ -91,30 +98,35 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("ЗаписатьБезОбработки","WriteRaw")]
         public void WriteRaw(string data)
         {
+            CheckIfOpen();
             _writer.WriteRaw(data);
         }
 
         [ContextMethod("ЗаписатьИнструкциюОбработки","WriteProcessingInstruction")]
         public void WriteProcessingInstruction(string name, string text)
         {
+            CheckIfOpen();
             _writer.WriteProcessingInstruction(name, text);
         }
 
         [ContextMethod("ЗаписатьКомментарий","WriteComment")]
         public void WriteComment(string text)
         {
+            CheckIfOpen();
             _writer.WriteComment(text);
         }
 
         [ContextMethod("ЗаписатьКонецАтрибута","WriteEndAttribute")]
         public void WriteEndAttribute()
         {
+            CheckIfOpen();
             _writer.WriteEndAttribute();
         }
 
         [ContextMethod("ЗаписатьКонецЭлемента","WriteEndElement")]
         public void WriteEndElement()
         {
+            CheckIfOpen();
             _internalTextWriter.TrimEndSlashes = true;
             _writer.WriteEndElement();
             _internalTextWriter.TrimEndSlashes = false;
@@ -124,7 +136,8 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("ЗаписатьНачалоАтрибута","WriteStartAttribute")]
         public void WriteStartAttribute(string name, string ns = null)
         {
-            if(ns == null)
+            CheckIfOpen();
+            if (ns == null)
             {
                 _writer.WriteStartAttribute(name);
             }
@@ -138,6 +151,7 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("ЗаписатьНачалоЭлемента","WriteStartElement")]
         public void WriteStartElement(string name, string ns = null)
         {
+            CheckIfOpen();
             if (ns == null)
             {
                 _writer.WriteStartElement(name);
@@ -152,12 +166,14 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("ЗаписатьОбъявлениеXML","WriteXMLDeclaration")]
         public void WriteXMLDeclaration()
         {
+            CheckIfOpen();
             _writer.WriteStartDocument();
         }
 
         [ContextMethod("ЗаписатьСекциюCDATA","WriteCDATASection")]
         public void WriteCDATASection(string data)
         {
+            CheckIfOpen();
             _writer.WriteCData(data);
         }
 
@@ -171,18 +187,21 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("ЗаписатьСсылкуНаСущность","WriteEntityReference")]
         public void WriteEntityReference(string name)
         {
+            CheckIfOpen();
             _writer.WriteEntityRef(name);
         }
 
         [ContextMethod("ЗаписатьТекст","WriteText")]
         public void WriteText(string text)
         {
+            CheckIfOpen();
             _writer.WriteString(text);
         }
 
         [ContextMethod("ЗаписатьТекущий","WriteCurrent")]
         public void WriteCurrent(XmlReaderImpl reader)
         {
+            CheckIfOpen();
             var nodeType = reader.NodeType.UnderlyingValue;
             switch (nodeType)
             {
@@ -225,7 +244,8 @@ namespace OneScript.StandardLibrary.Xml
                 case XmlNodeType.Document:
                 case XmlNodeType.DocumentFragment:
                 case XmlNodeType.Notation:
-                    throw new RuntimeException(new Localization.BilingualString($"Копирование узла {nodeType} не поддерживается"));
+                    throw CopyingNotSupportedException(nodeType);
+ 
                 default:
                     break;
             }
@@ -292,7 +312,8 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("ЗаписатьТипДокумента","WriteDocumentType")]
         public void WriteDocumentType(string name, string varArg2, string varArg3 = null, string varArg4 = null)
         {
-            if(varArg4 != null)
+            CheckIfOpen();
+            if (varArg4 != null)
             {
                 _writer.WriteDocType(name, varArg2, varArg3, varArg4);
             }
@@ -309,6 +330,7 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("НайтиПрефикс","LookupPrefix")]
         public IValue LookupPrefix(string uri)
         {
+            CheckIfOpen();
             string prefix = _writer.LookupPrefix(uri);
             if (prefix == null)
                 return ValueFactory.Create();
@@ -318,26 +340,24 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("Закрыть","Close")]
         public IValue Close()
         {
-            if(IsOpenForString())
+            if (_writer==null)
+                return ValueFactory.Create(String.Empty);
+
+            _writer.Flush();
+            _writer.Close();
+            Dispose();
+
+            if (IsOpenForString())
             {
-                _writer.Flush();
-                _writer.Close();
-
-                Dispose();
-
                 var result = _stringBuffer.ToString();
                 _stringBuffer = null;
+
                 return ValueFactory.Create(result);
             }
             else
             {
-                _writer.Flush();
-                _writer.Close();
-                Dispose();
-
-                return ValueFactory.Create();
+                return ValueFactory.Create(String.Empty);
             }
-
         }
 
         private void ApplySettings(BslValue encodingOrSettings)
@@ -477,9 +497,7 @@ namespace OneScript.StandardLibrary.Xml
 
         public void Dispose()
         {
-            if (_writer != null)
-                _writer.Close();
-
+            _writer?.Close();
             _writer = null;
         }
 
@@ -490,5 +508,19 @@ namespace OneScript.StandardLibrary.Xml
         }
 
         public XmlWriter GetNativeWriter() => _writer;
+
+        public static RuntimeException NotOpenException()
+        {
+            return new RuntimeException
+                ("Приемник данных XML не открыт",
+                 "XML data target is not opened");
+        }
+        public static RuntimeException CopyingNotSupportedException(XmlNodeType nodeType)
+        {
+            return new RuntimeException
+                ($"Копирование узла типа {nodeType} не поддерживается",
+                 $"Copying a node of type {nodeType} is not supported");
+        }
+
     }
 }
