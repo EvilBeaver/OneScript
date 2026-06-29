@@ -180,6 +180,7 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("ЗаписатьСоответствиеПространстваИмен","WriteNamespaceMapping")]
         public void WriteNamespaceMapping(string prefix, string uri)
         {
+            CheckIfOpen();
             _writer.WriteAttributeString("xmlns", prefix, null, uri);
             _nsmap.Peek()[prefix] = uri;
         }
