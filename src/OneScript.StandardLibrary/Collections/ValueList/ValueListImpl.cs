@@ -30,13 +30,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
             _items = new List<ValueListItem>();
         }
 
-        public override bool IsIndexed
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsIndexed => true;
 
         public override IValue GetIndexedValue(IValue index)
         {
@@ -71,6 +65,9 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         public ValueListItem GetValue(IValue index)
         {
             int numericIndex = (int)index.AsNumber();
+            if (numericIndex < 0 || numericIndex >= _items.Count)
+                throw RuntimeException.IndexOutOfRange();
+
             return _items[numericIndex];
         }
 
@@ -103,6 +100,9 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         [ContextMethod("Вставить", "Insert")]
         public ValueListItem Insert(int index, IValue value = null, string presentation = null, bool check = false, IValue picture = null)
         {
+            if (index < 0 || index > _items.Count)
+                throw RuntimeException.IndexOutOfRange();
+
             var newItem = CreateNewListItem(value, presentation, check, picture);
             _items.Insert(index, newItem);
             
@@ -211,7 +211,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
                     throw RuntimeException.InvalidArgumentType();
                 }
 
-                if (index < 0 || index >= _items.Count())
+                if (index < 0 || index >= _items.Count)
                     throw RuntimeException.IndexOutOfRange();
             }
 
@@ -233,7 +233,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
 
             int index_dest = index_source + offset;
 
-            if (index_dest < 0 || index_dest >= _items.Count())
+            if (index_dest < 0 || index_dest >= _items.Count)
                 throw RuntimeException.InvalidNthArgumentValue(2);
 
             ValueListItem itemObject = _items[index_source];
