@@ -13,6 +13,7 @@ using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Types;
 using OneScript.Values;
+using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -25,6 +26,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
     public class ValueListImpl : AutoCollectionContext<ValueListImpl, ValueListItem>
     {
         readonly List<ValueListItem> _items;
+
         public ValueListImpl()
         {
             _items = new List<ValueListItem>();
@@ -51,6 +53,13 @@ namespace OneScript.StandardLibrary.Collections.ValueList
 
             base.SetIndexedValue(index, val);
         }
+
+        /// <summary>
+        /// Определяет тип для значений, которые могут храниться в элементах данного списка значений 
+        /// </summary>
+        /// <value>ОписаниеТипов</value>
+        [ContextProperty("ТипЗначения", "ValueType")]
+        public TypeDescription ListValueType { get; set; } = new();
 
         /// <summary>
         /// Получить элемент по индексу
@@ -105,16 +114,17 @@ namespace OneScript.StandardLibrary.Collections.ValueList
             return newItem;
         }
 
-        private static ValueListItem CreateNewListItem(IValue value, string presentation, bool check, IValue picture)
+        private ValueListItem CreateNewListItem(IValue value, string presentation, bool check, IValue picture)
         {
-            var newItem = new ValueListItem
+            var adjValue = ListValueType.AdjustValue(value);
+
+            return new ValueListItem
             {
-                Value = value ?? BslUndefinedValue.Instance,
+                Value = adjValue,
                 Presentation = presentation,
                 Check = check,
                 Picture = picture
             };
-            return newItem;
         }
 
         /// <summary>

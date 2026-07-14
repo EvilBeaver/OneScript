@@ -21,7 +21,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         private string _presentationHolder;
         private IValue _pictureHolder;
 
-        public ValueListItem()
+        internal ValueListItem()
         {
             _pictureHolder = ValueFactory.Create();
             _presentationHolder = String.Empty;
