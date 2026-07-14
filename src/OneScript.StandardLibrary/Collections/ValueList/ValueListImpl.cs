@@ -47,13 +47,9 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         public override void SetIndexedValue(IValue index, IValue val)
         {
             if (index.SystemType == BasicTypes.Number)
-            {
-                throw new RuntimeException("Индексированное значение доступно только для чтения");
-            }
-            else
-            {
-                base.SetIndexedValue(index, val);
-            }
+                throw IndexedIsReadonlyException();
+
+            base.SetIndexedValue(index, val);
         }
 
         /// <summary>
@@ -194,11 +190,11 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         {
             int index;
 
-            if (item is ValueListItem)
+            if (item is ValueListItem listItem)
             {
-                index = IndexOf(item as ValueListItem);
+                index = IndexOf(listItem);
                 if (index == -1)
-                    throw new RuntimeException("Элемент не принадлежит списку значений");
+                    throw ElementDoesntBelongException();
             }
             else
             {
@@ -347,6 +343,16 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         public static ValueListImpl Constructor()
         {
             return new ValueListImpl();
+        }
+
+        public static RuntimeException IndexedIsReadonlyException()
+        {
+            return new("Индексированное значение доступно только для чтения", "Indexed value is read-only");
+        }
+
+        public static RuntimeException ElementDoesntBelongException()
+        {
+            return new("Элемент не принадлежит списку значений", "Element does not belong to values list");
         }
 
     }
