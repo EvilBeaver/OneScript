@@ -158,7 +158,10 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         {
             var newValue = ListValueType.AdjustValue(value);
             if (_availableValues is not null)
-                newValue = _availableValues.FindByValue(newValue);
+            {
+                var foundItem = _availableValues.FindByValue(newValue);
+                newValue = foundItem is ValueListItem li ? li.Value : ListValueType.AdjustValue();
+            }
 
             return new ValueListItem
             {
