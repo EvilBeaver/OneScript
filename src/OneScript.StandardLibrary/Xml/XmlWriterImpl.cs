@@ -314,17 +314,50 @@ namespace OneScript.StandardLibrary.Xml
         public void WriteDocumentType(string name, string varArg2, string varArg3 = null, string varArg4 = null)
         {
             CheckIfOpen();
-            if (varArg4 != null)
+            
+            if (string.IsNullOrWhiteSpace(name))
+                throw RuntimeException.InvalidNthArgumentValue(1);
+
+            try
             {
-                _writer.WriteDocType(name, varArg2, varArg3, varArg4);
+                if (varArg4 != null)
+                {
+                    if (string.IsNullOrEmpty(varArg2))
+                    {
+                        varArg2 = null;
+                        if (string.Empty.Equals(varArg3))
+                            varArg3 = null;
+                    }
+                    else if (string.IsNullOrEmpty(varArg3)) // (A1,A2,,A4)
+                        throw NoSystemIdException();
+
+                    if (string.Empty.Equals(varArg4))
+                        varArg4 = null;
+
+                    _writer.WriteDocType(name, varArg2, varArg3, varArg4);
+                }
+                else if (varArg3 != null)
+                {
+                    if (string.Empty.Equals(varArg2))
+                        varArg2 = null;
+
+                    if (string.Empty.Equals(varArg3))
+                        varArg3 = null;
+
+                    _writer.WriteDocType(name, null, varArg2, varArg3);
+                }
+                else
+                {
+                    _writer.WriteDocType(name, null, null, varArg2);
+                }
             }
-            else if(varArg3 != null)
+            catch (ArgumentException)
             {
-                _writer.WriteDocType(name, null, varArg2, varArg3);
+                throw RuntimeException.InvalidNthArgumentValue(1);
             }
-            else
+            catch (InvalidOperationException)
             {
-                _writer.WriteDocType(name, null, null, varArg2);
+                throw WrongOrderException();
             }
         }
 
@@ -521,6 +554,20 @@ namespace OneScript.StandardLibrary.Xml
             return new RuntimeException
                 ($"Копирование узла типа {nodeType} не поддерживается",
                  $"Copying a node of type {nodeType} is not supported");
+        }
+
+        public static RuntimeException WrongOrderException()
+        {
+            return new RuntimeException
+                ("Ошибочный порядок записи XML",
+                 "Wrong order of XML record");
+        }
+
+        public static RuntimeException NoSystemIdException()
+        {
+            return new RuntimeException
+                ("Отсутствует системный идентификатор",
+                "System ID missing");
         }
 
     }
