@@ -61,6 +61,46 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         [ContextProperty("ТипЗначения", "ValueType")]
         public TypeDescription ListValueType { get; set; } = new();
 
+
+        ValueListImpl _availableValues;
+
+        /// <summary>
+        /// Ограничивает допустимые значения для элементов данного списка значений. 
+        /// Возможные значения: Неопределено - ограничения отсутствуют,
+        /// СписокЗначений - список допустимых значений
+        /// </summary>
+        /// <remarks>
+        /// Проверка допустимости добавляемых значений производится после приведения к указанным в ТипЗначения (если есть)
+        /// </remarks>
+        /// <value>СписокЗначений или Неопределено</value>
+        [ContextProperty("ДоступныеЗначения", "AvailableValues")]
+        public IValue AvailableValues
+        {
+            get
+            {
+                if (_availableValues != null)
+                    return _availableValues;
+
+                return BslUndefinedValue.Instance;
+            }
+
+            set
+            {
+                switch (value)
+                {
+                    case BslUndefinedValue:
+                        _availableValues = null;
+                        break;
+
+                    case ValueListImpl vl:
+                        _availableValues = vl;
+                        break;
+
+                    default: throw RuntimeException.InvalidArgumentType();
+                }
+            }
+        }
+
         /// <summary>
         /// Получить элемент по индексу
         /// </summary>
@@ -116,11 +156,13 @@ namespace OneScript.StandardLibrary.Collections.ValueList
 
         private ValueListItem CreateNewListItem(IValue value, string presentation, bool check, IValue picture)
         {
-            var adjValue = ListValueType.AdjustValue(value);
+            var newValue = ListValueType.AdjustValue(value);
+            if (_availableValues is not null)
+                newValue = _availableValues.FindByValue(newValue);
 
             return new ValueListItem
             {
-                Value = adjValue,
+                Value = newValue,
                 Presentation = presentation,
                 Check = check,
                 Picture = picture
