@@ -53,7 +53,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
 
         public override string ToString()
             => !String.IsNullOrEmpty(_presentationHolder) ? _presentationHolder
-            : Value is BslUndefinedValue ? EMPTY_VALUE_STRING
+            : Value is BslUndefinedValue or BslNullValue? EMPTY_VALUE_STRING
             : Value.ToString();
     }
 }
