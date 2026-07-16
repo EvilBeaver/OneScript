@@ -7,6 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Contexts;
+using OneScript.Localization;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -18,6 +20,8 @@ namespace OneScript.StandardLibrary.Collections.ValueList
     [ContextClass("ЭлементСпискаЗначений", "ValueListItem")]
     public class ValueListItem : AutoContext<ValueListItem>
     {
+        static readonly BilingualString EMPTY_VALUE_STRING = new("<Пустое значение>", "<Empty value>");
+
         private string _presentationHolder;
         private IValue _pictureHolder;
 
@@ -48,6 +52,8 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         }
 
         public override string ToString()
-            => !String.IsNullOrEmpty(_presentationHolder) ? _presentationHolder : Value.ToString();
+            => !String.IsNullOrEmpty(_presentationHolder) ? _presentationHolder
+            : Value is BslUndefinedValue ? EMPTY_VALUE_STRING
+            : Value.ToString();
     }
 }

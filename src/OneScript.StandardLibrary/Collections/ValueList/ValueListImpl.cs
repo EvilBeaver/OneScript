@@ -394,6 +394,8 @@ namespace OneScript.StandardLibrary.Collections.ValueList
 
         #endregion
 
+        public override string ToString() => string.Join("; ", _items);
+
         [ScriptConstructor]
         public static ValueListImpl Constructor()
         {
