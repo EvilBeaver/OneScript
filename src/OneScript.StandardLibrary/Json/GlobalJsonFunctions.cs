@@ -252,6 +252,26 @@ namespace OneScript.StandardLibrary.Json
         }
 
         /// <summary>
+        /// Преобразовывает дату в строку для последующей записи в формат JSON.
+        /// </summary>
+        ///
+        /// <param name="dateValue">
+        /// Дата, которую надо преобразовать в формат JSON. </param>
+        /// <param name="format">
+        /// Формат записываемой даты. </param>
+        /// <param name="dateWritingVariant">
+        /// Вариант записи даты JSON. Значение по умолчанию: ЛокальнаяДата. </param>
+        ///
+        /// <returns name="String">
+        /// Значения данного типа содержат строку в формате Unicode произвольной длины.</returns>
+        ///
+        [ContextMethod("ЗаписатьДатуJSON", "WriteJSONDate")]
+        public string WriteJSONDate(IValue dateValue, JSONDateFormatEnum format, JSONDateWritingVariantEnum dateWritingVariant = JSONDateWritingVariantEnum.LocalDate)
+        {
+            return JSONDateWriter.Write(dateValue, format, dateWritingVariant);
+        }
+
+        /// <summary>
         /// 
         /// Выполняет сериализацию Значение в формат JSON. Результат помещает в объект ЗаписьJSON.
         /// Если методу требуется передать значение недопустимого типа, то можно использовать функцию преобразования значения (параметры ИмяФункцииПреобразования и МодульФункцииПреобразования).
