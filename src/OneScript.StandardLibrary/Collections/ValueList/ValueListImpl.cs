@@ -324,26 +324,23 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         [ContextMethod("СортироватьПоЗначению", "SortByValue")]
         public void SortByValue(IBslProcess process, SortDirectionEnum? direction = null)
         {
-            if (direction == null || direction == SortDirectionEnum.Asc)
-            {
-                _items.Sort((x, y) => SafeCompare(process, x.Value, y.Value));
-            }
-            else
-            {
-                _items.Sort((x, y) => SafeCompare(process, y.Value, x.Value));
-            }
+            _items.Sort( new ItemComparator(process, direction == null || direction == SortDirectionEnum.Asc) );
         }
 
-        private int SafeCompare(IBslProcess p, IValue x, IValue y)
+        private class ItemComparator : IComparer<ValueListItem>
         {
-            try
+            readonly GenericIValueComparer _comparer;
+            readonly int _direction;
+
+            public ItemComparator(IBslProcess process, bool ascending = true)
             {
-                return x.CompareTo(y);
+                _comparer = new GenericIValueComparer(process);
+                _direction = ascending ? 1 : -1;
             }
-            catch(RuntimeException)
+
+            public int Compare(ValueListItem x, ValueListItem y)
             {
-                // Сравнение типов не поддерживается
-                return string.Compare(x?.AsString(p), y?.AsString(p), StringComparison.Ordinal);
+                return _comparer.Compare(x.Value, y.Value) * _direction;
             }
         }
 
