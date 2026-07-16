@@ -37,14 +37,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
 
         public override IValue GetIndexedValue(IValue index)
         {
-            if (index.SystemType == BasicTypes.Number)
-            {
-                return GetValue(index);
-            }
-            else
-            {
-                return base.GetIndexedValue(index);
-            }
+            return index is BslNumericValue ? GetValue(index) : base.GetIndexedValue(index);
         }
 
         public override void SetIndexedValue(IValue index, IValue val)
@@ -61,7 +54,6 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         /// <value>ОписаниеТипов</value>
         [ContextProperty("ТипЗначения", "ValueType")]
         public TypeDescription ListValueType { get; set; } = new();
-
 
         ValueListImpl _availableValues;
 
@@ -178,10 +170,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         /// </summary>
         /// <returns>Массив</returns>
         [ContextMethod("ВыгрузитьЗначения", "UnloadValues")]
-        public ArrayImpl UnloadValues()
-        {
-            return new ArrayImpl(_items.Select(x=>x.Value));
-        }
+        public ArrayImpl UnloadValues() => new ArrayImpl(_items.Select(x => x.Value));
 
         /// <summary>
         /// Загружает значения из массива
@@ -198,10 +187,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         /// Удаляет все элементы из списка.
         /// </summary>
         [ContextMethod("Очистить", "Clear")]
-        public void Clear()
-        {
-            _items.Clear();
-        }
+        public void Clear() => _items.Clear();
 
         /// <summary>
         /// Устанавливает значение пометки у всех элементов списка значений
@@ -222,10 +208,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         /// <param name="item">ЭлементСпискаЗначений - Элемент списка значений, для которого необходимо определить индекс</param>
         /// <returns>Число - Индекс в списке, если не найдено возвращает -1</returns>
         [ContextMethod("Индекс", "IndexOf")]
-        public int IndexOf(ValueListItem item)
-        {
-            return _items.IndexOf(item);
-        }
+        public int IndexOf(ValueListItem item) => _items.IndexOf(item);
 
         /// <summary>
         /// Осуществляет поиск значения в списке
@@ -282,7 +265,6 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         public void Move(BslValue item, int offset)
         {
             int index_source = IndexByValue(item);
-
             int index_dest = index_source + offset;
 
             if (index_dest < 0 || index_dest >= _items.Count)
@@ -370,25 +352,14 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         /// Число - Индекс удаляемого элемента
         /// </param>
         [ContextMethod("Удалить", "Delete")]
-        public void Delete(BslValue item)
-        {
-            int indexSource = IndexByValue(item);
-
-            _items.RemoveAt(indexSource);
-        }
+        public void Delete(BslValue item) => _items.RemoveAt(IndexByValue(item));
 
         #region Collection Context
 
         [ContextMethod("Количество", "Count")]
-        public override int Count()
-        {
-            return _items.Count;
-        }
+        public override int Count() => _items.Count;
 
-        public override IEnumerator<ValueListItem> GetEnumerator()
-        {
-            return _items.GetEnumerator();
-        }
+        public override IEnumerator<ValueListItem> GetEnumerator() => _items.GetEnumerator();
 
         #endregion
 
