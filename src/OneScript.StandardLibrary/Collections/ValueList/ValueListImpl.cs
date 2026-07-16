@@ -26,6 +26,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
     public class ValueListImpl : AutoCollectionContext<ValueListImpl, ValueListItem>
     {
         readonly List<ValueListItem> _items;
+        ulong _maxId;
 
         public ValueListImpl()
         {
@@ -163,7 +164,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
                 newValue = foundItem is ValueListItem li ? li.Value : ListValueType.AdjustValue();
             }
 
-            return new ValueListItem
+            return new ValueListItem(_maxId++)
             {
                 Value = newValue,
                 Presentation = presentation,
@@ -190,7 +191,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         public void LoadValues(ArrayImpl source)
         {
             Clear();
-            _items.AddRange(source.Select(x => new ValueListItem() { Value = x }));
+            _items.AddRange(source.Select(x => new ValueListItem(_maxId++) { Value = x }));
         }
 
         /// <summary>

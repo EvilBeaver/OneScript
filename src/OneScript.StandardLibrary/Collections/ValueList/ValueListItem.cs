@@ -24,16 +24,25 @@ namespace OneScript.StandardLibrary.Collections.ValueList
 
         private string _presentationHolder;
         private IValue _pictureHolder;
+        private readonly ulong _id;
 
-        internal ValueListItem()
+        internal ValueListItem(ulong id)
         {
+            _id = id;
             _pictureHolder = ValueFactory.Create();
             _presentationHolder = String.Empty;
         }
-        
+
+        /// <summary>
+        /// Хранимое элементом списка значение произвольного типа
+        /// </summary>
         [ContextProperty("Значение", "Value")]
         public IValue Value { get; set; }
 
+        /// <summary>
+        /// Строковое представление элемента списка значений.
+        /// Если не задано или указана пустая строка, то соответствует представлению значения.
+        /// </summary>
         [ContextProperty("Представление", "Presentation")]
         public string Presentation
         {
@@ -41,15 +50,28 @@ namespace OneScript.StandardLibrary.Collections.ValueList
             set => _presentationHolder = value ?? String.Empty;
         }
 
+        /// <summary>
+        /// Связанное с элементом списка значение пометки. Тип: Булево
+        /// </summary>
         [ContextProperty("Пометка", "Check")]
         public bool Check { get; set; }
 
+        /// <summary>
+        /// Картинка, связанная с элементом списка значений.
+        /// </summary>
+        /// <remarks>Сейчас может содержать произвольное значение, не используется</remarks>
         [ContextProperty("Картинка", "Picture")]
         public IValue Picture
         {
             get => _pictureHolder;
             set => _pictureHolder = value ?? ValueFactory.Create();
         }
+
+        /// <summary>
+        /// Получает идентификатор для элемента списка значений, не привязанный к позиции элемента в списке
+        /// </summary>
+        [ContextMethod("ПолучитьИдентификатор", "GetID")]
+        public ulong GetID() => _id;
 
         public override string ToString()
             => !String.IsNullOrEmpty(_presentationHolder) ? _presentationHolder
