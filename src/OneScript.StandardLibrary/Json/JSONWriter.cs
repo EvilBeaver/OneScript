@@ -266,9 +266,15 @@ namespace OneScript.StandardLibrary.Json
         [ContextMethod("Закрыть", "Close")]
         public string Close()
         {
-            var result = IsOpenForString() ? _stringWriter.ToString() : String.Empty;
+            var result = String.Empty;
+            if (_writer is not null)
+            {
+                _writer.Flush();
+                if (IsOpenForString())
+                    result = _stringWriter.ToString();
 
-            Dispose();
+                Dispose();
+            }
 
             return result;
         }
@@ -426,6 +432,7 @@ namespace OneScript.StandardLibrary.Json
                 throw new RuntimeException(e.Message, e);
             }
 
+            Close();
             SetWriter(streamWriter, settings);
         }
 
@@ -453,6 +460,7 @@ namespace OneScript.StandardLibrary.Json
             if (streamContext.IsReadOnly)
                 throw CannotWriteException();
 
+            Close();
             var textEncoding = TextEncodingEnum.GetEncodingByName(encoding ?? DEFAULT_ENCODING, addBOM);
             StreamWriter streamWriter = new(streamContext.GetUnderlyingStream(), textEncoding);
             SetWriter(streamWriter, settings);
@@ -468,15 +476,14 @@ namespace OneScript.StandardLibrary.Json
         [ContextMethod("УстановитьСтроку", "SetString")]
         public void SetString(JSONWriterSettings settings = null)
         {
+            Close();
+
             _stringWriter = new StringWriter();
             SetWriter(_stringWriter, settings);
         }
 
         private void SetWriter(TextWriter stream, JSONWriterSettings settings)
         {
-            if (IsOpen())
-                Close();
-
             _writer = new JsonTextWriter(stream);
 
             SetOptions(settings);
