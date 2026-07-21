@@ -462,7 +462,7 @@ namespace OneScript.StandardLibrary.Json
 
             Close();
             var textEncoding = TextEncodingEnum.GetEncodingByName(encoding ?? DEFAULT_ENCODING, addBOM);
-            StreamWriter streamWriter = new(streamContext.GetUnderlyingStream(), textEncoding);
+            StreamWriter streamWriter = new(streamContext.GetUnderlyingStream(), textEncoding, leaveOpen: true);
             SetWriter(streamWriter, settings);
         }
 
