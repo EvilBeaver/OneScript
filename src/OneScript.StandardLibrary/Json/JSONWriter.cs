@@ -130,62 +130,25 @@ namespace OneScript.StandardLibrary.Json
             for (var i = 0; i < length; i++)
             {
                 char c = sval[i];
-                string? escapedValue = null;
-
-                if (EscapeSlash && c == '/')
+                string escapedValue = c switch
                 {
-                    escapedValue = "\\/";
-                }
-                else if (_settings.EscapeAmpersand && c == '&')
-                {
-                    escapedValue = "\\&";
-                }
-                else if ((_settings.EscapeSingleQuotes || !_settings.UseDoubleQuotes) && c == '\'')
-                {
-                    escapedValue = "\\u0027";
-                }
-                else if (_settings.EscapeAngleBrackets && c == '<')
-                {
-                    escapedValue = "\\u003C";
-                }
-                else if (_settings.EscapeAngleBrackets && c == '>')
-                {
-                    escapedValue = "\\u003E";
-                }
-                else if (c == '\r')
-                {
-                    escapedValue = "\\r";
-                }
-                else if (c == '\n')
-                {
-                    escapedValue = "\\n";
-                }
-                else if (c == '\f')
-                {
-                    escapedValue = "\\f";
-                }
-                else if (c == '\"')
-                {
-                    escapedValue = "\\\"";
-                }
-                else if (c == '\b')
-                {
-                    escapedValue = "\\b";
-                }
-                else if (c == '\t')
-                {
-                    escapedValue = "\\t";
-                }
-                else if (c == '\\')
-                {
-                    escapedValue = "\\\\";
-                }
-
-                // Спец. символы: \u0000, \u0001, \u0002, ... , \u001e, \u001f;
-                else if ((int)c >= 0 && (int)c <= 31)
-                {
-                    escapedValue = "\\u" + ((int)c).ToString("x4");
-                }
+                    '/' when EscapeSlash => "\\/",
+                    '\'' when (_settings.EscapeSingleQuotes || !_settings.UseDoubleQuotes) => "\\u0027",
+                    '&' when _settings.EscapeAmpersand => "\\u0026",
+                    '<' when _settings.EscapeAngleBrackets => "\\u003C",
+                    '>' when _settings.EscapeAngleBrackets => "\\u003E",
+                    '\x2028' when _settings.EscapeLineTerminators => "\\u2028",
+                    '\x2029' when _settings.EscapeLineTerminators => "\\u2029",
+                    '\r' => "\\r",
+                    '\n' => "\\n",
+                    '\f' => "\\f",
+                    '\b' => "\\b",
+                    '\t' => "\\t",
+                    '\"' => "\\\"",
+                    '\\' => "\\\\",
+                    >= '\x00' and <= '\x1F' => "\\u" + ((int)c).ToString("x4"),
+                    _ => null
+                };
 
                 if (escapedValue != null)
                 {
