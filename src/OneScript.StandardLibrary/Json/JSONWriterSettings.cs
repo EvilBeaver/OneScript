@@ -61,7 +61,7 @@ namespace OneScript.StandardLibrary.Json
         /// <param name="paddingSymbols">
         /// Определяет символы отступа, используемые при записи данных JSON.
         /// Применяется только, если значение ПереносСтрокJSON отлично от Нет.
-        /// Значение по умолчанию: " ". </param>
+        /// Значение по умолчанию: "". </param>
         /// <param name="useDoubleQuotes">
         /// Определяет, будут ли при записи имена свойств JSON записываться в двойных кавычках.
         /// Значение по умолчанию: Истина. </param>
@@ -86,8 +86,8 @@ namespace OneScript.StandardLibrary.Json
         /// Значение по умолчанию: Ложь. </param>
         [ScriptConstructor(Name = "По описанию параметров записи")]
         public static JSONWriterSettings ParametrizedConstructor(
-            JSONLineBreakEnum newLines = JSONLineBreakEnum.None,
-            string paddingSymbols = null,
+            JSONLineBreakEnum newLines = JSONLineBreakEnum.Auto,
+            string paddingSymbols = "",
             bool useDoubleQuotes = true,
             JSONCharactersEscapeModeEnum escapeCharacters = JSONCharactersEscapeModeEnum.None,
             bool escapeAngleBrackets = false,
@@ -147,7 +147,7 @@ namespace OneScript.StandardLibrary.Json
         /// </summary>
         /// <value>Строка (String)</value>
         [ContextProperty("СимволыОтступа", "PaddingSymbols")]
-        public string PaddingSymbols => _paddingSymbols;
+        public string PaddingSymbols => _paddingSymbols ?? string.Empty;
 
 
         /// <summary>

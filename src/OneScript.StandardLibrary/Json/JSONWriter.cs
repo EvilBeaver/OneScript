@@ -37,7 +37,7 @@ namespace OneScript.StandardLibrary.Json
 
         public JSONWriter()
         {
-            
+            _settings = new JSONWriterSettings();
         }
 
         /// <summary>
@@ -85,8 +85,16 @@ namespace OneScript.StandardLibrary.Json
                 _writer.QuoteChar = '\'';
             }
 
-            _writer.IndentChar = !string.IsNullOrEmpty(_settings.PaddingSymbols) ? _settings.PaddingSymbols[0] : ' ';
-            _writer.Indentation = !string.IsNullOrEmpty(_settings.PaddingSymbols) ? 1 : INDENT_SIZE;
+            if (string.IsNullOrEmpty(_settings.PaddingSymbols))
+            {
+                _writer.IndentChar = ' ';
+                _writer.Indentation = INDENT_SIZE;
+            }
+            else
+            {
+                _writer.IndentChar = _settings.PaddingSymbols[0];
+                _writer.Indentation = 1;
+            }
             _writer.Formatting = Formatting.Indented;
 
             if (_settings.EscapeCharacters != JSONCharactersEscapeModeEnum.None)
@@ -189,6 +197,7 @@ namespace OneScript.StandardLibrary.Json
                 }
             }
         }
+
         [ScriptConstructor]
         public static JSONWriter Constructor()
         {
@@ -200,11 +209,7 @@ namespace OneScript.StandardLibrary.Json
         /// </summary>
         /// <value>ПараметрыЗаписиJSON (JSONWriterSettings)</value>
         [ContextProperty("Параметры", "Settings")]
-        public IValue Settings
-        {
-            get { throw new NotImplementedException(); }
-
-        }
+        public IValue Settings => _settings;
 
         /// <summary>
         /// Показывает, будет ли проводиться проверка правильности структуры записываемого JSON объекта. В случае обнаружение ошибки, будет сгенерировано исключение. Например: при попытке записать значение без имени вне массива или записать окончание объекта без начала. Установка данного свойства не имеет немедленного эффекта. Установленное значение свойства будет использовано только после открытия файла или установки строки.
