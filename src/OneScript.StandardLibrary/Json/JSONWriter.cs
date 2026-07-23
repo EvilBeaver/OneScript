@@ -33,7 +33,6 @@ namespace OneScript.StandardLibrary.Json
         private JsonTextWriter _writer; // Объект из библиотеки Newtonsoft для работы с форматом JSON 
 
         StringWriter _stringWriter;
-        private bool _escapeNonAscii;
 
         public JSONWriter()
         {
@@ -43,18 +42,12 @@ namespace OneScript.StandardLibrary.Json
         /// <summary>
         /// Возвращает true если был открыт объект для записи.
         /// </summary>
-        private bool IsOpen()
-        {
-            return _writer != null;
-        }
+        private bool IsOpen() => _writer != null;
 
         /// <summary>
         /// Возвращает true если текст json выводится в строку.
         /// </summary>
-        private bool IsOpenForString()
-        {
-            return _stringWriter != null;
-        }
+        private bool IsOpenForString() => _stringWriter != null;
 
         private void CheckWriter()
         {
@@ -67,7 +60,6 @@ namespace OneScript.StandardLibrary.Json
             _writer.Indentation = INDENT_SIZE;
             _writer.Formatting = Formatting.Indented;
             _settings = new JSONWriterSettings();
-            _escapeNonAscii = false;
         }
 
         private void SetOptions(JSONWriterSettings settings)
@@ -79,11 +71,8 @@ namespace OneScript.StandardLibrary.Json
             }
 
             _settings = settings;
-            if (_settings.UseDoubleQuotes)
-                _writer.QuoteChar = '\"';
-            else { 
-                _writer.QuoteChar = '\'';
-            }
+
+            _writer.QuoteChar = _settings.UseDoubleQuotes ? '"' : '\'';
 
             if (string.IsNullOrEmpty(_settings.PaddingSymbols))
             {
@@ -96,39 +85,9 @@ namespace OneScript.StandardLibrary.Json
                 _writer.Indentation = 1;
             }
             _writer.Formatting = Formatting.Indented;
-
-            if (_settings.EscapeCharacters != JSONCharactersEscapeModeEnum.None)
-            {
-                var jsonCharactersEscapeMode = _settings.EscapeCharacters;
-                if (jsonCharactersEscapeMode == JSONCharactersEscapeModeEnum.NotASCIISymbols)
-                {
-                    _escapeNonAscii = true;
-                    _writer.QuoteChar = '\"';
-                    _writer.StringEscapeHandling = StringEscapeHandling.EscapeNonAscii;
-                }
-                else if (jsonCharactersEscapeMode == JSONCharactersEscapeModeEnum.SymbolsNotInBMP)
-                    throw new NotImplementedException();
-            }
         }
 
-        void WriteStringValue(string val)
-        { 
-            if (_settings.EscapeCharacters != JSONCharactersEscapeModeEnum.None && _escapeNonAscii)
-            {
-                StringWriter wr = new StringWriter();
-                var jsonWriter = new JsonTextWriter(wr);
-                jsonWriter.QuoteChar = '\"';
-                jsonWriter.StringEscapeHandling = StringEscapeHandling.EscapeNonAscii;
-                new JsonSerializer().Serialize(jsonWriter, val);
-                string str = wr.ToString();
-                _writer.WriteRawValue(EscapeCharacters(str.Substring(1, str.Length - 2), false));
-
-            }
-            else
-                _writer.WriteRawValue(EscapeCharacters(val, _settings.EscapeSlash));
-        }
-
-        string EscapeCharacters(string sval, bool EscapeSlash)
+         string EscapeCharacters(string sval)
         {
             var sb = new StringBuilder();
 
@@ -140,7 +99,7 @@ namespace OneScript.StandardLibrary.Json
                 char c = sval[i];
                 string escapedValue = c switch
                 {
-                    '/' when EscapeSlash => "\\/",
+                    '/' when _settings.EscapeSlash => "\\/",
                     '\'' when (_settings.EscapeSingleQuotes || !_settings.UseDoubleQuotes) => "\\u0027",
                     '&' when _settings.EscapeAmpersand => "\\u0026",
                     '<' when _settings.EscapeAngleBrackets => "\\u003C",
@@ -154,7 +113,14 @@ namespace OneScript.StandardLibrary.Json
                     '\t' => "\\t",
                     '\"' => "\\\"",
                     '\\' => "\\\\",
-                    >= '\x00' and <= '\x1F' => "\\u" + ((int)c).ToString("x4"),
+                    >= '\x00' and <= '\x1F' => "\\u" + ((int)c).ToString("X4"),
+                    
+                    >= '\xD800' and <= '\xDFFF' when _settings.EscapeCharacters == JSONCharactersEscapeModeEnum.SymbolsNotInBMP
+                        => "\\u" + ((int)c).ToString("X4"),
+
+                    >= '\xFF' and <= '\xFFFF' when _settings.EscapeCharacters == JSONCharactersEscapeModeEnum.NotASCIISymbols 
+                        => "\\u" + ((int)c).ToString("X4"),
+                    
                     _ => null
                 };
 
@@ -190,8 +156,8 @@ namespace OneScript.StandardLibrary.Json
                     case JSONLineBreakEnum.Auto:
                         textWriter.NewLine = "\r\n";
                         break;
-                    default:
-                        textWriter.NewLine = ""; //Нет
+                    default: // JSONLineBreakEnum.None
+                        textWriter.NewLine = ""; 
                         _writer.Formatting = Formatting.None;
                         break;
                 }
@@ -212,15 +178,18 @@ namespace OneScript.StandardLibrary.Json
         public IValue Settings => _settings;
 
         /// <summary>
-        /// Показывает, будет ли проводиться проверка правильности структуры записываемого JSON объекта. В случае обнаружение ошибки, будет сгенерировано исключение. Например: при попытке записать значение без имени вне массива или записать окончание объекта без начала. Установка данного свойства не имеет немедленного эффекта. Установленное значение свойства будет использовано только после открытия файла или установки строки.
+        /// Показывает, будет ли проводиться проверка правильности структуры записываемого JSON объекта. 
+        /// В случае обнаружения ошибки, будет сгенерировано исключение. Например: при попытке записать значение без имени вне массива или записать окончание объекта без начала.
+        /// Установка данного свойства не имеет немедленного эффекта. Установленное значение свойства будет использовано только после открытия файла или установки строки.
         /// После создания объекта данное свойство имеет значение Истина.
         /// </summary>
+        /// <remarks>Проверка структуры поддерживается частично. Попытка установки свойства в Ложь вызовет исключение</remarks>
         /// <value>Булево (Boolean)</value>
         [ContextProperty("ПроверятьСтруктуру", "ValidateStructure")]
         public bool ValidateStructure
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get { return true; }
+            set { if(!value) throw new NotImplementedException(); }
         }
 
 
@@ -228,6 +197,7 @@ namespace OneScript.StandardLibrary.Json
         /// Завершает запись текста JSON.
         /// Если производилась запись в строку, то метод вернет результирующую строку.
         /// Если производилась запись в файл, то файл закрывается, а метод вернет пустую строку.
+        /// Если производилась запись в поток, то поток остается открытым, а метод вернет пустую строку.
         /// </summary>
         /// <remarks>Допускается повторное закрытие. Будет возвращена пустая строка.</remarks>
         /// <returns name="String">Строка в формате Unicode</returns>
@@ -278,10 +248,10 @@ namespace OneScript.StandardLibrary.Json
             switch (clrValue)
             {
                 case string v:
-                     WriteStringValue(v);
+                    _writer.WriteRawValue(EscapeCharacters(v));
                     break;
                 case decimal v:
-                    if (v == Math.Round(v))
+                    if (v == Math.Truncate(v))
                     {
                         Int64 i  = Convert.ToInt64(v);
                         if (useFormatWithExponent)
@@ -482,8 +452,7 @@ namespace OneScript.StandardLibrary.Json
 
         RuntimeException NotOpenException()
         {
-            return new RuntimeException(Locale.NStr
-                ("ru='Приемник данных JSON не открыт';en='JSON data target is not opened'"));
+            return new RuntimeException("Приемник данных JSON не открыт", "JSON data target is not opened");
         }
 
         RuntimeException CannotWriteException()
@@ -494,9 +463,8 @@ namespace OneScript.StandardLibrary.Json
 
         RuntimeException TypeNotSupportedException(Type type)
         {
-            return new RuntimeException(Locale.NStr
-                ($"ru='Запись значения типа {type} не поддерживается.'; en='Can not write value of type {type}'"));
+            return new RuntimeException($"Запись значения типа {type} не поддерживается",
+                $"Cannot write value of type {type}");
         }
-
     }
 }
