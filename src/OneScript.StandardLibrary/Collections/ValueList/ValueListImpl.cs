@@ -180,7 +180,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         public void LoadValues(ArrayImpl source)
         {
             Clear();
-            _items.AddRange(source.Select(x => new ValueListItem(_maxId++) { Value = x }));
+            _items.AddRange(source.Select(x => CreateNewListItem(x, null, false, null)));
         }
 
         /// <summary>
