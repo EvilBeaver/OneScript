@@ -13,6 +13,7 @@ using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Types;
 using OneScript.Values;
+using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -25,40 +26,71 @@ namespace OneScript.StandardLibrary.Collections.ValueList
     public class ValueListImpl : AutoCollectionContext<ValueListImpl, ValueListItem>
     {
         readonly List<ValueListItem> _items;
+        ulong _maxId;
+
         public ValueListImpl()
         {
             _items = new List<ValueListItem>();
         }
 
-        public override bool IsIndexed
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsIndexed => true;
 
         public override IValue GetIndexedValue(IValue index)
         {
-            if (index.SystemType == BasicTypes.Number)
-            {
-                return GetValue(index);
-            }
-            else
-            {
-                return base.GetIndexedValue(index);
-            }
+            return index is BslNumericValue ? GetValue(index) : base.GetIndexedValue(index);
         }
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
             if (index.SystemType == BasicTypes.Number)
+                throw IndexedIsReadonlyException();
+
+            base.SetIndexedValue(index, val);
+        }
+
+        /// <summary>
+        /// Определяет тип для значений, которые могут храниться в элементах данного списка значений 
+        /// </summary>
+        /// <value>ОписаниеТипов</value>
+        [ContextProperty("ТипЗначения", "ValueType")]
+        public TypeDescription ListValueType { get; set; } = new();
+
+        ValueListImpl _availableValues;
+
+        /// <summary>
+        /// Ограничивает допустимые значения для элементов данного списка значений. 
+        /// Возможные значения: Неопределено - ограничения отсутствуют,
+        /// СписокЗначений - список допустимых значений
+        /// </summary>
+        /// <remarks>
+        /// Проверка допустимости добавляемых значений производится после приведения к указанным в ТипЗначения (если есть)
+        /// </remarks>
+        /// <value>СписокЗначений или Неопределено</value>
+        [ContextProperty("ДоступныеЗначения", "AvailableValues")]
+        public IValue AvailableValues
+        {
+            get
             {
-                throw new RuntimeException("Индексированное значение доступно только для чтения");
+                if (_availableValues != null)
+                    return _availableValues;
+
+                return BslUndefinedValue.Instance;
             }
-            else
+
+            set
             {
-                base.SetIndexedValue(index, val);
+                switch (value)
+                {
+                    case BslUndefinedValue:
+                        _availableValues = null;
+                        break;
+
+                    case ValueListImpl vl:
+                        _availableValues = vl;
+                        break;
+
+                    default: throw RuntimeException.InvalidArgumentType();
+                }
             }
         }
 
@@ -71,6 +103,9 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         public ValueListItem GetValue(IValue index)
         {
             int numericIndex = (int)index.AsNumber();
+            if (numericIndex < 0 || numericIndex >= _items.Count)
+                throw RuntimeException.IndexOutOfRange();
+
             return _items[numericIndex];
         }
 
@@ -103,22 +138,31 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         [ContextMethod("Вставить", "Insert")]
         public ValueListItem Insert(int index, IValue value = null, string presentation = null, bool check = false, IValue picture = null)
         {
+            if (index < 0 || index > _items.Count)
+                throw RuntimeException.IndexOutOfRange();
+
             var newItem = CreateNewListItem(value, presentation, check, picture);
             _items.Insert(index, newItem);
             
             return newItem;
         }
 
-        private static ValueListItem CreateNewListItem(IValue value, string presentation, bool check, IValue picture)
+        private ValueListItem CreateNewListItem(IValue value, string presentation, bool check, IValue picture)
         {
-            var newItem = new ValueListItem
+            var newValue = ListValueType.AdjustValue(value);
+            if (_availableValues is not null)
             {
-                Value = value ?? BslUndefinedValue.Instance,
+                var foundItem = _availableValues.FindByValue(newValue);
+                newValue = foundItem is ValueListItem li ? li.Value : ListValueType.AdjustValue();
+            }
+
+            return new ValueListItem(_maxId++)
+            {
+                Value = newValue,
                 Presentation = presentation,
                 Check = check,
                 Picture = picture
             };
-            return newItem;
         }
 
         /// <summary>
@@ -126,10 +170,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         /// </summary>
         /// <returns>Массив</returns>
         [ContextMethod("ВыгрузитьЗначения", "UnloadValues")]
-        public ArrayImpl UnloadValues()
-        {
-            return new ArrayImpl(_items.Select(x=>x.Value));
-        }
+        public ArrayImpl UnloadValues() => new ArrayImpl(_items.Select(x => x.Value));
 
         /// <summary>
         /// Загружает значения из массива
@@ -139,17 +180,14 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         public void LoadValues(ArrayImpl source)
         {
             Clear();
-            _items.AddRange(source.Select(x => new ValueListItem() { Value = x }));
+            _items.AddRange(source.Select(x => CreateNewListItem(x, null, false, null)));
         }
 
         /// <summary>
         /// Удаляет все элементы из списка.
         /// </summary>
         [ContextMethod("Очистить", "Clear")]
-        public void Clear()
-        {
-            _items.Clear();
-        }
+        public void Clear() => _items.Clear();
 
         /// <summary>
         /// Устанавливает значение пометки у всех элементов списка значений
@@ -170,10 +208,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         /// <param name="item">ЭлементСпискаЗначений - Элемент списка значений, для которого необходимо определить индекс</param>
         /// <returns>Число - Индекс в списке, если не найдено возвращает -1</returns>
         [ContextMethod("Индекс", "IndexOf")]
-        public int IndexOf(ValueListItem item)
-        {
-            return _items.IndexOf(item);
-        }
+        public int IndexOf(ValueListItem item) => _items.IndexOf(item);
 
         /// <summary>
         /// Осуществляет поиск значения в списке
@@ -194,11 +229,11 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         {
             int index;
 
-            if (item is ValueListItem)
+            if (item is ValueListItem listItem)
             {
-                index = IndexOf(item as ValueListItem);
+                index = IndexOf(listItem);
                 if (index == -1)
-                    throw new RuntimeException("Элемент не принадлежит списку значений");
+                    throw ElementDoesntBelongException();
             }
             else
             {
@@ -211,7 +246,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
                     throw RuntimeException.InvalidArgumentType();
                 }
 
-                if (index < 0 || index >= _items.Count())
+                if (index < 0 || index >= _items.Count)
                     throw RuntimeException.IndexOutOfRange();
             }
 
@@ -230,10 +265,9 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         public void Move(BslValue item, int offset)
         {
             int index_source = IndexByValue(item);
-
             int index_dest = index_source + offset;
 
-            if (index_dest < 0 || index_dest >= _items.Count())
+            if (index_dest < 0 || index_dest >= _items.Count)
                 throw RuntimeException.InvalidNthArgumentValue(2);
 
             ValueListItem itemObject = _items[index_source];
@@ -273,26 +307,23 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         [ContextMethod("СортироватьПоЗначению", "SortByValue")]
         public void SortByValue(IBslProcess process, SortDirectionEnum? direction = null)
         {
-            if (direction == null || direction == SortDirectionEnum.Asc)
-            {
-                _items.Sort((x, y) => SafeCompare(process, x.Value, y.Value));
-            }
-            else
-            {
-                _items.Sort((x, y) => SafeCompare(process, y.Value, x.Value));
-            }
+            _items.Sort( new ItemComparator(process, direction == null || direction == SortDirectionEnum.Asc) );
         }
 
-        private int SafeCompare(IBslProcess p, IValue x, IValue y)
+        private class ItemComparator : IComparer<ValueListItem>
         {
-            try
+            readonly GenericIValueComparer _comparer;
+            readonly int _direction;
+
+            public ItemComparator(IBslProcess process, bool ascending = true)
             {
-                return x.CompareTo(y);
+                _comparer = new GenericIValueComparer(process);
+                _direction = ascending ? 1 : -1;
             }
-            catch(RuntimeException)
+
+            public int Compare(ValueListItem x, ValueListItem y)
             {
-                // Сравнение типов не поддерживается
-                return string.Compare(x?.AsString(p), y?.AsString(p), StringComparison.Ordinal);
+                return _comparer.Compare(x.Value, y.Value) * _direction;
             }
         }
 
@@ -321,32 +352,33 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         /// Число - Индекс удаляемого элемента
         /// </param>
         [ContextMethod("Удалить", "Delete")]
-        public void Delete(BslValue item)
-        {
-            int indexSource = IndexByValue(item);
-
-            _items.RemoveAt(indexSource);
-        }
+        public void Delete(BslValue item) => _items.RemoveAt(IndexByValue(item));
 
         #region Collection Context
 
         [ContextMethod("Количество", "Count")]
-        public override int Count()
-        {
-            return _items.Count;
-        }
+        public override int Count() => _items.Count;
 
-        public override IEnumerator<ValueListItem> GetEnumerator()
-        {
-            return _items.GetEnumerator();
-        }
+        public override IEnumerator<ValueListItem> GetEnumerator() => _items.GetEnumerator();
 
         #endregion
+
+        public override string ToString() => string.Join("; ", _items);
 
         [ScriptConstructor]
         public static ValueListImpl Constructor()
         {
             return new ValueListImpl();
+        }
+
+        public static RuntimeException IndexedIsReadonlyException()
+        {
+            return new("Индексированное значение доступно только для чтения", "Indexed value is read-only");
+        }
+
+        public static RuntimeException ElementDoesntBelongException()
+        {
+            return new("Элемент не принадлежит списку значений", "Element does not belong to values list");
         }
 
     }
