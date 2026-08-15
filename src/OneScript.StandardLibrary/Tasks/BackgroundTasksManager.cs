@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -27,7 +28,7 @@ namespace OneScript.StandardLibrary.Tasks
     public class BackgroundTasksManager : AutoContext<BackgroundTasksManager>, IDisposable
     {
         private readonly ExecutionContext _runtimeContext;
-        private List<BackgroundTask> _tasks = new List<BackgroundTask>();
+        private readonly ConcurrentDictionary<int, BackgroundTask> _tasks = new ConcurrentDictionary<int, BackgroundTask>();
 
         public BackgroundTasksManager(ExecutionContext runtimeContext)
         {
@@ -46,7 +47,6 @@ namespace OneScript.StandardLibrary.Tasks
         public BackgroundTask Execute(IRuntimeContextInstance target, string methodName, ArrayImpl parameters = null, bool longRunning = false)
         {
             var task = new BackgroundTask(target, methodName, parameters);
-            _tasks.Add(task);
 
             var taskCreationOptions = longRunning ? TaskCreationOptions.LongRunning : TaskCreationOptions.None;
             var worker = new Task(() =>
@@ -57,6 +57,7 @@ namespace OneScript.StandardLibrary.Tasks
             }, taskCreationOptions);
 
             task.WorkerTask = worker;
+            _tasks.TryAdd(task.TaskId, task);
             worker.Start();
             
             return task;
@@ -112,22 +113,22 @@ namespace OneScript.StandardLibrary.Tasks
         [ContextMethod("ОжидатьЗавершенияЗадач", "WaitCompletionOfTasks")]
         public void WaitCompletionOfTasks()
         {
-            lock (_tasks)
-            {
-                var workers = GetWorkerTasks();
-                Task.WaitAll(workers);
+            var snapshot = _tasks.Values.ToArray();
+            Task.WaitAll(GetWorkerTasks(snapshot));
 
-                var failedTasks = _tasks.Where(x => x.State == TaskStateEnum.CompletedWithErrors)
-                    .ToList();
-                
-                if (failedTasks.Count != 0)
-                {
-                    throw new ParametrizedRuntimeException(
-                        Locale.NStr("ru = 'Задания завершились с ошибками';en = 'Tasks are completed with errors'"),
-                        new ArrayImpl(failedTasks));
-                }
-                
-                _tasks.Clear();
+            var failedTasks = snapshot.Where(x => x.State == TaskStateEnum.CompletedWithErrors)
+                .ToList();
+            
+            if (failedTasks.Count != 0)
+            {
+                throw new ParametrizedRuntimeException(
+                    Locale.NStr("ru = 'Задания завершились с ошибками';en = 'Tasks are completed with errors'"),
+                    new ArrayImpl(failedTasks));
+            }
+
+            foreach (var task in snapshot)
+            {
+                _tasks.TryRemove(task.TaskId, out _);
             }
         }
 
@@ -135,10 +136,10 @@ namespace OneScript.StandardLibrary.Tasks
         public ArrayImpl GetBackgroundJobs(StructureImpl filter = default)
         {
             if(filter == default)
-                return new ArrayImpl(_tasks);
+                return new ArrayImpl(_tasks.Values);
 
             var arr = new ArrayImpl();
-            foreach (var task in _tasks)
+            foreach (var task in _tasks.Values)
             {
                 var result = true;
                 foreach (var filterItem in filter)
@@ -185,8 +186,10 @@ namespace OneScript.StandardLibrary.Tasks
             if (currentId == null)
                 return ValueFactory.Create();
 
-            var task = _tasks.FirstOrDefault(x => x.TaskId == (int) currentId && x.State == TaskStateEnum.Running);
-            return task ?? ValueFactory.Create();
+            if (_tasks.TryGetValue(currentId.Value, out var task) && task.State == TaskStateEnum.Running)
+                return task;
+
+            return ValueFactory.Create();
         }
 
         internal static int ConvertTimeout(int timeout)
@@ -212,7 +215,7 @@ namespace OneScript.StandardLibrary.Tasks
 
         private Task[] GetWorkerTasks()
         {
-            return GetWorkerTasks(_tasks);
+            return GetWorkerTasks(_tasks.Values);
         }
 
         public void Dispose()
