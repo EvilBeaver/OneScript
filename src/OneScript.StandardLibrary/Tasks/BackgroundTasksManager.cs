@@ -125,8 +125,11 @@ namespace OneScript.StandardLibrary.Tasks
                     Locale.NStr("ru = 'Задания завершились с ошибками';en = 'Tasks are completed with errors'"),
                     new ArrayImpl(failedTasks));
             }
-            
-            _tasks.Clear();
+
+            foreach (var task in snapshot)
+            {
+                _tasks.TryRemove(task.TaskId, out _);
+            }
         }
 
         [ContextMethod("ПолучитьФоновыеЗадания", "GetBackgroundJobs")]
