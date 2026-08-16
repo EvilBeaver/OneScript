@@ -271,7 +271,7 @@ namespace OneScript.StandardLibrary.Json
                     _writer.WriteValue(v);
                     break;
                 case DateTime v:
-                    _writer.WriteValue(v);
+                    _writer.WriteValue(JSONDateWriter.FormatDateForJson(v));
                     break;
 
                 case null:

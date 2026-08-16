@@ -86,7 +86,7 @@ namespace OneScript.Core.Tests
             Assert.False(Base.Equals(result));
         }
 
-        [Theory(Skip = "Пробел 1: дата не округляет доли до шага 0.0001 с. См. .cursor/plan/date-1c-compatibility-tests.md")]
+        [Theory]
         [InlineData(0.00001)]
         [InlineData(0.0000001)]
         [InlineData(0.00004)]
@@ -97,7 +97,7 @@ namespace OneScript.Core.Tests
             Assert.True(Base.Equals(result));
         }
 
-        [Theory(Skip = "Пробел 1: арифметика даты не округляется до шага 0.0001 с. См. .cursor/plan/date-1c-compatibility-tests.md")]
+        [Theory]
         [InlineData(0.00005, 0.0001)]
         [InlineData(0.00006, 0.0001)]
         [InlineData(0.00016, 0.0002)]
@@ -169,7 +169,7 @@ namespace OneScript.Core.Tests
             Assert.Equal(DropFraction(current), current);
         }
 
-        [Fact(Skip = "Пробел 2: ТекущаяУниверсальнаяДата отдаёт доли секунды, в 1С их нет. См. .cursor/plan/date-1c-compatibility-tests.md")]
+        [Fact]
         public void CurrentUniversalDate_Has_No_Fractional_Seconds()
         {
             var universal = (DateTime)(BslDateValue)new StandardGlobalContext().CurrentUniversalDate();
@@ -213,7 +213,7 @@ namespace OneScript.Core.Tests
             Assert.Equal("20260201153045", ValueFormatter.Format((BslValue)shifted, "ДФ=ггггММддЧЧммсс"));
         }
 
-        [Fact(Skip = "Пробел 3: XMLСтрока печатает доли секунды. См. .cursor/plan/date-1c-compatibility-tests.md")]
+        [Fact]
         public void XmlString_Drops_Fractional_Seconds()
         {
             var shifted = ValueFactory.Add(Base, ValueFactory.Create(0.123m), ForbiddenBslProcess.Instance);
@@ -238,7 +238,7 @@ namespace OneScript.Core.Tests
             Assert.Equal("0001-01-01T00:00:00", obj["ПустаяДата"]?.ToString());
         }
 
-        [Fact(Skip = "Пробел 4: запись JSON печатает доли секунды. См. .cursor/plan/date-1c-compatibility-tests.md")]
+        [Fact]
         public void Json_Write_Drops_Fractional_Seconds()
         {
             var structure = new StructureImpl();
@@ -250,7 +250,7 @@ namespace OneScript.Core.Tests
             Assert.Equal("2026-02-01T15:30:45", obj["Дробная"]?.ToString());
         }
 
-        [Fact(Skip = "Пробел 4: запись JSON зависит от DateTime.Kind. См. .cursor/plan/date-1c-compatibility-tests.md")]
+        [Fact]
         public void Json_Write_Ignores_DateTime_Kind()
         {
             var structure = new StructureImpl();
@@ -291,7 +291,7 @@ namespace OneScript.Core.Tests
             Assert.Equal("2026-02-01T15:30:45.1234567Z", GetStructureProperty(data, "e").ToString());
         }
 
-        [Fact(Skip = "Пробел 5: ПрочитатьJSON игнорирует ИменаСвойствСДатами и ФорматДатыJSON. Фикс — .cursor/plan/json-read-date-properties.md")]
+        [Fact]
         public void Json_Read_With_Date_Property_Names_Parses_Iso()
         {
             var names = new ArrayImpl();
@@ -312,15 +312,18 @@ namespace OneScript.Core.Tests
             var expectedLocalFromUtc = TimeZoneInfo.ConvertTimeFromUtc(
                 new DateTime(2026, 2, 1, 15, 30, 45, DateTimeKind.Utc),
                 TimeZoneInfo.Local);
+            var expectedLocalFromUtcD = TimeZoneInfo.ConvertTimeFromUtc(
+                new DateTime(2026, 2, 1, 12, 30, 45, DateTimeKind.Utc),
+                TimeZoneInfo.Local);
 
             AssertDateWithoutFraction(GetStructureProperty(data, "a"), new DateTime(2026, 2, 1, 15, 30, 45));
             AssertDateWithoutFraction(GetStructureProperty(data, "b"), new DateTime(2026, 2, 1, 15, 30, 45));
             AssertDateWithoutFraction(GetStructureProperty(data, "c"), expectedLocalFromUtc);
-            AssertDateWithoutFraction(GetStructureProperty(data, "d"), new DateTime(2026, 2, 1, 15, 30, 45));
+            AssertDateWithoutFraction(GetStructureProperty(data, "d"), expectedLocalFromUtcD);
             AssertDateWithoutFraction(GetStructureProperty(data, "e"), expectedLocalFromUtc);
         }
 
-        [Fact(Skip = "Пробел 6: ПрочитатьДатуJSON не отбрасывает доли и не приводит Z к локальному времени. Фикс — .cursor/plan/json-read-date-properties.md")]
+        [Fact]
         public void ReadJsonDate_Drops_Fractional_Seconds()
         {
             var result = new GlobalJsonFunctions().ReadJSONDate("2026-02-01T15:30:45.123", JSONDateFormatEnum.ISO);

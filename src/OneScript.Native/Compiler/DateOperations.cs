@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using OneScript.Values;
 
 namespace OneScript.Native.Compiler
 {
@@ -26,18 +27,12 @@ namespace OneScript.Native.Compiler
             Debug.Assert(left.Type == typeof(DateTime));
             Debug.Assert(right.Type == typeof(decimal));
             
-            var adder = typeof(DateTime).GetMethod(nameof(DateTime.AddSeconds));
-            Debug.Assert(adder != null);
-            
-            var toDouble = Expression.Convert(right, typeof(double));
-            Expression arg = opCode switch
-            {
-                ExpressionType.Add => toDouble,
-                ExpressionType.Subtract => Expression.Negate(toDouble),
-                _ => throw NativeCompilerException.OperationNotDefined(opCode, left.Type, right.Type)
-            };
+            var method = opCode == ExpressionType.Add
+                ? typeof(BslDateValue).GetMethod(nameof(BslDateValue.AddSeconds), new[] { typeof(DateTime), typeof(decimal) })
+                : typeof(BslDateValue).GetMethod(nameof(BslDateValue.SubtractSeconds), new[] { typeof(DateTime), typeof(decimal) });
+            Debug.Assert(method != null);
 
-            return Expression.Call(left, adder, arg);
+            return Expression.Call(method, left, right);
         }
         
         /// <summary>
