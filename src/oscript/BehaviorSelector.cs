@@ -44,6 +44,7 @@ namespace oscript
             initializers.Add("-cgi", h => new CgiBehavior());
             initializers.Add("-version", h => new ShowVersionBehavior());
             initializers.Add("-v", h => new ShowVersionBehavior());
+            initializers.Add("-c", ExecuteCodeBehavior.Create);
             initializers.Add("-encoding", ProcessEncodingKey);
             initializers.Add("-codestat", EnableCodeStatistics);
             initializers.Add("-debug", DebugBehavior.Create);

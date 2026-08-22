@@ -145,6 +145,7 @@
 	|
 	|Usage:
 	|  oscript.exe [options] <script_path> [script_arguments...]
+	|  oscript.exe [options] -c <code> [script_arguments...]
 	|  oscript.exe <mode> [mode_options] <script_path> [script_arguments...]
 	|
 	|Modes:
@@ -158,6 +159,7 @@
 	|                       Options:
 	|                         -port=<port>   Debugger port (default is 2801).
 	|                         -noWait        Do not wait for debugger connection.
+	|  -c                 Execute code from command line.
 	|  -version, -v       Output version string.
 	|
 	|Options:
