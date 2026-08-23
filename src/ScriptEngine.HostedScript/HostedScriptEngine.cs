@@ -84,7 +84,7 @@ namespace ScriptEngine.HostedScript
         {
             var compilerSvc = _engine.GetCompilerService();
             compilerSvc.FillSymbols(typeof(UserScriptContextInstance));
-
+            DefineConstants(compilerSvc);
             return compilerSvc;
         }
 
@@ -111,7 +111,6 @@ namespace ScriptEngine.HostedScript
             }
 
             var compilerSvc = GetCompilerService();
-            DefineConstants(compilerSvc);
             return Process.Create(_engine, compilerSvc, src);
         }
 
