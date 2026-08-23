@@ -84,7 +84,7 @@ namespace ScriptEngine.HostedScript
         {
             var compilerSvc = _engine.GetCompilerService();
             compilerSvc.FillSymbols(typeof(UserScriptContextInstance));
-            
+
             return compilerSvc;
         }
 
@@ -112,9 +112,7 @@ namespace ScriptEngine.HostedScript
 
             var compilerSvc = GetCompilerService();
             DefineConstants(compilerSvc);
-            var bslProcess = _engine.NewProcess();
-            var module = compilerSvc.Compile(src, bslProcess);
-            return InitProcess(bslProcess, module);
+            return Process.Create(_engine, compilerSvc, src);
         }
 
         /// <summary>
@@ -169,14 +167,6 @@ namespace ScriptEngine.HostedScript
             _globalCtx.ApplicationHost = host;
             _globalCtx.CodeSource = src;
             _globalCtx.InitInstance();
-        }
-
-        private Process InitProcess(IBslProcess bslProcess, IExecutableModule module)
-        {
-            Initialize();
-            
-            var process = new Process(bslProcess, module, _engine);
-            return process;
         }
 
         public void Dispose()

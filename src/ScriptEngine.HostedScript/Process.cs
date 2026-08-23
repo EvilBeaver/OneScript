@@ -4,7 +4,10 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+
+using OneScript.Compilation;
 using OneScript.Execution;
+using OneScript.Sources;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript
@@ -14,11 +17,11 @@ namespace ScriptEngine.HostedScript
     /// </summary>
     public class Process
     {
-        readonly ScriptingEngine _engine;
-        readonly IExecutableModule _module;
+        private readonly ScriptingEngine _engine;
+        private readonly IExecutableModule _module;
         private readonly IBslProcess _bslProcess;
 
-        internal Process(
+        private Process(
             IBslProcess process,
             IExecutableModule src,
             ScriptingEngine runtime)
@@ -26,6 +29,19 @@ namespace ScriptEngine.HostedScript
             _engine = runtime;
             _module = src;
             _bslProcess = process;
+        }
+
+        /// <summary>
+        /// Создаёт процесс: выделяет runtime-процесс, компилирует исходник, готовит к запуску.
+        /// </summary>
+        internal static Process Create(
+            ScriptingEngine engine,
+            ICompilerFrontend compiler,
+            SourceCode source)
+        {
+            var bslProcess = engine.NewProcess();
+            var module = compiler.Compile(source, bslProcess);
+            return new Process(bslProcess, module, engine);
         }
 
         /// <summary>
@@ -49,6 +65,5 @@ namespace ScriptEngine.HostedScript
                 return e.ExitCode;
             }
         }
-
     }
 }
