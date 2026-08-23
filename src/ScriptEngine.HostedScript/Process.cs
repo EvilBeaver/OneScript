@@ -12,11 +12,10 @@ namespace ScriptEngine.HostedScript
 {
     public class Process
     {
-        ScriptingEngine _engine;
-
+        readonly ScriptingEngine _engine;
         readonly IHostApplication _host;
         readonly IExecutableModule _module;
-        private IBslProcess _bslProcess;
+        private readonly IBslProcess _bslProcess;
 
         internal Process(
             IBslProcess process,
@@ -51,8 +50,6 @@ namespace ScriptEngine.HostedScript
             finally
             {
                 _engine.Debugger.NotifyProcessExit(exitCode);
-                _engine.Dispose();
-                _engine = null;
             }
 
             return exitCode;

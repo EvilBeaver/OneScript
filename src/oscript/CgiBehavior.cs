@@ -68,7 +68,7 @@ namespace oscript
 					e.AddAssembly(GetType().Assembly);
 				});
 
-			var engine = ConsoleHostBuilder.Build(builder);
+			using var engine = ConsoleHostBuilder.Build(builder);
 
 			var request = new WebRequestContext(engine.Services.Resolve<IBinaryDataMemoryLimit>().MaxBytesInMemory);
 			engine.InjectGlobalProperty("ВебЗапрос", "WebRequest", request, true);

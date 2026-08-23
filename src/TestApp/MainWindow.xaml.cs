@@ -159,7 +159,7 @@ namespace TestApp
         
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var hostedScript = CreateEngine();
+            using var hostedScript = CreateEngine();
             
             hostedScript.Initialize();
             var src = hostedScript.Loader.FromString(txtCode.Text);
@@ -205,7 +205,7 @@ namespace TestApp
 
             var host = new Host(result, l_args.ToArray());
             SystemLogger.SetWriter(host);
-            var hostedScript = CreateEngine();
+            using var hostedScript = CreateEngine();
             
             var src = SourceCodeBuilder.Create()
                 .FromSource(new EditedFileSource(txtCode.Text, _currentDocPath))
