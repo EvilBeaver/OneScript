@@ -96,19 +96,11 @@ namespace ScriptEngine.HostedScript
         /// <returns>Процесс, готовый к вызову <see cref="Process.Start"/>.</returns>
         /// <remarks>
         /// При ошибке компиляции или подготовки исключение пробрасывается вызывающему коду.
-        /// Уведомление отладчика о завершении процесса выполняет вызывающий код
-        /// (например, <see cref="RunProcess"/>).
         /// </remarks>
         public Process CreateProcess(IHostApplication host, SourceCode src)
         {
             Initialize();
             SetGlobalEnvironment(host, src);
-            
-            if (_engine.Debugger.IsEnabled)
-            {
-                _engine.Debugger.Start();
-                _engine.Debugger.GetSession().WaitReadyToRun();
-            }
 
             var compilerSvc = GetCompilerService();
             return Process.Create(_engine, compilerSvc, src);
@@ -124,7 +116,8 @@ namespace ScriptEngine.HostedScript
         /// после вывода информации об исключении через <see cref="IHostApplication.ShowExceptionInfo"/>.
         /// </returns>
         /// <remarks>
-        /// Уведомляет отладчик о завершении процесса как при успешном, так и при аварийном исходе.
+        /// Управляет сессией отладчика: старт и ожидание готовности перед созданием процесса,
+        /// уведомление о завершении при любом исходе.
         /// Прерывание скрипта (<see cref="ScriptInterruptionException"/>) обрабатывается в <see cref="Process.Start"/>
         /// и возвращается как штатный код выхода.
         /// </remarks>
@@ -132,6 +125,12 @@ namespace ScriptEngine.HostedScript
         {
             try
             {
+                if (_engine.Debugger.IsEnabled)
+                {
+                    _engine.Debugger.Start();
+                    _engine.Debugger.GetSession().WaitReadyToRun();
+                }
+
                 var process = CreateProcess(host, source);
                 var exitCode = process.Start();
                 _engine.Debugger.NotifyProcessExit(exitCode);
