@@ -46,6 +46,17 @@ namespace OneScript.Core.Tests
         private static IValue GetStructureProperty(StructureImpl structure, string name) =>
             structure.GetPropValue(structure.GetPropertyNumber(name));
 
+        public static IEnumerable<object[]> DateAdditionRoundingCases => new[]
+        {
+            new object[] { 0.00005m, 0.0001m },
+            new object[] { 0.00006m, 0.0001m },
+            new object[] { 0.00015m, 0.0002m },
+            new object[] { 0.00016m, 0.0002m },
+            new object[] { 0.00025m, 0.0003m },
+            new object[] { -0.00005m, -0.0001m },
+            new object[] { -0.00015m, -0.0002m },
+        };
+
         public static IEnumerable<object[]> FractionalSubtractionCases => new[]
         {
             new object[] { 0.5m, 0.5m },
@@ -98,18 +109,14 @@ namespace OneScript.Core.Tests
         }
 
         [Theory]
-        [InlineData(0.00005, 0.0001)]
-        [InlineData(0.00006, 0.0001)]
-        [InlineData(0.00016, 0.0002)]
-        [InlineData(0.00025, 0.0003)]
-        public void Date_Addition_Is_Rounded_To_1C_Precision(double addition, double expectedShift)
+        [MemberData(nameof(DateAdditionRoundingCases))]
+        public void Date_Addition_Is_Rounded_To_1C_Precision(decimal addition, decimal expectedShift)
         {
-            var result = ValueFactory.Add(Base, ValueFactory.Create((decimal)addition), ForbiddenBslProcess.Instance);
-            var expectedDelta = (decimal)expectedShift;
+            var result = ValueFactory.Add(Base, ValueFactory.Create(addition), ForbiddenBslProcess.Instance);
 
-            Assert.Equal(expectedDelta, ValueFactory.Sub(result, Base).AsNumber());
+            Assert.Equal(expectedShift, ValueFactory.Sub(result, Base).AsNumber());
 
-            var expectedDate = ValueFactory.Add(Base, ValueFactory.Create(expectedDelta), ForbiddenBslProcess.Instance);
+            var expectedDate = ValueFactory.Add(Base, ValueFactory.Create(expectedShift), ForbiddenBslProcess.Instance);
             Assert.True(result.Equals(expectedDate));
         }
 

@@ -34,7 +34,7 @@ namespace OneScript.Values
 
         public static DateTime AddSeconds(DateTime date, decimal seconds)
         {
-            var rounded = Math.Round((double)seconds, 4, MidpointRounding.AwayFromZero);
+            var rounded = Math.Round(seconds, 4, MidpointRounding.AwayFromZero);
             return Normalize(date.AddTicks((long)(rounded * TimeSpan.TicksPerSecond)));
         }
 
