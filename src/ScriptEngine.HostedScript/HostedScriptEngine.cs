@@ -12,7 +12,6 @@ using OneScript.Commons;
 using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
-using OneScript.Execution;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Tasks;
 using ScriptEngine.Machine.Contexts;
@@ -89,6 +88,17 @@ namespace ScriptEngine.HostedScript
             return compilerSvc;
         }
 
+        /// <summary>
+        /// Создаёт процесс выполнения скрипта: инициализация, компиляция исходника, подготовка к запуску.
+        /// </summary>
+        /// <param name="host">Хост-приложение для взаимодействия со скриптом.</param>
+        /// <param name="src">Исходный код скрипта.</param>
+        /// <returns>Процесс, готовый к вызову <see cref="Process.Start"/>.</returns>
+        /// <remarks>
+        /// При ошибке компиляции или подготовки исключение пробрасывается вызывающему коду.
+        /// Уведомление отладчика о завершении процесса выполняет вызывающий код
+        /// (например, <see cref="RunProcess"/>).
+        /// </remarks>
         public Process CreateProcess(IHostApplication host, SourceCode src)
         {
             Initialize();
@@ -102,18 +112,40 @@ namespace ScriptEngine.HostedScript
 
             var compilerSvc = GetCompilerService();
             DefineConstants(compilerSvc);
-            IExecutableModule module;
             var bslProcess = _engine.NewProcess();
+            var module = compilerSvc.Compile(src, bslProcess);
+            return InitProcess(bslProcess, module);
+        }
+
+        /// <summary>
+        /// Создаёт и запускает процесс скрипта, возвращает код завершения.
+        /// </summary>
+        /// <param name="host">Хост-приложение для взаимодействия со скриптом.</param>
+        /// <param name="source">Исходный код скрипта.</param>
+        /// <returns>
+        /// Код завершения скрипта; при ошибке создания/выполнения — <c>1</c>
+        /// после вывода информации об исключении через <see cref="IHostApplication.ShowExceptionInfo"/>.
+        /// </returns>
+        /// <remarks>
+        /// Уведомляет отладчик о завершении процесса как при успешном, так и при аварийном исходе.
+        /// Прерывание скрипта (<see cref="ScriptInterruptionException"/>) обрабатывается в <see cref="Process.Start"/>
+        /// и возвращается как штатный код выхода.
+        /// </remarks>
+        public int RunProcess(IHostApplication host, SourceCode source)
+        {
             try
             {
-                module = compilerSvc.Compile(src, bslProcess);
+                var process = CreateProcess(host, source);
+                var exitCode = process.Start();
+                _engine.Debugger.NotifyProcessExit(exitCode);
+                return exitCode;
             }
-            catch (CompilerException)
+            catch (Exception e)
             {
                 _engine.Debugger.NotifyProcessExit(1);
-                throw;
+                host.ShowExceptionInfo(e);
+                return 1;
             }
-            return InitProcess(bslProcess, host, module);
         }
 
         private void DefineConstants(ICompilerFrontend compilerSvc)
@@ -139,11 +171,11 @@ namespace ScriptEngine.HostedScript
             _globalCtx.InitInstance();
         }
 
-        private Process InitProcess(IBslProcess bslProcess, IHostApplication host, IExecutableModule module)
+        private Process InitProcess(IBslProcess bslProcess, IExecutableModule module)
         {
             Initialize();
             
-            var process = new Process(bslProcess, host, module, _engine);
+            var process = new Process(bslProcess, module, _engine);
             return process;
         }
 

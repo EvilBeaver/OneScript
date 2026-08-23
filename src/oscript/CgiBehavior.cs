@@ -74,20 +74,7 @@ namespace oscript
 			engine.InjectObject(this);
 
 			var source = engine.Loader.FromFile(scriptFile);
-
-			Process process;
-
-			try
-			{
-				process = engine.CreateProcess(this, source);
-			}
-			catch (Exception e)
-			{
-				ShowExceptionInfo(e);
-				return 1;
-			}
-
-			var exitCode = process.Start();
+			var exitCode = engine.RunProcess(this, source);
 
 			if (!_isContentEchoed)
 				Echo("");

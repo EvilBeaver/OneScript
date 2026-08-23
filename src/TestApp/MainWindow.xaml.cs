@@ -212,20 +212,9 @@ namespace TestApp
                 .WithName(_currentDocPath)
                 .Build();
 
-            Process process = null;
-            try
-            {
-                process = hostedScript.CreateProcess(host, src);
-            }
-            catch (Exception exc)
-            {
-                host.Echo(exc.Message);
-                return;
-            }
-
             result.AppendText("Script started: " + DateTime.Now.ToString() + "\n");
             sw.Start();
-            var returnCode = process.Start();
+            var returnCode = hostedScript.RunProcess(host, src);
             sw.Stop();
             if (returnCode != 0)
             {
@@ -233,7 +222,6 @@ namespace TestApp
             }
             result.AppendText("\nScript completed: " + DateTime.Now.ToString());
             result.AppendText("\nDuration: " + sw.Elapsed.ToString() + "\n");
-            
         }
 
         private static string GetFileDialogFilter()
