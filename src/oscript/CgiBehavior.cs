@@ -69,8 +69,7 @@ namespace oscript
 				});
 
 			using var engine = ConsoleHostBuilder.Build(builder);
-
-			var request = new WebRequestContext(engine.Services.Resolve<IBinaryDataMemoryLimit>().MaxBytesInMemory);
+			using var request = new WebRequestContext(engine.Services.Resolve<IBinaryDataMemoryLimit>().MaxBytesInMemory);
 			engine.InjectGlobalProperty("ВебЗапрос", "WebRequest", request, true);
 			engine.InjectObject(this);
 
@@ -93,8 +92,6 @@ namespace oscript
 			if (!_isContentEchoed)
 				Echo("");
 
-			request.Dispose();
-			
 			return exitCode;
 		}
 
