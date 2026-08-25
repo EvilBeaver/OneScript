@@ -137,7 +137,7 @@ namespace OneScript.Web.Server
                         new RequestDelegateWrapper(next)
                     };
 
-                    var process = (IBslProcess)context.Items[typeof(IBslProcess)];
+                    var process = GetOrCreateProcess(context);
                     
                     var methodNumber = middleware.Target.GetMethodNumber(middleware.MethodName);
                     middleware.Target.CallAsProcedure(methodNumber, args, process);
@@ -179,8 +179,9 @@ namespace OneScript.Web.Server
 
                     // Обработчик исключений работает в том же процессе, что и обработчик запроса,
                     // поэтому видит контекст исполнения, в котором возникла ошибка.
-                    // Собственный процесс создаётся только если исключение возникло до того,
-                    // как процесс запроса был создан (например, в middleware статических файлов).
+                    // Собственный процесс создаётся только если исключение возникло раньше, чем
+                    // процесс запроса: между UseExceptionHandler и middleware процесса стоит
+                    // UseWebSockets.
                     var process = GetOrCreateProcess(context);
 
                     try
@@ -204,14 +205,19 @@ namespace OneScript.Web.Server
         /// Возвращает bsl-процесс, обслуживающий текущий запрос, создавая его при первом обращении.
         /// Один запрос всегда обслуживается одним процессом, поэтому весь bsl-код запроса
         /// видит один и тот же ИдентификаторПотокаИсполнения.
+        ///
+        /// Процесс хранится в HttpContext.Features, а не в HttpContext.Items: Items доступны
+        /// из bsl-кода как Контекст.Данные, и обработчик запроса мог бы удалить оттуда процесс,
+        /// которым сам же и исполняется.
         /// </summary>
         private IBslProcess GetOrCreateProcess(HttpContext context)
         {
-            if (context.Items.TryGetValue(typeof(IBslProcess), out var stored) && stored is IBslProcess existing)
+            var existing = context.Features.Get<IBslProcess>();
+            if (existing != null)
                 return existing;
 
             var process = _executionContext.Services.Resolve<IBslProcessFactory>().NewProcess();
-            context.Items[typeof(IBslProcess)] = process;
+            context.Features.Set(process);
 
             return process;
         }
