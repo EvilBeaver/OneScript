@@ -27,6 +27,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\OneScript.StandardLibrary\OneScript.StandardLibrary.csproj" />
       <ProjectReference Include="..\..\ScriptEngine\ScriptEngine.csproj" />
+      <ProjectReference Include="..\..\ScriptEngine.HostedScript\ScriptEngine.HostedScript.csproj" />
     </ItemGroup>
 
 </Project>
