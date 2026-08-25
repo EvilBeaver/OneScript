@@ -104,6 +104,9 @@ namespace OneScript.Web.Server
 
             builder.Services.Configure<FormOptions>(builder.Configuration.GetSection("FormOptions"));
 
+            builder.Services.AddScoped(_ =>
+                new RequestBslProcess(_executionContext.Services.Resolve<IBslProcessFactory>()));
+
             _app = builder.Build();
 
             if (_useStaticFiles)
@@ -121,12 +124,6 @@ namespace OneScript.Web.Server
             if (_useWebSockets)
                 _app.UseWebSockets();
 
-            _app.Use((context, next) =>
-            {
-                GetOrCreateProcess(context);
-                return next();
-            });
-
             _middlewares.ForEach(middleware =>
             {
                 _app.Use((context, next) =>
@@ -137,7 +134,7 @@ namespace OneScript.Web.Server
                         new RequestDelegateWrapper(next)
                     };
 
-                    var process = GetOrCreateProcess(context);
+                    var process = GetRequestProcess(context);
                     
                     var methodNumber = middleware.Target.GetMethodNumber(middleware.MethodName);
                     middleware.Target.CallAsProcedure(methodNumber, args, process);
@@ -177,12 +174,10 @@ namespace OneScript.Web.Server
                     var methodNumber = _exceptionHandler?.Target.GetMethodNumber(_exceptionHandler?.MethodName)
                         ?? throw new InvalidOperationException();
 
-                    // Обработчик исключений работает в том же процессе, что и обработчик запроса,
-                    // поэтому видит контекст исполнения, в котором возникла ошибка.
-                    // Собственный процесс создаётся только если исключение возникло раньше, чем
-                    // процесс запроса: между UseExceptionHandler и middleware процесса стоит
-                    // UseWebSockets.
-                    var process = GetOrCreateProcess(context);
+                    // UseExceptionHandler переиспользует область сервисов запроса, поэтому
+                    // обработчик исключений получает тот же процесс, что и упавший обработчик
+                    // запроса, и видит контекст исполнения, в котором возникла ошибка.
+                    var process = GetRequestProcess(context);
 
                     try
                     {
@@ -202,24 +197,11 @@ namespace OneScript.Web.Server
         }
 
         /// <summary>
-        /// Возвращает bsl-процесс, обслуживающий текущий запрос, создавая его при первом обращении.
-        /// Один запрос всегда обслуживается одним процессом, поэтому весь bsl-код запроса
-        /// видит один и тот же ИдентификаторПотокаИсполнения.
-        ///
-        /// Процесс хранится в HttpContext.Features, а не в HttpContext.Items: Items доступны
-        /// из bsl-кода как Контекст.Данные, и обработчик запроса мог бы удалить оттуда процесс,
-        /// которым сам же и исполняется.
+        /// Возвращает bsl-процесс, обслуживающий текущий запрос.
         /// </summary>
-        private IBslProcess GetOrCreateProcess(HttpContext context)
+        private static IBslProcess GetRequestProcess(HttpContext context)
         {
-            var existing = context.Features.Get<IBslProcess>();
-            if (existing != null)
-                return existing;
-
-            var process = _executionContext.Services.Resolve<IBslProcessFactory>().NewProcess();
-            context.Features.Set(process);
-
-            return process;
+            return context.RequestServices.GetRequiredService<RequestBslProcess>().Process;
         }
 
         private static void WriteExceptionToResponse(HttpContext httpContext, Exception ex)
