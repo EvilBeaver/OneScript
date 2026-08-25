@@ -145,14 +145,37 @@ namespace OneScript.StandardLibrary.Threads
             }
         }
 
+        /// <summary>
+        /// Освобождает данные потока исполнения.
+        ///
+        /// Каждое значение освобождается независимо: ошибка на одном не мешает освободить
+        /// остальные и не выпускается наружу. Поток завершается уже после того, как код
+        /// единицы исполнения отработал, и ронять на этом её результат нельзя.
+        /// </summary>
         public void Dispose()
         {
-            foreach (var item in Data)
+            try
             {
-                (item.Value as IDisposable)?.Dispose();
-            }
+                foreach (var item in Data)
+                {
+                    if (item.Value is not IDisposable disposable)
+                        continue;
 
-            Data.Clear();
+                    try
+                    {
+                        disposable.Dispose();
+                    }
+                    catch (Exception exception)
+                    {
+                        SystemLogger.Write(
+                            $"WARNING! Error releasing execution thread data '{item.Key}': {exception.Message}");
+                    }
+                }
+            }
+            finally
+            {
+                Data.Clear();
+            }
         }
     }
 }
