@@ -1,10 +1,12 @@
-/*----------------------------------------------------------
+﻿/*----------------------------------------------------------
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+using System;
 using OneScript.Execution;
+using OneScript.StandardLibrary.Threads;
 
 namespace OneScript.Web.Server
 {
@@ -18,8 +20,11 @@ namespace OneScript.Web.Server
     ///
     /// Процесс намеренно не хранится в HttpContext.Items: Items доступны из bsl-кода
     /// как Контекст.Данные и остаются полностью прикладными.
+    ///
+    /// Область сервисов запроса освобождается вместе с запросом, поэтому здесь же
+    /// заканчивается поток исполнения запроса и освобождаются его данные.
     /// </summary>
-    internal sealed class RequestBslProcess
+    internal sealed class RequestBslProcess : IDisposable
     {
         private readonly IBslProcessFactory _processFactory;
         private readonly object _lock = new object();
@@ -43,6 +48,12 @@ namespace OneScript.Web.Server
                     return _process ??= _processFactory.NewProcess();
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            // Процесс создаётся лениво, поэтому ради освобождения его создавать не нужно
+            ExecutionThreadContext.Release(_process);
         }
     }
 }
