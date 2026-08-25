@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using OneScript.Contexts;
 using OneScript.Execution;
@@ -151,12 +152,16 @@ namespace OneScript.StandardLibrary.Threads
         /// Каждое значение освобождается независимо: ошибка на одном не мешает освободить
         /// остальные и не выпускается наружу. Поток завершается уже после того, как код
         /// единицы исполнения отработал, и ронять на этом её результат нельзя.
+        ///
+        /// Значения снимаются в отдельный список до начала освобождения: освобождаемое значение
+        /// может изменить эти же данные, и перебор живой карты сорвался бы на следующем шаге -
+        /// уже вне защиты, окружающей само освобождение.
         /// </summary>
         public void Dispose()
         {
             try
             {
-                foreach (var item in Data)
+                foreach (var item in Data.ToArray())
                 {
                     if (item.Value is not IDisposable disposable)
                         continue;

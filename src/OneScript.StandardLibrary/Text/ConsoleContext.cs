@@ -11,6 +11,7 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.StandardLibrary.Binary;
+using OneScript.StandardLibrary.Threads;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -272,12 +273,21 @@ namespace OneScript.StandardLibrary.Text
                 return;
 
             var process = _executionContext.Services.Resolve<IBslProcessFactory>().NewProcess();
-            
+
             var cancelVar = Variable.Create(BslBooleanValue.False, "Cancel");
             var reference = Variable.CreateReference(cancelVar, "Cancel");
             var args = new IValue[] { reference };
 
-            eventProcessor.HandleEvent(this, ConsoleCancelKeyEvent, args, process);
+            try
+            {
+                eventProcessor.HandleEvent(this, ConsoleCancelKeyEvent, args, process);
+            }
+            finally
+            {
+                // Обработчик отработал в собственном потоке исполнения - завершаем его
+                ExecutionThreadContext.Release(process);
+            }
+
             e.Cancel = reference.Value.AsBoolean();
         }
     }
