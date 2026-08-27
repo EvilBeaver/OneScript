@@ -22,6 +22,7 @@ namespace ScriptEngine
         private readonly IDictionary<Type, Invoker> _bslExecutorsByModule;
 
         private bool _isRunning;
+        private bool _disposed;
         
         public BslProcess(int id, ExecutionContext context, IEnumerable<IExecutorProvider> executorProviders)
         {
@@ -40,15 +41,25 @@ namespace ScriptEngine
         public IBslExecutionThread ExecutionThread { get; set; }
 
         /// <summary>
-        /// Завершает процесс: единица исполнения отработала, и её поток исполнения больше не нужен.
+        /// Завершает процесс: единица исполнения отработала.
         ///
         /// Поток снимается с процесса после завершения, а не до: обработчик ПриЗавершении вправе
         /// обратиться к ТекущийПоток() и должен получить свой поток, а не новый и пустой.
+        ///
+        /// Область сервисов освобождается последней: завершение потока обращается к ней за
+        /// процессором событий.
         /// </summary>
         public void Dispose()
         {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
             ExecutionThread?.Terminate();
             ExecutionThread = null;
+
+            Services.Dispose();
         }
 
         public BslValue Run(BslObjectValue target, IExecutableModule module, BslScriptMethodInfo method, IValue[] arguments)
