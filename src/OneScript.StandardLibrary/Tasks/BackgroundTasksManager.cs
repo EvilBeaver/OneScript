@@ -52,16 +52,9 @@ namespace OneScript.StandardLibrary.Tasks
             var taskCreationOptions = longRunning ? TaskCreationOptions.LongRunning : TaskCreationOptions.None;
             var worker = new Task(() =>
             {
-                var process = _runtimeContext.Services.Resolve<IBslProcessFactory>().NewProcess();
-                try
-                {
-                    task.ExecuteOnCurrentThread(process);
-                }
-                finally
-                {
-                    // Задание отработало, поток исполнения закончился - освобождаем его данные
-                    ExecutionThreadContext.Release(process);
-                }
+                // Задание отработало - процесс освобождается вместе со своим потоком исполнения
+                using var process = _runtimeContext.Services.Resolve<IBslProcessFactory>().NewProcess();
+                task.ExecuteOnCurrentThread(process);
 
             }, taskCreationOptions);
 

@@ -6,7 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using OneScript.Execution;
-using OneScript.StandardLibrary.Threads;
 using ScriptEngine.Machine;
 
 namespace ScriptEngine.HostedScript
@@ -51,9 +50,9 @@ namespace ScriptEngine.HostedScript
             }
             finally
             {
-                // Поток исполнения основного скрипта закончился здесь. Освобождается до
-                // остановки движка: обработчику ПриЗавершении ещё нужно исполнять bsl-код.
-                ExecutionThreadContext.Release(_bslProcess);
+                // Основной скрипт отработал. Процесс освобождается до остановки движка:
+                // обработчику ПриЗавершении ещё нужно исполнять bsl-код.
+                _bslProcess.Dispose();
 
                 _engine.Debugger.NotifyProcessExit(exitCode);
                 _engine.Dispose();

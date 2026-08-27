@@ -7,7 +7,6 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using OneScript.Contexts;
 using OneScript.Execution;
 using OneScript.StandardLibrary.Collections;
@@ -38,7 +37,7 @@ namespace OneScript.StandardLibrary.Threads
     /// чтобы опрашивать список фоновых заданий.
     /// </summary>
     [ContextClass("ПотокИсполнения", "ExecutionThread")]
-    public sealed class ExecutionThreadContext : AutoContext<ExecutionThreadContext>, IDisposable
+    public sealed class ExecutionThreadContext : AutoContext<ExecutionThreadContext>, IBslExecutionThread
     {
         /// <summary>
         /// Имена события завершения потока исполнения. Событие поднимается под обоими именами,
@@ -46,10 +45,13 @@ namespace OneScript.StandardLibrary.Threads
         /// </summary>
         private static readonly string[] TerminationEventNames = { "ПриЗавершении", "OnTermination" };
 
-        private static readonly ConditionalWeakTable<IBslProcess, ExecutionThreadContext> Threads = new();
+        private readonly IBslProcess _process;
+
+        private bool _terminated;
 
         private ExecutionThreadContext(IBslProcess process)
         {
+            _process = process;
             Identifier = process.VirtualThreadId;
         }
 
@@ -61,7 +63,7 @@ namespace OneScript.StandardLibrary.Threads
         /// исполнения используйте свойство Данные, а не идентификатор в качестве ключа.
         /// </summary>
         /// <value>Число. Идентификатор потока исполнения.</value>
-        [ContextProperty("Идентификатор", "Id", CanWrite = false)]
+        [ContextProperty("Идентификатор", "Id")]
         public int Identifier { get; }
 
         /// <summary>
@@ -72,53 +74,46 @@ namespace OneScript.StandardLibrary.Threads
         /// интерфейс IDisposable среды CLR, принудительно освобождаются.
         /// </summary>
         /// <value>Соответствие. Данные потока исполнения.</value>
-        [ContextProperty("Данные", "Data", CanWrite = false)]
+        [ContextProperty("Данные", "Data")]
         public MapImpl Data { get; } = new MapImpl();
 
         /// <summary>
         /// Возвращает поток исполнения указанного bsl-процесса, создавая его при первом обращении.
         /// Для одного процесса всегда возвращается один и тот же экземпляр.
+        ///
+        /// Созданный поток остаётся на процессе и освобождается вместе с ним.
         /// </summary>
         internal static ExecutionThreadContext Of(IBslProcess process)
         {
-            return Threads.GetValue(process, p => new ExecutionThreadContext(p));
+            if (process.ExecutionThread is ExecutionThreadContext existing)
+                return existing;
+
+            lock (process)
+            {
+                if (process.ExecutionThread is ExecutionThreadContext created)
+                    return created;
+
+                var thread = new ExecutionThreadContext(process);
+                process.ExecutionThread = thread;
+
+                return thread;
+            }
         }
 
         /// <summary>
-        /// Завершает поток исполнения процесса, освобождая его данные.
+        /// Оповещает подписчиков о завершении потока и снимает их подписки.
         ///
-        /// Вызывается владельцем процесса, когда процесс отработал: менеджером фоновых заданий
-        /// по завершении задания и веб-сервером по окончании обработки запроса. Если поток
-        /// исполнения не создавался, метод ничего не делает.
+        /// Событие поднимается до очистки данных: обработчик ещё видит всё, что поток успел в них
+        /// положить. Именно так пул соединений забирает обратно соединение, которое отработавший
+        /// код не освободил сам.
+        ///
+        /// Ошибка обработчика наружу не выходит, только в лог. К этому моменту код единицы
+        /// исполнения уже отработал: у фонового задания завершение идёт в блоке finally и
+        /// затёрло бы исходную ошибку, у веб-сервера - после отправки ответа.
         /// </summary>
-        public static void Release(IBslProcess process)
+        private void RaiseTerminationEvent()
         {
-            if (process == null)
-                return;
-
-            if (!Threads.TryGetValue(process, out var thread))
-                return;
-
-            thread.RaiseTerminationEvent(process);
-
-            Threads.Remove(process);
-            thread.Dispose();
-        }
-
-        /// <summary>
-        /// Поднимает событие завершения потока исполнения.
-        ///
-        /// Событие поднимается до очистки данных, поэтому обработчик ещё видит всё, что поток
-        /// в них положил, и может, например, вернуть занятые ресурсы владельцу.
-        ///
-        /// Ошибка обработчика не выпускается наружу: поток завершается уже после того, как
-        /// код единицы исполнения отработал, и ронять на этом её результат нельзя. У фонового
-        /// задания завершение идёт в блоке finally и затёрло бы исходную ошибку, у веб-сервера
-        /// оно выполняется после отправки ответа.
-        /// </summary>
-        private void RaiseTerminationEvent(IBslProcess process)
-        {
-            var eventProcessor = process.Services.TryResolve<IEventProcessor>();
+            var eventProcessor = _process.Services.TryResolve<IEventProcessor>();
             if (eventProcessor == null)
                 return;
 
@@ -128,7 +123,7 @@ namespace OneScript.StandardLibrary.Threads
                 {
                     try
                     {
-                        eventProcessor.HandleEvent(this, eventName, Array.Empty<IValue>(), process);
+                        eventProcessor.HandleEvent(this, eventName, Array.Empty<IValue>(), _process);
                     }
                     catch (Exception exception)
                     {
@@ -139,26 +134,34 @@ namespace OneScript.StandardLibrary.Threads
             }
             finally
             {
-                // Реестр подписок держит источник до конца работы движка, а поток исполнения
-                // живёт лишь до конца своей единицы исполнения. Без снятия подписок каждый
-                // завершившийся поток оставался бы в реестре навсегда.
+                // Процессор событий держит источник, пока подписки не сняты. Потоков исполнения
+                // много и живут они недолго, поэтому без явного снятия реестр рос бы бесконечно.
                 eventProcessor.RemoveAllHandlers(this);
             }
         }
 
         /// <summary>
-        /// Освобождает данные потока исполнения.
+        /// Завершает поток исполнения: оповещает подписчиков и освобождает данные.
         ///
-        /// Каждое значение освобождается независимо: ошибка на одном не мешает освободить
-        /// остальные и не выпускается наружу. Поток завершается уже после того, как код
-        /// единицы исполнения отработал, и ронять на этом её результат нельзя.
+        /// Вызывается процессом, когда тот освобождается.
         ///
-        /// Значения снимаются в отдельный список до начала освобождения: освобождаемое значение
-        /// может изменить эти же данные, и перебор живой карты сорвался бы на следующем шаге -
-        /// уже вне защиты, окружающей само освобождение.
+        /// Каждое значение освобождается отдельно, ошибка на одном не мешает остальным и наружу
+        /// не выходит. Значения перебираются по копии: освобождаемое значение вправе изменить
+        /// эти же данные, а перебор живой карты сорвался бы на следующем шаге - причём мимо
+        /// защиты, которой окружено само освобождение.
         /// </summary>
-        public void Dispose()
+        public void Terminate()
         {
+            // Пока идёт завершение, поток ещё числится за процессом, и обработчик вправе
+            // добраться до него через ТекущийПоток(). Если он при этом освободит процесс,
+            // завершение не должно пойти по второму кругу.
+            if (_terminated)
+                return;
+
+            _terminated = true;
+
+            RaiseTerminationEvent();
+
             try
             {
                 foreach (var item in Data.ToArray())

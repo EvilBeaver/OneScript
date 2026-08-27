@@ -31,5 +31,19 @@ namespace OneScript.Execution
         public IServiceContainer Services => throw new NotSupportedException("BslProcess required");
 
         public int VirtualThreadId => -1;
+
+        public IBslExecutionThread ExecutionThread
+        {
+            get => throw new NotSupportedException("BslProcess required");
+            set => throw new NotSupportedException("BslProcess required");
+        }
+
+        /// <summary>
+        /// Освобождать нечего: в этом процессе bsl-код не исполняется, а сам он - разделяемый
+        /// экземпляр, который переживает любого вызывающего.
+        /// </summary>
+        public void Dispose()
+        {
+        }
     }
 }

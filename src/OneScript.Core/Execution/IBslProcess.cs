@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 #nullable enable
 
+using System;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Values;
@@ -15,9 +16,12 @@ using ScriptEngine.Machine;
 namespace OneScript.Execution
 {
     /// <summary>
-    /// Готовый к исполнению bsl-процесс, с настроенным окружением
+    /// Готовый к исполнению bsl-процесс, с настроенным окружением.
+    ///
+    /// Процесс освобождается тем, кто его создал, когда единица исполнения отработала.
+    /// Освобождение завершает поток исполнения процесса.
     /// </summary>
-    public interface IBslProcess
+    public interface IBslProcess : IDisposable
     {
         /// <summary>
         /// Запустить метод в текущем процессе
@@ -33,7 +37,16 @@ namespace OneScript.Execution
         /// Сервисы текущего процесса
         /// </summary>
         public IServiceContainer Services { get; }
-        
+
         public int VirtualThreadId { get; }
+
+        /// <summary>
+        /// Bsl-обёртка потока исполнения этого процесса.
+        ///
+        /// Процесс носит её с собой и завершает вместе с собой. Создаёт обёртку тот, кто её
+        /// понимает - стандартная библиотека при первом обращении к ТекущийПоток(). Пока к потоку
+        /// не обращались, здесь null, и завершать нечего.
+        /// </summary>
+        public IBslExecutionThread? ExecutionThread { get; set; }
     }
 }

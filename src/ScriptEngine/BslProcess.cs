@@ -37,6 +37,20 @@ namespace ScriptEngine
 
         public int VirtualThreadId { get; }
 
+        public IBslExecutionThread ExecutionThread { get; set; }
+
+        /// <summary>
+        /// Завершает процесс: единица исполнения отработала, и её поток исполнения больше не нужен.
+        ///
+        /// Поток снимается с процесса после завершения, а не до: обработчик ПриЗавершении вправе
+        /// обратиться к ТекущийПоток() и должен получить свой поток, а не новый и пустой.
+        /// </summary>
+        public void Dispose()
+        {
+            ExecutionThread?.Terminate();
+            ExecutionThread = null;
+        }
+
         public BslValue Run(BslObjectValue target, IExecutableModule module, BslScriptMethodInfo method, IValue[] arguments)
         {
             var notifyExecutors = !_isRunning;

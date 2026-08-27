@@ -6,7 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using OneScript.Execution;
-using OneScript.StandardLibrary.Threads;
 
 namespace OneScript.Web.Server
 {
@@ -18,11 +17,8 @@ namespace OneScript.Web.Server
     /// Процесс создаётся при первом обращении: запросы, не дошедшие до bsl-кода,
     /// процесс не создают.
     ///
-    /// Процесс намеренно не хранится в HttpContext.Items: Items доступны из bsl-кода
-    /// как Контекст.Данные и остаются полностью прикладными.
-    ///
     /// Область сервисов запроса освобождается вместе с запросом, поэтому здесь же
-    /// заканчивается поток исполнения запроса и освобождаются его данные.
+    /// освобождается и процесс - вместе со своим потоком исполнения.
     /// </summary>
     internal sealed class RequestBslProcess : IDisposable
     {
@@ -53,7 +49,7 @@ namespace OneScript.Web.Server
         public void Dispose()
         {
             // Процесс создаётся лениво, поэтому ради освобождения его создавать не нужно
-            ExecutionThreadContext.Release(_process);
+            _process?.Dispose();
         }
     }
 }

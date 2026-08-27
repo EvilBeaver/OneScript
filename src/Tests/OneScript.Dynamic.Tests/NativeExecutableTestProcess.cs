@@ -26,4 +26,12 @@ public class NativeExecutableTestProcess : IBslProcess
     public IServiceContainer Services { get; set; }
 
     public int VirtualThreadId => 0;
+
+    public IBslExecutionThread ExecutionThread { get; set; }
+
+    public void Dispose()
+    {
+        ExecutionThread?.Terminate();
+        ExecutionThread = null;
+    }
 }
