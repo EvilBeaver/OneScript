@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Native.Compiler;
 using OneScript.Values;
@@ -42,7 +43,16 @@ namespace OneScript.Native.Runtime
             {
                 throw new InvalidOperationException($"Method {_method} was not compiled");
             }
-            
+            if (_method.GetBslParameters().Length < args.Length)
+            {
+                throw RuntimeException.TooManyArgumentsPassed();
+            }
+            if (_method.GetBslParameters().Length > args.Length)
+            {
+                // TODO: значения параметров по-умолчанию?
+                throw RuntimeException.TooFewArgumentsPassed();
+            }
+
             var callableWrapper = GetCallableWrapper(target);
             return _delegate.Invoke(callableWrapper, args, process);
         }
