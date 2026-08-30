@@ -48,8 +48,6 @@ namespace OneScript.Core.Tests
 
             scoped.IsDisposed.Should().BeFalse("процесс ещё работает");
 
-            process.Dispose();
-
             scoped.IsDisposed.Should().BeTrue("процесс владеет своей областью сервисов");
         }
 
@@ -65,8 +63,6 @@ namespace OneScript.Core.Tests
             var secondScoped = second.Services.Resolve<ScopedDisposableProbe>();
 
             firstScoped.Should().NotBeSameAs(secondScoped, "у каждого процесса своя область сервисов");
-
-            first.Dispose();
 
             secondScoped.IsDisposed.Should().BeFalse("освобождение одного процесса не трогает другой");
         }

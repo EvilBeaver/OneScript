@@ -50,10 +50,6 @@ namespace ScriptEngine.HostedScript
             }
             finally
             {
-                // Основной скрипт отработал. Процесс освобождается до остановки движка:
-                // обработчику ПриЗавершении ещё нужно исполнять bsl-код.
-                _bslProcess.Dispose();
-
                 _engine.Debugger.NotifyProcessExit(exitCode);
                 _engine.Dispose();
                 _engine = null;

@@ -18,6 +18,8 @@ namespace ScriptEngine
 {
     internal class BslProcess : IBslProcess
     {
+        private static readonly string[] TerminationEventNames = { "ПриЗавершении", "OnTermination" };
+        
         private readonly IExecutorProvider[] _executorProviders;
         private readonly IDictionary<Type, Invoker> _bslExecutorsByModule;
 
@@ -38,30 +40,6 @@ namespace ScriptEngine
 
         public int VirtualThreadId { get; }
 
-        public IBslExecutionThread ExecutionThread { get; set; }
-
-        /// <summary>
-        /// Завершает процесс: единица исполнения отработала.
-        ///
-        /// Поток снимается с процесса после завершения, а не до: обработчик ПриЗавершении вправе
-        /// обратиться к ТекущийПоток() и должен получить свой поток, а не новый и пустой.
-        ///
-        /// Область сервисов освобождается последней: завершение потока обращается к ней за
-        /// процессором событий.
-        /// </summary>
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-
-            _disposed = true;
-
-            ExecutionThread?.Terminate();
-            ExecutionThread = null;
-
-            Services.Dispose();
-        }
-
         public BslValue Run(BslObjectValue target, IExecutableModule module, BslScriptMethodInfo method, IValue[] arguments)
         {
             var notifyExecutors = !_isRunning;
@@ -80,9 +58,50 @@ namespace ScriptEngine
             {
                 if (notifyExecutors)
                 {
+                    RaiseTerminationEvent();
+                    if (BslWrapper is IDisposable disposable)
+                    {
+                        disposable.Dispose();
+                    }
+                    
                     Array.ForEach(_executorProviders, e => e.AfterProcessExit(this));
+                    Services.Dispose();
                     _isRunning = false;
                 }
+            }
+        }
+
+        public IRuntimeContextInstance BslWrapper { get; set; }
+
+        private void RaiseTerminationEvent()
+        {
+            if (BslWrapper == null)
+                return;
+            
+            var eventProcessor = Services.TryResolve<IEventProcessor>();
+            if (eventProcessor == null)
+                return;
+
+            try
+            {
+                foreach (var eventName in TerminationEventNames)
+                {
+                    try
+                    {
+                        eventProcessor.HandleEvent(BslWrapper, eventName, Array.Empty<IValue>(), this);
+                    }
+                    catch (Exception exception)
+                    {
+                        SystemLogger.Write(
+                            $"WARNING! Error in execution thread termination handler '{eventName}': {exception.Message}");
+                    }
+                }
+            }
+            finally
+            {
+                // Процессор событий держит источник, пока подписки не сняты. Потоков исполнения
+                // много и живут они недолго, поэтому без явного снятия реестр рос бы бесконечно.
+                eventProcessor.RemoveAllHandlers(BslWrapper);
             }
         }
     }

@@ -16,7 +16,6 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.StandardLibrary.Collections;
-using OneScript.StandardLibrary.Threads;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
@@ -52,8 +51,7 @@ namespace OneScript.StandardLibrary.Tasks
             var taskCreationOptions = longRunning ? TaskCreationOptions.LongRunning : TaskCreationOptions.None;
             var worker = new Task(() =>
             {
-                // Задание отработало - процесс освобождается вместе со своим потоком исполнения
-                using var process = _runtimeContext.Services.Resolve<IBslProcessFactory>().NewProcess();
+                var process = _runtimeContext.Services.Resolve<IBslProcessFactory>().NewProcess();
                 task.ExecuteOnCurrentThread(process);
 
             }, taskCreationOptions);

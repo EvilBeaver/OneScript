@@ -21,7 +21,7 @@ namespace OneScript.Execution
     /// Процесс освобождается тем, кто его создал, когда единица исполнения отработала.
     /// Освобождение завершает поток исполнения процесса.
     /// </summary>
-    public interface IBslProcess : IDisposable
+    public interface IBslProcess
     {
         /// <summary>
         /// Запустить метод в текущем процессе
@@ -40,13 +40,15 @@ namespace OneScript.Execution
 
         public int VirtualThreadId { get; }
 
-        /// <summary>
-        /// Bsl-обёртка потока исполнения этого процесса.
-        ///
-        /// Процесс носит её с собой и завершает вместе с собой. Создаёт обёртку тот, кто её
-        /// понимает - стандартная библиотека при первом обращении к ТекущийПоток(). Пока к потоку
-        /// не обращались, здесь null, и завершать нечего.
-        /// </summary>
-        public IBslExecutionThread? ExecutionThread { get; set; }
+        /**
+         * Обертка текущего процесса в терминах BSL.
+         * Может отсутствовать, полностью определяется хост-приложением процесса.
+         */
+        public IRuntimeContextInstance? BslWrapper
+        {
+            get => null;
+            // ReSharper disable once ValueParameterNotUsed
+            set { }
+        }
     }
 }

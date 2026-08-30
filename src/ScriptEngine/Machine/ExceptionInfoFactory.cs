@@ -57,19 +57,9 @@ namespace ScriptEngine.Machine
             {
                 ExceptionInfoContext { IsErrorTemplate: true } excInfo => 
                     new ParametrizedRuntimeException(excInfo.Description, excInfo.Parameters, excInfo.InnerException),
-                UserScriptContextInstance userContext => new RuntimeException(PresentationOf(userContext)),
+                UserScriptContextInstance userContext => new RuntimeException(userContext.ToString(_processFactory.NewProcess())),
                 _ => new RuntimeException(raiseValue.ToString())
             };
-        }
-
-        /// <summary>
-        /// Получает представление объекта: у него может быть собственное ПриПреобразованииВСтроку,
-        /// а это bsl-код, которому нужен процесс. Процесс здесь и заканчивается.
-        /// </summary>
-        private string PresentationOf(UserScriptContextInstance userContext)
-        {
-            using var process = _processFactory.NewProcess();
-            return userContext.ToString(process);
         }
     }
 }

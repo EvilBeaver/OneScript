@@ -37,22 +37,15 @@ namespace OneScript.StandardLibrary.Threads
     /// чтобы опрашивать список фоновых заданий.
     /// </summary>
     [ContextClass("ПотокИсполнения", "ExecutionThread")]
-    public sealed class ExecutionThreadContext : AutoContext<ExecutionThreadContext>, IBslExecutionThread
+    public sealed class ExecutionThreadContext : AutoContext<ExecutionThreadContext>, IDisposable
     {
-        /// <summary>
-        /// Имена события завершения потока исполнения. Событие поднимается под обоими именами,
-        /// поэтому подписаться можно как на русское, так и на английское.
-        /// </summary>
-        private static readonly string[] TerminationEventNames = { "ПриЗавершении", "OnTermination" };
-
         private readonly IBslProcess _process;
 
-        private bool _terminated;
+        private bool _isDisposed;
 
         private ExecutionThreadContext(IBslProcess process)
         {
             _process = process;
-            Identifier = process.VirtualThreadId;
         }
 
         /// <summary>
@@ -64,7 +57,7 @@ namespace OneScript.StandardLibrary.Threads
         /// </summary>
         /// <value>Число. Идентификатор потока исполнения.</value>
         [ContextProperty("Идентификатор", "Id")]
-        public int Identifier { get; }
+        public int Identifier => _process.VirtualThreadId;
 
         /// <summary>
         /// Хранилище данных потока исполнения, аналог набора thread-local переменных.
@@ -85,82 +78,33 @@ namespace OneScript.StandardLibrary.Threads
         /// </summary>
         internal static ExecutionThreadContext Of(IBslProcess process)
         {
-            if (process.ExecutionThread is ExecutionThreadContext existing)
-                return existing;
-
+            if (process.BslWrapper is ExecutionThreadContext wrapper)
+                return wrapper;
+            
             lock (process)
             {
-                if (process.ExecutionThread is ExecutionThreadContext created)
+                if (process.BslWrapper is ExecutionThreadContext created)
                     return created;
+                
+                if (process.BslWrapper != null)
+                    throw new InvalidOperationException($"BslWrapper for process is not {nameof(ExecutionThreadContext)}: {process.BslWrapper.GetType()}");
 
                 var thread = new ExecutionThreadContext(process);
-                process.ExecutionThread = thread;
+                process.BslWrapper = thread;
 
                 return thread;
             }
         }
 
-        /// <summary>
-        /// Оповещает подписчиков о завершении потока и снимает их подписки.
-        ///
-        /// Событие поднимается до очистки данных: обработчик ещё видит всё, что поток успел в них
-        /// положить. Именно так пул соединений забирает обратно соединение, которое отработавший
-        /// код не освободил сам.
-        ///
-        /// Ошибка обработчика наружу не выходит, только в лог. К этому моменту код единицы
-        /// исполнения уже отработал: у фонового задания завершение идёт в блоке finally и
-        /// затёрло бы исходную ошибку, у веб-сервера - после отправки ответа.
-        /// </summary>
-        private void RaiseTerminationEvent()
-        {
-            var eventProcessor = _process.Services.TryResolve<IEventProcessor>();
-            if (eventProcessor == null)
-                return;
-
-            try
-            {
-                foreach (var eventName in TerminationEventNames)
-                {
-                    try
-                    {
-                        eventProcessor.HandleEvent(this, eventName, Array.Empty<IValue>(), _process);
-                    }
-                    catch (Exception exception)
-                    {
-                        SystemLogger.Write(
-                            $"WARNING! Error in execution thread termination handler '{eventName}': {exception.Message}");
-                    }
-                }
-            }
-            finally
-            {
-                // Процессор событий держит источник, пока подписки не сняты. Потоков исполнения
-                // много и живут они недолго, поэтому без явного снятия реестр рос бы бесконечно.
-                eventProcessor.RemoveAllHandlers(this);
-            }
-        }
-
-        /// <summary>
-        /// Завершает поток исполнения: оповещает подписчиков и освобождает данные.
-        ///
-        /// Вызывается процессом, когда тот освобождается.
-        ///
-        /// Каждое значение освобождается отдельно, ошибка на одном не мешает остальным и наружу
-        /// не выходит. Значения перебираются по копии: освобождаемое значение вправе изменить
-        /// эти же данные, а перебор живой карты сорвался бы на следующем шаге - причём мимо
-        /// защиты, которой окружено само освобождение.
-        /// </summary>
-        public void Terminate()
+        public void Dispose()
         {
             // Пока идёт завершение, поток ещё числится за процессом, и обработчик вправе
             // добраться до него через ТекущийПоток(). Если он при этом освободит процесс,
             // завершение не должно пойти по второму кругу.
-            if (_terminated)
+            if (_isDisposed)
                 return;
 
-            _terminated = true;
-
-            RaiseTerminationEvent();
+            _isDisposed = true;
 
             try
             {
