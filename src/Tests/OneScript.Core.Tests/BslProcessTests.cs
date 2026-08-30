@@ -47,7 +47,10 @@ namespace OneScript.Core.Tests
             var scoped = process.Services.Resolve<ScopedDisposableProbe>();
 
             scoped.IsDisposed.Should().BeFalse("процесс ещё работает");
-
+            
+            engine.AttachedScriptsFactory.LoadFromString(
+                engine.GetCompilerService(), "f = 1", process);
+            
             scoped.IsDisposed.Should().BeTrue("процесс владеет своей областью сервисов");
         }
 

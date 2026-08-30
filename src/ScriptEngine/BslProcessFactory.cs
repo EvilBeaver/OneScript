@@ -29,15 +29,9 @@ namespace ScriptEngine
         {
             // Создаем новый контекст со всеми зависимостями
             var context = _services.Resolve<ExecutionContext>();
-            var processContext = new ExecutionContext(
-                context.TypeManager,
-                context.GlobalNamespace,
-                context.GlobalInstances,
-                context.Services.CreateScope());
-            
             var executors = _services.ResolveEnumerable<IExecutorProvider>();
                 
-            return new BslProcess(Interlocked.Increment(ref _threadIdCounter), processContext, executors);
+            return new BslProcess(Interlocked.Increment(ref _threadIdCounter), context, executors);
         }
     }
 }
