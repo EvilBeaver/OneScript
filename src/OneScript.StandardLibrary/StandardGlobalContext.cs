@@ -12,7 +12,6 @@ using System.Runtime.InteropServices;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
-using OneScript.StandardLibrary.Threads;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;

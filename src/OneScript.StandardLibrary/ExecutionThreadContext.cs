@@ -14,7 +14,7 @@ using ScriptEngine;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
-namespace OneScript.StandardLibrary.Threads
+namespace OneScript.StandardLibrary
 {
     /// <summary>
     /// Поток исполнения bsl-кода.
