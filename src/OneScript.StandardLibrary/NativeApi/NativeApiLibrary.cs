@@ -25,6 +25,9 @@ namespace OneScript.StandardLibrary.NativeApi
 
         private readonly List<NativeApiComponent> _components = new List<NativeApiComponent>();
 
+        private readonly Dictionary<string, string> _nameToClassName =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
         private readonly String _tempfile;
 
         public NativeApiLibrary(string filepath, string identifier, ITypeManager typeManager)
@@ -68,51 +71,87 @@ namespace OneScript.StandardLibrary.NativeApi
                 throw new RuntimeException("Не удалось получить список компонент в составе библиотеки");
             var separator = new char[] { '|' };
             var names = NativeApiProxy.Str(namesPtr).Split(separator, StringSplitOptions.RemoveEmptyEntries);
-            foreach (String name in names)
-                typeManager.RegisterType($"AddIn.{identifier}.{name}", default, typeof(NativeApiFactory));
+            foreach (String className in names)
+            {
+                var ptr = NativeApiProxy.GetClassObject(Module, className, null, null, null);
+                if (ptr == IntPtr.Zero)
+                {
+                    typeManager.RegisterType($"AddIn.{identifier}.{className}", default, typeof(NativeApiFactory));
+                    continue;
+                }
+
+                var extensionName = string.Empty;
+                NativeApiProxy.GetExtensionName(ptr, n => extensionName = NativeApiProxy.Str(n));
+                NativeApiProxy.DestroyObject(ptr);
+
+                if (string.IsNullOrEmpty(extensionName))
+                {
+                    typeManager.RegisterType($"AddIn.{identifier}.{className}", default, typeof(NativeApiFactory));
+                    continue;
+                }
+
+                _nameToClassName[extensionName] = className;
+
+                if (string.Equals(extensionName, className, StringComparison.OrdinalIgnoreCase))
+                    typeManager.RegisterType($"AddIn.{identifier}.{extensionName}", default, typeof(NativeApiFactory));
+                else
+                    typeManager.RegisterType(
+                        $"AddIn.{identifier}.{extensionName}",
+                        $"AddIn.{identifier}.{className}",
+                        typeof(NativeApiFactory));
+            }
+        }
+
+        internal string ResolveClassName(string name)
+        {
+            if (_nameToClassName.TryGetValue(name, out var className))
+                return className;
+            return name;
         }
 
         public IValue CreateComponent(ITypeManager typeManager, object host, String typeName, String componentName)
         {
             var typeDef = typeManager.GetTypeByName(typeName);
-            var component = new NativeApiComponent(host, this, typeDef, componentName);
+            var resolvedName = ResolveClassName(componentName);
+            var component = new NativeApiComponent(host, this, typeDef, resolvedName);
             _components.Add(component);
             return component;
         }
 
-        private void ReleaseUnmanagedResources(bool isDisposing)
+        private void DisposeManagedResources()
         {
-            try
+            foreach (var component in _components)
             {
-                foreach (var component in _components)
-                {
-                    component.Dispose();
-                }
-                
-                if (Loaded && NativeApiKernel.FreeLibrary(Module))
-                {
-                    if (!String.IsNullOrEmpty(_tempfile))
-                    {
-                        File.Delete(_tempfile);
-                    }
-                }
+                component.Dispose();
             }
-            catch (Exception)
+
+            _components.Clear();
+        }
+
+        private void ReleaseUnmanagedResources()
+        {
+            if (!Loaded)
+                return;
+
+            NativeApiKernel.FreeLibrary(Module);
+            Module = IntPtr.Zero;
+
+            if (!String.IsNullOrEmpty(_tempfile))
             {
-                if (isDisposing)
-                    throw;
+                File.Delete(_tempfile);
             }
         }
 
         public void Dispose()
         {
-            ReleaseUnmanagedResources(true);
+            DisposeManagedResources();
+            ReleaseUnmanagedResources();
             GC.SuppressFinalize(this);
         }
 
         ~NativeApiLibrary()
         {
-            ReleaseUnmanagedResources(false);
+            ReleaseUnmanagedResources();
         }
     }
 }

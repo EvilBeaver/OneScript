@@ -10,6 +10,7 @@ at http://mozilla.org/MPL/2.0/.
 #include "include/AddInDefBase.h"
 #include "include/IMemoryManager.h"
 #include "NativeInterface.h"
+#include <time.h>
 
 #ifdef _WINDOWS
 
@@ -46,7 +47,7 @@ typedef void(_stdcall* VariantFuncRespond) (const tVariant* variant);
 
 static bool AllocMemory(void** pMemory, unsigned long ulCountByte) {
 #ifdef _WINDOWS
-	return *pMemory = LocalAlloc(LMEM_FIXED, ulCountByte);
+	return *pMemory = LocalAlloc(LMEM_FIXED | LMEM_ZEROINIT, ulCountByte);
 #else
 	return *pMemory = calloc(1, ulCountByte);
 #endif//_WINDOWS
@@ -118,10 +119,11 @@ DllExport tVariant* CreateVariant(int32_t lSizeArray)
 	return (tVariant*)ptr;
 }
 
-DllExport void FreeVariant(tVariant* variant)
+DllExport void FreeVariant(tVariant* variant, int32_t count)
 {
 	if (variant == nullptr) return;
-	::ClearVariant(*variant);
+	for (int32_t i = 0; i < count; i++)
+		::ClearVariant(variant[i]);
 	::FreeMemory((void**)&variant);
 }
 
@@ -144,6 +146,16 @@ DllExport ProxyComponent* GetClassObject(
 DllExport void DestroyObject(ProxyComponent* proxy)
 {
 	if (proxy) delete proxy;
+}
+
+DllExport void GetExtensionName(ProxyComponent* proxy, StringFuncRespond respond)
+{
+	CHECK_PROXY(EMPTY_DEF);
+	WCHAR_T* name = nullptr;
+	if (proxy->Component().RegisterExtensionAs(&name) && name) {
+		respond(name);
+		proxy->FreeMemory((void**)&name);
+	}
 }
 
 DllExport int32_t GetNProps(ProxyComponent* proxy)
@@ -234,10 +246,34 @@ DllExport void SetVariantBlob(tVariant* variant, int32_t number, const char* val
 	}
 }
 
+DllExport void SetVariantDate(tVariant* variant, int32_t number, double value)
+{
+	tVariant* v = variant + number;
+	TV_DATE(v) = value;
+	TV_VT(v) = VTYPE_DATE;
+}
+
+static double TmToOleDate(const struct tm& tmVal)
+{
+	struct tm t = tmVal;
+	time_t time = mktime(&t);
+	if (time == (time_t)-1)
+		return 0.0;
+
+	struct tm epoch = {};
+	epoch.tm_year = 1899 - 1900;
+	epoch.tm_mon = 11;
+	epoch.tm_mday = 30;
+	time_t epochTime = mktime(&epoch);
+
+	return difftime(time, epochTime) / 86400.0;
+}
+
 typedef void(_stdcall* TSetVariantEmpty)(tVariant*, int32_t);
 typedef void(_stdcall* TSetVariantBool)(tVariant*, int32_t, bool);
 typedef void(_stdcall* TSetVariantReal)(tVariant*, int32_t, double);
 typedef void(_stdcall* TSetVariantInt)(tVariant*, int32_t, int32_t);
+typedef void(_stdcall* TSetVariantDate)(tVariant*, int32_t, double);
 typedef void(_stdcall* TSetVariantBlob)(tVariant*, int32_t, void*, int32_t);
 
 DllExport void GetVariant(tVariant* variant, int32_t number
@@ -245,12 +281,14 @@ DllExport void GetVariant(tVariant* variant, int32_t number
 	, TSetVariantBool b
 	, TSetVariantInt i
 	, TSetVariantReal r
+	, TSetVariantDate d
 	, TSetVariantBlob s
 	, TSetVariantBlob x
 )
 {
 	if (variant == nullptr) return;
-	switch (variant->vt) {
+	tVariant* v = variant + number;
+	switch (v->vt) {
 	case VTYPE_EMPTY:
 		e(variant, number);
 		break;
@@ -258,27 +296,29 @@ DllExport void GetVariant(tVariant* variant, int32_t number
 	case VTYPE_I4:
 	case VTYPE_ERROR:
 	case VTYPE_UI1:
-		i(variant, number, variant->lVal);
+		i(variant, number, v->lVal);
 		break;
 	case VTYPE_BOOL:
-		b(variant, number, variant->bVal);
+		b(variant, number, v->bVal);
 		break;
 	case VTYPE_R4:
 	case VTYPE_R8:
-		r(variant, number, variant->dblVal);
+		r(variant, number, v->dblVal);
 		break;
 	case VTYPE_DATE:
+		d(variant, number, v->dblVal);
+		break;
 	case VTYPE_TM:
-		e(variant, number);
+		d(variant, number, TmToOleDate(v->tmVal));
 		break;
 	case VTYPE_PSTR:
-		e(variant, number);
+		x(variant, number, v->pstrVal, v->strLen);
 		break;
 	case VTYPE_PWSTR:
-		s(variant, number, variant->pwstrVal, variant->strLen);
+		s(variant, number, v->pwstrVal, v->strLen);
 		break;
 	case VTYPE_BLOB:
-		x(variant, number, variant->pstrVal, variant->strLen);
+		x(variant, number, v->pstrVal, v->strLen);
 		break;
 	default:
 		e(variant, number);

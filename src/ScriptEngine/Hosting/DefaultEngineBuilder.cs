@@ -44,8 +44,13 @@ namespace ScriptEngine.Hosting
             return engine;
         }
 
+        protected virtual void RegisterEngineServices(IServiceDefinitions services)
+        {
+        }
+
         protected virtual IServiceContainer GetContainer()
         {
+            RegisterEngineServices(Services);
             return Services.CreateContainer();
         }
     }
