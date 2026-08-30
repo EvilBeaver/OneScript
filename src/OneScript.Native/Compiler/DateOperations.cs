@@ -15,6 +15,12 @@ namespace OneScript.Native.Compiler
 {
     internal static class DateOperations
     {
+        private static readonly MethodInfo AddSecondsMethod =
+            typeof(BslDateValue).GetMethod(nameof(BslDateValue.AddSeconds));
+
+        private static readonly MethodInfo SubtractSecondsMethod =
+            typeof(BslDateValue).GetMethod(nameof(BslDateValue.SubtractSeconds));
+
         /// <summary>
         ///  Операция смещения дат (прибавление или удаление секунд
         /// </summary>
@@ -27,22 +33,15 @@ namespace OneScript.Native.Compiler
         {
             Debug.Assert(left.Type == typeof(DateTime));
             Debug.Assert(right.Type == typeof(decimal));
-            
-            MethodInfo method;
-            switch (opCode)
-            {
-                case ExpressionType.Add:
-                    method = typeof(BslDateValue).GetMethod(nameof(BslDateValue.AddSeconds), new[] { typeof(DateTime), typeof(decimal) });
-                    break;
-                case ExpressionType.Subtract:
-                    method = typeof(BslDateValue).GetMethod(nameof(BslDateValue.SubtractSeconds), new[] { typeof(DateTime), typeof(decimal) });
-                    break;
-                default:
-                    throw NativeCompilerException.OperationNotDefined(opCode, left.Type, right.Type);
-            }
-            Debug.Assert(method != null);
+            Debug.Assert(AddSecondsMethod != null);
+            Debug.Assert(SubtractSecondsMethod != null);
 
-            return Expression.Call(method, left, right);
+            return opCode switch
+            {
+                ExpressionType.Add => Expression.Add(left, right, AddSecondsMethod),
+                ExpressionType.Subtract => Expression.Subtract(left, right, SubtractSecondsMethod),
+                _ => throw NativeCompilerException.OperationNotDefined(opCode, left.Type, right.Type)
+            };
         }
         
         /// <summary>
