@@ -13,6 +13,9 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.StandardLibrary.Collections;
+using OneScript.StandardLibrary.Timezones;
+using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -42,9 +45,9 @@ namespace OneScript.StandardLibrary.Json
         /// Если установлено Ложь, объекты будут считываться в объект типа Структура.
         /// Значение по умолчанию: Ложь. </param>
         /// <param name="PropertiesWithDateValuesNames">
-        /// Значение не обрабатывается в текущей версии. Значение по умолчанию: Неопределено.</param>
+        /// Имена свойств JSON, значения которых нужно преобразовать в дату. Значение по умолчанию: Неопределено.</param>
         /// <param name="ExpectedDateFormat">
-        /// Значение не обрабатывается в текущей версии. Значение по умолчанию: ISO. </param>
+        /// Формат даты во входных строках. Значение по умолчанию: ISO. </param>
         /// <param name="ReviverFunctionName">
         /// Значение не обрабатывается в текущей версии. Значение по умолчанию: Неопределено. </param>
         /// <param name="ReviverFunctionModule">
@@ -59,15 +62,50 @@ namespace OneScript.StandardLibrary.Json
         /// <returns name="Structure, Map или Array"></returns>
         ///
         [ContextMethod("ПрочитатьJSON", "ReadJSON")]
-        public IValue ReadJSON(JSONReader Reader, bool ReadToMap = false, IValue PropertiesWithDateValuesNames = null, IValue ExpectedDateFormat = null, string ReviverFunctionName = null, IValue ReviverFunctionModule = null, IValue ReviverFunctionAdditionalParameters = null, IValue RetriverPropertiesNames = null, int MaximumNesting = 500)
+        public IValue ReadJSON(JSONReader Reader, bool ReadToMap = false, IValue PropertiesWithDateValuesNames = null, JSONDateFormatEnum? ExpectedDateFormat = null, string ReviverFunctionName = null, IValue ReviverFunctionModule = null, IValue ReviverFunctionAdditionalParameters = null, IValue RetriverPropertiesNames = null, int MaximumNesting = 500)
         {
-            var jsonReader = new JsonReaderInternal(Reader);
+            var dateFormat = ExpectedDateFormat ?? JSONDateFormatEnum.ISO;
+            if (dateFormat == JSONDateFormatEnum.JavaScript)
+            {
+                throw new RuntimeException(Locale.NStr(
+                    "ru='Формат даты JavaScript не поддерживается.'; en='JavaScript date format is not supported'"));
+            }
+
+            var datePropertyNames = ParseDatePropertyNames(PropertiesWithDateValuesNames);
+            var jsonReader = new JsonReaderInternal(Reader, datePropertyNames, dateFormat);
             return ReadToMap ? jsonReader.Read<MapImpl>() : jsonReader.Read<StructureImpl>();
+        }
+
+        private static HashSet<string> ParseDatePropertyNames(IValue namesValue)
+        {
+            if (namesValue == null || namesValue.SystemType == BasicTypes.Undefined)
+                return new HashSet<string>(StringComparer.Ordinal);
+
+            if (namesValue.SystemType == BasicTypes.String)
+                return new HashSet<string>(StringComparer.Ordinal) { namesValue.AsString(ForbiddenBslProcess.Instance) };
+
+            if (namesValue is IValueArray array)
+            {
+                var result = new HashSet<string>(StringComparer.Ordinal);
+                foreach (var item in array)
+                {
+                    if (item.SystemType != BasicTypes.String)
+                        throw RuntimeException.InvalidArgumentType();
+
+                    result.Add(item.AsString(ForbiddenBslProcess.Instance));
+                }
+
+                return result;
+            }
+
+            throw RuntimeException.InvalidArgumentType();
         }
 
         internal class JsonReaderInternal
         {
             private readonly JSONReader _reader;
+            private readonly HashSet<string> _datePropertyNames;
+            private readonly JSONDateFormatEnum _dateFormat;
             private Func<IValue> _builder;
             private Action<IValue, string, IValue> _inserter;
 
@@ -89,9 +127,11 @@ namespace OneScript.StandardLibrary.Json
                 }
             }
 
-            public JsonReaderInternal(JSONReader reader)
+            public JsonReaderInternal(JSONReader reader, HashSet<string> datePropertyNames, JSONDateFormatEnum dateFormat)
             {
                 _reader = reader;
+                _datePropertyNames = datePropertyNames;
+                _dateFormat = dateFormat;
             }
 
             private IValue Create() => _builder();
@@ -109,6 +149,10 @@ namespace OneScript.StandardLibrary.Json
                         return value;
                 }
                 catch (JSONReaderException)
+                {
+                    throw;
+                }
+                catch (RuntimeException)
                 {
                     throw;
                 }
@@ -144,6 +188,13 @@ namespace OneScript.StandardLibrary.Json
                             var propertyName = (string)_reader.ReaderValue;
                             if (!ReadJsonValue(out value))
                                 return false;
+
+                            if (_datePropertyNames.Count > 0
+                                && _datePropertyNames.Contains(propertyName)
+                                && value is BslStringValue stringValue)
+                            {
+                                value = ParseJsonDate(stringValue.ToString(), _dateFormat);
+                            }
 
                             AddProperty(jsonObject, propertyName, value);
                         }
@@ -196,7 +247,10 @@ namespace OneScript.StandardLibrary.Json
 
         public IValue ReadJSONInMap(JSONReader reader)
         {
-            var jsonReader = new JsonReaderInternal(reader);
+            var jsonReader = new JsonReaderInternal(
+                reader,
+                new HashSet<string>(StringComparer.Ordinal),
+                JSONDateFormatEnum.ISO);
             return jsonReader.Read<MapImpl>();
         }
 
@@ -216,12 +270,16 @@ namespace OneScript.StandardLibrary.Json
         [ContextMethod("ПрочитатьДатуJSON", "ReadJSONDate")]
         public IValue ReadJSONDate(string String, JSONDateFormatEnum? format)
         {
+            return ParseJsonDate(String, format ?? JSONDateFormatEnum.ISO);
+        }
+
+        private static IValue ParseJsonDate(string dateString, JSONDateFormatEnum format)
+        {
             DateFormatHandling dateFormatHandling;
 
             switch (format)
             {
                 case JSONDateFormatEnum.ISO:
-                case null:
                     dateFormatHandling = DateFormatHandling.IsoDateFormat;
                     break;
                 case JSONDateFormatEnum.Microsoft:
@@ -233,22 +291,29 @@ namespace OneScript.StandardLibrary.Json
                         "ru='Формат даты JavaScript не поддерживается.'; en='JavaScript date format is not supported'"));
             }
 
-            string json = @"{""Date"":""" + String + @"""}";
+            string json = @"{""Date"":""" + dateString + @"""}";
 
             var settings = new JsonSerializerSettings
             {
                 DateFormatHandling = dateFormatHandling
             };
 
+            DateTime dateTime;
             try
             {
                 var result = JsonConvert.DeserializeObject<ConvertedDate>(json, settings);
-                return ValueFactory.Create((DateTime)result.Date);
+                dateTime = (DateTime)result.Date;
             }
             catch (JsonException)
             {
                 throw new RuntimeException(Locale.NStr("ru='Представление даты имеет неверный формат.'; en='Invalid date presentation format'"));
             }
+
+            if (dateTime.Kind == DateTimeKind.Utc)
+                dateTime = TimeZoneConverter.ToLocalTime(dateTime);
+
+            dateTime = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute, dateTime.Second);
+            return ValueFactory.Create(dateTime);
         }
 
         /// <summary>

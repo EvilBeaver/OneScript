@@ -14,6 +14,8 @@ namespace OneScript.Values
 {
     public sealed class BslDateValue : BslPrimitiveValue, IBslComparable
     {
+        private const long TicksPerStep = TimeSpan.TicksPerSecond / 10000; // 1000
+
         private readonly DateTime _value;
 
         private BslDateValue(DateTime value)
@@ -21,7 +23,23 @@ namespace OneScript.Values
             _value = value;
         }
 
-        public static BslDateValue Create(DateTime value) => new BslDateValue(value);
+        public static DateTime Normalize(DateTime value)
+        {
+            var ticks = value.Ticks;
+            var rounded = (long)Math.Round((double)ticks / TicksPerStep, MidpointRounding.AwayFromZero) * TicksPerStep;
+            return new DateTime(rounded, value.Kind);
+        }
+
+        public static BslDateValue Create(DateTime value) => new BslDateValue(Normalize(value));
+
+        public static DateTime AddSeconds(DateTime date, decimal seconds)
+        {
+            var rounded = Math.Round(seconds, 4, MidpointRounding.AwayFromZero);
+            return Normalize(date.AddTicks((long)(rounded * TimeSpan.TicksPerSecond)));
+        }
+
+        public static DateTime SubtractSeconds(DateTime date, decimal seconds) =>
+            AddSeconds(date, -seconds);
         
         public override int CompareTo(BslValue other)
         {
@@ -67,15 +85,11 @@ namespace OneScript.Values
 
         #region Date Arithmetics
 
-        public static DateTime operator +(BslDateValue left, decimal right)
-        {
-            return left._value.AddSeconds((double) right);
-        }
+        public static DateTime operator +(BslDateValue left, decimal right) =>
+            AddSeconds(left._value, right);
         
-        public static DateTime operator -(BslDateValue left, decimal right)
-        {
-            return left._value.AddSeconds(-(double) right);
-        }
+        public static DateTime operator -(BslDateValue left, decimal right) =>
+            SubtractSeconds(left._value, right);
         
         public static decimal operator -(BslDateValue left, DateTime right)
         {

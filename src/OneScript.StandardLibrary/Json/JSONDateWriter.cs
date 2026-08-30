@@ -16,10 +16,14 @@ namespace OneScript.StandardLibrary.Json
 {
     internal static class JSONDateWriter
     {
+        internal static string FormatDateForJson(DateTime date)
+        {
+            return FormatISODate(DropSubsecond(date));
+        }
+
         public static string Write(IValue dateValue, JSONDateFormatEnum format, JSONDateWritingVariantEnum dateWritingVariant)
         {
-            var date = GetDateArgument(dateValue);
-            date = DropSubsecond(date);
+            var date = DropSubsecond(GetDateArgument(dateValue));
 
             switch (format)
             {

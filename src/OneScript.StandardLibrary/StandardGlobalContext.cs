@@ -100,7 +100,9 @@ namespace OneScript.StandardLibrary
         [ContextMethod("ТекущаяУниверсальнаяДата", "CurrentUniversalDate")]
         public IValue CurrentUniversalDate()
         {
-            return ValueFactory.Create(DateTime.UtcNow);
+            var date = DateTime.UtcNow;
+            date = date.AddTicks(-(date.Ticks % TimeSpan.TicksPerSecond));
+            return ValueFactory.Create(date);
         }
 
         [ContextMethod("ТекущаяУниверсальнаяДатаВМиллисекундах", "CurrentUniversalDateInMilliseconds")]
