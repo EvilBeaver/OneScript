@@ -18,10 +18,13 @@ namespace ScriptEngine
 {
     internal class BslProcess : IBslProcess
     {
+        private static readonly string[] TerminationEventNames = { "ПриЗавершении", "OnTermination" };
+        
         private readonly IExecutorProvider[] _executorProviders;
         private readonly IDictionary<Type, Invoker> _bslExecutorsByModule;
 
         private bool _isRunning;
+        private bool _disposed;
         
         public BslProcess(int id, ExecutionContext context, IEnumerable<IExecutorProvider> executorProviders)
         {
@@ -55,9 +58,50 @@ namespace ScriptEngine
             {
                 if (notifyExecutors)
                 {
+                    RaiseTerminationEvent();
+                    if (BslWrapper is IDisposable disposable)
+                    {
+                        disposable.Dispose();
+                    }
+                    
                     Array.ForEach(_executorProviders, e => e.AfterProcessExit(this));
+                    Services.Dispose();
                     _isRunning = false;
                 }
+            }
+        }
+
+        public IRuntimeContextInstance BslWrapper { get; set; }
+
+        private void RaiseTerminationEvent()
+        {
+            if (BslWrapper == null)
+                return;
+            
+            var eventProcessor = Services.TryResolve<IEventProcessor>();
+            if (eventProcessor == null)
+                return;
+
+            try
+            {
+                foreach (var eventName in TerminationEventNames)
+                {
+                    try
+                    {
+                        eventProcessor.HandleEvent(BslWrapper, eventName, Array.Empty<IValue>(), this);
+                    }
+                    catch (Exception exception)
+                    {
+                        SystemLogger.Write(
+                            $"WARNING! Error in execution thread termination handler '{eventName}': {exception.Message}");
+                    }
+                }
+            }
+            finally
+            {
+                // Процессор событий держит источник, пока подписки не сняты. Потоков исполнения
+                // много и живут они недолго, поэтому без явного снятия реестр рос бы бесконечно.
+                eventProcessor.RemoveAllHandlers(BslWrapper);
             }
         }
     }

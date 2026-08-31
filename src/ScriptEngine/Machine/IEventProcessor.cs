@@ -25,5 +25,17 @@ namespace ScriptEngine.Machine
             string handlerMethod);
 
         void HandleEvent(IRuntimeContextInstance eventSource, string eventName, IValue[] eventArgs, IBslProcess process);
+
+        /// <summary>
+        /// Снимает все подписки на события указанного источника.
+        ///
+        /// Нужен источникам, которые живут меньше самого процессора событий: без этого реестр
+        /// подписок удерживает такой источник до конца работы движка. Реализация по умолчанию
+        /// ничего не делает, чтобы не ломать сторонние процессоры событий.
+        /// </summary>
+        /// <param name="eventSource">Источник, подписки на который нужно снять.</param>
+        void RemoveAllHandlers(IRuntimeContextInstance eventSource)
+        {
+        }
     }
 }
