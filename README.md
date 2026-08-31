@@ -161,6 +161,18 @@ dotnet msbuild Build.csproj /t:BuildDocumentation
   dotnet build src/oscript/oscript.csproj
   ```
 
+### Тесты NativeApi (`native-api.os`)
+
+Проверяют поддержку внешних компонент NativeApi. На macOS не запускаются.
+
+Нужен компилятор C++ (см. раздел «Ручная локальная сборка»). Сборка нативных компонент (прокси `ScriptEngine.NativeApi` и тестовая `AddInNative` из `tests/native-api/`) и прогон приёмочных тестов, включая `native-api.os`:
+
+```bat
+dotnet msbuild Build.csproj /t:BuildAll;Test
+```
+
+Без C++-компилятора нативная часть не собирается (`NoCppCompiler=True`), и эти тесты пройти не смогут.
+
 # Документация для разработчиков
 
 Если вы хотите контрибьютить в проект, познакомьтесь с дополнительными документами в каталоге [`docs/`](docs/):

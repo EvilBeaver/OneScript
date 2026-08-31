@@ -22,6 +22,8 @@ namespace OneScript.StandardLibrary.NativeApi
     {
         private IntPtr _object;
         private TypeDescriptor _type;
+        // Ссылка на библиотеку Native API, нужна для удержания ссылки и устранения гонки финализаторов.
+        private readonly NativeApiLibrary _library;
         private readonly NativeApiProxy.OnErrorDelegate _onError;
         private readonly NativeApiProxy.OnEventDelegate _onEvent;
         private readonly NativeApiProxy.OnStatusDelegate _onStatus;
@@ -81,6 +83,7 @@ namespace OneScript.StandardLibrary.NativeApi
             if (!NativeApiProxy.IsAvailable)
                 throw new RuntimeException("Native API Proxy DLL is not loaded");
                 
+            _library = library;
             _onError = (wcode, source, descr, scode) =>
             {
                 OnComponentError?.Invoke(Status(wcode), scode, S(source), S(descr));

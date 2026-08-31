@@ -181,7 +181,6 @@ namespace OneScript.StandardLibrary.NativeApi
             SetVariantStr = Marshal.GetDelegateForFunctionPointer<TSetVariantStr>(NativeApiKernel.GetProcAddress(module, "SetVariantStr"));
             SetVariantDate = Marshal.GetDelegateForFunctionPointer<TSetVariantDate>(NativeApiKernel.GetProcAddress(module, "SetVariantDate"));
             GetVariant = Marshal.GetDelegateForFunctionPointer<TGetVariant>(NativeApiKernel.GetProcAddress(module, "GetVariant"));
-            GetPropVal = Marshal.GetDelegateForFunctionPointer<TGetPropVal>(NativeApiKernel.GetProcAddress(module, "GetPropVal"));
             GetNMethods = Marshal.GetDelegateForFunctionPointer<TGetNMethods>(NativeApiKernel.GetProcAddress(module, "GetNMethods"));
             FindMethod = Marshal.GetDelegateForFunctionPointer<TFindMethod>(NativeApiKernel.GetProcAddress(module, "FindMethod"));
             GetMethodName = Marshal.GetDelegateForFunctionPointer<TGetMethodName>(NativeApiKernel.GetProcAddress(module, "GetMethodName"));

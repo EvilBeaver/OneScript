@@ -65,15 +65,18 @@ void ADDIN_API FreeMemory(void** pMemory) {
 
 class ProxyComponent : public IMemoryManager {
 private:
+	HMODULE hModule = nullptr;
 	IComponentBase* pComponent = nullptr;
 	NativeInterface mInterface;
 public:
 	ProxyComponent(
+		HMODULE hModule,
 		IComponentBase* pComponent,
 		ErrorFuncRespond onError,
 		EventFuncRespond onEvent,
 		StatusFuncRespond onStatus
 	) :
+		hModule(hModule),
 		pComponent(pComponent),
 		mInterface(onError, onEvent, onStatus)
 	{
@@ -82,7 +85,12 @@ public:
 	}
 	virtual ~ProxyComponent() override {
 		pComponent->Done();
-		delete pComponent;
+		auto proc = (DestroyObjectPtr)GetProcAddress(hModule, "DestroyObject");
+		if (proc)
+			proc(&pComponent);
+		else
+			delete pComponent;
+		pComponent = nullptr;
 	}
 	virtual bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) override {
 		return ::AllocMemory(pMemory, ulCountByte);
@@ -107,6 +115,14 @@ static void ClearVariant(tVariant& variant)
 		FreeMemory((void**)&variant.pwstrVal);
 		variant.wstrLen = 0;
 		break;
+	case VTYPE_VARIANT:
+		if (variant.pvarVal) {
+			for (uint32_t i = 0; i < variant.cbElements; i++)
+				ClearVariant(variant.pvarVal[i]);
+			FreeMemory((void**)&variant.pvarVal);
+			variant.cbElements = 0;
+		}
+		break;
 	}
 	variant.vt = VTYPE_EMPTY;
 }
@@ -115,7 +131,8 @@ DllExport tVariant* CreateVariant(int32_t lSizeArray)
 {
 	if (lSizeArray <= 0) return nullptr;
 	void* ptr = nullptr;
-	::AllocMemory(&ptr, sizeof(tVariant) * lSizeArray);
+	if (!::AllocMemory(&ptr, sizeof(tVariant) * lSizeArray))
+		return nullptr;
 	return (tVariant*)ptr;
 }
 
@@ -140,7 +157,7 @@ DllExport ProxyComponent* GetClassObject(
 	IComponentBase* pComponent = nullptr;
 	auto ok = proc(wsName, &pComponent);
 	if (ok == 0) return nullptr;
-	return new ProxyComponent(pComponent, onError, onEvent, onStatus);
+	return new ProxyComponent(hModule, pComponent, onError, onEvent, onStatus);
 }
 
 DllExport void DestroyObject(ProxyComponent* proxy)
@@ -152,10 +169,9 @@ DllExport void GetExtensionName(ProxyComponent* proxy, StringFuncRespond respond
 {
 	CHECK_PROXY(EMPTY_DEF);
 	WCHAR_T* name = nullptr;
-	if (proxy->Component().RegisterExtensionAs(&name) && name) {
-		respond(name);
-		proxy->FreeMemory((void**)&name);
-	}
+	auto ok = proxy->Component().RegisterExtensionAs(&name);
+	if (ok && name) respond(name);
+	if (name) proxy->FreeMemory((void**)&name);
 }
 
 DllExport int32_t GetNProps(ProxyComponent* proxy)
@@ -200,12 +216,13 @@ DllExport bool SetPropVal(ProxyComponent* proxy, int32_t lPropNum, tVariant* var
 DllExport void SetVariantEmpty(tVariant* variant, int32_t number)
 {
 	tVariant* v = variant + number;
-	TV_VT(v) = VTYPE_EMPTY;
+	ClearVariant(*v);
 }
 
 DllExport void SetVariantBool(tVariant* variant, int32_t number, bool value)
 {
 	tVariant* v = variant + number;
+	ClearVariant(*v);
 	TV_BOOL(v) = value;
 	TV_VT(v) = VTYPE_BOOL;
 }
@@ -213,6 +230,7 @@ DllExport void SetVariantBool(tVariant* variant, int32_t number, bool value)
 DllExport void SetVariantReal(tVariant* variant, int32_t number, double value)
 {
 	tVariant* v = variant + number;
+	ClearVariant(*v);
 	TV_R8(v) = value;
 	TV_VT(v) = VTYPE_R8;
 }
@@ -220,6 +238,7 @@ DllExport void SetVariantReal(tVariant* variant, int32_t number, double value)
 DllExport void SetVariantInt(tVariant* variant, int32_t number, int32_t value)
 {
 	tVariant* v = variant + number;
+	ClearVariant(*v);
 	TV_I4(v) = value;
 	TV_VT(v) = VTYPE_I4;
 }
@@ -227,6 +246,7 @@ DllExport void SetVariantInt(tVariant* variant, int32_t number, int32_t value)
 DllExport void SetVariantStr(tVariant* variant, int32_t number, const WCHAR_T* value, int32_t length)
 {
 	tVariant* v = variant + number;
+	ClearVariant(*v);
 	unsigned long size = sizeof(WCHAR_T) * (length + 1);
 	if (::AllocMemory((void**)&v->pwstrVal, size)) {
 		memcpy(v->pwstrVal, value, size);
@@ -239,6 +259,7 @@ DllExport void SetVariantStr(tVariant* variant, int32_t number, const WCHAR_T* v
 DllExport void SetVariantBlob(tVariant* variant, int32_t number, const char* value, int32_t length)
 {
 	tVariant* v = variant + number;
+	ClearVariant(*v);
 	if (::AllocMemory((void**)&v->pstrVal, length)) {
 		memcpy(v->pstrVal, value, length);
 		v->strLen = length;
@@ -249,6 +270,7 @@ DllExport void SetVariantBlob(tVariant* variant, int32_t number, const char* val
 DllExport void SetVariantDate(tVariant* variant, int32_t number, double value)
 {
 	tVariant* v = variant + number;
+	ClearVariant(*v);
 	TV_DATE(v) = value;
 	TV_VT(v) = VTYPE_DATE;
 }
