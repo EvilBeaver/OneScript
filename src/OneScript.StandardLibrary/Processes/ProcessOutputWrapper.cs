@@ -1,39 +1,50 @@
-﻿/*----------------------------------------------------------
-This Source Code Form is subject to the terms of the 
-Mozilla Public License, v.2.0. If a copy of the MPL 
-was not distributed with this file, You can obtain one 
+/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Text;
-using sys = System.Diagnostics;
+using System.Threading.Tasks;
+
+[assembly: InternalsVisibleTo("OneScript.StandardLibrary.Tests")]
 
 namespace OneScript.StandardLibrary.Processes
 {
+    /// <summary>
+    /// Неблокирующий читатель поверх потока вывода процесса
+    /// (Process.StandardOutput/StandardError). Фоновая задача перекачивает
+    /// сырые символы источника в буфер, включая настоящие переводы строк,
+    /// записанные процессом.
+    /// Событийный API (BeginOutputReadLine) не используется: он вырезает
+    /// терминаторы строк, и их обратный синтез порождал гонку (issue #1726),
+    /// а вывод, не завершенный переводом строки, застревал в .NET до конца процесса.
+    /// </summary>
     class ProcessOutputWrapper : TextReader
     {
-        private readonly sys.Process _process;
-        private readonly OutputVariant _variant;
+        private readonly TextReader _source;
         private readonly StringBuilder _buffer = new StringBuilder(4096);
 
         private int _bufferIndex = 0;
 
+        // Пишутся пампом и читаются читателями только под lock(_buffer)
+        private bool _streamEnded;
+        private Exception _pumpError;
+
+        private volatile bool _stopRequested;
+
+        private Task _pumpTask;
+
         private bool AlreadyReading { get; set; }
 
-        private Encoding Encoding { get; set; }
-
-        public enum OutputVariant
+        public ProcessOutputWrapper(TextReader source)
         {
-            Stdout,
-            Stderr
-        }
-
-        public ProcessOutputWrapper(sys.Process process, OutputVariant variant)
-        {
-            _process = process;
-            _variant = variant;
+            _source = source;
         }
 
         public void StartReading()
@@ -41,46 +52,67 @@ namespace OneScript.StandardLibrary.Processes
             if (AlreadyReading)
                 return;
 
-            if (_variant == OutputVariant.Stdout)
-            {
-                Encoding = _process.StartInfo.StandardOutputEncoding;
-                _process.OutputDataReceived += StreamDataReceived;
-                _process.BeginOutputReadLine();
-            }
-            else
-            {
-                Encoding = _process.StartInfo.StandardErrorEncoding;
-                _process.ErrorDataReceived += StreamDataReceived;
-                _process.BeginErrorReadLine();
-            }
+            _pumpTask = Task.Run(() => PumpAsync(_source));
 
             AlreadyReading = true;
         }
 
-        private void StopReading()
+        private async Task PumpAsync(TextReader reader)
         {
-            if (_variant == OutputVariant.Stdout)
+            var chunk = new char[4096];
+            try
             {
-                _process.OutputDataReceived -= StreamDataReceived;
+                while (!_stopRequested)
+                {
+                    int read = await reader.ReadAsync(chunk, 0, chunk.Length).ConfigureAwait(false);
+                    if (read == 0)
+                        break;
+
+                    lock (_buffer)
+                    {
+                        _buffer.Append(chunk, 0, read);
+                    }
+                }
             }
-            else
+            catch (Exception e)
             {
-                _process.ErrorDataReceived -= StreamDataReceived;
+                // Ошибка источника перебрасывается читателю, когда он вычитает
+                // накопленные данные (см. ThrowIfPumpFailed). После остановки
+                // чтения (Dispose) источник закрыт, его ошибки ожидаемы.
+                if (!_stopRequested)
+                {
+                    lock (_buffer)
+                    {
+                        _pumpError = e;
+                    }
+                }
+            }
+            finally
+            {
+                lock (_buffer)
+                {
+                    _streamEnded = true;
+                }
             }
         }
 
-        private void StreamDataReceived(object sender, sys.DataReceivedEventArgs e)
+        // Ошибка чтения источника отдается после уже накопленных данных,
+        // поэтому перебрасывается только при пустом буфере.
+        // должна вызываться ТОЛЬКО внутри вышестоящего блока lock.
+        private void ThrowIfPumpFailed()
         {
-            if (e.Data != null)
-            {
-                lock(_buffer)
-                {
-                    if (_buffer.Length != 0)
-                        _buffer.Append(System.Environment.NewLine);
+            if (_pumpError != null && _bufferIndex >= _buffer.Length)
+                ExceptionDispatchInfo.Capture(_pumpError).Throw();
+        }
 
-                    _buffer.Append(e.Data);
-                }
-            }
+        /// <summary>
+        /// Дождаться, пока весь вывод процесса будет перекачан в буфер.
+        /// Вызывается после Process.WaitForExit(), чтобы Прочитать() гарантированно
+        /// видел хвост вывода (аналог гарантии WaitForExit() для событийного чтения).
+        /// </summary>
+        internal void WaitSourceDrained()
+        {
+            _pumpTask?.Wait();
         }
 
         public override int Peek()
@@ -88,9 +120,12 @@ namespace OneScript.StandardLibrary.Processes
             lock (_buffer)
             {
                 if (_bufferIndex >= _buffer.Length)
+                {
+                    ThrowIfPumpFailed();
                     return -1; // no data
+                }
 
-                return _buffer[_bufferIndex]; 
+                return _buffer[_bufferIndex];
             }
         }
 
@@ -98,7 +133,11 @@ namespace OneScript.StandardLibrary.Processes
         {
             lock (_buffer)
             {
-                return ReadInternal();
+                int ch = ReadInternal();
+                if (ch == -1)
+                    ThrowIfPumpFailed();
+
+                return ch;
             }
         }
 
@@ -123,7 +162,7 @@ namespace OneScript.StandardLibrary.Processes
             if (destBuffer.Length - index < count)
                 throw new ArgumentException("Invalid offset");
 
-           
+
             int n = 0;
             lock (_buffer)
             {
@@ -133,42 +172,73 @@ namespace OneScript.StandardLibrary.Processes
                     if (ch == -1) break;
 
                     destBuffer[index + n++] = (char)ch;
-                } while (n < count); 
+                } while (n < count);
+
+                if (n == 0 && count > 0)
+                    ThrowIfPumpFailed();
             }
 
             return n;
         }
 
+        /// <summary>
+        /// Возвращает очередную строку, только когда она гарантированно полна:
+        /// ее терминатор уже в буфере либо поток источника закончился.
+        /// Для незавершенной строки возвращает null (данных пока нет) —
+        /// частично записанная процессом строка не может быть возвращена
+        /// ни как строка, ни по кускам.
+        /// </summary>
         public override string ReadLine()
         {
-            var sb = new StringBuilder();
             lock (_buffer)
             {
-                while (true)
+                for (int i = _bufferIndex; i < _buffer.Length; i++)
                 {
-                    int ch = ReadInternal();
-                    if (ch == -1) break;
-                    if (ch == '\r' || ch == '\n')
-                    {
-                        if (ch == '\r' && Peek() == '\n') Read();
-                        return sb.ToString();
-                    }
-                    sb.Append((char)ch);
-                } 
-            }
-            if (sb.Length > 0)
-                return sb.ToString();
+                    char ch = _buffer[i];
 
-            return null; 
+                    if (ch == '\n')
+                        return ConsumeLine(i, i + 1);
+
+                    if (ch == '\r')
+                    {
+                        if (i + 1 < _buffer.Length)
+                            return ConsumeLine(i, _buffer[i + 1] == '\n' ? i + 2 : i + 1);
+
+                        if (_streamEnded)
+                            return ConsumeLine(i, i + 1);
+
+                        // '\r' — последний символ буфера, а поток еще жив:
+                        // парный '\n' может быть в пути, ждем следующей порции
+                        return null;
+                    }
+                }
+
+                // терминатора нет; после конца потока остаток буфера — последняя строка
+                if (_streamEnded && _bufferIndex < _buffer.Length)
+                    return ConsumeLine(_buffer.Length, _buffer.Length);
+
+                ThrowIfPumpFailed();
+                return null;
+            }
+        }
+
+        // должна вызываться ТОЛЬКО внутри вышестоящего блока lock.
+        private string ConsumeLine(int lineEnd, int nextPosition)
+        {
+            var line = _buffer.ToString(_bufferIndex, lineEnd - _bufferIndex);
+            _bufferIndex = nextPosition;
+            return line;
         }
 
         public override string ReadToEnd()
         {
             lock (_buffer)
             {
-                string data = base.ReadToEnd();
+                ThrowIfPumpFailed();
+
+                string data = _buffer.ToString(_bufferIndex, _buffer.Length - _bufferIndex);
                 ResetBuffer();
-                return data; 
+                return data;
             }
         }
 
@@ -182,7 +252,7 @@ namespace OneScript.StandardLibrary.Processes
         {
             if (disposing)
             {
-                StopReading();
+                _stopRequested = true;
             }
 
             base.Dispose(disposing);

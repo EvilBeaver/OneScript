@@ -29,6 +29,8 @@ namespace OneScript.StandardLibrary.Processes
         private StdTextReadStream _stdOutContext;
         private StdTextReadStream _stdErrContext;
         private StdTextWriteStream _stdInContext;
+        private ProcessOutputWrapper _stdOutWrapper;
+        private ProcessOutputWrapper _stdErrWrapper;
 
         private readonly IValue _outputEncoding;
 
@@ -107,15 +109,14 @@ namespace OneScript.StandardLibrary.Processes
 
             if (IsOutputRedirected)
             {
-                var stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stdout);
-                stream.StartReading();
-                _stdOutContext = new StdTextReadStream(stream);
+                _stdOutWrapper = new ProcessOutputWrapper(_p.StandardOutput);
+                _stdOutWrapper.StartReading();
+                _stdOutContext = new StdTextReadStream(_stdOutWrapper);
 
-                stream = new ProcessOutputWrapper(_p, ProcessOutputWrapper.OutputVariant.Stderr);
-                stream.StartReading();
+                _stdErrWrapper = new ProcessOutputWrapper(_p.StandardError);
+                _stdErrWrapper.StartReading();
 
-                _stdErrContext = new StdTextReadStream(stream);
-
+                _stdErrContext = new StdTextReadStream(_stdErrWrapper);
             }
         }
 
@@ -176,6 +177,12 @@ namespace OneScript.StandardLibrary.Processes
             if (timeout == null)
             {
                 _p.WaitForExit();
+
+                // Прочитать() после ожидания должен видеть весь вывод:
+                // дожидаемся, пока фоновое чтение доберет хвост потоков
+                _stdOutWrapper?.WaitSourceDrained();
+                _stdErrWrapper?.WaitSourceDrained();
+
                 return true;
             }
 
