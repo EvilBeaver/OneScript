@@ -15,6 +15,7 @@ namespace oscript
             Output.WriteLine();
             Output.WriteLine("Usage:");
             Output.WriteLine("  oscript.exe [options] <script_path> [script_arguments...]");
+            Output.WriteLine("  oscript.exe [options] -c <code> [script_arguments...]");
             Output.WriteLine("  oscript.exe <mode> [mode_options] <script_path> [script_arguments...]");
             Output.WriteLine();
 
@@ -34,6 +35,7 @@ namespace oscript
             Output.WriteLine($"  {"",modeWidth}     {"-port=<port>",subOptionWidth} Debugger port (default is 2801).");
             Output.WriteLine($"  {"",modeWidth}     {"-noWait",subOptionWidth} Do not wait for debugger connection.");
             
+            Output.WriteLine($"  {"-c",modeWidth} Execute code from command line.");
             Output.WriteLine($"  {"-version, -v",modeWidth} Output version string.");
             Output.WriteLine();
             
