@@ -37,6 +37,8 @@ namespace OneScript.StandardLibrary.Tests
                 _chunks.CompleteAdding();
             }
 
+            public bool AllTaken => _chunks.Count == 0;
+
             public override int Read(char[] buffer, int index, int count)
             {
                 while (_pos >= _current.Length)
@@ -228,6 +230,50 @@ namespace OneScript.StandardLibrary.Tests
             {
                 return e;
             }
+        }
+
+        // После закрытия читателя источник продолжает дренироваться
+        // (иначе процесс заблокируется на записи в переполненный пайп),
+        // но данные больше не накапливаются
+        [Fact]
+        public void AfterDispose_SourceIsStillDrained_ButDataIsDiscarded()
+        {
+            _source.Push("L1\n");
+            EventuallyReadLine().Should().Be("L1");
+
+            _wrapper.Dispose();
+            _source.Push("L2\n");
+
+            Eventually(() => _source.AllTaken, taken => taken).Should().BeTrue();
+            _wrapper.ReadLine().Should().BeNull();
+        }
+
+        // Вычитанный префикс буфера освобождается: вывод долгоживущего
+        // процесса не накапливается в памяти при аккуратном читателе
+        [Fact]
+        public void ConsumedPrefix_IsCompacted()
+        {
+            var line = new string('x', 1000);
+            for (int i = 0; i < 20; i++)
+            {
+                _source.Push(line + "\n");
+                EventuallyReadLine().Should().Be(line);
+            }
+
+            _wrapper.InternalBufferSize.Should().BeLessThan(2 * 4096);
+        }
+
+        [Fact]
+        public void IsDrained_BecomesTrue_OnlyAfterSourceEnd()
+        {
+            _source.Push("L1\n");
+            EventuallyReadLine().Should().Be("L1");
+
+            _wrapper.IsDrained.Should().BeFalse();
+
+            _source.Complete();
+
+            Eventually(() => _wrapper.IsDrained, drained => drained).Should().BeTrue();
         }
     }
 }

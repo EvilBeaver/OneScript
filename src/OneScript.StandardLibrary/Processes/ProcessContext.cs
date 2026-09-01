@@ -150,7 +150,14 @@ namespace OneScript.StandardLibrary.Processes
         {
             get
             {
-                return _p.HasExited;
+                if (!_p.HasExited)
+                    return false;
+
+                // Процесс завершился, но фоновое чтение могло еще не добрать
+                // хвост вывода из пайпа: цикл "Пока НЕ Завершен ИЛИ ЕстьДанные"
+                // не должен завершиться раньше, чем вывод станет доступен
+                return (_stdOutWrapper?.IsDrained ?? true)
+                    && (_stdErrWrapper?.IsDrained ?? true);
             }
         }
 

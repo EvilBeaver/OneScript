@@ -27,6 +27,8 @@ namespace OneScript.StandardLibrary.Processes
     /// </summary>
     class ProcessOutputWrapper : TextReader
     {
+        private const int CompactionThreshold = 4096;
+
         private readonly TextReader _source;
         private readonly StringBuilder _buffer = new StringBuilder(4096);
 
@@ -62,11 +64,17 @@ namespace OneScript.StandardLibrary.Processes
             var chunk = new char[4096];
             try
             {
-                while (!_stopRequested)
+                while (true)
                 {
                     int read = await reader.ReadAsync(chunk, 0, chunk.Length).ConfigureAwait(false);
                     if (read == 0)
                         break;
+
+                    // После закрытия читателя данные никому не нужны, но пайп
+                    // продолжает дренироваться до конца потока: иначе процесс,
+                    // заполнив пайп, навсегда заблокируется на записи
+                    if (_stopRequested)
+                        continue;
 
                     lock (_buffer)
                     {
@@ -115,6 +123,24 @@ namespace OneScript.StandardLibrary.Processes
             _pumpTask?.Wait();
         }
 
+        /// <summary>
+        /// Источник дочитан до конца: после завершения процесса хвост его
+        /// вывода гарантированно доступен читателям.
+        /// </summary>
+        internal bool IsDrained => _pumpTask == null || _pumpTask.IsCompleted;
+
+        // Для тестов: физический размер внутреннего буфера
+        internal int InternalBufferSize
+        {
+            get
+            {
+                lock (_buffer)
+                {
+                    return _buffer.Length;
+                }
+            }
+        }
+
         public override int Peek()
         {
             lock (_buffer)
@@ -137,7 +163,21 @@ namespace OneScript.StandardLibrary.Processes
                 if (ch == -1)
                     ThrowIfPumpFailed();
 
+                CompactBuffer();
                 return ch;
+            }
+        }
+
+        // Вычитанный префикс буфера периодически удаляется, иначе вывод
+        // долгоживущего процесса накапливается в памяти даже при аккуратном
+        // читателе.
+        // должна вызываться ТОЛЬКО внутри вышестоящего блока lock.
+        private void CompactBuffer()
+        {
+            if (_bufferIndex >= CompactionThreshold)
+            {
+                _buffer.Remove(0, _bufferIndex);
+                _bufferIndex = 0;
             }
         }
 
@@ -176,6 +216,8 @@ namespace OneScript.StandardLibrary.Processes
 
                 if (n == 0 && count > 0)
                     ThrowIfPumpFailed();
+
+                CompactBuffer();
             }
 
             return n;
@@ -227,6 +269,7 @@ namespace OneScript.StandardLibrary.Processes
         {
             var line = _buffer.ToString(_bufferIndex, lineEnd - _bufferIndex);
             _bufferIndex = nextPosition;
+            CompactBuffer();
             return line;
         }
 
