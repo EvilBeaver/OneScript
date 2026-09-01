@@ -34,6 +34,11 @@ namespace OneScript.StandardLibrary.Processes
 
         private int _bufferIndex = 0;
 
+        // Позиция, до которой ReadLine уже искал терминатор и не нашел:
+        // диапазон [_bufferIndex, _lineScanIndex) заведомо без терминаторов,
+        // повторные вызовы сканируют только новые символы, а не буфер целиком
+        private int _lineScanIndex = 0;
+
         // Пишутся пампом и читаются читателями только под lock(_buffer)
         private bool _streamEnded;
         private Exception _pumpError;
@@ -70,15 +75,13 @@ namespace OneScript.StandardLibrary.Processes
                     if (read == 0)
                         break;
 
-                    // После закрытия читателя данные никому не нужны, но пайп
-                    // продолжает дренироваться до конца потока: иначе процесс,
-                    // заполнив пайп, навсегда заблокируется на записи
-                    if (_stopRequested)
-                        continue;
-
                     lock (_buffer)
                     {
-                        _buffer.Append(chunk, 0, read);
+                        // После закрытия читателя данные никому не нужны, но пайп
+                        // продолжает дренироваться до конца потока: иначе процесс,
+                        // заполнив пайп, навсегда заблокируется на записи
+                        if (!_stopRequested)
+                            _buffer.Append(chunk, 0, read);
                     }
                 }
             }
@@ -177,6 +180,7 @@ namespace OneScript.StandardLibrary.Processes
             if (_bufferIndex >= CompactionThreshold)
             {
                 _buffer.Remove(0, _bufferIndex);
+                _lineScanIndex = Math.Max(0, _lineScanIndex - _bufferIndex);
                 _bufferIndex = 0;
             }
         }
@@ -234,7 +238,7 @@ namespace OneScript.StandardLibrary.Processes
         {
             lock (_buffer)
             {
-                for (int i = _bufferIndex; i < _buffer.Length; i++)
+                for (int i = Math.Max(_lineScanIndex, _bufferIndex); i < _buffer.Length; i++)
                 {
                     char ch = _buffer[i];
 
@@ -251,9 +255,13 @@ namespace OneScript.StandardLibrary.Processes
 
                         // '\r' — последний символ буфера, а поток еще жив:
                         // парный '\n' может быть в пути, ждем следующей порции
+                        // (сам '\r' при этом остается несканированным)
+                        _lineScanIndex = i;
                         return null;
                     }
                 }
+
+                _lineScanIndex = _buffer.Length;
 
                 // терминатора нет; после конца потока остаток буфера — последняя строка
                 if (_streamEnded && _bufferIndex < _buffer.Length)
@@ -269,6 +277,7 @@ namespace OneScript.StandardLibrary.Processes
         {
             var line = _buffer.ToString(_bufferIndex, lineEnd - _bufferIndex);
             _bufferIndex = nextPosition;
+            _lineScanIndex = nextPosition;
             CompactBuffer();
             return line;
         }
@@ -289,13 +298,17 @@ namespace OneScript.StandardLibrary.Processes
         {
             _buffer.Clear();
             _bufferIndex = 0;
+            _lineScanIndex = 0;
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                _stopRequested = true;
+                lock (_buffer)
+                {
+                    _stopRequested = true;
+                }
             }
 
             base.Dispose(disposing);

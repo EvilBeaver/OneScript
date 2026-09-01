@@ -135,6 +135,23 @@ namespace OneScript.StandardLibrary.Tests
             EventuallyReadLine().Should().Be("Половина");
         }
 
+        // Длинная строка, приходящая многими порциями: промежуточные опросы
+        // возвращают null, итоговая строка собирается целиком
+        [Fact]
+        public void ReadLine_AssemblesLine_FromManyChunks()
+        {
+            _source.Push("aa");
+            Eventually(() => _wrapper.Peek(), c => c != -1);
+            _wrapper.ReadLine().Should().BeNull();
+
+            _source.Push("bb");
+            _wrapper.ReadLine().Should().BeNull();
+
+            _source.Push("cc\n");
+            EventuallyReadLine().Should().Be("aabbcc");
+            _wrapper.ReadLine().Should().BeNull();
+        }
+
         // CRLF, разорванный между порциями, не дает ни фантомной пустой строки,
         // ни '\r' в теле строки
         [Fact]
