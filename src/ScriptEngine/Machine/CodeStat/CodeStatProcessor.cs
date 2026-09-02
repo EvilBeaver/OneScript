@@ -38,7 +38,12 @@ namespace ScriptEngine.Machine
             else
             {
                 _activeStopwatch?.Stop();
-                _activeStopwatch = _watchers[entry];
+                if (!_watchers.TryGetValue(entry, out var watch))
+                {
+                    watch = new Stopwatch();
+                    _watchers[entry] = watch;
+                }
+                _activeStopwatch = watch;
                 _activeStopwatch.Start();
             }
         }
@@ -65,7 +70,13 @@ namespace ScriptEngine.Machine
 
         public void EndCodeStat()
         {
+            StopActiveWatch();
+        }
+
+        public void StopActiveWatch()
+        {
             _activeStopwatch?.Stop();
+            _activeStopwatch = null;
         }
 
         public void StopWatch(CodeStatEntry entry)

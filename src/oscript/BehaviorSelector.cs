@@ -60,14 +60,14 @@ namespace oscript
         private static AppBehavior EnableCodeStatistics(CmdLineHelper helper)
         {
             var param = helper.Parse(helper.Current());
-            if (string.IsNullOrEmpty(param.Value))
-                return null;
-            
-            var outputStatFile = param.Value;
+            var outputStatFile = string.IsNullOrEmpty(param.Value) ? null : param.Value;
 
             var behavior = Select(helper.Tail());
             if (behavior is ExecuteScriptBehavior executor)
+            {
+                executor.CodeStatisticsEnabled = true;
                 executor.CodeStatFile = outputStatFile;
+            }
 
             return behavior;
         }

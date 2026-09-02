@@ -1,0 +1,148 @@
+/*----------------------------------------------------------
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
+at http://mozilla.org/MPL/2.0/.
+----------------------------------------------------------*/
+
+using System;
+using System.Collections.Generic;
+
+namespace ScriptEngine.Machine
+{
+    public sealed class CodeStatHub : ICodeStatCollector
+    {
+        private readonly object _lock = new object();
+        private readonly HashSet<CodeStatEntry> _knownEntries = new HashSet<CodeStatEntry>();
+        private readonly HashSet<string> _preparedScripts = new HashSet<string>();
+
+        private CodeStatProcessor[] _alive = Array.Empty<CodeStatProcessor>();
+        private CodeStatProcessor[] _active = Array.Empty<CodeStatProcessor>();
+
+        public CodeStatProcessor StartSession()
+        {
+            var session = new CodeStatProcessor();
+            lock (_lock)
+            {
+                foreach (var entry in _knownEntries)
+                    session.MarkEntryReached(entry, 0);
+                foreach (var script in _preparedScripts)
+                    session.MarkPrepared(script);
+
+                _alive = Append(_alive, session);
+                _active = Append(_active, session);
+            }
+
+            return session;
+        }
+
+        public void PauseSession(CodeStatProcessor session)
+        {
+            session.StopActiveWatch();
+            lock (_lock)
+            {
+                _active = Remove(_active, session);
+            }
+        }
+
+        public void ResumeSession(CodeStatProcessor session)
+        {
+            lock (_lock)
+            {
+                if (Array.IndexOf(_active, session) >= 0)
+                    return;
+                _active = Append(_active, session);
+            }
+        }
+
+        public void FinishSession(CodeStatProcessor session)
+        {
+            session.EndCodeStat();
+            lock (_lock)
+            {
+                _active = Remove(_active, session);
+                _alive = Remove(_alive, session);
+            }
+        }
+
+        public bool IsPrepared(string ScriptFileName)
+        {
+            lock (_lock)
+            {
+                return _preparedScripts.Contains(ScriptFileName);
+            }
+        }
+
+        public void MarkEntryReached(CodeStatEntry entry, int count = 1)
+        {
+            CodeStatProcessor[] targets;
+            lock (_lock)
+            {
+                _knownEntries.Add(entry);
+                targets = count == 0 ? _alive : _active;
+            }
+
+            foreach (var session in targets)
+                session.MarkEntryReached(entry, count);
+        }
+
+        public void MarkPrepared(string scriptFileName)
+        {
+            CodeStatProcessor[] targets;
+            lock (_lock)
+            {
+                _preparedScripts.Add(scriptFileName);
+                targets = _alive;
+            }
+
+            foreach (var session in targets)
+                session.MarkPrepared(scriptFileName);
+        }
+
+        public void StopWatch(CodeStatEntry entry)
+        {
+            var targets = SnapshotActive();
+            foreach (var session in targets)
+                session.StopWatch(entry);
+        }
+
+        public void ResumeWatch(CodeStatEntry entry)
+        {
+            var targets = SnapshotActive();
+            foreach (var session in targets)
+                session.ResumeWatch(entry);
+        }
+
+        private CodeStatProcessor[] SnapshotActive()
+        {
+            lock (_lock)
+            {
+                return _active;
+            }
+        }
+
+        private static T[] Append<T>(T[] source, T item)
+        {
+            var result = new T[source.Length + 1];
+            Array.Copy(source, result, source.Length);
+            result[source.Length] = item;
+            return result;
+        }
+
+        private static T[] Remove<T>(T[] source, T item) where T : class
+        {
+            var index = Array.IndexOf(source, item);
+            if (index < 0)
+                return source;
+            if (source.Length == 1)
+                return Array.Empty<T>();
+
+            var result = new T[source.Length - 1];
+            if (index > 0)
+                Array.Copy(source, 0, result, 0, index);
+            if (index < source.Length - 1)
+                Array.Copy(source, index + 1, result, index, source.Length - index - 1);
+            return result;
+        }
+    }
+}

@@ -53,6 +53,9 @@ namespace ScriptEngine.HostedScript
 
             var bgTasksManager = new BackgroundTasksManager(_engine.Services.Resolve<ExecutionContext>());
             _env.InjectGlobalProperty(bgTasksManager, "ФоновыеЗадания", "BackgroundJobs", true);
+
+            var codeStatistics = new CodeStatisticsContext();
+            _env.InjectGlobalProperty(codeStatistics, "СборСтатистики", "CodeStatistics", true);
         }
 
         public void Initialize()

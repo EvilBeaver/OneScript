@@ -162,7 +162,7 @@
 	|
 	|Options:
 	|  -encoding=<name>   Set output encoding (e.g. utf-8).
-	|  -codestat=<file>   Write code execution statistics to file.
+	|  -codestat[=<file>] Enable code statistics; write to file if specified.
 	|
 	|CGI Mode:
 	|  oscript.exe -cgi <script_path> [script_arguments...]
