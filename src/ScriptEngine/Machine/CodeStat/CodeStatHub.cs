@@ -38,9 +38,9 @@ namespace ScriptEngine.Machine
 
         public void PauseSession(CodeStatProcessor session)
         {
-            session.StopActiveWatch();
             lock (_lock)
             {
+                session.StopActiveWatch();
                 _active = Remove(_active, session);
             }
         }
@@ -57,9 +57,9 @@ namespace ScriptEngine.Machine
 
         public void FinishSession(CodeStatProcessor session)
         {
-            session.EndCodeStat();
             lock (_lock)
             {
+                session.EndCodeStat();
                 _active = Remove(_active, session);
                 _alive = Remove(_alive, session);
             }
@@ -75,15 +75,13 @@ namespace ScriptEngine.Machine
 
         public void MarkEntryReached(CodeStatEntry entry, int count = 1)
         {
-            CodeStatProcessor[] targets;
             lock (_lock)
             {
                 _knownEntries.Add(entry);
-                targets = count == 0 ? _alive : _active;
+                var targets = count == 0 ? _alive : _active;
+                foreach (var session in targets)
+                    session.MarkEntryReached(entry, count);
             }
-
-            foreach (var session in targets)
-                session.MarkEntryReached(entry, count);
         }
 
         public void MarkPrepared(string scriptFileName)

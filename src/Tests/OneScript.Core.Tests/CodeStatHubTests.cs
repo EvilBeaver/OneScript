@@ -5,7 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using ScriptEngine.Machine;
 using Xunit;
@@ -116,9 +119,56 @@ namespace OneScript.Core.Tests
             CountOf(alive, second).Should().Be(0);
         }
 
+        [Fact]
+        public void Concurrent_Hits_Do_Not_Apply_After_Pause_Or_Finish()
+        {
+            AssertHitsDoNotApplyAfterControl(pause: true);
+            AssertHitsDoNotApplyAfterControl(pause: false);
+        }
+
+        private static void AssertHitsDoNotApplyAfterControl(bool pause)
+        {
+            var hub = new CodeStatHub();
+            var session = hub.StartSession();
+            var entry = new CodeStatEntry("script.os", "Method", 1);
+            hub.MarkEntryReached(entry, 0);
+            hub.MarkPrepared("script.os");
+
+            using var stopHitting = new ManualResetEventSlim(false);
+            var start = new Barrier(2);
+
+            var hitter = Task.Run(() =>
+            {
+                start.SignalAndWait();
+                while (!stopHitting.IsSet)
+                    hub.MarkEntryReached(entry);
+            });
+
+            start.SignalAndWait();
+            if (pause)
+                hub.PauseSession(session);
+            else
+                hub.FinishSession(session);
+
+            var countWhenControlReturned = CountOf(session, entry);
+            var timeWhenControlReturned = TimeOf(session, entry);
+
+            Thread.Sleep(30);
+            stopHitting.Set();
+            hitter.Wait();
+
+            CountOf(session, entry).Should().Be(countWhenControlReturned);
+            TimeOf(session, entry).Should().Be(timeWhenControlReturned);
+        }
+
         private static int CountOf(CodeStatProcessor session, CodeStatEntry entry)
         {
             return session.GetStatData().Single(x => x.Entry.Equals(entry)).ExecutionCount;
+        }
+
+        private static long TimeOf(CodeStatProcessor session, CodeStatEntry entry)
+        {
+            return session.GetStatData().Single(x => x.Entry.Equals(entry)).TimeElapsed;
         }
     }
 }
