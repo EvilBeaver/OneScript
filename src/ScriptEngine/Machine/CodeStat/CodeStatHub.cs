@@ -53,12 +53,15 @@ namespace ScriptEngine.Machine
             }
         }
 
-        public void FinishSession(CodeStatProcessor session)
+        public void FinishSession(CodeStatProcessor session, bool excludeZeros = false)
         {
             lock (_lock)
             {
                 session.EndCodeStat();
-                session.FreezeCatalog(_knownEntries.ToArray(), new HashSet<string>(_preparedScripts));
+                if (excludeZeros)
+                    session.FinishWithoutCatalog();
+                else
+                    session.FreezeCatalog(_knownEntries.ToArray(), new HashSet<string>(_preparedScripts));
                 _active = Remove(_active, session);
                 _alive = Remove(_alive, session);
             }

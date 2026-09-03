@@ -137,6 +137,29 @@ namespace OneScript.Core.Tests
         }
 
         [Fact]
+        public void GetStatData_ExcludeZeros_Returns_Only_Hits()
+        {
+            var hub = new CodeStatHub();
+            var session = hub.StartSession();
+            var hit = new CodeStatEntry("script.os", "Method", 1);
+            var zero = new CodeStatEntry("script.os", "Method", 2);
+
+            hub.MarkEntryReached(hit, 0);
+            hub.MarkEntryReached(zero, 0);
+            hub.MarkPrepared("script.os");
+            hub.MarkEntryReached(hit);
+
+            var live = session.GetStatData(true);
+            live.Should().ContainSingle(x => x.Entry.Equals(hit) && x.ExecutionCount == 1);
+            live.Should().NotContain(x => x.Entry.Equals(zero));
+
+            hub.FinishSession(session, excludeZeros: true);
+            var finished = session.GetStatData(true);
+            finished.Should().ContainSingle(x => x.Entry.Equals(hit) && x.ExecutionCount == 1);
+            finished.Should().NotContain(x => x.Entry.Equals(zero));
+        }
+
+        [Fact]
         public void ResumeSession_Does_Not_Revive_Finished_Session()
         {
             var hub = new CodeStatHub();

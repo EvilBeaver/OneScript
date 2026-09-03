@@ -21,6 +21,7 @@ namespace ScriptEngine.Machine
         private IReadOnlyList<CodeStatEntry> _frozenEntries;
         private int _frozenCount;
         private HashSet<string> _frozenPrepared;
+        private bool _finishedHitsOnly;
 
         public CodeStatProcessor()
         {
@@ -60,27 +61,18 @@ namespace ScriptEngine.Machine
             _preparedScripts.Add(scriptFileName);
         }
 
-        public CodeStatDataCollection GetStatData()
+        public CodeStatDataCollection GetStatData(bool excludeZeros = false)
         {
+            if (excludeZeros || _finishedHitsOnly)
+                return BuildFromHits();
+
             if (_frozenEntries != null)
                 return BuildFromCatalog(_frozenEntries, _frozenCount, _frozenPrepared);
 
             if (_hub != null)
                 return _hub.GetLiveStatData(this);
 
-            var data = new CodeStatDataCollection();
-            foreach (var item in _codeStat)
-            {
-                if (!IsPrepared(item.Key.ScriptFileName))
-                    continue;
-
-                long time = 0;
-                if (_watchers.TryGetValue(item.Key, out var watch))
-                    time = watch.ElapsedMilliseconds;
-                data.Add(new CodeStatData(item.Key, time, item.Value));
-            }
-
-            return data;
+            return BuildFromHits(requirePrepared: true, includeZeros: true);
         }
 
         internal void FreezeCatalog(CodeStatEntry[] entries, HashSet<string> prepared)
@@ -88,6 +80,11 @@ namespace ScriptEngine.Machine
             _frozenEntries = entries;
             _frozenCount = entries.Length;
             _frozenPrepared = prepared;
+        }
+
+        internal void FinishWithoutCatalog()
+        {
+            _finishedHitsOnly = true;
         }
 
         internal CodeStatDataCollection BuildFromCatalog(
@@ -108,6 +105,26 @@ namespace ScriptEngine.Machine
                     time = watch.ElapsedMilliseconds;
 
                 data.Add(new CodeStatData(entry, time, executionCount));
+            }
+
+            return data;
+        }
+
+        private CodeStatDataCollection BuildFromHits(bool requirePrepared = false, bool includeZeros = false)
+        {
+            var data = new CodeStatDataCollection();
+            foreach (var item in _codeStat)
+            {
+                if (!includeZeros && item.Value == 0)
+                    continue;
+                if (requirePrepared && !IsPrepared(item.Key.ScriptFileName))
+                    continue;
+
+                long time = 0;
+                if (_watchers.TryGetValue(item.Key, out var watch))
+                    time = watch.ElapsedMilliseconds;
+
+                data.Add(new CodeStatData(item.Key, time, item.Value));
             }
 
             return data;

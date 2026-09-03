@@ -53,15 +53,16 @@ namespace OneScript.StandardLibrary
             _state = SessionState.Active;
         }
 
+        /// <param name="excludeZeros">Истина — не включать в результат строки с нулевым количеством выполнений</param>
         [ContextMethod("Завершить", "Finish")]
-        public ValueTable Finish()
+        public ValueTable Finish(bool excludeZeros = false)
         {
             if (_state == SessionState.Finished)
                 ThrowInvalidState();
 
-            _hub.FinishSession(_session);
+            _hub.FinishSession(_session, excludeZeros);
             _state = SessionState.Finished;
-            return ToValueTable(_session.GetStatData());
+            return ToValueTable(_session.GetStatData(excludeZeros));
         }
 
         private void EnsureState(SessionState expected)
