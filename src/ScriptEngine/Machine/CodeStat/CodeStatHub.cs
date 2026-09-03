@@ -45,6 +45,8 @@ namespace ScriptEngine.Machine
         {
             lock (_lock)
             {
+                if (Array.IndexOf(_alive, session) < 0)
+                    return;
                 if (Array.IndexOf(_active, session) >= 0)
                     return;
                 _active = Append(_active, session);
@@ -103,23 +105,19 @@ namespace ScriptEngine.Machine
 
         public void StopWatch(CodeStatEntry entry)
         {
-            var targets = SnapshotActive();
-            foreach (var session in targets)
-                session.StopWatch(entry);
+            lock (_lock)
+            {
+                foreach (var session in _active)
+                    session.StopWatch(entry);
+            }
         }
 
         public void ResumeWatch(CodeStatEntry entry)
         {
-            var targets = SnapshotActive();
-            foreach (var session in targets)
-                session.ResumeWatch(entry);
-        }
-
-        private CodeStatProcessor[] SnapshotActive()
-        {
             lock (_lock)
             {
-                return _active;
+                foreach (var session in _active)
+                    session.ResumeWatch(entry);
             }
         }
 

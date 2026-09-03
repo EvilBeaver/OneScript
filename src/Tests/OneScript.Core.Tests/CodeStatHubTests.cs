@@ -137,10 +137,69 @@ namespace OneScript.Core.Tests
         }
 
         [Fact]
+        public void ResumeSession_Does_Not_Revive_Finished_Session()
+        {
+            var hub = new CodeStatHub();
+            var session = hub.StartSession();
+            var entry = new CodeStatEntry("script.os", "Method", 1);
+
+            hub.MarkEntryReached(entry, 0);
+            hub.MarkPrepared("script.os");
+            hub.MarkEntryReached(entry);
+            hub.FinishSession(session);
+
+            hub.ResumeSession(session);
+            hub.MarkEntryReached(entry);
+            hub.MarkEntryReached(entry);
+
+            CountOf(session, entry).Should().Be(1);
+        }
+
+        [Fact]
+        public void Concurrent_ResumeWatch_Does_Not_Restart_After_Pause_Or_Finish()
+        {
+            AssertWatchDoesNotResumeAfterControl(pause: true);
+            AssertWatchDoesNotResumeAfterControl(pause: false);
+        }
+
+        [Fact]
         public void Concurrent_Hits_Do_Not_Apply_After_Pause_Or_Finish()
         {
             AssertHitsDoNotApplyAfterControl(pause: true);
             AssertHitsDoNotApplyAfterControl(pause: false);
+        }
+
+        private static void AssertWatchDoesNotResumeAfterControl(bool pause)
+        {
+            var hub = new CodeStatHub();
+            var session = hub.StartSession();
+            var entry = new CodeStatEntry("script.os", "Method", 1);
+            hub.MarkEntryReached(entry, 0);
+            hub.MarkPrepared("script.os");
+            hub.MarkEntryReached(entry);
+
+            using var stopResuming = new ManualResetEventSlim(false);
+            var start = new Barrier(2);
+
+            var resumer = Task.Run(() =>
+            {
+                start.SignalAndWait();
+                while (!stopResuming.IsSet)
+                    hub.ResumeWatch(entry);
+            });
+
+            start.SignalAndWait();
+            if (pause)
+                hub.PauseSession(session);
+            else
+                hub.FinishSession(session);
+
+            var timeWhenControlReturned = TimeOf(session, entry);
+            Thread.Sleep(40);
+            stopResuming.Set();
+            resumer.Wait();
+
+            TimeOf(session, entry).Should().Be(timeWhenControlReturned);
         }
 
         private static void AssertHitsDoNotApplyAfterControl(bool pause)
