@@ -83,6 +83,14 @@ namespace ScriptEngine.Machine
             }
         }
 
+        internal HashSet<string> SnapshotPreparedScripts()
+        {
+            lock (_lock)
+            {
+                return new HashSet<string>(_preparedScripts);
+            }
+        }
+
         public void MarkEntryReached(CodeStatEntry entry, int count = 1)
         {
             lock (_lock)

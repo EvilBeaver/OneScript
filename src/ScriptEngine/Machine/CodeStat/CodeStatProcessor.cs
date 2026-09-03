@@ -64,7 +64,7 @@ namespace ScriptEngine.Machine
         public CodeStatDataCollection GetStatData(bool excludeZeros = false)
         {
             if (excludeZeros || _finishedHitsOnly)
-                return BuildFromHits();
+                return BuildFromHits(requirePrepared: true, prepared: PreparedScriptsForHits());
 
             if (_frozenEntries != null)
                 return BuildFromCatalog(_frozenEntries, _frozenCount, _frozenPrepared);
@@ -73,6 +73,11 @@ namespace ScriptEngine.Machine
                 return _hub.GetLiveStatData(this);
 
             return BuildFromHits(requirePrepared: true, includeZeros: true);
+        }
+
+        private HashSet<string> PreparedScriptsForHits()
+        {
+            return _hub != null ? _hub.SnapshotPreparedScripts() : _preparedScripts;
         }
 
         internal void FreezeCatalog(CodeStatEntry[] entries, HashSet<string> prepared)
@@ -110,14 +115,18 @@ namespace ScriptEngine.Machine
             return data;
         }
 
-        private CodeStatDataCollection BuildFromHits(bool requirePrepared = false, bool includeZeros = false)
+        private CodeStatDataCollection BuildFromHits(
+            bool requirePrepared = false,
+            bool includeZeros = false,
+            HashSet<string> prepared = null)
         {
             var data = new CodeStatDataCollection();
+            var preparedSet = prepared ?? _preparedScripts;
             foreach (var item in _codeStat)
             {
                 if (!includeZeros && item.Value == 0)
                     continue;
-                if (requirePrepared && !IsPrepared(item.Key.ScriptFileName))
+                if (requirePrepared && !preparedSet.Contains(item.Key.ScriptFileName))
                     continue;
 
                 long time = 0;

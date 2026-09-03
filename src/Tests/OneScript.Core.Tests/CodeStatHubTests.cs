@@ -137,6 +137,46 @@ namespace OneScript.Core.Tests
         }
 
         [Fact]
+        public void GetStatData_ExcludeZeros_Ignores_Hits_Before_Prepared()
+        {
+            var hub = new CodeStatHub();
+            var session = hub.StartSession();
+            var early = new CodeStatEntry("early.os", "Method", 1);
+            var ready = new CodeStatEntry("ready.os", "Method", 1);
+
+            hub.MarkEntryReached(early);
+            hub.MarkPrepared("ready.os");
+            hub.MarkEntryReached(ready);
+
+            session.GetStatData().Should().NotContain(x => x.Entry.Equals(early));
+            session.GetStatData().Should().ContainSingle(x => x.Entry.Equals(ready) && x.ExecutionCount == 1);
+
+            var withoutZeros = session.GetStatData(true);
+            withoutZeros.Should().NotContain(x => x.Entry.Equals(early));
+            withoutZeros.Should().ContainSingle(x => x.Entry.Equals(ready) && x.ExecutionCount == 1);
+
+            hub.FinishSession(session, excludeZeros: true);
+            var finished = session.GetStatData(true);
+            finished.Should().NotContain(x => x.Entry.Equals(early));
+            finished.Should().ContainSingle(x => x.Entry.Equals(ready) && x.ExecutionCount == 1);
+        }
+
+        [Fact]
+        public void Standalone_GetStatData_ExcludeZeros_Ignores_Hits_Before_Prepared()
+        {
+            var processor = new CodeStatProcessor();
+            var early = new CodeStatEntry("early.os", "Method", 1);
+
+            processor.MarkEntryReached(early);
+
+            processor.GetStatData().Should().BeEmpty();
+            processor.GetStatData(true).Should().BeEmpty();
+
+            processor.MarkPrepared("early.os");
+            processor.GetStatData(true).Should().ContainSingle(x => x.Entry.Equals(early) && x.ExecutionCount == 1);
+        }
+
+        [Fact]
         public void GetStatData_ExcludeZeros_Returns_Only_Hits()
         {
             var hub = new CodeStatHub();
