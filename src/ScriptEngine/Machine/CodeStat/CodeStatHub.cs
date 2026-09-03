@@ -13,7 +13,8 @@ namespace ScriptEngine.Machine
     public sealed class CodeStatHub : ICodeStatCollector
     {
         private readonly object _lock = new object();
-        private readonly HashSet<CodeStatEntry> _knownEntries = new HashSet<CodeStatEntry>();
+        private readonly List<CodeStatEntry> _knownEntries = new List<CodeStatEntry>();
+        private readonly HashSet<CodeStatEntry> _knownSet = new HashSet<CodeStatEntry>();
         private readonly HashSet<string> _preparedScripts = new HashSet<string>();
 
         private CodeStatProcessor[] _alive = Array.Empty<CodeStatProcessor>();
@@ -21,14 +22,9 @@ namespace ScriptEngine.Machine
 
         public CodeStatProcessor StartSession()
         {
-            var session = new CodeStatProcessor();
+            var session = new CodeStatProcessor(this);
             lock (_lock)
             {
-                foreach (var entry in _knownEntries)
-                    session.MarkEntryReached(entry, 0);
-                foreach (var script in _preparedScripts)
-                    session.MarkPrepared(script);
-
                 _alive = Append(_alive, session);
                 _active = Append(_active, session);
             }
@@ -60,8 +56,17 @@ namespace ScriptEngine.Machine
             lock (_lock)
             {
                 session.EndCodeStat();
+                session.FreezeCatalog(_knownEntries.ToArray(), new HashSet<string>(_preparedScripts));
                 _active = Remove(_active, session);
                 _alive = Remove(_alive, session);
+            }
+        }
+
+        internal CodeStatDataCollection GetLiveStatData(CodeStatProcessor session)
+        {
+            lock (_lock)
+            {
+                return session.BuildFromCatalog(_knownEntries, _knownEntries.Count, _preparedScripts);
             }
         }
 
@@ -77,24 +82,23 @@ namespace ScriptEngine.Machine
         {
             lock (_lock)
             {
-                _knownEntries.Add(entry);
-                var targets = count == 0 ? _alive : _active;
-                foreach (var session in targets)
+                if (_knownSet.Add(entry))
+                    _knownEntries.Add(entry);
+
+                if (count == 0)
+                    return;
+
+                foreach (var session in _active)
                     session.MarkEntryReached(entry, count);
             }
         }
 
         public void MarkPrepared(string scriptFileName)
         {
-            CodeStatProcessor[] targets;
             lock (_lock)
             {
                 _preparedScripts.Add(scriptFileName);
-                targets = _alive;
             }
-
-            foreach (var session in targets)
-                session.MarkPrepared(scriptFileName);
         }
 
         public void StopWatch(CodeStatEntry entry)

@@ -120,6 +120,23 @@ namespace OneScript.Core.Tests
         }
 
         [Fact]
+        public void StartSession_Reads_Zeros_From_Shared_Catalog()
+        {
+            var hub = new CodeStatHub();
+            for (var line = 1; line <= 50; line++)
+            {
+                hub.MarkEntryReached(new CodeStatEntry("script.os", "Method", line), 0);
+            }
+
+            hub.MarkPrepared("script.os");
+            var session = hub.StartSession();
+            var data = session.GetStatData();
+
+            data.Count.Should().Be(50);
+            data.Should().OnlyContain(x => x.ExecutionCount == 0 && x.TimeElapsed == 0);
+        }
+
+        [Fact]
         public void Concurrent_Hits_Do_Not_Apply_After_Pause_Or_Finish()
         {
             AssertHitsDoNotApplyAfterControl(pause: true);
