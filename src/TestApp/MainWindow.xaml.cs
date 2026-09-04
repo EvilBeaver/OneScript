@@ -410,11 +410,18 @@ namespace TestApp
 
         public void Echo(string str, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
-            _output.Dispatcher.BeginInvoke(new Action(() =>
+            void Append()
             {
                 _output.AppendText(str + '\n');
                 _output.ScrollToEnd();
-            }));
+            }
+
+            // RunProcess вызывается с UI-потока: без синхронной записи
+            // ShowExceptionInfo оказывается после "Error detected" / "Script completed".
+            if (_output.Dispatcher.CheckAccess())
+                Append();
+            else
+                _output.Dispatcher.BeginInvoke(new Action(Append));
         }
 
         public void ShowExceptionInfo(Exception exc)
