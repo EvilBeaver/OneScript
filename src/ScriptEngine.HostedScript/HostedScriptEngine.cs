@@ -12,7 +12,6 @@ using OneScript.Commons;
 using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
-using OneScript.Execution;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Tasks;
 using ScriptEngine.Machine.Contexts;
@@ -85,35 +84,64 @@ namespace ScriptEngine.HostedScript
         {
             var compilerSvc = _engine.GetCompilerService();
             compilerSvc.FillSymbols(typeof(UserScriptContextInstance));
-            
+            DefineConstants(compilerSvc);
             return compilerSvc;
         }
 
+        /// <summary>
+        /// Создаёт процесс выполнения скрипта: инициализация, компиляция исходника, подготовка к запуску.
+        /// </summary>
+        /// <param name="host">Хост-приложение для взаимодействия со скриптом.</param>
+        /// <param name="src">Исходный код скрипта.</param>
+        /// <returns>Процесс, готовый к вызову <see cref="Process.Start"/>.</returns>
+        /// <remarks>
+        /// При ошибке компиляции или подготовки исключение пробрасывается вызывающему коду.
+        /// </remarks>
         public Process CreateProcess(IHostApplication host, SourceCode src)
         {
             Initialize();
             SetGlobalEnvironment(host, src);
-            
-            if (_engine.Debugger.IsEnabled)
-            {
-                _engine.Debugger.Start();
-                _engine.Debugger.GetSession().WaitReadyToRun();
-            }
 
             var compilerSvc = GetCompilerService();
-            DefineConstants(compilerSvc);
-            IExecutableModule module;
-            var bslProcess = _engine.NewProcess();
+            return Process.Create(_engine, compilerSvc, src);
+        }
+
+        /// <summary>
+        /// Создаёт и запускает процесс скрипта, возвращает код завершения.
+        /// </summary>
+        /// <param name="host">Хост-приложение для взаимодействия со скриптом.</param>
+        /// <param name="source">Исходный код скрипта.</param>
+        /// <returns>
+        /// Код завершения скрипта; при ошибке создания/выполнения — <c>1</c>
+        /// после вывода информации об исключении через <see cref="IHostApplication.ShowExceptionInfo"/>.
+        /// </returns>
+        /// <remarks>
+        /// Управляет сессией отладчика: старт и ожидание готовности перед созданием процесса,
+        /// уведомление о завершении при любом исходе.
+        /// Прерывание скрипта (<see cref="ScriptInterruptionException"/>) обрабатывается в <see cref="Process.Start"/>
+        /// и возвращается как штатный код выхода.
+        /// </remarks>
+        public int RunProcess(IHostApplication host, SourceCode source)
+        {
             try
             {
-                module = compilerSvc.Compile(src, bslProcess);
+                if (_engine.Debugger.IsEnabled)
+                {
+                    _engine.Debugger.Start();
+                    _engine.Debugger.GetSession().WaitReadyToRun();
+                }
+
+                var process = CreateProcess(host, source);
+                var exitCode = process.Start();
+                _engine.Debugger.NotifyProcessExit(exitCode);
+                return exitCode;
             }
-            catch (CompilerException)
+            catch (Exception e)
             {
                 _engine.Debugger.NotifyProcessExit(1);
-                throw;
+                host.ShowExceptionInfo(e);
+                return 1;
             }
-            return InitProcess(bslProcess, host, module);
         }
 
         private void DefineConstants(ICompilerFrontend compilerSvc)
@@ -137,14 +165,6 @@ namespace ScriptEngine.HostedScript
             _globalCtx.ApplicationHost = host;
             _globalCtx.CodeSource = src;
             _globalCtx.InitInstance();
-        }
-
-        private Process InitProcess(IBslProcess bslProcess, IHostApplication host, IExecutableModule module)
-        {
-            Initialize();
-            
-            var process = new Process(bslProcess, host, module, _engine);
-            return process;
         }
 
         public void Dispose()
