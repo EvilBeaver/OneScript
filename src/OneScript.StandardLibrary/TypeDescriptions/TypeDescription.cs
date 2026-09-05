@@ -5,7 +5,9 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
+using System.Text;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Collections;
@@ -330,9 +332,12 @@ namespace OneScript.StandardLibrary.TypeDescriptions
 					throw RuntimeException.InvalidNthArgumentType(nParam);
 			}
 		}
-	}
-	
-	internal class UndefinedTypeAdjuster : IValueAdjuster
+
+        public override string ToString() => string.Join(", ", _types);
+    }
+
+
+    internal class UndefinedTypeAdjuster : IValueAdjuster
 	{
 		public IValue Adjust(IValue value)
 		{

@@ -94,7 +94,7 @@ namespace OneScript.Dynamic.Tests
         {
             return new NativeExecutableTestProcess
             {
-                Services = serviceContainer
+                Services = serviceContainer.CreateScope()
             };
         }
 

@@ -6,6 +6,8 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Contexts;
+using OneScript.Execution;
+using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -14,6 +16,16 @@ namespace Component
 	[ContextClass("ПростоКласс")]
 	public sealed class SimpleClass : AutoContext<SimpleClass>, ISimple
 	{
+
+        // Для вызова некоторых операций значений IValue, таких как AsString(), Count(), требуется указание активного процесса.
+		// Процесс может быть передан как параметр в конструкторе или как первый параметр методов класса
+        private readonly IBslProcess _bslProcess;
+
+		private SimpleClass(IBslProcess bslProcess)
+		{
+			_bslProcess = bslProcess;
+		}
+
 		[ContextProperty("СвойствоПеречисление")]
 		public SimpleEnum EnumProperty { get; set; }
 
@@ -21,18 +33,33 @@ namespace Component
 		public int IntProperty { get; set; }
 
 		[ContextProperty("СвойствоСПроизвольнымЗначением")]
-		public IValue AnyValueProperty { get; set; }
+		public IValue AnyValueProperty { get; set; } = ValueFactory.Create();
 
-		[ScriptConstructor]
-		public static SimpleClass Constructor()
+		[ContextMethod("МетодСПроцессом")]
+		public string MethodWithProcess(IBslProcess bslProcess)
 		{
-			return new SimpleClass();
+            // Параметр IBslProcess bslProcess не будет виден из скрипта.
+			// Скрипт будет считать такой метод методом без параметров.
+            return AnyValueProperty.AsString(bslProcess);
+        }
+
+        [ScriptConstructor]
+		public static SimpleClass Constructor(TypeActivationContext ctx)
+		{
+
+            // В отличие от методов в конструктор передается TypeActivationContext.
+
+            // Параметр TypeActivationContext не будет виден из скрипта.
+            // Скрипт будет считать такой конструктор конструктором без параметров.
+            return new SimpleClass(ctx.CurrentProcess);
 		}
 
 		[ScriptConstructor]
-		public static SimpleClass Constructor(int initialProperty)
+		public static SimpleClass Constructor(TypeActivationContext ctx, int initialProperty)
 		{
-			var result = new SimpleClass();
+            // Параметр TypeActivationContext не будет виден из скрипта.
+            // Скрипт будет считать такой конструктор конструктором с ОДНИМ параметром.
+            var result = new SimpleClass(ctx.CurrentProcess);
 			result.IntProperty = initialProperty;
 			return result;
 		}

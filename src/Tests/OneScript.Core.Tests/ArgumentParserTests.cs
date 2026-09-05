@@ -20,6 +20,9 @@ public class ArgumentParserTests
     [InlineData("-c \"'oscript' -version\"", "-c", "'oscript' -version")]
     [InlineData("'aaa\"", "aaa\"")]
     [InlineData(" ")]
+    [InlineData("-c \"Сообщить(\"\"привет\"\")\"", "-c", "Сообщить(\"привет\")")]
+    [InlineData("-c 'it''s fine'", "-c", "it's fine")]
+    [InlineData("\"aaa\"\"\"", "aaa\"")]
     public void Should_Parse_Arguments(string input, params string[] expected)
     {
         var parser = new ArgumentsParser(input);

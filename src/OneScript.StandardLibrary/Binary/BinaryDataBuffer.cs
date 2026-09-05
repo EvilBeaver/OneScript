@@ -355,7 +355,7 @@ namespace OneScript.StandardLibrary.Binary
         [ContextMethod("Перевернуть", "Reverse")]
         public BinaryDataBuffer Reverse()
         {
-            var bytes = Bytes.Reverse().ToArray();
+            var bytes = Enumerable.Reverse(Bytes).ToArray();
             return new BinaryDataBuffer(bytes, ByteOrder);
         }
 

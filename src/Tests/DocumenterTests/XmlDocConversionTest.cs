@@ -31,7 +31,7 @@ namespace DocumenterTests
             var expected = 
 @"Для Каждого Переменная Из ПеременныеСреды() Цикл
     Сообщить(Переменная.Ключ + "" = "" + Переменная.Значение);
-КонецЦикла;";
+КонецЦикла;".ReplaceLineEndings("\n");
             
             Assert.Equal(expected, text);
         }

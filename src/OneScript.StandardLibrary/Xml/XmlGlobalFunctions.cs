@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Xml;
 using OneScript.Contexts;
 using OneScript.Exceptions;
@@ -65,7 +66,10 @@ namespace OneScript.StandardLibrary.Xml
             else if(value.SystemType == BasicTypes.Boolean)
                 return XmlConvert.ToString(value.AsBoolean());
             else if(value.SystemType == BasicTypes.Date)
-                return XmlConvert.ToString(value.AsDate(), XmlDateTimeSerializationMode.Unspecified);
+            {
+                var date = value.AsDate();
+                return date.ToString("yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture);
+            }
             else if(value.SystemType == BasicTypes.Number)
                 return XmlConvert.ToString(value.AsNumber());
             else

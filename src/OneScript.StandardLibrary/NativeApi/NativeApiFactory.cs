@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using OneScript.Types;
 using OneScript.Contexts;
+using ScriptEngine;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.NativeApi
@@ -17,36 +18,61 @@ namespace OneScript.StandardLibrary.NativeApi
     /// Фабрика, осуществляющая регистрацию библиотеки внешних 
     /// компонент Native API и создания экземпляров компонент.
     /// </summary>
-    class NativeApiFactory
+    class NativeApiFactory : IEngineLifetime
     {
-        public static bool Register(string filepath, string identifier, ITypeManager typeManager)
+        private readonly object _sync = new object();
+        private readonly Dictionary<string, NativeApiLibrary> _libraries = new Dictionary<string, NativeApiLibrary>();
+        private bool _disposed;
+
+        public bool Register(string filepath, string identifier, ITypeManager typeManager)
         {
-            if (_libraries.ContainsKey(identifier)) 
-                return false;
-            var library = new NativeApiLibrary(filepath, identifier, typeManager);
-            if (library.Loaded) 
-                _libraries.Add(identifier, library);
-            return library.Loaded;
+            lock (_sync)
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+
+                if (_libraries.ContainsKey(identifier))
+                    return true;
+
+                var library = new NativeApiLibrary(filepath, identifier, typeManager);
+                if (library.Loaded)
+                    _libraries.Add(identifier, library);
+                return library.Loaded;
+            }
         }
 
-        private static readonly Dictionary<string, NativeApiLibrary> _libraries = new Dictionary<string, NativeApiLibrary>();
-
-        internal static void Initialize()
+        public void Dispose()
         {
-            foreach (var item in _libraries) 
-                item.Value.Dispose();
-            _libraries.Clear();
+            lock (_sync)
+            {
+                if (_disposed)
+                    return;
+
+                foreach (var item in _libraries)
+                    item.Value.Dispose();
+
+                _libraries.Clear();
+                _disposed = true;
+            }
         }
 
         [ScriptConstructor]
         public static IValue Constructor(TypeActivationContext context)
         {
+            var factory = context.Services.Resolve<NativeApiFactory>();
             var typeName = context.TypeName;
             var separator = new char[] { '.' };
             var names = typeName.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-            if (names.Length == 3 && _libraries.TryGetValue(names[1], out NativeApiLibrary library))
+            if (names.Length == 3 && factory.TryGetLibrary(names[1], out NativeApiLibrary library))
                 return library.CreateComponent(context.TypeManager, default, typeName, names[2]);
             throw new NotImplementedException();
+        }
+
+        private bool TryGetLibrary(string identifier, out NativeApiLibrary library)
+        {
+            lock (_sync)
+            {
+                return _libraries.TryGetValue(identifier, out library);
+            }
         }
     }
 }

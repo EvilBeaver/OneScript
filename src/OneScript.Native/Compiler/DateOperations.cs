@@ -8,11 +8,19 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Reflection;
+using OneScript.Values;
 
 namespace OneScript.Native.Compiler
 {
     internal static class DateOperations
     {
+        private static readonly MethodInfo AddSecondsMethod =
+            typeof(BslDateValue).GetMethod(nameof(BslDateValue.AddSeconds));
+
+        private static readonly MethodInfo SubtractSecondsMethod =
+            typeof(BslDateValue).GetMethod(nameof(BslDateValue.SubtractSeconds));
+
         /// <summary>
         ///  Операция смещения дат (прибавление или удаление секунд
         /// </summary>
@@ -25,19 +33,15 @@ namespace OneScript.Native.Compiler
         {
             Debug.Assert(left.Type == typeof(DateTime));
             Debug.Assert(right.Type == typeof(decimal));
-            
-            var adder = typeof(DateTime).GetMethod(nameof(DateTime.AddSeconds));
-            Debug.Assert(adder != null);
-            
-            var toDouble = Expression.Convert(right, typeof(double));
-            Expression arg = opCode switch
+            Debug.Assert(AddSecondsMethod != null);
+            Debug.Assert(SubtractSecondsMethod != null);
+
+            return opCode switch
             {
-                ExpressionType.Add => toDouble,
-                ExpressionType.Subtract => Expression.Negate(toDouble),
+                ExpressionType.Add => Expression.Add(left, right, AddSecondsMethod),
+                ExpressionType.Subtract => Expression.Subtract(left, right, SubtractSecondsMethod),
                 _ => throw NativeCompilerException.OperationNotDefined(opCode, left.Type, right.Type)
             };
-
-            return Expression.Call(left, adder, arg);
         }
         
         /// <summary>
