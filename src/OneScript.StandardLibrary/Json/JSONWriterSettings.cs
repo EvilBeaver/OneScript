@@ -11,7 +11,6 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.Json
 {
     /// <summary>
-    /// 
     /// Определяет набор параметров, используемых при записи JSON.
     /// </summary>
     [ContextClass("ПараметрыЗаписиJSON", "JSONWriterSettings")]
@@ -51,17 +50,15 @@ namespace OneScript.StandardLibrary.Json
 
 
         /// <summary>
-        /// 
         /// Создает объект параметров записи JSON.
         /// </summary>
-        ///
         /// <param name="newLines">
         /// Определяет способ переноса строк, который будет использован при записи данных JSON.
         /// Значение по умолчанию: Авто. </param>
         /// <param name="paddingSymbols">
         /// Определяет символы отступа, используемые при записи данных JSON.
         /// Применяется только, если значение ПереносСтрокJSON отлично от Нет.
-        /// Значение по умолчанию: " ". </param>
+        /// Значение по умолчанию: "". </param>
         /// <param name="useDoubleQuotes">
         /// Определяет, будут ли при записи имена свойств JSON записываться в двойных кавычках.
         /// Значение по умолчанию: Истина. </param>
@@ -86,8 +83,8 @@ namespace OneScript.StandardLibrary.Json
         /// Значение по умолчанию: Ложь. </param>
         [ScriptConstructor(Name = "По описанию параметров записи")]
         public static JSONWriterSettings ParametrizedConstructor(
-            JSONLineBreakEnum newLines = JSONLineBreakEnum.None,
-            string paddingSymbols = null,
+            JSONLineBreakEnum newLines = JSONLineBreakEnum.Auto,
+            string paddingSymbols = "",
             bool useDoubleQuotes = true,
             JSONCharactersEscapeModeEnum escapeCharacters = JSONCharactersEscapeModeEnum.None,
             bool escapeAngleBrackets = false,
@@ -107,11 +104,6 @@ namespace OneScript.StandardLibrary.Json
                                           escapeSlash);
         }
 
-        /// <summary>
-        /// 
-        /// 
-        /// </summary>
-        ///
         [ScriptConstructor]
         public static JSONWriterSettings Constructor()
         {
@@ -119,7 +111,6 @@ namespace OneScript.StandardLibrary.Json
         }
 
         /// <summary>
-        /// 
         /// Определяет использование двойных кавычек при записи свойств и значений JSON.
         /// После создания объекта данное свойство имеет значение Истина.
         /// </summary>
@@ -129,7 +120,6 @@ namespace OneScript.StandardLibrary.Json
 
 
         /// <summary>
-        /// 
         /// Управляет размещением начала и конца объектов и массивов, ключей и значений на новой строке.
         /// Также установка данного свойства в значение, отличное от Нет, добавляет пробел между именем свойства, двоеточием и значением.
         /// После создания объекта данное свойство имеет значение Авто.
@@ -140,20 +130,18 @@ namespace OneScript.StandardLibrary.Json
 
 
         /// <summary>
-        /// 
         /// Определяет символы отступа, используемые при записи документа JSON.
         /// Свойство не используется, если свойство ПереносСтрокJSON установлено в значение Нет.
-        /// После создания объекта данное свойство имеет значение - один пробельный символ.
+        /// После создания объекта данное свойство имеет значение - пустая строка.
         /// </summary>
         /// <value>Строка (String)</value>
         [ContextProperty("СимволыОтступа", "PaddingSymbols")]
-        public string PaddingSymbols => _paddingSymbols;
+        public string PaddingSymbols => _paddingSymbols ?? string.Empty;
 
 
         /// <summary>
-        /// 
         /// Определяет способ экранирования символов при записи документа JSON.
-        /// После создания объекта данное свойство имеет значение СимволыВнеASCII.
+        /// После создания объекта данное свойство имеет значение Нет.
         /// </summary>
         /// <value>ЭкранированиеСимволовJSON (JSONCharactersEscapeMode)</value>
         [ContextProperty("ЭкранированиеСимволов", "EscapeCharacters")]
@@ -161,7 +149,6 @@ namespace OneScript.StandardLibrary.Json
 
 
         /// <summary>
-        /// 
         /// Определяет, будет ли экранироваться знак амперсанда при записи документа JSON.
         /// После создания объекта данное свойство имеет значение Ложь.
         /// </summary>
@@ -171,7 +158,6 @@ namespace OneScript.StandardLibrary.Json
 
 
         /// <summary>
-        /// 
         /// Определяет, будет ли экранирован знак одинарной кавычки при записи документа JSON.
         /// Имеет значение Истина, если ИспользоватьДвойныеКавычки установлен Ложь.
         /// После создания объекта данное свойство имеет значение Ложь
@@ -182,7 +168,6 @@ namespace OneScript.StandardLibrary.Json
 
 
         /// <summary>
-        /// 
         /// Определяет экранирование символов "U+2028" (разделитель строк) и "U+2029" (разделитель абзацев) для совместимости с JavaScript.
         /// После создания объекта данное свойство имеет значение Истина.
         /// </summary>
@@ -192,7 +177,6 @@ namespace OneScript.StandardLibrary.Json
 
 
         /// <summary>
-        /// 
         /// Определяет, будет ли экранироваться слеш (косая черта) при записи значения.
         /// После создания объекта данное свойство имеет значение Ложь.
         /// </summary>
@@ -202,7 +186,6 @@ namespace OneScript.StandardLibrary.Json
 
 
         /// <summary>
-        /// 
         /// Определяет, будут ли экранированы знаки угловых скобок при записи документа JSON.
         /// После создания объекта данное свойство имеет значение Ложь.
         /// </summary>

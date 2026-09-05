@@ -42,10 +42,19 @@ namespace OneScript.StandardLibrary.Processes
             }
             
             _currentArgument.Clear();
-            
-            foreach (var currentChar in _input)
+
+            for (var i = 0; i < _input.Length; i++)
             {
-                if (char.IsWhiteSpace(currentChar) && !_isInQuotes)
+                var currentChar = _input[i];
+
+                if (_isInQuotes && currentChar == _currentQuote
+                    && i + 1 < _input.Length && _input[i + 1] == _currentQuote)
+                {
+                    // удвоенная кавычка внутри кавычек - экранированная кавычка
+                    PushChar(currentChar);
+                    i++;
+                }
+                else if (char.IsWhiteSpace(currentChar) && !_isInQuotes)
                 {
                     PushArgument();
                 }

@@ -51,11 +51,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.GetBytes(value);
+                return BitConverter.GetBytes(value);
             }
             else
             {
-                return System.BitConverter.GetBytes(value).Reverse().ToArray();
+                return Enumerable.Reverse(BitConverter.GetBytes(value)).ToArray();
             }
         }
         ///
@@ -73,11 +73,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.GetBytes(value);
+                return BitConverter.GetBytes(value);
             }
             else
             {
-                return System.BitConverter.GetBytes(value).Reverse().ToArray();
+                return Enumerable.Reverse(BitConverter.GetBytes(value)).ToArray();
             }
         }
         ///
@@ -96,11 +96,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.GetBytes(value);
+                return BitConverter.GetBytes(value);
             }
             else
             {
-                return System.BitConverter.GetBytes(value).Reverse().ToArray();
+                return Enumerable.Reverse(BitConverter.GetBytes(value)).ToArray();
             }
         }
         ///
@@ -119,11 +119,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.GetBytes(value);
+                return BitConverter.GetBytes(value);
             }
             else
             {
-                return System.BitConverter.GetBytes(value).Reverse().ToArray();
+                return Enumerable.Reverse(BitConverter.GetBytes(value)).ToArray();
             }
         }
         ///
@@ -141,11 +141,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.GetBytes(value);
+                return BitConverter.GetBytes(value);
             }
             else
             {
-                return System.BitConverter.GetBytes(value).Reverse().ToArray();
+                return Enumerable.Reverse(BitConverter.GetBytes(value)).ToArray();
             }
         }
         ///
@@ -163,11 +163,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.GetBytes(value);
+                return BitConverter.GetBytes(value);
             }
             else
             {
-                return System.BitConverter.GetBytes(value).Reverse().ToArray();
+                return Enumerable.Reverse(BitConverter.GetBytes(value)).ToArray();
             }
         }
         ///
@@ -185,11 +185,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.GetBytes(value);
+                return BitConverter.GetBytes(value);
             }
             else
             {
-                return System.BitConverter.GetBytes(value).Reverse().ToArray();
+                return Enumerable.Reverse(BitConverter.GetBytes(value)).ToArray();
             }
         }
         ///
@@ -207,11 +207,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.GetBytes(value);
+                return BitConverter.GetBytes(value);
             }
             else
             {
-                return System.BitConverter.GetBytes(value).Reverse().ToArray();
+                return Enumerable.Reverse(BitConverter.GetBytes(value)).ToArray();
             }
         }
         ///
@@ -229,11 +229,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.GetBytes(value);
+                return BitConverter.GetBytes(value);
             }
             else
             {
-                return System.BitConverter.GetBytes(value).Reverse().ToArray();
+                return Enumerable.Reverse(BitConverter.GetBytes(value)).ToArray();
             }
         }
         ///
@@ -251,11 +251,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.GetBytes(value);
+                return BitConverter.GetBytes(value);
             }
             else
             {
-                return System.BitConverter.GetBytes(value).Reverse().ToArray();
+                return Enumerable.Reverse(BitConverter.GetBytes(value)).ToArray();
             }
         }
         ///
@@ -377,7 +377,7 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.ToInt16(value, startIndex);
+                return BitConverter.ToInt16(value, startIndex);
             }
             else
             {
@@ -415,7 +415,7 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.ToInt32(value, startIndex);
+                return BitConverter.ToInt32(value, startIndex);
             }
             else
             {
@@ -453,7 +453,7 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.ToInt64(value, startIndex);
+                return BitConverter.ToInt64(value, startIndex);
             }
             else
             {
@@ -500,11 +500,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.ToSingle(value, startIndex);
+                return BitConverter.ToSingle(value, startIndex);
             }
             else
             {
-                return System.BitConverter.ToSingle(value.Reverse().ToArray(), value.Length - sizeof(Single) - startIndex);
+                return BitConverter.ToSingle(Enumerable.Reverse(value).ToArray(), value.Length - sizeof(Single) - startIndex);
             }
         }
         ///
@@ -528,11 +528,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.ToString(value);
+                return BitConverter.ToString(value);
             }
             else
             {
-                return System.BitConverter.ToString(value.Reverse().ToArray());
+                return BitConverter.ToString(Enumerable.Reverse(value).ToArray());
             }
         }
         ///
@@ -563,11 +563,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.ToString(value, startIndex);
+                return BitConverter.ToString(value, startIndex);
             }
             else
             {
-                return System.BitConverter.ToString(value.Reverse().ToArray(), startIndex);
+                return BitConverter.ToString(Enumerable.Reverse(value).ToArray(), startIndex);
             }
         }
         ///
@@ -607,11 +607,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.ToString(value, startIndex, length);
+                return BitConverter.ToString(value, startIndex, length);
             }
             else
             {
-                return System.BitConverter.ToString(value.Reverse().ToArray(), startIndex, length);
+                return BitConverter.ToString(Enumerable.Reverse(value).ToArray(), startIndex, length);
             }
         }
         ///
@@ -643,11 +643,11 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.ToUInt16(value, startIndex);
+                return BitConverter.ToUInt16(value, startIndex);
             }
             else
             {
-                return System.BitConverter.ToUInt16(value.Reverse().ToArray(), value.Length - sizeof(UInt16) - startIndex);
+                return BitConverter.ToUInt16(Enumerable.Reverse(value).ToArray(), value.Length - sizeof(UInt16) - startIndex);
             }
         }
         ///
@@ -680,7 +680,7 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.ToUInt32(value, startIndex);
+                return BitConverter.ToUInt32(value, startIndex);
             }
             else
             {
@@ -717,7 +717,7 @@ namespace OneScript.StandardLibrary.Binary
         {
             if (IsLittleEndian)
             {
-                return System.BitConverter.ToUInt64(value, startIndex);
+                return BitConverter.ToUInt64(value, startIndex);
             }
             else
             {

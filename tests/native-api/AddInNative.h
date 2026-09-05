@@ -17,6 +17,8 @@ public:
 		ePropStringRW,
 		ePropStringRO,
 		ePropStringWO,
+		ePropDateRW,
+		ePropFixedDate,
 		ePropLast      // Always last
 	};
 
@@ -31,6 +33,8 @@ public:
 		eMethExchange,
 		eMethConcatenate,
 		eMethLoopback,
+		eMethEchoDate,
+		eMethSetDateOut,
 		eMethLast      // Always last
 	};
 
@@ -64,10 +68,19 @@ public:
 private:
 	long findName(const wchar_t* names[], const wchar_t* name, const uint32_t size) const;
 	void addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code);
+protected:
 	IAddInDefBase* m_iConnect;
 	IMemoryManager* m_iMemory;
 	bool m_Enabled = false;
 	std::wstring m_String;
+	double m_Date = 0.0;
+private:
+};
+
+class CAddInNativeSecond : public CAddInNative
+{
+public:
+	bool ADDIN_API RegisterExtensionAs(WCHAR_T** wsExtensionName) override;
 };
 
 class WcharWrapper

@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 #nullable enable
 
+using System;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Values;
@@ -15,7 +16,10 @@ using ScriptEngine.Machine;
 namespace OneScript.Execution
 {
     /// <summary>
-    /// Готовый к исполнению bsl-процесс, с настроенным окружением
+    /// Готовый к исполнению bsl-процесс, с настроенным окружением.
+    ///
+    /// Процесс освобождается тем, кто его создал, когда единица исполнения отработала.
+    /// Освобождение завершает поток исполнения процесса.
     /// </summary>
     public interface IBslProcess
     {
@@ -33,7 +37,18 @@ namespace OneScript.Execution
         /// Сервисы текущего процесса
         /// </summary>
         public IServiceContainer Services { get; }
-        
+
         public int VirtualThreadId { get; }
+
+        /**
+         * Обертка текущего процесса в терминах BSL.
+         * Может отсутствовать, полностью определяется хост-приложением процесса.
+         */
+        public IRuntimeContextInstance? BslWrapper
+        {
+            get => null;
+            // ReSharper disable once ValueParameterNotUsed
+            set { }
+        }
     }
 }

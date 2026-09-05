@@ -114,6 +114,14 @@ namespace ScriptEngine.HostedScript
             }
         }
 
+        public void RemoveAllHandlers(IRuntimeContextInstance eventSource)
+        {
+            lock (_subscriptionLock)
+            {
+                _registeredHandlers.Remove(eventSource);
+            }
+        }
+
         public void HandleEvent(IRuntimeContextInstance eventSource, string eventName, IValue[] eventArgs,
             IBslProcess process)
         {
