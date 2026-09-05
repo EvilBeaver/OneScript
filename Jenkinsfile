@@ -4,7 +4,7 @@ pipeline {
     agent none
 
     environment {
-        VersionPrefix = '2.2.0'
+        VersionPrefix = '2.3.0'
         VersionSuffix = 'dev'+"+${BUILD_NUMBER}"
         outputEnc = '65001'
     }
@@ -120,7 +120,7 @@ pipeline {
                             unstash 'nativeApiTestsDll'
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:Test"
 
-                            junit 'tests/*.xml'
+                            publishTestResults('tests/*.xml')
                         }
                     }
                 }
@@ -159,7 +159,7 @@ pipeline {
                         exit 0
                         '''.stripIndent()
 
-                        junit 'lintests/*.xml'
+                        publishTestResults('lintests/*.xml')
                         archiveArtifacts artifacts: 'lintests/*.xml', fingerprint: true
                     }
                 }
@@ -328,6 +328,30 @@ pipeline {
                 }
             }
         }
+    }
+}
+
+def testsShouldFailBuild() {
+    if (env.CHANGE_ID) {
+        return true
+    }
+
+    switch (env.BRANCH_NAME) {
+        case 'develop':
+        case 'release/preview':
+        case 'release/latest':
+        case 'release/lts':
+            return false
+        default:
+            return true
+    }
+}
+
+def publishTestResults(String pattern) {
+    def failBuild = testsShouldFailBuild()
+    def results = junit testResults: pattern, skipMarkingBuildUnstable: failBuild
+    if (failBuild && results.failCount > 0) {
+        error("${results.failCount} test(s) failed")
     }
 }
 
