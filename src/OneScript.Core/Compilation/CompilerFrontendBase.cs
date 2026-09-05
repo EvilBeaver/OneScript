@@ -4,9 +4,8 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using System;
-using System.Collections.Generic;
 using OneScript.Compilation.Binding;
+using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Execution;
 using OneScript.Language;
@@ -14,6 +13,8 @@ using OneScript.Language.LexicalAnalysis;
 using OneScript.Language.SyntaxAnalysis;
 using OneScript.Language.SyntaxAnalysis.AstNodes;
 using OneScript.Sources;
+using System;
+using System.Collections.Generic;
 
 namespace OneScript.Compilation
 {
@@ -64,6 +65,17 @@ namespace OneScript.Compilation
             return CompileInternal(symbols, parsedModule, classType, process);
         }
 
+        public IExecutableModule Compile<T>(SourceCode source, IBslProcess process, T target)
+            where T : IAttachableContext
+        {
+            var lexer = CreatePreprocessor(source);
+            var symbols = PrepareSymbols(target);
+            var parsedModule = ParseSyntaxConstruction(lexer, source, p => p.ParseStatefulModule());
+
+            return CompileInternal(symbols, parsedModule, typeof(T), process);
+        }
+
+
         public IExecutableModule CompileExpression(SourceCode source)
         {
             var lexer = new DefaultLexer
@@ -91,7 +103,7 @@ namespace OneScript.Compilation
         
         protected abstract IExecutableModule CompileBatchInternal(SymbolTable symbols, ModuleNode parsedModule);
 
-        private SymbolTable PrepareSymbols()
+        private SymbolTable PrepareSymbols(IAttachableContext target = null)
         {
             var actualTable = new SymbolTable();
             if (SharedSymbols != default)
@@ -104,7 +116,7 @@ namespace OneScript.Compilation
             }
 
             ModuleSymbols ??= new SymbolScope();
-            actualTable.PushScope(ModuleSymbols, ScopeBindingDescriptor.ThisScope());
+            actualTable.PushScope(ModuleSymbols, ScopeBindingDescriptor.ThisScope(target));
 
             return actualTable;
         }

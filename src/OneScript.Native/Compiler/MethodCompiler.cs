@@ -142,7 +142,7 @@ namespace OneScript.Native.Compiler
         private void FillParameterVariables()
         {
             _declaredParameters = _method.GetBslParameters();
-            _thisParameter = _method.IsInstance ? Expression.Parameter(typeof(NativeClassInstanceWrapper), "$this") : null;
+            _thisParameter = _method.IsInstance ? Expression.Parameter(typeof(IAttachableContext), "$this") : null;
 
             var localScope = Symbols.GetScope(Symbols.ScopeCount-1);
             foreach (var parameter in _declaredParameters)
@@ -1108,55 +1108,12 @@ namespace OneScript.Native.Compiler
 
         protected override void VisitObjectProcedureCall(BslSyntaxNode node)
         {
-            var target = _statementBuildParts.Pop();
-            var call = (CallNode) node;
+            _blocks.Add(CreateObjectMethodCall(node));
+        }
 
-            var targetType = target.Type;
-            var name = call.Identifier.GetIdentifier();
-            if (targetType.IsObjectValue())
-            {
-                var methodInfo = FindMethodOfType(node, targetType, name);
-                var injectProcess = InjectedProcessNeeded(methodInfo);
-                var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters(), injectProcess);
-
-                _blocks.Add(Expression.Call(target, methodInfo, args));
-            }
-            else if (targetType.IsContext())
-            {
-                var contextCall = ExpressionHelpers.CallContextMethod(target, name, _processParameter,
-                    PrepareDynamicCallArguments(call.ArgumentList));
-                _blocks.Add(contextCall);
-            }
-            else if (targetType.IsValue())
-            {
-                var contextCall = ExpressionHelpers.TryCallContextMethod(target, name, _processParameter,
-                    PrepareDynamicCallArguments(call.ArgumentList));
-                _blocks.Add(contextCall);
-            }
-            else if (target is DynamicExpression)
-            {
-                var args = new List<Expression>();
-                args.Add(target);
-                args.AddRange(PrepareDynamicCallArguments(call.ArgumentList));
-
-                var csharpArgs = new List<CSharpArgumentInfo>();
-                csharpArgs.Add(CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default));
-                csharpArgs.AddRange(args.Select(x => CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default)));
-                
-                var binder = Microsoft.CSharp.RuntimeBinder.Binder.InvokeMember(
-                    CSharpBinderFlags.InvokeSimpleName,
-                    name,
-                    null,
-                    typeof(BslObjectValue),
-                    csharpArgs);
-
-                var objectExpr = Expression.Dynamic(binder, typeof(object), args); 
-                _blocks.Add(ExpressionHelpers.ConvertToType(objectExpr, typeof(BslValue)));
-            }
-            else
-            {
-                AddError(NativeCompilerErrors.TypeIsNotAnObjectType(targetType), node.Location);
-            }
+        protected override void VisitObjectFunctionCall(BslSyntaxNode node)
+        {
+            _statementBuildParts.Push(CreateObjectMethodCall(node, true));
         }
 
         private IEnumerable<Expression> PrepareDynamicCallArguments(BslSyntaxNode argList)
@@ -1167,17 +1124,17 @@ namespace OneScript.Native.Compiler
                     : Expression.Constant(BslSkippedParameterValue.Instance));
         }
 
-        protected override void VisitObjectFunctionCall(BslSyntaxNode node)
+        private Expression CreateObjectMethodCall(BslSyntaxNode node, bool asFunction = false)
         {
             var target = _statementBuildParts.Pop();
-            var call = (CallNode) node;
-
+            var call = (CallNode)node;
             var targetType = target.Type;
             var name = call.Identifier.GetIdentifier();
-            if (targetType.IsObjectValue())
+
+            if (targetType.IsObjectValue()
+                && TryFindMethodOfType(targetType, name, out var methodInfo))
             {
-                var methodInfo = FindMethodOfType(node, targetType, name);
-                if (methodInfo.ReturnType == typeof(void))
+                if (asFunction && methodInfo?.ReturnType == typeof(void))
                 {
                     throw new NativeCompilerException(BilingualString.Localize(
                         $"Метод {targetType}.{name} не является функцией",
@@ -1185,26 +1142,31 @@ namespace OneScript.Native.Compiler
                 }
 
                 var args = PrepareCallArguments(call.ArgumentList, methodInfo.GetParameters(), InjectedProcessNeeded(methodInfo));
-                _statementBuildParts.Push(Expression.Call(target, methodInfo, args));
+                return Expression.Call(target, methodInfo, args);
             }
-            else if (targetType.IsContext())
+
+            if (targetType.IsContext())
             {
-                _statementBuildParts.Push(ExpressionHelpers.CallContextMethod(target, name, _processParameter, PrepareDynamicCallArguments(call.ArgumentList)));
+                return ExpressionHelpers.CallContextMethod(target, name, _processParameter, 
+                    PrepareDynamicCallArguments(call.ArgumentList));
             }
             else if (targetType.IsValue())
             {
-                var contextCall = ExpressionHelpers.TryCallContextMethod(target, name, _processParameter,
+                return ExpressionHelpers.TryCallContextMethod(target, name, _processParameter,
                     PrepareDynamicCallArguments(call.ArgumentList));
-                _statementBuildParts.Push(contextCall);
             }
             else if (target is DynamicExpression)
             {
-                var args = new List<Expression>();
-                args.Add(target);
+                var args = new List<Expression>
+                {
+                    target
+                };
                 args.AddRange(PrepareDynamicCallArguments(call.ArgumentList));
 
-                var csharpArgs = new List<CSharpArgumentInfo>();
-                csharpArgs.Add(CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default));
+                var csharpArgs = new List<CSharpArgumentInfo>
+                {
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default)
+                };
                 csharpArgs.AddRange(args.Select(x => CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, default)));
 
                 var binder = Microsoft.CSharp.RuntimeBinder.Binder.InvokeMember(
@@ -1215,12 +1177,11 @@ namespace OneScript.Native.Compiler
                     csharpArgs);
 
                 var objectExpr = Expression.Dynamic(binder, typeof(object), args);
-                _statementBuildParts.Push(ExpressionHelpers.ConvertToType(objectExpr, typeof(BslValue)));
+                return ExpressionHelpers.ConvertToType(objectExpr, typeof(BslValue));
             }
-            else
-            {
-                AddError(NativeCompilerErrors.TypeIsNotAnObjectType(targetType), node.Location);
-            }
+
+            AddError(NativeCompilerErrors.TypeIsNotAnObjectType(targetType), node.Location);
+            return null;
         }
 
         private MethodInfo FindMethodOfType(BslSyntaxNode node, Type targetType, string name)
@@ -1238,6 +1199,21 @@ namespace OneScript.Native.Compiler
             }
 
             return methodInfo;
+        }
+
+        private bool TryFindMethodOfType(Type targetType, string name, out MethodInfo methodInfo)
+        {
+            try
+            {
+                methodInfo = _methodsCache.GetOrAdd(targetType, name);
+            }
+            catch (InvalidOperationException)
+            {
+                methodInfo = null;
+                return false;
+            }
+
+            return true;
         }
 
         private PropertyInfo TryFindPropertyOfType(BslSyntaxNode node, Type targetType, string name)
@@ -1281,15 +1257,21 @@ namespace OneScript.Native.Compiler
             }
 
             var symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
-            var args = PrepareCallArguments(node.ArgumentList, symbol.Method.GetParameters(), InjectedProcessNeeded(symbol.Method));
+            var args = PrepareCallArguments(node.ArgumentList, symbol.Method.GetParameters(),
+                InjectedProcessNeeded(symbol.Method), IsModuleScope(binding.ScopeNumber));
 
             var methodInfo = symbol.Method;
             if (methodInfo is ContextMethodInfo contextMethod)
             {
-                return DirectClrCall(
+                var call = DirectClrCall(
                     GetMethodBinding(binding, symbol),
                     contextMethod.GetWrappedMethod(),
                     args);
+
+                if (call.Type == typeof(IValue))
+                    return Expression.TypeAs(call, typeof(BslValue));
+
+                return call;
             }
 
             if (methodInfo is BslNativeMethodInfo nativeMethod)
@@ -1328,9 +1310,8 @@ namespace OneScript.Native.Compiler
                     result = DirectConversionCall(node, typeof(DateTime));
                     break;
                 case Token.Type:
-                    CheckArgumentsCount(node.ArgumentList, 1);
-                    result = ExpressionHelpers.TypeByNameCall(CurrentTypeManager,
-                        ConvertToExpressionTree(node.ArgumentList.Children[0].Children[0]));
+                    var strType = DirectConversionCall(node, typeof(string));
+                    result = ExpressionHelpers.TypeByNameCall(CurrentTypeManager, strType);
                     break;
                 case Token.ExceptionInfo:
                     CheckArgumentsCount(node.ArgumentList, 0);
@@ -1364,7 +1345,9 @@ namespace OneScript.Native.Compiler
             var excVariable = _blocks.GetCurrentBlock().CurrentException;
             Expression factoryArgument;
             // нас вызвали вне попытки-исключения
-            factoryArgument = excVariable == null ? Expression.Constant(null, typeof(IRuntimeContextInstance)) : GetRuntimeExceptionObject();
+            //factoryArgument = excVariable == null ? Expression.Constant(null, typeof(IRuntimeContextInstance)) : GetRuntimeExceptionObject();
+            factoryArgument = excVariable == null ? Expression.Constant(null, typeof(IRuntimeContextInstance))
+                : ExpressionHelpers.ConvertToType(GetRuntimeExceptionObject(), typeof(IRuntimeContextInstance));
 
             var factory = Expression.Constant(ExceptionInfoFactory);
             return ExpressionHelpers.CallOfInstanceMethod(
@@ -1419,7 +1402,8 @@ namespace OneScript.Native.Compiler
                 type);
         }
 
-        private List<Expression> PrepareCallArguments(BslSyntaxNode argList, ParameterInfo[] declaredParameters, bool injectsProcess)
+        private List<Expression> PrepareCallArguments(BslSyntaxNode argList, ParameterInfo[] declaredParameters,
+                bool injectsProcess, bool passUndef = false)
         {
             var factArguments = new List<Expression>();
 
@@ -1473,6 +1457,10 @@ namespace OneScript.Native.Compiler
                     else if (declaredParam.HasDefaultValue)
                     {
                         factArguments.Add(Expression.Constant(declaredParam.DefaultValue, declaredParam.ParameterType));
+                    }
+                    else if (passUndef)
+                    {
+                        factArguments.Add(Expression.Constant(BslUndefinedValue.Instance, declaredParam.ParameterType));
                     }
                     else
                     {
@@ -1544,12 +1532,12 @@ namespace OneScript.Native.Compiler
             }
             else
             {
-                parameters = new Expression[0];
+                parameters = [];
             }
 
             if (node.IsDynamic)
             {
-                var typeName = ConvertToExpressionTree(node.TypeNameNode);
+                var typeName = ExpressionHelpers.ConvertToType(ConvertToExpressionTree(node.TypeNameNode), typeof(string));
                 var call = ExpressionHelpers.ConstructorCall(CurrentTypeManager, services, typeName, _processParameter, parameters);
                 _statementBuildParts.Push(call);
             }
