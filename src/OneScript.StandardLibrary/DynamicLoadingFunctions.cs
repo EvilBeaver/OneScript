@@ -172,7 +172,7 @@ namespace OneScript.StandardLibrary
                 {
                     throw RuntimeException.InvalidArgumentValue(name);
                 }
-                return _engine.Services.Resolve<NativeApiFactory>().Register(dllPath, name, _engine.TypeManager);
+                return NativeApiFactory.Register(dllPath, name, _engine.TypeManager);
             }
         }
 

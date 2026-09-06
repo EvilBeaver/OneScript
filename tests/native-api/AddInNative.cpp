@@ -30,8 +30,6 @@ static const wchar_t* g_PropNames[] = {
 	L"StringRW",
 	L"StringRO",
 	L"StringWO",
-	L"DateRW",
-	L"FixedDate",
 };
 
 static const wchar_t* g_PropNamesRu[] = {
@@ -39,8 +37,6 @@ static const wchar_t* g_PropNamesRu[] = {
 	L"СтрокаЧтениеЗапись",
 	L"СтрокаТолькоЧтение",
 	L"СтрокаТолькоЗапись",
-	L"ДатаЧтениеЗапись",
-	L"ФиксированнаяДата",
 };
 
 static const wchar_t* g_MethodNames[] = {
@@ -52,9 +48,7 @@ static const wchar_t* g_MethodNames[] = {
 	L"ShowMessageBox",
 	L"Exchange",
 	L"Concatenate",
-	L"Loopback",
-	L"EchoDate",
-	L"SetDateOut"
+	L"Loopback"
 };
 
 static const wchar_t* g_MethodNamesRu[] = {
@@ -67,11 +61,9 @@ static const wchar_t* g_MethodNamesRu[] = {
 	L"ОбменПараметров",
 	L"КонкатенацияСтрок",
 	L"Петля",
-	L"ЭхоДата",
-	L"УстановитьДатуИсходящий",
 };
 
-static const wchar_t g_kClassNames[] = L"CAddInNative|Alias2";
+static const wchar_t g_kClassNames[] = L"CAddInNative"; //"|OtherClass1|OtherClass2";
 static IAddInDefBase* pAsyncEvent = NULL;
 
 uint32_t convToShortWchar(WCHAR_T** Dest, const wchar_t* Source, uint32_t len = 0);
@@ -84,13 +76,7 @@ long GetClassObject(const WCHAR_T* wsName, IComponentBase** pInterface)
 {
 	if (!*pInterface)
 	{
-		wchar_t* name = 0;
-		::convFromShortWchar(&name, wsName);
-		if (wcscmp(name, L"Alias2") == 0)
-			*pInterface = new CAddInNativeSecond;
-		else
-			*pInterface = new CAddInNative;
-		delete[] name;
+		*pInterface = new CAddInNative;
 		return (long)*pInterface;
 	}
 	return 0;
@@ -150,22 +136,6 @@ void CAddInNative::Done()
 bool CAddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
 {
 	const wchar_t* wsExtension = L"CAddInNative";
-	int iActualSize = ::wcslen(wsExtension) + 1;
-	WCHAR_T* dest = 0;
-
-	if (m_iMemory)
-	{
-		if (m_iMemory->AllocMemory((void**)wsExtensionName, iActualSize * sizeof(WCHAR_T)))
-			::convToShortWchar(wsExtensionName, wsExtension, iActualSize);
-		return true;
-	}
-
-	return false;
-}
-//---------------------------------------------------------------------------//
-bool CAddInNativeSecond::RegisterExtensionAs(WCHAR_T** wsExtensionName)
-{
-	const wchar_t* wsExtension = L"CAddInNativeSecond";
 	int iActualSize = ::wcslen(wsExtension) + 1;
 	WCHAR_T* dest = 0;
 
@@ -253,14 +223,6 @@ bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 		}
 		return false;
 	}
-	case ePropDateRW:
-		TV_VT(pvarPropVal) = VTYPE_DATE;
-		TV_DATE(pvarPropVal) = m_Date;
-		break;
-	case ePropFixedDate:
-		TV_VT(pvarPropVal) = VTYPE_DATE;
-		TV_DATE(pvarPropVal) = 46037.5208333333; // 2026-01-15 12:30:00
-		break;
 	default:
 		return false;
 	}
@@ -283,11 +245,6 @@ bool CAddInNative::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 			return false;
 		m_String = WcharWrapper(TV_WSTR(pvarPropVal));
 		break;
-	case ePropDateRW:
-		if (TV_VT(pvarPropVal) != VTYPE_DATE)
-			return false;
-		m_Date = TV_DATE(pvarPropVal);
-		break;
 	default:
 		return false;
 	}
@@ -302,8 +259,6 @@ bool CAddInNative::IsPropReadable(const long lPropNum)
 	case ePropIsEnabled:
 	case ePropStringRW:
 	case ePropStringRO:
-	case ePropDateRW:
-	case ePropFixedDate:
 		return true;
 	default:
 		return false;
@@ -319,7 +274,6 @@ bool CAddInNative::IsPropWritable(const long lPropNum)
 	case ePropIsEnabled:
 	case ePropStringRW:
 	case ePropStringWO:
-	case ePropDateRW:
 		return true;
 	default:
 		return false;
@@ -397,10 +351,6 @@ long CAddInNative::GetNParams(const long lMethodNum)
 		return 2;
 	case eMethLoopback:
 		return 1;
-	case eMethEchoDate:
-		return 1;
-	case eMethSetDateOut:
-		return 1;
 	default:
 		return 0;
 	}
@@ -443,7 +393,6 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 	case eMethLoadPicture:
 	case eMethConcatenate:
 	case eMethLoopback:
-	case eMethEchoDate:
 		return true;
 	default:
 		return false;
@@ -475,11 +424,6 @@ bool CAddInNative::CallAsProc(const long lMethodNum,
 		memcpy(&variant, paParams, sizeof(tVariant));
 		memcpy(paParams, paParams + 1, sizeof(tVariant));
 		memcpy(paParams + 1, &variant, sizeof(tVariant));
-		break;
-	case eMethSetDateOut:
-		if (lSizeArray != 1 || TV_VT(paParams) != VTYPE_DATE)
-			return false;
-		TV_DATE(paParams) += 1.0;
 		break;
 	case eMethShowMsgBox:
 	{
@@ -580,12 +524,6 @@ bool CAddInNative::CallAsFunc(const long lMethodNum,
 		pvarRetValue->strLen = paParams->strLen;
 		return true;
 	}
-	case eMethEchoDate:
-		if (lSizeArray != 1 || TV_VT(paParams) != VTYPE_DATE)
-			return false;
-		TV_VT(pvarRetValue) = VTYPE_DATE;
-		TV_DATE(pvarRetValue) = TV_DATE(paParams) + 1.0;
-		return true;
 	break;
 
 	case eMethLoadPicture:

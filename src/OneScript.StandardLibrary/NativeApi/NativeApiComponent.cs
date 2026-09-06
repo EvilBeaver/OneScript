@@ -22,11 +22,6 @@ namespace OneScript.StandardLibrary.NativeApi
     {
         private IntPtr _object;
         private TypeDescriptor _type;
-        // Ссылка на библиотеку Native API, нужна для удержания ссылки и устранения гонки финализаторов.
-        private readonly NativeApiLibrary _library;
-        private readonly NativeApiProxy.OnErrorDelegate _onError;
-        private readonly NativeApiProxy.OnEventDelegate _onEvent;
-        private readonly NativeApiProxy.OnStatusDelegate _onStatus;
 
         public event OnComponentEvent OnComponentEvent;
 
@@ -83,21 +78,18 @@ namespace OneScript.StandardLibrary.NativeApi
             if (!NativeApiProxy.IsAvailable)
                 throw new RuntimeException("Native API Proxy DLL is not loaded");
                 
-            _library = library;
-            _onError = (wcode, source, descr, scode) =>
-            {
-                OnComponentError?.Invoke(Status(wcode), scode, S(source), S(descr));
-            };
-            _onEvent = (source, message, data) =>
-            {
-                OnComponentEvent?.Invoke(S(source), S(message), S(data));
-            };
-            _onStatus = status =>
-            {
-                OnComponentStatusText?.Invoke(S(status));
-            };
-
-            _object = NativeApiProxy.GetClassObject(library.Module, componentName, _onError, _onEvent, _onStatus);
+            _object = NativeApiProxy.GetClassObject(library.Module, componentName,
+                (wcode, source, descr, scode) =>
+                {
+                    OnComponentError?.Invoke(Status(wcode), scode, S(source), S(descr));
+                },
+                (source, message, data) => {
+                    OnComponentEvent?.Invoke(S(source), S(message), S(data));
+                },
+                (status) => {
+                    OnComponentStatusText?.Invoke(S(status));
+                }
+            );
             _type = typeDef;
         }
         
@@ -208,7 +200,7 @@ namespace OneScript.StandardLibrary.NativeApi
             {
                 var parameter = method.NewParameter()
                     .Name($"p{i}")
-                    .ByValue(false);
+                    .ByValue(true);
                 
                 if (NativeApiProxy.HasParamDefValue(_object, methodNumber, i))
                 {
@@ -251,15 +243,6 @@ namespace OneScript.StandardLibrary.NativeApi
                     );
         }
 
-        private void WriteBackParameters(int paramCount, IValue[] arguments, IntPtr variantPtr)
-        {
-            for (int i = 0; i < paramCount; i++)
-            {
-                if (arguments[i] is IVariable variable)
-                    variable.Value = NativeApiVariant.Value(variantPtr, i);
-            }
-        }
-
         public void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
             int paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
@@ -270,7 +253,6 @@ namespace OneScript.StandardLibrary.NativeApi
                     variant.Assign(arguments[i], i);
 
                 NativeApiProxy.CallAsProc(_object, methodNumber, variant.Ptr);
-                WriteBackParameters(paramCount, arguments, variant.Ptr);
             }
         }
 
@@ -287,7 +269,6 @@ namespace OneScript.StandardLibrary.NativeApi
                 NativeApiProxy.CallAsFunc(_object, methodNumber, variant.Ptr,
                     res => result = NativeApiVariant.Value(res)
                 );
-                WriteBackParameters(paramCount, arguments, variant.Ptr);
             }
             retValue = result;
         }
