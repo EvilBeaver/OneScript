@@ -250,7 +250,8 @@ DllExport void GetVariant(tVariant* variant, int32_t number
 )
 {
 	if (variant == nullptr) return;
-	switch (variant->vt) {
+	tVariant* v = variant + number;
+	switch (v->vt) {
 	case VTYPE_EMPTY:
 		e(variant, number);
 		break;
@@ -258,14 +259,14 @@ DllExport void GetVariant(tVariant* variant, int32_t number
 	case VTYPE_I4:
 	case VTYPE_ERROR:
 	case VTYPE_UI1:
-		i(variant, number, variant->lVal);
+		i(variant, number, v->lVal);
 		break;
 	case VTYPE_BOOL:
-		b(variant, number, variant->bVal);
+		b(variant, number, v->bVal);
 		break;
 	case VTYPE_R4:
 	case VTYPE_R8:
-		r(variant, number, variant->dblVal);
+		r(variant, number, v->dblVal);
 		break;
 	case VTYPE_DATE:
 	case VTYPE_TM:
@@ -275,10 +276,10 @@ DllExport void GetVariant(tVariant* variant, int32_t number
 		e(variant, number);
 		break;
 	case VTYPE_PWSTR:
-		s(variant, number, variant->pwstrVal, variant->strLen);
+		s(variant, number, v->pwstrVal, v->strLen);
 		break;
 	case VTYPE_BLOB:
-		x(variant, number, variant->pstrVal, variant->strLen);
+		x(variant, number, v->pstrVal, v->strLen);
 		break;
 	default:
 		e(variant, number);
