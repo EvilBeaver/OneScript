@@ -17,6 +17,7 @@ public:
 		ePropStringRW,
 		ePropStringRO,
 		ePropStringWO,
+		ePropFixedDate,
 		ePropLast      // Always last
 	};
 
@@ -31,6 +32,10 @@ public:
 		eMethExchange,
 		eMethConcatenate,
 		eMethLoopback,
+		eMethEchoDateTm,
+		eMethGetDateAsVTypeDate,
+		eMethGetInvalidDateAsVTypeDate,
+		eMethGetInvalidDateAsVTypeTm,
 		eMethLast      // Always last
 	};
 
@@ -68,6 +73,7 @@ private:
 	IMemoryManager* m_iMemory;
 	bool m_Enabled = false;
 	std::wstring m_String;
+	struct tm m_FixedDate = {};
 };
 
 class WcharWrapper

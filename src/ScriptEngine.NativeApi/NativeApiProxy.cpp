@@ -241,10 +241,47 @@ DllExport void SetVariantBlob(tVariant* variant, int32_t number, const char* val
 	}
 }
 
+static void FillTmExtraFields(struct tm& t)
+{
+	int y = t.tm_year + 1900;
+	int m = t.tm_mon + 1;
+	int d = t.tm_mday;
+
+	static const int monthOffset[] = { 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 };
+	int yAdj = y - (m < 3);
+	t.tm_wday = (yAdj + yAdj / 4 - yAdj / 100 + yAdj / 400 + monthOffset[m - 1] + d) % 7;
+
+	static const int daysBefore[] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+	int leap = (m > 2 && ((y % 4 == 0 && y % 100 != 0) || y % 400 == 0));
+	t.tm_yday = daysBefore[m - 1] + d - 1 + leap;
+	t.tm_isdst = -1;
+}
+
+DllExport void SetVariantTm(tVariant* variant, int32_t number,
+	int32_t year, int32_t month, int32_t day,
+	int32_t hour, int32_t minute, int32_t second)
+{
+	tVariant* v = variant + number;
+	::ClearVariant(*v);
+
+	v->tmVal = {};
+	v->tmVal.tm_year = year - 1900;
+	v->tmVal.tm_mon = month - 1;
+	v->tmVal.tm_mday = day;
+	v->tmVal.tm_hour = hour;
+	v->tmVal.tm_min = minute;
+	v->tmVal.tm_sec = second;
+	FillTmExtraFields(v->tmVal);
+	TV_VT(v) = VTYPE_TM;
+}
+
 typedef void(_stdcall* TSetVariantEmpty)(tVariant*, int32_t);
 typedef void(_stdcall* TSetVariantBool)(tVariant*, int32_t, bool);
 typedef void(_stdcall* TSetVariantReal)(tVariant*, int32_t, double);
 typedef void(_stdcall* TSetVariantInt)(tVariant*, int32_t, int32_t);
+typedef void(_stdcall* TSetVariantDate)(tVariant*, int32_t, double);
+typedef void(_stdcall* TSetVariantTm)(tVariant*, int32_t,
+	int32_t, int32_t, int32_t, int32_t, int32_t, int32_t);
 typedef void(_stdcall* TSetVariantBlob)(tVariant*, int32_t, void*, int32_t);
 
 DllExport void GetVariant(tVariant* variant, int32_t number
@@ -252,6 +289,8 @@ DllExport void GetVariant(tVariant* variant, int32_t number
 	, TSetVariantBool b
 	, TSetVariantInt i
 	, TSetVariantReal r
+	, TSetVariantDate d
+	, TSetVariantTm tm
 	, TSetVariantBlob s
 	, TSetVariantBlob x
 )
@@ -276,8 +315,16 @@ DllExport void GetVariant(tVariant* variant, int32_t number
 		r(variant, number, v->dblVal);
 		break;
 	case VTYPE_DATE:
+		d(variant, number, v->dblVal);
+		break;
 	case VTYPE_TM:
-		e(variant, number);
+		tm(variant, number,
+			v->tmVal.tm_year + 1900,
+			v->tmVal.tm_mon + 1,
+			v->tmVal.tm_mday,
+			v->tmVal.tm_hour,
+			v->tmVal.tm_min,
+			v->tmVal.tm_sec);
 		break;
 	case VTYPE_PSTR:
 		e(variant, number);

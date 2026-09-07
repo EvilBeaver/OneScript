@@ -62,6 +62,12 @@ namespace OneScript.StandardLibrary.NativeApi
                 case BinaryDataContext binaryData:
                     NativeApiProxy.SetVariantBlob(variant, number, binaryData.Buffer, binaryData.Buffer.Length);
                     break;
+                case DateTime dt:
+                    NativeApiProxy.SetVariantTm(
+                        variant, number,
+                        dt.Year, dt.Month, dt.Day,
+                        dt.Hour, dt.Minute, dt.Second);
+                    break;
                 default:
                     NativeApiProxy.SetVariantEmpty(variant, number);
                     break;
@@ -75,6 +81,27 @@ namespace OneScript.StandardLibrary.NativeApi
                 (v, n, r) => value = ValueFactory.Create(r),
                 (v, n, r) => value = ValueFactory.Create((Decimal)r),
                 (v, n, r) => value = ValueFactory.Create((Decimal)r),
+                (v, n, d) => {
+                    try
+                    {
+                        value = ValueFactory.Create(DateTime.FromOADate(d));
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new RuntimeException($"Некорректное значение даты VTYPE_DATE: {ex.Message}");
+                    }
+                },
+                (v, n, year, month, day, hour, minute, second) => {
+                    try
+                    {
+                        value = ValueFactory.Create(new DateTime(
+                            year, month, day, hour, minute, second, DateTimeKind.Unspecified));
+                    }
+                    catch (ArgumentOutOfRangeException ex)
+                    {
+                        throw new RuntimeException($"Некорректное значение даты VTYPE_TM: {ex.Message}");
+                    }
+                },
                 (v, n, r, s) => value = ValueFactory.Create(Marshal.PtrToStringUni(r, s)),
                 (v, n, r, s) => {
                     byte[] buffer = new byte[s];

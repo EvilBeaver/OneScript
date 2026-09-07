@@ -22,6 +22,9 @@ namespace OneScript.StandardLibrary.NativeApi
     {
         private IntPtr _object;
         private TypeDescriptor _type;
+        private readonly NativeApiProxy.OnErrorDelegate _onError;
+        private readonly NativeApiProxy.OnEventDelegate _onEvent;
+        private readonly NativeApiProxy.OnStatusDelegate _onStatus;
 
         public event OnComponentEvent OnComponentEvent;
 
@@ -78,18 +81,14 @@ namespace OneScript.StandardLibrary.NativeApi
             if (!NativeApiProxy.IsAvailable)
                 throw new RuntimeException("Native API Proxy DLL is not loaded");
                 
-            _object = NativeApiProxy.GetClassObject(library.Module, componentName,
-                (wcode, source, descr, scode) =>
-                {
-                    OnComponentError?.Invoke(Status(wcode), scode, S(source), S(descr));
-                },
-                (source, message, data) => {
-                    OnComponentEvent?.Invoke(S(source), S(message), S(data));
-                },
-                (status) => {
-                    OnComponentStatusText?.Invoke(S(status));
-                }
-            );
+            _onError = (wcode, source, descr, scode) =>
+                OnComponentError?.Invoke(Status(wcode), scode, S(source), S(descr));
+            _onEvent = (source, message, data) =>
+                OnComponentEvent?.Invoke(S(source), S(message), S(data));
+            _onStatus = status =>
+                OnComponentStatusText?.Invoke(S(status));
+
+            _object = NativeApiProxy.GetClassObject(library.Module, componentName, _onError, _onEvent, _onStatus);
             _type = typeDef;
         }
         

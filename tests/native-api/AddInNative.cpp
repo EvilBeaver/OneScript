@@ -30,6 +30,7 @@ static const wchar_t* g_PropNames[] = {
 	L"StringRW",
 	L"StringRO",
 	L"StringWO",
+	L"FixedDate",
 };
 
 static const wchar_t* g_PropNamesRu[] = {
@@ -37,6 +38,7 @@ static const wchar_t* g_PropNamesRu[] = {
 	L"СтрокаЧтениеЗапись",
 	L"СтрокаТолькоЧтение",
 	L"СтрокаТолькоЗапись",
+	L"ФиксированнаяДата",
 };
 
 static const wchar_t* g_MethodNames[] = {
@@ -48,7 +50,11 @@ static const wchar_t* g_MethodNames[] = {
 	L"ShowMessageBox",
 	L"Exchange",
 	L"Concatenate",
-	L"Loopback"
+	L"Loopback",
+	L"EchoDateTm",
+	L"GetDateAsVTypeDate",
+	L"GetInvalidDateAsVTypeDate",
+	L"GetInvalidDateAsVTypeTm",
 };
 
 static const wchar_t* g_MethodNamesRu[] = {
@@ -61,6 +67,10 @@ static const wchar_t* g_MethodNamesRu[] = {
 	L"ОбменПараметров",
 	L"КонкатенацияСтрок",
 	L"Петля",
+	L"ЭхоДатаTM",
+	L"ПолучитьДатуКакVTYPE_DATE",
+	L"ПолучитьНекорректнуюДатуКакVTYPE_DATE",
+	L"ПолучитьНекорректнуюДатуКакVTYPE_TM",
 };
 
 static const wchar_t g_kClassNames[] = L"CAddInNative"; //"|OtherClass1|OtherClass2";
@@ -108,6 +118,16 @@ CAddInNative::CAddInNative()
 {
 	m_iMemory = 0;
 	m_iConnect = 0;
+	m_FixedDate = {};
+	m_FixedDate.tm_year = 124;
+	m_FixedDate.tm_mon = 1;
+	m_FixedDate.tm_mday = 29;
+	m_FixedDate.tm_hour = 23;
+	m_FixedDate.tm_min = 59;
+	m_FixedDate.tm_sec = 58;
+	m_FixedDate.tm_wday = 4;
+	m_FixedDate.tm_yday = 59;
+	m_FixedDate.tm_isdst = -1;
 }
 //---------------------------------------------------------------------------//
 CAddInNative::~CAddInNative()
@@ -223,6 +243,10 @@ bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 		}
 		return false;
 	}
+	case ePropFixedDate:
+		pvarPropVal->tmVal = m_FixedDate;
+		TV_VT(pvarPropVal) = VTYPE_TM;
+		break;
 	default:
 		return false;
 	}
@@ -245,6 +269,11 @@ bool CAddInNative::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 			return false;
 		m_String = WcharWrapper(TV_WSTR(pvarPropVal));
 		break;
+	case ePropFixedDate:
+		if (TV_VT(pvarPropVal) != VTYPE_TM)
+			return false;
+		m_FixedDate = pvarPropVal->tmVal;
+		break;
 	default:
 		return false;
 	}
@@ -259,6 +288,7 @@ bool CAddInNative::IsPropReadable(const long lPropNum)
 	case ePropIsEnabled:
 	case ePropStringRW:
 	case ePropStringRO:
+	case ePropFixedDate:
 		return true;
 	default:
 		return false;
@@ -274,6 +304,7 @@ bool CAddInNative::IsPropWritable(const long lPropNum)
 	case ePropIsEnabled:
 	case ePropStringRW:
 	case ePropStringWO:
+	case ePropFixedDate:
 		return true;
 	default:
 		return false;
@@ -351,6 +382,8 @@ long CAddInNative::GetNParams(const long lMethodNum)
 		return 2;
 	case eMethLoopback:
 		return 1;
+	case eMethEchoDateTm:
+		return 1;
 	default:
 		return 0;
 	}
@@ -393,6 +426,10 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 	case eMethLoadPicture:
 	case eMethConcatenate:
 	case eMethLoopback:
+	case eMethEchoDateTm:
+	case eMethGetDateAsVTypeDate:
+	case eMethGetInvalidDateAsVTypeDate:
+	case eMethGetInvalidDateAsVTypeTm:
 		return true;
 	default:
 		return false;
@@ -524,6 +561,29 @@ bool CAddInNative::CallAsFunc(const long lMethodNum,
 		pvarRetValue->strLen = paParams->strLen;
 		return true;
 	}
+	case eMethEchoDateTm:
+		if (lSizeArray != 1 || !paParams ||
+			TV_VT(paParams) != VTYPE_TM)
+			return false;
+
+		pvarRetValue->tmVal = paParams->tmVal;
+		TV_VT(pvarRetValue) = VTYPE_TM;
+		return true;
+	case eMethGetDateAsVTypeDate:
+		TV_VT(pvarRetValue) = VTYPE_DATE;
+		TV_DATE(pvarRetValue) = 45351.9999768519; // 2024-02-29 23:59:58
+		return true;
+	case eMethGetInvalidDateAsVTypeDate:
+		TV_VT(pvarRetValue) = VTYPE_DATE;
+		TV_DATE(pvarRetValue) = 1e100;
+		return true;
+	case eMethGetInvalidDateAsVTypeTm:
+		pvarRetValue->tmVal = {};
+		pvarRetValue->tmVal.tm_year = 124;
+		pvarRetValue->tmVal.tm_mon = 12;
+		pvarRetValue->tmVal.tm_mday = 32;
+		TV_VT(pvarRetValue) = VTYPE_TM;
+		return true;
 	break;
 
 	case eMethLoadPicture:

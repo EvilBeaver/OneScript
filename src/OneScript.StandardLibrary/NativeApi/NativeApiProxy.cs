@@ -61,6 +61,14 @@ namespace OneScript.StandardLibrary.NativeApi
         public delegate void TSetVariantInt(IntPtr ptr, Int32 num, Int32 value);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate void TSetVariantDate(IntPtr ptr, Int32 num, Double value);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate void TSetVariantTm(IntPtr ptr, Int32 num,
+            Int32 year, Int32 month, Int32 day,
+            Int32 hour, Int32 minute, Int32 second);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate void TSetVariantStr(IntPtr ptr, Int32 num, [MarshalAs(UnmanagedType.LPWStr)] string value, Int32 length);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -75,6 +83,8 @@ namespace OneScript.StandardLibrary.NativeApi
             , TSetVariantBool b
             , TSetVariantInt i
             , TSetVariantReal r
+            , TSetVariantDate d
+            , TSetVariantTm tm
             , TSetVariantPtr s
             , TSetVariantPtr x
         );
@@ -123,6 +133,7 @@ namespace OneScript.StandardLibrary.NativeApi
         public static readonly TSetVariantReal SetVariantReal;
         public static readonly TSetVariantBlob SetVariantBlob;
         public static readonly TSetVariantInt SetVariantInt;
+        public static readonly TSetVariantTm SetVariantTm;
         public static readonly TSetVariantStr SetVariantStr;
         public static readonly TGetNMethods GetNMethods;
         public static readonly TFindMethod FindMethod;
@@ -168,6 +179,7 @@ namespace OneScript.StandardLibrary.NativeApi
             SetVariantReal = Marshal.GetDelegateForFunctionPointer<TSetVariantReal>(NativeApiKernel.GetProcAddress(module, "SetVariantReal"));
             SetVariantBlob = Marshal.GetDelegateForFunctionPointer<TSetVariantBlob>(NativeApiKernel.GetProcAddress(module, "SetVariantBlob"));
             SetVariantInt = Marshal.GetDelegateForFunctionPointer<TSetVariantInt>(NativeApiKernel.GetProcAddress(module, "SetVariantInt"));
+            SetVariantTm = Marshal.GetDelegateForFunctionPointer<TSetVariantTm>(NativeApiKernel.GetProcAddress(module, "SetVariantTm"));
             SetVariantStr = Marshal.GetDelegateForFunctionPointer<TSetVariantStr>(NativeApiKernel.GetProcAddress(module, "SetVariantStr"));
             GetVariant = Marshal.GetDelegateForFunctionPointer<TGetVariant>(NativeApiKernel.GetProcAddress(module, "GetVariant"));
             GetPropVal = Marshal.GetDelegateForFunctionPointer<TGetPropVal>(NativeApiKernel.GetProcAddress(module, "GetPropVal"));
