@@ -46,7 +46,7 @@ typedef void(_stdcall* VariantFuncRespond) (const tVariant* variant);
 
 static bool AllocMemory(void** pMemory, unsigned long ulCountByte) {
 #ifdef _WINDOWS
-	return *pMemory = LocalAlloc(LMEM_FIXED, ulCountByte);
+	return *pMemory = LocalAlloc(LMEM_FIXED | LMEM_ZEROINIT, ulCountByte);
 #else
 	return *pMemory = calloc(1, ulCountByte);
 #endif//_WINDOWS
@@ -114,7 +114,8 @@ DllExport tVariant* CreateVariant(int32_t lSizeArray)
 {
 	if (lSizeArray <= 0) return nullptr;
 	void* ptr = nullptr;
-	::AllocMemory(&ptr, sizeof(tVariant) * lSizeArray);
+	if (!::AllocMemory(&ptr, sizeof(tVariant) * lSizeArray))
+		return nullptr;
 	return (tVariant*)ptr;
 }
 
@@ -188,12 +189,13 @@ DllExport bool SetPropVal(ProxyComponent* proxy, int32_t lPropNum, tVariant* var
 DllExport void SetVariantEmpty(tVariant* variant, int32_t number)
 {
 	tVariant* v = variant + number;
-	TV_VT(v) = VTYPE_EMPTY;
+	::ClearVariant(*v);
 }
 
 DllExport void SetVariantBool(tVariant* variant, int32_t number, bool value)
 {
 	tVariant* v = variant + number;
+	::ClearVariant(*v);
 	TV_BOOL(v) = value;
 	TV_VT(v) = VTYPE_BOOL;
 }
@@ -201,6 +203,7 @@ DllExport void SetVariantBool(tVariant* variant, int32_t number, bool value)
 DllExport void SetVariantReal(tVariant* variant, int32_t number, double value)
 {
 	tVariant* v = variant + number;
+	::ClearVariant(*v);
 	TV_R8(v) = value;
 	TV_VT(v) = VTYPE_R8;
 }
@@ -208,6 +211,7 @@ DllExport void SetVariantReal(tVariant* variant, int32_t number, double value)
 DllExport void SetVariantInt(tVariant* variant, int32_t number, int32_t value)
 {
 	tVariant* v = variant + number;
+	::ClearVariant(*v);
 	TV_I4(v) = value;
 	TV_VT(v) = VTYPE_I4;
 }
@@ -215,6 +219,7 @@ DllExport void SetVariantInt(tVariant* variant, int32_t number, int32_t value)
 DllExport void SetVariantStr(tVariant* variant, int32_t number, const WCHAR_T* value, int32_t length)
 {
 	tVariant* v = variant + number;
+	::ClearVariant(*v);
 	unsigned long size = sizeof(WCHAR_T) * (length + 1);
 	if (::AllocMemory((void**)&v->pwstrVal, size)) {
 		memcpy(v->pwstrVal, value, size);
@@ -227,6 +232,7 @@ DllExport void SetVariantStr(tVariant* variant, int32_t number, const WCHAR_T* v
 DllExport void SetVariantBlob(tVariant* variant, int32_t number, const char* value, int32_t length)
 {
 	tVariant* v = variant + number;
+	::ClearVariant(*v);
 	if (::AllocMemory((void**)&v->pstrVal, length)) {
 		memcpy(v->pstrVal, value, length);
 		v->strLen = length;

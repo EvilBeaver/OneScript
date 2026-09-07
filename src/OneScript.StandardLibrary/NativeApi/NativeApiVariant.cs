@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Runtime.InteropServices;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Binary;
 using ScriptEngine.Machine;
 
@@ -26,6 +27,8 @@ namespace OneScript.StandardLibrary.NativeApi
         public NativeApiVariant(Int32 count = 1)
         {
             variant = NativeApiProxy.CreateVariant(count);
+            if (count > 0 && variant == IntPtr.Zero)
+                throw new RuntimeException("Не удалось выделить память для параметров Native API");
         }
 
         public void Dispose()
