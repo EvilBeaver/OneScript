@@ -119,10 +119,11 @@ DllExport tVariant* CreateVariant(int32_t lSizeArray)
 	return (tVariant*)ptr;
 }
 
-DllExport void FreeVariant(tVariant* variant)
+DllExport void FreeVariant(tVariant* variant, int32_t count)
 {
 	if (variant == nullptr) return;
-	::ClearVariant(*variant);
+	for (int32_t i = 0; i < count; i++)
+		::ClearVariant(variant[i]);
 	::FreeMemory((void**)&variant);
 }
 

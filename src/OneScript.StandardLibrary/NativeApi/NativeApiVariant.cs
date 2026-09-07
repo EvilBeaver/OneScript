@@ -20,12 +20,14 @@ namespace OneScript.StandardLibrary.NativeApi
     /// </summary>
     class NativeApiVariant: IDisposable
     {
-        private readonly IntPtr variant = IntPtr.Zero;
+        private IntPtr variant = IntPtr.Zero;
+        private readonly Int32 _count;
 
         public IntPtr Ptr { get { return variant; } }
 
         public NativeApiVariant(Int32 count = 1)
         {
+            _count = count;
             variant = NativeApiProxy.CreateVariant(count);
             if (count > 0 && variant == IntPtr.Zero)
                 throw new RuntimeException("Не удалось выделить память для параметров Native API");
@@ -34,7 +36,10 @@ namespace OneScript.StandardLibrary.NativeApi
         public void Dispose()
         { 
             if (variant != IntPtr.Zero)
-                NativeApiProxy.FreeVariant(variant);
+            {
+                NativeApiProxy.FreeVariant(variant, _count);
+                variant = IntPtr.Zero;
+            }
         }
 
         public void Assign(IValue value, Int32 number = 0)

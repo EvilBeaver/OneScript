@@ -25,7 +25,7 @@ namespace OneScript.StandardLibrary.NativeApi
         public delegate IntPtr TCreateVariant(Int32 length);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate void TFreeVariant(IntPtr ptr);
+        public delegate void TFreeVariant(IntPtr ptr, Int32 count);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate Int32 TGetNProps(IntPtr ptr);
