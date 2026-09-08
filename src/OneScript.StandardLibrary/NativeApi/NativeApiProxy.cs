@@ -28,6 +28,9 @@ namespace OneScript.StandardLibrary.NativeApi
         public delegate void TFreeVariant(IntPtr ptr, Int32 count);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate IntPtr TVariantElement(IntPtr ptr, Int32 index);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate Int32 TGetNProps(IntPtr ptr);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -49,44 +52,60 @@ namespace OneScript.StandardLibrary.NativeApi
         public delegate void TSetPropVal(IntPtr ptr, Int32 lPropNum, IntPtr variant);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate void TSetVariantEmpty(IntPtr ptr, Int32 num);
+        public delegate void TSetVariantEmpty(IntPtr ptr);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate void TSetVariantBool(IntPtr ptr, Int32 num, Boolean value);
+        public delegate void TSetVariantBool(IntPtr ptr, Boolean value);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate void TSetVariantReal(IntPtr ptr, Int32 num, Double value);
+        public delegate void TSetVariantReal(IntPtr ptr, Double value);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate void TSetVariantInt(IntPtr ptr, Int32 num, Int32 value);
+        public delegate void TSetVariantInt(IntPtr ptr, Int32 value);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate void TSetVariantDate(IntPtr ptr, Int32 num, Double value);
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate void TSetVariantTm(IntPtr ptr, Int32 num,
+        public delegate void TSetVariantTm(IntPtr ptr,
             Int32 year, Int32 month, Int32 day,
             Int32 hour, Int32 minute, Int32 second);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate void TSetVariantStr(IntPtr ptr, Int32 num, [MarshalAs(UnmanagedType.LPWStr)] string value, Int32 length);
+        public delegate void TSetVariantStr(IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string value, Int32 length);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate void TSetVariantPtr(IntPtr ptr, Int32 num, IntPtr value, Int32 length);
+        public delegate void TSetVariantBlob(IntPtr ptr, byte[] data, Int32 length);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate void TSetVariantBlob(IntPtr ptr, Int32 num, byte[] data, Int32 length);
+        public delegate void TVariantEmptyRespond();
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate void TGetVariant(IntPtr ptr, Int32 num
-            , TSetVariantEmpty e
-            , TSetVariantBool b
-            , TSetVariantInt i
-            , TSetVariantReal r
-            , TSetVariantDate d
-            , TSetVariantTm tm
-            , TSetVariantPtr s
-            , TSetVariantPtr x
+        public delegate void TVariantBoolRespond(Boolean value);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate void TVariantIntRespond(Int32 value);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate void TVariantRealRespond(Double value);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate void TVariantDateRespond(Double value);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate void TVariantTmRespond(Int32 year, Int32 month, Int32 day,
+            Int32 hour, Int32 minute, Int32 second);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate void TVariantBlobRespond(IntPtr data, Int32 length);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate void TGetVariant(IntPtr ptr
+            , TVariantEmptyRespond e
+            , TVariantBoolRespond b
+            , TVariantIntRespond i
+            , TVariantRealRespond r
+            , TVariantDateRespond d
+            , TVariantTmRespond tm
+            , TVariantBlobRespond s
+            , TVariantBlobRespond x
         );
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -120,6 +139,7 @@ namespace OneScript.StandardLibrary.NativeApi
         public static readonly TDestroyObject DestroyObject;
         public static readonly TCreateVariant CreateVariant;
         public static readonly TFreeVariant FreeVariant;
+        public static readonly TVariantElement VariantElement;
         public static readonly TGetNProps GetNProps;
         public static readonly TFindProp FindProp;
         public static readonly TIsPropReadable IsPropReadable;
@@ -167,6 +187,7 @@ namespace OneScript.StandardLibrary.NativeApi
             DestroyObject = Marshal.GetDelegateForFunctionPointer<TDestroyObject>(NativeApiKernel.GetProcAddress(module, "DestroyObject"));
             CreateVariant = Marshal.GetDelegateForFunctionPointer<TCreateVariant>(NativeApiKernel.GetProcAddress(module, "CreateVariant"));
             FreeVariant = Marshal.GetDelegateForFunctionPointer<TFreeVariant>(NativeApiKernel.GetProcAddress(module, "FreeVariant"));
+            VariantElement = Marshal.GetDelegateForFunctionPointer<TVariantElement>(NativeApiKernel.GetProcAddress(module, "VariantElement"));
             GetNProps = Marshal.GetDelegateForFunctionPointer<TGetNProps>(NativeApiKernel.GetProcAddress(module, "GetNProps"));
             FindProp = Marshal.GetDelegateForFunctionPointer<TFindProp>(NativeApiKernel.GetProcAddress(module, "FindProp"));
             IsPropReadable = Marshal.GetDelegateForFunctionPointer<TIsPropReadable>(NativeApiKernel.GetProcAddress(module, "IsPropReadable"));
@@ -200,7 +221,6 @@ namespace OneScript.StandardLibrary.NativeApi
         }
 
         public delegate void PointerDelegate(IntPtr ptr);
-        public delegate void ArrayDelegate(IntPtr ptr, Int32 number);
         public delegate void OnErrorDelegate(UInt16 wcode, IntPtr source, IntPtr descr, Int32 scode);
         public delegate void OnEventDelegate(IntPtr source, IntPtr message, IntPtr data);
         public delegate void OnStatusDelegate(IntPtr status);

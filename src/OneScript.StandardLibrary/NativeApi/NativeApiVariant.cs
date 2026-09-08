@@ -13,75 +13,59 @@ using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.NativeApi
 {
-
-
     /// <summary>
-    /// Трансляция значений между IValue и tVariant из состава Native API
+    /// Невладеющее представление одного tVariant из состава Native API
     /// </summary>
-    class NativeApiVariant: IDisposable
+    readonly struct NativeApiVariant
     {
-        private IntPtr variant = IntPtr.Zero;
-        private readonly Int32 _count;
+        public IntPtr Ptr { get; }
 
-        public IntPtr Ptr { get { return variant; } }
-
-        public NativeApiVariant(Int32 count = 1)
+        public NativeApiVariant(IntPtr ptr)
         {
-            _count = count;
-            variant = NativeApiProxy.CreateVariant(count);
-            if (count > 0 && variant == IntPtr.Zero)
-                throw new RuntimeException("Не удалось выделить память для параметров Native API");
+            Ptr = ptr;
         }
 
-        public void Dispose()
-        { 
-            if (variant != IntPtr.Zero)
-            {
-                NativeApiProxy.FreeVariant(variant, _count);
-                variant = IntPtr.Zero;
-            }
-        }
-
-        public void Assign(IValue value, Int32 number = 0)
+        public void Assign(IValue value)
         {
             var clrObject = value.UnwrapToClrObject();
             switch (clrObject)
             {
                 case string str:
-                    NativeApiProxy.SetVariantStr(variant, number, str, str.Length);
+                    NativeApiProxy.SetVariantStr(Ptr, str, str.Length);
                     break;
                 case bool v:
-                    NativeApiProxy.SetVariantBool(variant, number, value.AsBoolean());
+                    NativeApiProxy.SetVariantBool(Ptr, value.AsBoolean());
                     break;
                 case decimal num:
                     if (num % 1 == 0)
-                        NativeApiProxy.SetVariantInt(variant, number, Convert.ToInt32(value.AsNumber()));
+                        NativeApiProxy.SetVariantInt(Ptr, Convert.ToInt32(value.AsNumber()));
                     else
-                        NativeApiProxy.SetVariantReal(variant, number, Convert.ToDouble(value.AsNumber()));
+                        NativeApiProxy.SetVariantReal(Ptr, Convert.ToDouble(value.AsNumber()));
                     break;
                 case BinaryDataContext binaryData:
-                    NativeApiProxy.SetVariantBlob(variant, number, binaryData.Buffer, binaryData.Buffer.Length);
+                    NativeApiProxy.SetVariantBlob(Ptr, binaryData.Buffer, binaryData.Buffer.Length);
                     break;
                 case DateTime dt:
                     NativeApiProxy.SetVariantTm(
-                        variant, number,
+                        Ptr,
                         dt.Year, dt.Month, dt.Day,
                         dt.Hour, dt.Minute, dt.Second);
                     break;
                 default:
-                    NativeApiProxy.SetVariantEmpty(variant, number);
+                    NativeApiProxy.SetVariantEmpty(Ptr);
                     break;
             }
         }
-        public static IValue Value(IntPtr variant, Int32 number = 0)
+
+        public IValue GetValue()
         {
             IValue value = ValueFactory.Create();
-            NativeApiProxy.GetVariant(variant, number,
-                (v, n) => value = ValueFactory.Create(),
-                (v, n, r) => value = ValueFactory.Create(r),
-                (v, n, r) => value = ValueFactory.Create((Decimal)r),
-                (v, n, r) => value = ValueFactory.Create((Decimal)r),
-                (v, n, d) => {
+            NativeApiProxy.GetVariant(Ptr,
+                () => value = ValueFactory.Create(),
+                r => value = ValueFactory.Create(r),
+                r => value = ValueFactory.Create((Decimal)r),
+                r => value = ValueFactory.Create((Decimal)r),
+                d => {
                     try
                     {
                         value = ValueFactory.Create(DateTime.FromOADate(d));
@@ -91,7 +75,7 @@ namespace OneScript.StandardLibrary.NativeApi
                         throw new RuntimeException($"Некорректное значение даты VTYPE_DATE: {ex.Message}");
                     }
                 },
-                (v, n, year, month, day, hour, minute, second) => {
+                (year, month, day, hour, minute, second) => {
                     try
                     {
                         value = ValueFactory.Create(new DateTime(
@@ -102,8 +86,8 @@ namespace OneScript.StandardLibrary.NativeApi
                         throw new RuntimeException($"Некорректное значение даты VTYPE_TM: {ex.Message}");
                     }
                 },
-                (v, n, r, s) => value = ValueFactory.Create(Marshal.PtrToStringUni(r, s)),
-                (v, n, r, s) => {
+                (r, s) => value = ValueFactory.Create(Marshal.PtrToStringUni(r, s)),
+                (r, s) => {
                     byte[] buffer = new byte[s];
                     Marshal.Copy(r, buffer, 0, s);
                     value = new BinaryDataContext(buffer);
