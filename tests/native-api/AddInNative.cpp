@@ -55,6 +55,8 @@ static const wchar_t* g_MethodNames[] = {
 	L"GetDateAsVTypeDate",
 	L"GetInvalidDateAsVTypeDate",
 	L"GetInvalidDateAsVTypeTm",
+	L"PassThrough",
+	L"FailAfterChange",
 };
 
 static const wchar_t* g_MethodNamesRu[] = {
@@ -71,6 +73,8 @@ static const wchar_t* g_MethodNamesRu[] = {
 	L"ПолучитьДатуКакVTYPE_DATE",
 	L"ПолучитьНекорректнуюДатуКакVTYPE_DATE",
 	L"ПолучитьНекорректнуюДатуКакVTYPE_TM",
+	L"ПропуститьПараметры",
+	L"ОшибкаПослеИзменения",
 };
 
 static const wchar_t g_kClassNames[] = L"CAddInNative"; //"|OtherClass1|OtherClass2";
@@ -384,6 +388,9 @@ long CAddInNative::GetNParams(const long lMethodNum)
 		return 1;
 	case eMethEchoDateTm:
 		return 1;
+	case eMethPassThrough:
+	case eMethFailAfterChange:
+		return 1;
 	default:
 		return 0;
 	}
@@ -462,6 +469,18 @@ bool CAddInNative::CallAsProc(const long lMethodNum,
 		memcpy(paParams, paParams + 1, sizeof(tVariant));
 		memcpy(paParams + 1, &variant, sizeof(tVariant));
 		break;
+	case eMethPassThrough:
+		break;
+	case eMethFailAfterChange:
+		if (lSizeArray < 1 || !paParams)
+			return false;
+		if (TV_VT(paParams) == VTYPE_I4)
+			TV_I4(paParams) = TV_I4(paParams) + 1;
+		else if (TV_VT(paParams) == VTYPE_R8)
+			TV_R8(paParams) = TV_R8(paParams) + 1;
+		else
+			return false;
+		return false;
 	case eMethShowMsgBox:
 	{
 		if (eAppCapabilities1 <= g_capabilities)

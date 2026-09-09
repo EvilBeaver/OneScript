@@ -199,7 +199,7 @@ namespace OneScript.StandardLibrary.NativeApi
             {
                 var parameter = method.NewParameter()
                     .Name($"p{i}")
-                    .ByValue(true);
+                    .ByValue(false);
                 
                 if (NativeApiProxy.HasParamDefValue(_object, methodNumber, i))
                 {
@@ -242,16 +242,41 @@ namespace OneScript.StandardLibrary.NativeApi
                     );
         }
 
+        private static void RemapOutputParameters(
+            int paramCount,
+            IValue[] arguments,
+            IValue[] initialValues,
+            NativeApiVariantArray parameters)
+        {
+            for (int i = 0; i < paramCount; i++)
+            {
+                if (initialValues[i] == null ||
+                    arguments[i] is not IVariable variable)
+                    continue;
+
+                var valueAfterCall = parameters[i].GetValue();
+                if (!initialValues[i].StrictEquals(valueAfterCall))
+                    variable.Value = valueAfterCall;
+            }
+        }
+
         public void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
             int paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
             using (var parameters = new NativeApiVariantArray(paramCount))
             {
                 SetDefValues(methodNumber, paramCount, arguments);
-                for (int i = 0; i < paramCount; i++)
-                    parameters[i].Assign(arguments[i]);
 
-                NativeApiProxy.CallAsProc(_object, methodNumber, parameters.Ptr);
+                var initialValues = new IValue[paramCount];
+                for (int i = 0; i < paramCount; i++)
+                {
+                    if (arguments[i] is IVariable reference)
+                        initialValues[i] = reference.Value;
+                    parameters[i].Assign(arguments[i]);
+                }
+
+                if (NativeApiProxy.CallAsProc(_object, methodNumber, parameters.Ptr))
+                    RemapOutputParameters(paramCount, arguments, initialValues, parameters);
             }
         }
 
@@ -262,12 +287,20 @@ namespace OneScript.StandardLibrary.NativeApi
             using (var parameters = new NativeApiVariantArray(paramCount))
             {
                 SetDefValues(methodNumber, paramCount, arguments);
-                for (int i = 0; i < paramCount; i++)
-                    parameters[i].Assign(arguments[i]);
 
-                NativeApiProxy.CallAsFunc(_object, methodNumber, parameters.Ptr,
-                    res => result = new NativeApiVariant(res).GetValue()
-                );
+                var initialValues = new IValue[paramCount];
+                for (int i = 0; i < paramCount; i++)
+                {
+                    if (arguments[i] is IVariable reference)
+                        initialValues[i] = reference.Value;
+                    parameters[i].Assign(arguments[i]);
+                }
+
+                if (NativeApiProxy.CallAsFunc(_object, methodNumber, parameters.Ptr,
+                    res => result = new NativeApiVariant(res).GetValue()))
+                {
+                    RemapOutputParameters(paramCount, arguments, initialValues, parameters);
+                }
             }
             retValue = result;
         }

@@ -36,6 +36,8 @@ public:
 		eMethGetDateAsVTypeDate,
 		eMethGetInvalidDateAsVTypeDate,
 		eMethGetInvalidDateAsVTypeTm,
+		eMethPassThrough,
+		eMethFailAfterChange,
 		eMethLast      // Always last
 	};
 

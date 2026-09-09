@@ -9,6 +9,7 @@ using System;
 using System.Runtime.InteropServices;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Binary;
+using OneScript.Types;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.NativeApi
@@ -54,6 +55,33 @@ namespace OneScript.StandardLibrary.NativeApi
                 default:
                     NativeApiProxy.SetVariantEmpty(Ptr);
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Снимок значения в той же нормализации, что использует Assign, без маршалинга через tVariant.
+        /// </summary>
+        public static IValue CaptureMarshalledValue(IValue value)
+        {
+            var clrObject = value.UnwrapToClrObject();
+            switch (clrObject)
+            {
+                case string str:
+                    return ValueFactory.Create(str);
+                case bool v:
+                    return ValueFactory.Create(value.AsBoolean());
+                case decimal num:
+                    if (num % 1 == 0)
+                        return ValueFactory.Create(Convert.ToInt32(value.AsNumber()));
+                    return ValueFactory.Create(value.AsNumber());
+                case BinaryDataContext binaryData:
+                    return binaryData;
+                case DateTime dt:
+                    return ValueFactory.Create(new DateTime(
+                        dt.Year, dt.Month, dt.Day,
+                        dt.Hour, dt.Minute, dt.Second, DateTimeKind.Unspecified));
+                default:
+                    return ValueFactory.Create();
             }
         }
 
