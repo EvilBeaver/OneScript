@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Binary;
 using OneScript.Types;
@@ -119,6 +120,12 @@ namespace OneScript.StandardLibrary.NativeApi
                     byte[] buffer = new byte[s];
                     Marshal.Copy(r, buffer, 0, s);
                     value = new BinaryDataContext(buffer);
+                },
+                // VTYPE_PSTR: однобайтовая строка, декодирование через Encoding.Default
+                (r, s) => {
+                    var buffer = new byte[s];
+                    Marshal.Copy(r, buffer, 0, s);
+                    value = ValueFactory.Create(Encoding.Default.GetString(buffer));
                 }
             );
             return value;

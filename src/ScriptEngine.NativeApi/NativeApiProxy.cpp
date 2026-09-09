@@ -298,6 +298,7 @@ DllExport void GetVariant(tVariant* variant
 	, TVariantTmRespond tm
 	, TVariantBlobRespond s
 	, TVariantBlobRespond x
+	, TVariantBlobRespond p
 )
 {
 	if (variant == nullptr) return;
@@ -331,7 +332,7 @@ DllExport void GetVariant(tVariant* variant
 			variant->tmVal.tm_sec);
 		break;
 	case VTYPE_PSTR:
-		e();
+		p(variant->pstrVal, variant->strLen);
 		break;
 	case VTYPE_PWSTR:
 		s(variant->pwstrVal, variant->strLen);

@@ -106,6 +106,7 @@ namespace OneScript.StandardLibrary.NativeApi
             , TVariantTmRespond tm
             , TVariantBlobRespond s
             , TVariantBlobRespond x
+            , TVariantBlobRespond p
         );
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
