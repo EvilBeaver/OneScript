@@ -82,14 +82,14 @@ pipeline {
         stage('VSCode debugger Build') {
             agent {
                 docker {
-                    image 'node:lts-alpine3.20'
+                    image 'node:22-alpine3.20'
                     label 'linux'
                 }
             }
 
             steps {
                 unstash 'buildResults'
-                sh 'npm install vsce'
+                sh 'npm install @vscode/vsce'
                 script {
                     def vsceBin = pwd() + "/node_modules/.bin/vsce"
                     sh "cd built/vscode && ${vsceBin} package"
