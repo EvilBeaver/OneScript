@@ -175,7 +175,7 @@ namespace OneScript.Core.Tests
             var enumInstance = CreateDeprecatedEnumInstance();
 
             var exceptions = new ConcurrentBag<Exception>();
-            Parallel.For(0, 1000, _ =>
+            Parallel.For(0, 1000, i =>
             {
                 try
                 {
@@ -197,7 +197,7 @@ namespace OneScript.Core.Tests
             var enumInstance = CreateDeprecatedEnumInstance();
 
             var exceptions = new ConcurrentBag<Exception>();
-            Parallel.For(0, 1000, _ =>
+            Parallel.For(0, 1000, i =>
             {
                 try
                 {
