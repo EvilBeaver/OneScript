@@ -6,7 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using OneScript.Exceptions;
@@ -165,6 +167,62 @@ namespace OneScript.Core.Tests
             
             _messages.Should().HaveCount(1)
                 .And.Contain(x => x.Contains("СтароеЗначение2", StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        [Fact]
+        public void ConcurrentEnumValueAccessDoesNotThrow()
+        {
+            var enumInstance = CreateDeprecatedEnumInstance();
+
+            var exceptions = new ConcurrentBag<Exception>();
+            Parallel.For(0, 1000, i =>
+            {
+                try
+                {
+                    _ = enumInstance["Значение1"];
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                }
+            });
+
+            exceptions.Should().BeEmpty();
+            _messages.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void ConcurrentDeprecatedEnumValueAccessWarnsOnce()
+        {
+            var enumInstance = CreateDeprecatedEnumInstance();
+
+            var exceptions = new ConcurrentBag<Exception>();
+            Parallel.For(0, 1000, i =>
+            {
+                try
+                {
+                    _ = enumInstance["СтароеЗначение2"];
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                }
+            });
+
+            exceptions.Should().BeEmpty();
+            _messages.Should().HaveCount(1)
+                .And.Contain(x => x.Contains("СтароеЗначение2", StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        private static ClrEnumWrapper<DeprecatedEnum> CreateDeprecatedEnumInstance()
+        {
+            var env = new RuntimeEnvironment();
+            var discoverer = new ContextDiscoverer(new DefaultTypeManager(), Mock.Of<IGlobalsManager>(), new TinyIocImplementation());
+            discoverer.DiscoverGlobalContexts(env, typeof(ObsoleteMembersTest).Assembly, t => t == typeof(DeprecatedEnum));
+
+            var enumInstance = env.GetGlobalProperty("НовоеПеречисление") as ClrEnumWrapper<DeprecatedEnum>;
+            enumInstance.Should().NotBeNull();
+            return enumInstance!;
         }
     }
 }
