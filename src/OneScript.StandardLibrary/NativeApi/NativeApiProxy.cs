@@ -22,6 +22,9 @@ namespace OneScript.StandardLibrary.NativeApi
         public delegate void TDestroyObject(IntPtr ptr);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public delegate void TGetExtensionName(IntPtr ptr, PointerDelegate response);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate IntPtr TCreateVariant(Int32 length);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -138,6 +141,7 @@ namespace OneScript.StandardLibrary.NativeApi
 
         public static readonly TGetClassObject GetClassObject;
         public static readonly TDestroyObject DestroyObject;
+        public static readonly TGetExtensionName GetExtensionName;
         public static readonly TCreateVariant CreateVariant;
         public static readonly TFreeVariant FreeVariant;
         public static readonly TVariantElement VariantElement;
@@ -186,6 +190,7 @@ namespace OneScript.StandardLibrary.NativeApi
 
             GetClassObject = Marshal.GetDelegateForFunctionPointer<TGetClassObject>(NativeApiKernel.GetProcAddress(module, "GetClassObject"));
             DestroyObject = Marshal.GetDelegateForFunctionPointer<TDestroyObject>(NativeApiKernel.GetProcAddress(module, "DestroyObject"));
+            GetExtensionName = Marshal.GetDelegateForFunctionPointer<TGetExtensionName>(NativeApiKernel.GetProcAddress(module, "GetExtensionName"));
             CreateVariant = Marshal.GetDelegateForFunctionPointer<TCreateVariant>(NativeApiKernel.GetProcAddress(module, "CreateVariant"));
             FreeVariant = Marshal.GetDelegateForFunctionPointer<TFreeVariant>(NativeApiKernel.GetProcAddress(module, "FreeVariant"));
             VariantElement = Marshal.GetDelegateForFunctionPointer<TVariantElement>(NativeApiKernel.GetProcAddress(module, "VariantElement"));
@@ -204,7 +209,6 @@ namespace OneScript.StandardLibrary.NativeApi
             SetVariantTm = Marshal.GetDelegateForFunctionPointer<TSetVariantTm>(NativeApiKernel.GetProcAddress(module, "SetVariantTm"));
             SetVariantStr = Marshal.GetDelegateForFunctionPointer<TSetVariantStr>(NativeApiKernel.GetProcAddress(module, "SetVariantStr"));
             GetVariant = Marshal.GetDelegateForFunctionPointer<TGetVariant>(NativeApiKernel.GetProcAddress(module, "GetVariant"));
-            GetPropVal = Marshal.GetDelegateForFunctionPointer<TGetPropVal>(NativeApiKernel.GetProcAddress(module, "GetPropVal"));
             GetNMethods = Marshal.GetDelegateForFunctionPointer<TGetNMethods>(NativeApiKernel.GetProcAddress(module, "GetNMethods"));
             FindMethod = Marshal.GetDelegateForFunctionPointer<TFindMethod>(NativeApiKernel.GetProcAddress(module, "FindMethod"));
             GetMethodName = Marshal.GetDelegateForFunctionPointer<TGetMethodName>(NativeApiKernel.GetProcAddress(module, "GetMethodName"));

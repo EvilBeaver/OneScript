@@ -69,7 +69,8 @@ namespace ScriptEngine.HostedScript.Extensions
         public static IEngineBuilder UseDefaultHosting(this IEngineBuilder b)
         {
             return b.UseFileSystemLibraries()
-                    .UseBinaryDataOptions();
+                    .UseBinaryDataOptions()
+                    .UseNativeApi();
         }
         
         public static IEngineBuilder UseFileSystemLibraries(this IEngineBuilder b)

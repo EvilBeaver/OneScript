@@ -64,15 +64,18 @@ void ADDIN_API FreeMemory(void** pMemory) {
 
 class ProxyComponent : public IMemoryManager {
 private:
+	HMODULE hModule = nullptr;
 	IComponentBase* pComponent = nullptr;
 	NativeInterface mInterface;
 public:
 	ProxyComponent(
+		HMODULE hModule,
 		IComponentBase* pComponent,
 		ErrorFuncRespond onError,
 		EventFuncRespond onEvent,
 		StatusFuncRespond onStatus
 	) :
+		hModule(hModule),
 		pComponent(pComponent),
 		mInterface(onError, onEvent, onStatus)
 	{
@@ -80,8 +83,28 @@ public:
 		pComponent->Init(&mInterface);
 	}
 	virtual ~ProxyComponent() override {
-		pComponent->Done();
-		delete pComponent;
+		if (!pComponent)
+			return;
+
+		try {
+			pComponent->Done();
+		} catch (...) {}
+
+		try {
+			auto proc = (DestroyObjectPtr)GetProcAddress(hModule, "DestroyObject");
+			if (proc) {
+				// Non-zero return: object not deleted, component memory leaked.
+				proc(&pComponent);
+			} else {
+				delete pComponent;
+				pComponent = nullptr;
+			}
+		} catch (...) {
+			if (pComponent) {
+				delete pComponent;
+				pComponent = nullptr;
+			}
+		}
 	}
 	virtual bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) override {
 		return ::AllocMemory(pMemory, ulCountByte);
@@ -146,12 +169,21 @@ DllExport ProxyComponent* GetClassObject(
 	IComponentBase* pComponent = nullptr;
 	auto ok = proc(wsName, &pComponent);
 	if (ok == 0) return nullptr;
-	return new ProxyComponent(pComponent, onError, onEvent, onStatus);
+	return new ProxyComponent(hModule, pComponent, onError, onEvent, onStatus);
 }
 
 DllExport void DestroyObject(ProxyComponent* proxy)
 {
 	if (proxy) delete proxy;
+}
+
+DllExport void GetExtensionName(ProxyComponent* proxy, StringFuncRespond respond)
+{
+	CHECK_PROXY(EMPTY_DEF);
+	WCHAR_T* name = nullptr;
+	auto ok = proxy->Component().RegisterExtensionAs(&name);
+	if (ok && name) respond(name);
+	if (name) proxy->FreeMemory((void**)&name);
 }
 
 DllExport int32_t GetNProps(ProxyComponent* proxy)

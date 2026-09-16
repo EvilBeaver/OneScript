@@ -76,7 +76,13 @@ namespace OneScript.StandardLibrary.NativeApi
             }
         }
 
-        public NativeApiComponent(object host, NativeApiLibrary library, TypeDescriptor typeDef, string componentName)
+        public NativeApiComponent(
+            object host,
+            NativeApiLibrary library,
+            TypeDescriptor typeDef,
+            string componentName,
+            string identifier,
+            bool throwOnZero = true)
         {
             if (!NativeApiProxy.IsAvailable)
                 throw new RuntimeException("Native API Proxy DLL is not loaded");
@@ -89,7 +95,23 @@ namespace OneScript.StandardLibrary.NativeApi
                 OnComponentStatusText?.Invoke(S(status));
 
             _object = NativeApiProxy.GetClassObject(library.Module, componentName, _onError, _onEvent, _onStatus);
+            if (_object == IntPtr.Zero)
+            {
+                if (throwOnZero)
+                    throw new RuntimeException($"Не удалось создать объект `{componentName}` внешней компоненты `{identifier}`");
+                return;
+            }
+
             _type = typeDef;
+        }
+
+        internal bool IsCreated => _object != IntPtr.Zero;
+
+        internal string GetExtensionName()
+        {
+            var name = string.Empty;
+            NativeApiProxy.GetExtensionName(_object, n => name = NativeApiProxy.Str(n));
+            return name;
         }
         
         // ReSharper disable once ConvertToAutoProperty
@@ -305,35 +327,13 @@ namespace OneScript.StandardLibrary.NativeApi
             retValue = result;
         }
 
-        private void ReleaseUnmanagedResources(bool isDisposing)
+        public void Dispose()
         {
             if (_object == IntPtr.Zero)
                 return;
-            
-            try
-            {
-                NativeApiProxy.DestroyObject(_object);
-            }
-            catch (Exception)
-            {
-                if (isDisposing)
-                    throw;
-            }
-            finally
-            {
-                _object = IntPtr.Zero;
-            }
-        }
 
-        public void Dispose()
-        {
-            ReleaseUnmanagedResources(true);
-            GC.SuppressFinalize(this);
-        }
-
-        ~NativeApiComponent()
-        {
-            ReleaseUnmanagedResources(false);
+            NativeApiProxy.DestroyObject(_object);
+            _object = IntPtr.Zero;
         }
     }
 }

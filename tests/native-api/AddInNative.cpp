@@ -1,6 +1,8 @@
 ﻿
 #include "stdafx.h"
 
+#include <atomic>
+
 #if defined( __linux__ ) || defined(__APPLE__)
 #include <unistd.h>
 #include <stdlib.h>
@@ -57,6 +59,8 @@ static const wchar_t* g_MethodNames[] = {
 	L"GetInvalidDateAsVTypeTm",
 	L"PassThrough",
 	L"FailAfterChange",
+	L"GetConstructCount",
+	L"GetDestructCount",
 };
 
 static const wchar_t* g_MethodNamesRu[] = {
@@ -75,9 +79,11 @@ static const wchar_t* g_MethodNamesRu[] = {
 	L"ПолучитьНекорректнуюДатуКакVTYPE_TM",
 	L"ПропуститьПараметры",
 	L"ОшибкаПослеИзменения",
+	L"ПолучитьСчётчикКонструкторов",
+	L"ПолучитьСчётчикДеструкторов",
 };
 
-static const wchar_t g_kClassNames[] = L"CAddInNative"; //"|OtherClass1|OtherClass2";
+static const wchar_t g_kClassNames[] = L"CAddInNative|2";
 static IAddInDefBase* pAsyncEvent = NULL;
 
 uint32_t convToShortWchar(WCHAR_T** Dest, const wchar_t* Source, uint32_t len = 0);
@@ -85,13 +91,36 @@ uint32_t convFromShortWchar(wchar_t** Dest, const WCHAR_T* Source, uint32_t len 
 uint32_t getLenShortWcharStr(const WCHAR_T* Source);
 static AppCapabilities g_capabilities = eAppCapabilitiesInvalid;
 static WcharWrapper s_names(g_kClassNames);
+static std::atomic<long> g_instanceConstructCount{ 0 };
+static std::atomic<long> g_instanceDestructCount{ 0 };
 //---------------------------------------------------------------------------//
 long GetClassObject(const WCHAR_T* wsName, IComponentBase** pInterface)
 {
 	if (!*pInterface)
 	{
-		*pInterface = new CAddInNative;
-		return (long)*pInterface;
+		wchar_t* name = 0;
+		::convFromShortWchar(&name, wsName);
+
+		if (name)
+		{
+			if (!wcscmp(name, L"CAddInNative") || !wcscmp(name, L"DirectAlias"))
+			{
+				*pInterface = new CAddInNative;
+				delete[] name;
+				return (long)*pInterface;
+			}
+
+			if (!wcscmp(name, L"2"))
+			{
+				*pInterface = new CSecondAddInNative;
+				delete[] name;
+				return (long)*pInterface;
+			}
+
+			delete[] name;
+		}
+
+		return 0;
 	}
 	return 0;
 }
@@ -120,6 +149,7 @@ const WCHAR_T* GetClassNames()
 //---------------------------------------------------------------------------//
 CAddInNative::CAddInNative()
 {
+	g_instanceConstructCount.fetch_add(1, std::memory_order_relaxed);
 	m_iMemory = 0;
 	m_iConnect = 0;
 	m_FixedDate = {};
@@ -136,6 +166,7 @@ CAddInNative::CAddInNative()
 //---------------------------------------------------------------------------//
 CAddInNative::~CAddInNative()
 {
+	g_instanceDestructCount.fetch_add(1, std::memory_order_relaxed);
 }
 //---------------------------------------------------------------------------//
 bool CAddInNative::Init(void* pConnection)
@@ -156,6 +187,22 @@ void CAddInNative::Done()
 }
 /////////////////////////////////////////////////////////////////////////////
 // ILanguageExtenderBase
+//---------------------------------------------------------------------------//
+bool CSecondAddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
+{
+	const wchar_t* wsExtension = L"SecondAddIn";
+	int iActualSize = ::wcslen(wsExtension) + 1;
+	WCHAR_T* dest = 0;
+
+	if (m_iMemory)
+	{
+		if (m_iMemory->AllocMemory((void**)wsExtensionName, iActualSize * sizeof(WCHAR_T)))
+			::convToShortWchar(wsExtensionName, wsExtension, iActualSize);
+		return true;
+	}
+
+	return false;
+}
 //---------------------------------------------------------------------------//
 bool CAddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
 {
@@ -437,6 +484,8 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 	case eMethGetDateAsVTypeDate:
 	case eMethGetInvalidDateAsVTypeDate:
 	case eMethGetInvalidDateAsVTypeTm:
+	case eMethGetConstructCount:
+	case eMethGetDestructCount:
 		return true;
 	default:
 		return false;
@@ -602,6 +651,14 @@ bool CAddInNative::CallAsFunc(const long lMethodNum,
 		pvarRetValue->tmVal.tm_mon = 12;
 		pvarRetValue->tmVal.tm_mday = 32;
 		TV_VT(pvarRetValue) = VTYPE_TM;
+		return true;
+	case eMethGetConstructCount:
+		TV_VT(pvarRetValue) = VTYPE_I4;
+		TV_I4(pvarRetValue) = g_instanceConstructCount.load(std::memory_order_relaxed);
+		return true;
+	case eMethGetDestructCount:
+		TV_VT(pvarRetValue) = VTYPE_I4;
+		TV_I4(pvarRetValue) = g_instanceDestructCount.load(std::memory_order_relaxed);
 		return true;
 	break;
 

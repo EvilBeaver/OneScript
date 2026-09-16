@@ -42,6 +42,15 @@ namespace OneScript.StandardLibrary.NativeApi
             return IsLinux ? LinuxFree(module) == 0 : WindowsFree(module);
         }
 
+        /// <summary>
+        /// Освобождает все подключённые библиотеки Native API.
+        /// Идемпотентен; повторный вызов безопасен.
+        /// </summary>
+        public static void Shutdown()
+        {
+            NativeApiFactory.Shutdown();
+        }
+
         [DllImport(KernelWin, SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LoadLibrary")]
         protected static extern IntPtr WindowsLoad(string lpLibFileName);
 

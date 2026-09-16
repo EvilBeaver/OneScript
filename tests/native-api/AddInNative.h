@@ -38,6 +38,8 @@ public:
 		eMethGetInvalidDateAsVTypeTm,
 		eMethPassThrough,
 		eMethFailAfterChange,
+		eMethGetConstructCount,
+		eMethGetDestructCount,
 		eMethLast      // Always last
 	};
 
@@ -68,14 +70,22 @@ public:
 	// LocaleBase
 	virtual void ADDIN_API SetLocale(const WCHAR_T* loc);
 
+protected:
+	IMemoryManager* m_iMemory;
+
 private:
 	long findName(const wchar_t* names[], const wchar_t* name, const uint32_t size) const;
 	void addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code);
 	IAddInDefBase* m_iConnect;
-	IMemoryManager* m_iMemory;
 	bool m_Enabled = false;
 	std::wstring m_String;
 	struct tm m_FixedDate = {};
+};
+
+class CSecondAddInNative : public CAddInNative
+{
+public:
+	bool ADDIN_API RegisterExtensionAs(WCHAR_T** wsExtensionName) override;
 };
 
 class WcharWrapper
