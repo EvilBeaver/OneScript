@@ -47,7 +47,8 @@ namespace ScriptEngine.Hosting
             var services = builder.Services;
             
             services.Register<IServiceContainer>(sp => sp);
-            services.RegisterSingleton<ITypeManager, DefaultTypeManager>();
+            services.RegisterSingleton<ITypeManager>(sp =>
+                new DefaultTypeManager(sp.ResolveEnumerable<ILazyTypeResolver>()));
             services.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
             services.RegisterSingleton<RuntimeEnvironment>();
             services.RegisterSingleton<IRuntimeEnvironment>(sp => sp.Resolve<RuntimeEnvironment>());

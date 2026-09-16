@@ -8,7 +8,6 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Types;
@@ -22,11 +21,12 @@ namespace ScriptEngine.Machine
         private readonly Dictionary<string, int> _knownTypesIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
         private readonly List<TypeDescriptor> _knownTypes = new List<TypeDescriptor>();
         private readonly TypeFactoryCache _factoryCache = new TypeFactoryCache();
-        
-        private Type _dynamicFactory;
+        private readonly ILazyTypeResolver[] _resolvers;
 
-        public DefaultTypeManager()
+        public DefaultTypeManager(IEnumerable<ILazyTypeResolver> resolvers = null)
         {
+            _resolvers = resolvers?.ToArray() ?? Array.Empty<ILazyTypeResolver>();
+
             RegisterTypeInternal(BasicTypes.Undefined);
             RegisterTypeInternal(BasicTypes.Boolean);
             RegisterTypeInternal(BasicTypes.String);
@@ -46,6 +46,12 @@ namespace ScriptEngine.Machine
             {
                 return _knownTypes[index];
             }
+
+            if (TryResolveLazily(name, out var resolvedType))
+            {
+                return resolvedType;
+            }
+
             var clrType = Type.GetType(name, throwOnError: false, ignoreCase: true);
             if (clrType != null)
             {
@@ -67,6 +73,11 @@ namespace ScriptEngine.Machine
             if (_knownTypesIndexes.TryGetValue(name, out var index))
             {
                 type = _knownTypes[index];
+                return true;
+            }
+
+            if (TryResolveLazily(name, out type))
+            {
                 return true;
             }
 
@@ -97,8 +108,9 @@ namespace ScriptEngine.Machine
         
         public void RegisterType(TypeDescriptor typeDescriptor)
         {
-            if (TryGetType(typeDescriptor.Name, out var knownType))
+            if (_knownTypesIndexes.TryGetValue(typeDescriptor.Name, out var index))
             {
+                var knownType = _knownTypes[index];
                 if (knownType != typeDescriptor)
                     throw new InvalidOperationException($"Type {typeDescriptor} already registered");
                 
@@ -123,6 +135,20 @@ namespace ScriptEngine.Machine
             _knownTypes.Add(td);
         }
 
+        private bool TryResolveLazily(string name, out TypeDescriptor type)
+        {
+            foreach (var resolver in _resolvers)
+            {
+                if (resolver.TryResolve(name, this, out type))
+                {
+                    return true;
+                }
+            }
+
+            type = default;
+            return false;
+        }
+
         public TypeDescriptor GetTypeByFrameworkType(Type type)
         {
             return _knownTypes.First(x => x.ImplementingClass == type);
@@ -142,28 +168,6 @@ namespace ScriptEngine.Machine
         public IReadOnlyList<TypeDescriptor> RegisteredTypes()
         {
             return _knownTypes;
-        }
-
-        public Type NewInstanceHandler 
-        { 
-            get
-            {
-                return _dynamicFactory;
-            }
-
-            set
-            {
-                if (value
-                    .GetMethods(BindingFlags.Static | BindingFlags.Public)
-                    .Any(x => x.GetCustomAttributes(false).Any<object>(y => y is ScriptConstructorAttribute)))
-                {
-                    _dynamicFactory = value;
-                }
-                else
-                {
-                    throw new InvalidOperationException("Class " + value.ToString() + " can't be registered as New handler");
-                }
-            }
         }
 
         #endregion
