@@ -39,10 +39,17 @@ namespace OneScript.StandardLibrary.NativeApi
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate Int32 TFindProp(IntPtr ptr, [MarshalAs(UnmanagedType.LPWStr)] string wsPropName);
 
+        // Нативные экспорты возвращают однобайтовый C++ bool (регистр al),
+        // поэтому маршалинг возвращаемого значения должен быть I1.
+        // Умолчательный UnmanagedType.Bool читает 4-байтовый BOOL (весь eax),
+        // чьи старшие биты ABI не гарантирует — там может быть мусор.
+
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public delegate bool TIsPropReadable(IntPtr ptr, Int32 lPropNum);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public delegate bool TIsPropWritable(IntPtr ptr, Int32 lPropNum);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
@@ -81,7 +88,7 @@ namespace OneScript.StandardLibrary.NativeApi
         public delegate void TVariantEmptyRespond();
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-        public delegate void TVariantBoolRespond(Boolean value);
+        public delegate void TVariantBoolRespond([MarshalAs(UnmanagedType.I1)] Boolean value);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         public delegate void TVariantIntRespond(Int32 value);
@@ -125,18 +132,23 @@ namespace OneScript.StandardLibrary.NativeApi
         public delegate Int32 TGetNParams(IntPtr ptr, Int32 lMethodNum);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public delegate bool THasParamDefValue(IntPtr ptr, Int32 lMethodNum, Int32 lParamNum);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public delegate bool TGetParamDefValue(IntPtr ptr, Int32 lMethodNum, Int32 lParamNum, PointerDelegate response);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public delegate bool THasRetVal(IntPtr ptr, Int32 lMethodNum);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public delegate bool TCallAsProc(IntPtr ptr, Int32 lMethodNum, IntPtr value);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public delegate bool TCallAsFunc(IntPtr ptr, Int32 lMethodNum, IntPtr value, PointerDelegate response);
 
         public static readonly TGetClassObject GetClassObject;
