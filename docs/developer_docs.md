@@ -6,7 +6,9 @@
 
 - [`README.md`](../README.md) — общее описание, установка, сборка, тесты;
 - [`docs/contexts.md`](contexts.md) — практическое руководство по добавлению BSL-контекстов и глобальных методов;
-- [`CODESTYLE.md`](../CODESTYLE.md) — требования к стилю кода на C#.
+- [`docs/native-api.md`](native-api.md) — сборка C++, тесты и отладка Native API (прокси и внешние компоненты);
+- [`CODESTYLE.md`](../CODESTYLE.md) — требования к стилю кода на C#;
+- [`AGENTS.md`](../AGENTS.md) — оглавление всех инструкций для агентов.
 
 ## 1. Картина целиком: из чего состоит OneScript
 
@@ -196,6 +198,8 @@ OneScript — открытая реализация языка, совмести
 
 - Основные файлы: `NativeApiProxy.cpp`, `NativeInterface.cpp`, `include/*` (`AddInDefBase.h`, `ComponentBase.h` и др.).
 - Задача: писать нативные аддины, видимые в BSL как объекты/контексты.
+- Управляемая прослойка: `src/OneScript.StandardLibrary/NativeApi/` (`NativeApiComponent`, `NativeApiProxy.cs`).
+- Сборка C++, копирование DLL, прогон `tests/native-api.os` — [`docs/native-api.md`](native-api.md). **Не** использовать `dotnet msbuild` для vcxproj.
 
 ## 4. Как компоненты связаны между собой (словесная диаграмма)
 
@@ -216,6 +220,7 @@ OneScript — открытая реализация языка, совмести
 - Добавить функцию в стандартную библиотеку: соответствующий раздел `OneScript.StandardLibrary` (например, `Json/` или `Collections/`), плюс экспорт в общий контекст (`StandardGlobalContext.cs` или `SymbolsContext.cs`, если нужно).
 - Встроенная функция языка/операция: `OneScript.Native/Runtime/BuiltInFunctions.cs` и/или `Compiler/*`, при необходимости — поддержка в `ScriptEngine/Machine`.
 - Отладка: `OneScript.DebugServices`/`OneScript.DebugProtocol` — добавление/изменение событий или представления переменных; `VSCode.DebugAdapter` — проксирование.
+- Native API (C++-прокси, внешние компоненты, P/Invoke): [`docs/native-api.md`](native-api.md) — сборка через Visual Studio MSBuild, тесты `tests/native-api.os`.
 
 ## 6. Навигация по тестам
 
