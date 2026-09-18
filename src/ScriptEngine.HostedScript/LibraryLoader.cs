@@ -5,19 +5,20 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Commons;
+using OneScript.Compilation;
+using OneScript.Contexts;
+using OneScript.Exceptions;
+using OneScript.Execution;
+using OneScript.Sources;
+using OneScript.Values;
+using ScriptEngine.Libraries;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using OneScript.Commons;
-using OneScript.Compilation;
-using OneScript.Contexts;
-using OneScript.Exceptions;
-using OneScript.Execution;
-using OneScript.Values;
-using ScriptEngine.Libraries;
 
 namespace ScriptEngine.HostedScript
 {
@@ -28,7 +29,7 @@ namespace ScriptEngine.HostedScript
         private readonly ScriptingEngine _engine;
 
         private readonly bool _customized;
-        private readonly Stack<LibraryLoadingContext> _librariesInProgress = new Stack<LibraryLoadingContext>();
+        private readonly Stack<LibraryLoadingContext> _librariesInProgress = [];
 
         private struct DelayLoadedScriptData
         {
@@ -71,16 +72,29 @@ namespace ScriptEngine.HostedScript
             _engine = engine;
             _customized = false;
         }
-        
+
+        private LibraryLoader(ScriptingEngine engine) : base(EmptyModule.Instance,true)
+        {
+            _env = engine.Environment;
+            _libManager = engine.LibraryManager;
+            _engine = engine;
+            _customized = true;
+        }
+
         #region Static part
-        
+
         public static LibraryLoader Create(ScriptingEngine engine, string processingScript, IBslProcess process)
         {
             var compiler = engine.GetCompilerService();
             var code = engine.Loader.FromFile(processingScript);
-            var module = CompileModule(compiler, code, typeof(LibraryLoader), process);
-            
-            return new LibraryLoader(module, engine.Environment, engine.LibraryManager, engine, process);
+
+            var loader = new LibraryLoader(engine);
+            CompileModule(compiler, code, loader, process);
+
+            loader.InitOwnData();
+            loader._engine.InitializeSDO(loader, process);
+
+            return loader;
         }
 
         public static LibraryLoader Create(ScriptingEngine engine, IBslProcess process)
@@ -200,7 +214,7 @@ namespace ScriptEngine.HostedScript
                 return DefaultProcessing(libraryPath, process);
             }
 
-            CallScriptMethod(eventIdx, new[] { libPathValue, defaultLoading, cancelLoading }, process);
+            CallScriptMethod(eventIdx, [libPathValue, defaultLoading, cancelLoading], process);
 
             if (cancelLoading.AsBoolean()) // Отказ = Ложь
                 return false;
@@ -209,7 +223,6 @@ namespace ScriptEngine.HostedScript
                 return DefaultProcessing(libraryPath, process);
 
             return true;
-
         }
 
         private bool DefaultProcessing(string libraryPath, IBslProcess process)

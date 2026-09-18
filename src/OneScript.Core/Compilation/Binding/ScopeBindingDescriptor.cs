@@ -41,8 +41,8 @@ namespace OneScript.Compilation.Binding
         public static ScopeBindingDescriptor Static(IAttachableContext target)
             => new ScopeBindingDescriptor(ScopeBindingKind.Static, target, -1);
 
-        public static ScopeBindingDescriptor ThisScope()
-            => new ScopeBindingDescriptor(ScopeBindingKind.ThisScope, null, -1);
+        public static ScopeBindingDescriptor ThisScope(IAttachableContext target=null)
+            => new ScopeBindingDescriptor(ScopeBindingKind.ThisScope, target, -1);
 
         public static ScopeBindingDescriptor FrameScope(int index)
             => new ScopeBindingDescriptor(ScopeBindingKind.FrameScope, null, index);

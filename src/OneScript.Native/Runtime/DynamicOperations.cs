@@ -134,7 +134,7 @@ namespace OneScript.Native.Runtime
             where T : BslValue
             => (T)ConstructorCall(typeManager, services, typeName, process, args);
 
-        public static BslObjectValue GetExceptionInfo(IExceptionInfoFactory factory, Exception e)
+        public static BslValue GetExceptionInfo(IExceptionInfoFactory factory, Exception e)
             => factory.GetExceptionInfo(e);
 
         public static BslTypeValue GetTypeByName(ITypeManager manager, string name)

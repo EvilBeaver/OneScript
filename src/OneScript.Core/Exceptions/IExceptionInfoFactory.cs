@@ -16,7 +16,7 @@ namespace OneScript.Exceptions
     /// </summary>
     public interface IExceptionInfoFactory
     {
-        BslObjectValue GetExceptionInfo(Exception exception);
+        BslValue GetExceptionInfo(Exception exception);
         
         string GetExceptionDescription(IRuntimeContextInstance exceptionInfo);
 
