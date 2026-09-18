@@ -41,7 +41,7 @@ namespace oscript
             
             Output.WriteLine("Options:");
             Output.WriteLine($"  {"-encoding=<name>",modeWidth} Set output encoding (e.g. utf-8).");
-            Output.WriteLine($"  {"-codestat=<file>",modeWidth} Write code execution statistics to file.");
+            Output.WriteLine($"  {"-codestat[=<file>]",modeWidth} Enable code statistics; write to file if specified.");
             Output.WriteLine();
             
             Output.WriteLine("CGI Mode:");
