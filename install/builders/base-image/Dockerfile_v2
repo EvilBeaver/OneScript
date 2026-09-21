@@ -37,3 +37,11 @@ ARG VERSION="dev"
 RUN mkdir -p /var/oscript
 COPY --from=0 /root/.local/share/ovm/${VERSION}/ /var/oscript/
 ENV PATH="$PATH:/var/oscript/bin"
+
+# Проверка, что в образ попала запрошенная версия (для алиасов dev, stable и т.п. только вывод)
+RUN ACTUAL="$(oscript -version)" \
+    && echo "oscript -version: ${ACTUAL}" \
+    && case "${VERSION}" in \
+         [0-9]*) [ "${ACTUAL}" = "${VERSION}" ] \
+                 || { echo "Ожидалась версия ${VERSION}, в образе ${ACTUAL}" >&2; exit 1; } ;; \
+       esac

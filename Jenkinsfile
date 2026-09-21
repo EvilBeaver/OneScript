@@ -298,7 +298,9 @@ pipeline {
                     steps {
                         script {
                             def codename = env.TAG_NAME ? env.TAG_NAME : 'lts'
-                            publishDockerImage('v1', codename)
+                            // тег v1.9.4 -> версия для ovm 1.9.4
+                            def engineVersion = env.TAG_NAME ? env.TAG_NAME.replaceFirst(/^v/, '') : 'lts'
+                            publishDockerImage('v1', codename, engineVersion)
                         }
                     }
                 }
@@ -322,7 +324,8 @@ pipeline {
                                 codename = fullVersionNumber()
                             }
                             
-                            publishDockerImage('v2', codename)
+                            // для v2 тег образа совпадает с версией для ovm: dev или 2.2.0
+                            publishDockerImage('v2', codename, codename)
                         }
                     }
                 }
@@ -410,12 +413,14 @@ def publishReleaseNotes(codename) {
     }
 }
 
-def publishDockerImage(flavour, codename) {
+def publishDockerImage(flavour, codename, engineVersion) {
     def imageName = "evilbeaver/onescript:${codename}"
 
+    // --no-cache: слой с ovm install не меняется между сборками и иначе берется из кэша агента
+    // --pull: обновлять базовые образы (ovm, aspnet, mono)
     docker.build(
         imageName,
-        "--load -f install/builders/base-image/Dockerfile_${flavour} ."
+        "--load --pull --no-cache --build-arg VERSION=${engineVersion} -f install/builders/base-image/Dockerfile_${flavour} ."
     ).push()
 }
 
