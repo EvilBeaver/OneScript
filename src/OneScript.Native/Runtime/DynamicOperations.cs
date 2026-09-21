@@ -113,7 +113,8 @@ namespace OneScript.Native.Runtime
             };
         }
 
-        public static BslValue ConstructorCall(ITypeManager typeManager, IServiceContainer services, string typeName, IBslProcess process, BslValue[] args)
+        public static BslValue ConstructorCall(ITypeManager typeManager, IServiceContainer services, 
+            string typeName, IBslProcess process, BslValue[] args)
         {
             var type = typeManager.GetTypeByName(typeName);
             var factory = typeManager.GetFactoryFor(type);
@@ -126,6 +127,22 @@ namespace OneScript.Native.Runtime
             };
             
             return (BslValue) factory.Activate(context, args.Cast<IValue>().ToArray());
+        }
+
+        public static BslValue DynamicConstructorCall(ITypeManager typeManager, IServiceContainer services,
+            string typeName, IBslProcess process, IValue[] args)
+        {
+            var type = typeManager.GetTypeByName(typeName);
+            var factory = typeManager.GetFactoryFor(type);
+            var context = new TypeActivationContext
+            {
+                TypeManager = typeManager,
+                Services = services,
+                TypeName = type.Name,
+                CurrentProcess = process
+            };
+
+            return (BslValue)factory.Activate(context, args);
         }
 
         // TODO: Сделать прямой маппинг на статические фабрики-методы, а не через Factory.Activate
