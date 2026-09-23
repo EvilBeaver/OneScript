@@ -12,3 +12,14 @@ RUN curl -L https://github.com/oscript-library/ovm/releases/latest/download/ovm.
 
 ENV OSCRIPTBIN=/root/.local/share/ovm/current/bin
 ENV PATH="$OSCRIPTBIN:$PATH"
+
+# Проверка, что в образ попала запрошенная версия (для алиасов lts, stable и т.п. только вывод)
+# 1.x выводит версию с номером сборки: 1.9.4.16
+RUN ACTUAL="$(oscript -version)" \
+    && echo "oscript -version: ${ACTUAL}" \
+    && case "${VERSION}" in \
+         [0-9]*) case "${ACTUAL}" in \
+                   "${VERSION}"|"${VERSION}".*) ;; \
+                   *) echo "Ожидалась версия ${VERSION}, в образе ${ACTUAL}" >&2; exit 1 ;; \
+                 esac ;; \
+       esac
