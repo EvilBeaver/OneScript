@@ -17,6 +17,7 @@ namespace OneScript.Contexts
     public abstract class BslMethodInfo : MethodInfo, INameAndAliasProvider
     {
         private AnnotationHolder _annotations;
+        private BslCallParameter[] _callParameters;
         
         public abstract string Alias { get; }
         
@@ -29,6 +30,19 @@ namespace OneScript.Contexts
 
                 return _annotations;
             }
+        }
+
+        /// <summary>
+        /// Параметры, видимые из 1Script, для проверок при вызове метода.
+        /// Собираются один раз: копировать параметры и искать у них атрибуты на каждом вызове слишком дорого.
+        /// </summary>
+        public ReadOnlySpan<BslCallParameter> CallParameters => _callParameters ??= CreateCallParameters();
+
+        private BslCallParameter[] CreateCallParameters()
+        {
+            return this.GetBslParameters()
+                .Select(parameter => new BslCallParameter(parameter.IsByRef(), parameter.HasDefaultValue))
+                .ToArray();
         }
 
         protected void SetAnnotations(AnnotationHolder annotations)
