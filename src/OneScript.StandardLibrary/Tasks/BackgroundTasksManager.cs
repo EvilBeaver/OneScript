@@ -51,7 +51,7 @@ namespace OneScript.StandardLibrary.Tasks
             var taskCreationOptions = longRunning ? TaskCreationOptions.LongRunning : TaskCreationOptions.None;
             var worker = new Task(() =>
             {
-                var process = _runtimeContext.Services.Resolve<IBslProcessFactory>().NewProcess();
+                var process = _runtimeContext.Services.Resolve<IBslProcessFactory>().NewProcess(task.CancellationToken);
                 task.ExecuteOnCurrentThread(process);
 
             }, taskCreationOptions);
@@ -76,7 +76,7 @@ namespace OneScript.StandardLibrary.Tasks
         /// <param name="timeout">Таймаут ожидания. 0 = ожидать бесконечно</param>
         /// <returns>Истина - дождались все задания, Ложь - истек таймаут</returns>
         [ContextMethod("ОжидатьВсе", "WaitAll")]
-        public bool WaitAll(ArrayImpl tasks, int timeout = 0)
+        public bool WaitAll(IBslProcess process, ArrayImpl tasks, int timeout = 0)
         {
             var workers = GetWorkerTasks(tasks);
             timeout = ConvertTimeout(timeout);
@@ -84,7 +84,7 @@ namespace OneScript.StandardLibrary.Tasks
             // Фоновые задания перехватывают исключения внутри себя 
             // и выставляют свойство ИнформацияОбОшибке
             // если WaitAll выбросит исключение, значит действительно что-то пошло не так на уровне самого Task
-            return Task.WaitAll(workers, timeout);
+            return Task.WaitAll(workers, timeout, process.CancellationToken);
         }
         
         /// <summary>
@@ -94,7 +94,7 @@ namespace OneScript.StandardLibrary.Tasks
         /// <param name="timeout">Таймаут ожидания. 0 = ожидать бесконечно</param>
         /// <returns>Число. Индекс в массиве заданий, указывающий на элемент-задание, которое завершилось. -1 = сработал таймаут</returns>
         [ContextMethod("ОжидатьЛюбое", "WaitAny")]
-        public int WaitAny(ArrayImpl tasks, int timeout = 0)
+        public int WaitAny(IBslProcess process, ArrayImpl tasks, int timeout = 0)
         {
             var workers = GetWorkerTasks(tasks);
             timeout = ConvertTimeout(timeout);
@@ -102,19 +102,21 @@ namespace OneScript.StandardLibrary.Tasks
             // Фоновые задания перехватывают исключения внутри себя 
             // и выставляют свойство ИнформацияОбОшибке
             // если WaitAny выбросит исключение, значит действительно что-то пошло не так на уровне самого Task
-            return Task.WaitAny(workers, timeout);
+            return Task.WaitAny(workers, timeout, process.CancellationToken);
         }
 
         /// <summary>
         /// Блокирует поток до завершения всех заданий.
+        /// Вызванный из фонового задания, не ждет само это задание.
         /// Выбрасывает исключение, если какие-то задания завершились аварийно.
         /// Выброшенное исключение в свойстве Параметры содержит массив аварийных заданий.
         /// </summary>
         [ContextMethod("ОжидатьЗавершенияЗадач", "WaitCompletionOfTasks")]
-        public void WaitCompletionOfTasks()
+        public void WaitCompletionOfTasks(IBslProcess process)
         {
-            var snapshot = _tasks.Values.ToArray();
-            Task.WaitAll(GetWorkerTasks(snapshot));
+            var currentId = Task.CurrentId;
+            var snapshot = _tasks.Values.Where(x => x.TaskId != currentId).ToArray();
+            Task.WaitAll(GetWorkerTasks(snapshot), process.CancellationToken);
 
             var failedTasks = snapshot.Where(x => x.State == TaskStateEnum.CompletedWithErrors)
                 .ToList();

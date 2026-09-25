@@ -13,6 +13,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading;
 using Microsoft.CSharp.RuntimeBinder;
 using OneScript.Commons;
 using OneScript.Compilation.Binding;
@@ -824,7 +825,9 @@ namespace OneScript.Native.Compiler
 
             var block = _blocks.LeaveBlock();
 
+            var cancellationToken = Expression.Variable(typeof(CancellationToken));
             var result = new List<Expression>();
+            result.Add(ExpressionHelpers.ThrowIfCancellationRequested(cancellationToken));
             result.Add(Expression.IfThen(
                 Expression.Not(block.BuildStack.Pop()), 
                 Expression.Break(block.LoopBreak)));
@@ -832,7 +835,13 @@ namespace OneScript.Native.Compiler
             result.AddRange(block.GetStatements());
             
             var loop = Expression.Loop(Expression.Block(result), block.LoopBreak, block.LoopContinue);
-            _blocks.Add(loop);
+            _blocks.Add(Expression.Block(new[] {cancellationToken}, ReadCancellationToken(cancellationToken), loop));
+        }
+
+        // Токен читается один раз перед циклом, а не у процесса на каждой итерации
+        private Expression ReadCancellationToken(ParameterExpression cancellationToken)
+        {
+            return Expression.Assign(cancellationToken, ExpressionHelpers.GetCancellationToken(_processParameter));
         }
 
         protected override void VisitWhileCondition(BslSyntaxNode node)
@@ -871,12 +880,15 @@ namespace OneScript.Native.Compiler
             var initialValue = block.BuildStack.Pop();
             var counterVar = block.BuildStack.Pop();
             
+            var cancellationToken = Expression.Variable(typeof(CancellationToken));
             var result = new List<Expression>();
+            result.Add(ReadCancellationToken(cancellationToken));
             result.Add(Expression.Assign(counterVar, ExpressionHelpers.CreateAssignmentSource(initialValue, counterVar.Type)));
             var finalVar = Expression.Variable(typeof(decimal)); // TODO: BslNumericValue ?
             result.Add(Expression.Assign(finalVar, upperLimit));
             
             var loop = new List<Expression>();
+            loop.Add(ExpressionHelpers.ThrowIfCancellationRequested(cancellationToken));
             loop.Add(Expression.IfThen(
                 Expression.GreaterThan(ExpressionHelpers.ToNumber(counterVar), finalVar), 
                 Expression.Break(block.LoopBreak)));
@@ -888,7 +900,7 @@ namespace OneScript.Native.Compiler
 
             result.Add(Expression.Loop(Expression.Block(loop), block.LoopBreak));
             
-            _blocks.Add(Expression.Block(new[] {finalVar}, result));
+            _blocks.Add(Expression.Block(new[] {finalVar, cancellationToken}, result));
         }
 
         protected override void VisitForInitializer(BslSyntaxNode node)
@@ -950,7 +962,9 @@ namespace OneScript.Native.Compiler
             var getEnumeratorInvoke = Expression.Call(collectionCast, getEnumeratorMethod);
             var enumeratorVar = Expression.Variable(typeof(IEnumerator));
             
+            var cancellationToken = Expression.Variable(typeof(CancellationToken));
             var result = new List<Expression>();
+            result.Add(ReadCancellationToken(cancellationToken));
             result.Add(Expression.Assign(enumeratorVar, getEnumeratorInvoke));
             
             
@@ -963,6 +977,7 @@ namespace OneScript.Native.Compiler
                     typeof(BslValue))
             );
             
+            loop.Add(ExpressionHelpers.ThrowIfCancellationRequested(cancellationToken));
             loop.Add(assignCurrent);
             loop.AddRange(block.GetStatements());
             
@@ -975,7 +990,7 @@ namespace OneScript.Native.Compiler
             
             result.Add(finalLoop);
 
-            _blocks.Add(Expression.Block(new[] {enumeratorVar}, result));
+            _blocks.Add(Expression.Block(new[] {enumeratorVar, cancellationToken}, result));
         }
         
         protected override void VisitIteratorLoopVariable(TerminalNode node)
@@ -1012,8 +1027,12 @@ namespace OneScript.Native.Compiler
             var except = block.BuildStack.Pop();
             var tryBlock = block.BuildStack.Pop();
             
+            // Отмена процесса не должна перехватываться Попыткой
+            var notCancellation = Expression.Not(
+                ExpressionHelpers.IsCancellationOf(block.CurrentException, _processParameter));
+
             _blocks.Add(Expression.TryCatch(tryBlock,
-                Expression.Catch(block.CurrentException, except))
+                Expression.Catch(block.CurrentException, except, notCancellation))
             );
         }
 
