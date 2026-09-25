@@ -12,8 +12,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.CSharp.RuntimeBinder;
 using OneScript.Contexts;
+using OneScript.Execution;
 using OneScript.Language.LexicalAnalysis;
 using OneScript.Localization;
 using OneScript.Native.Runtime;
@@ -677,6 +679,25 @@ namespace OneScript.Native.Compiler
                     InvocationTargetExpression(target) :
                     Expression.Constant(null, typeof(object)),
                 PackArgsToArgsArray(args));
+        }
+
+        public static Expression GetCancellationToken(ParameterExpression process)
+        {
+            return Expression.Property(process, nameof(IBslProcess.CancellationToken));
+        }
+
+        public static Expression ThrowIfCancellationRequested(Expression cancellationToken)
+        {
+            return Expression.Call(cancellationToken, nameof(CancellationToken.ThrowIfCancellationRequested), Type.EmptyTypes);
+        }
+
+        public static Expression IsCancellationOf(Expression exception, ParameterExpression process)
+        {
+            var method = OperationsCache.GetOrAdd(
+                typeof(BslProcessExtensions),
+                nameof(BslProcessExtensions.IsCancellationOf));
+
+            return Expression.Call(method, exception, process);
         }
 
         private static Expression PackArgsToArgsArray(IEnumerable<Expression> args)
