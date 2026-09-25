@@ -160,5 +160,9 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public static CodeError AsyncMethodsNotSupported() =>
             Create("Асинхронные методы не поддерживаются", "Async methods aren't supported");
+
+        public static CodeError ExtraArgumentInNew() =>
+            Create("Лишние аргументы при вызове \"Новый\"", "Extra arguments in \"New\" call");
+
     }
 }

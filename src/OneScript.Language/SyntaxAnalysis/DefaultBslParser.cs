@@ -1506,8 +1506,13 @@ namespace OneScript.Language.SyntaxAnalysis
                 {
                     // есть аргументы после имени
                     NextLexem();
+                    BuildCallArguments(callArgs);
+                    if (callArgs.Children.Count > 1)
+                    {
+                        AddError(LocalizedErrors.ExtraArgumentInNew());
+                        return;
+                    }
                 }
-                BuildCallArguments(callArgs);
                 node.AddChild(callArgs);
                 NextLexem();
             }
