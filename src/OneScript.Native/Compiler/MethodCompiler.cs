@@ -1257,10 +1257,21 @@ namespace OneScript.Native.Compiler
             }
 
             var symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
-            var args = PrepareCallArguments(node.ArgumentList, symbol.Method.GetParameters(),
-                InjectedProcessNeeded(symbol.Method), IsModuleScope(binding.ScopeNumber));
-
             var methodInfo = symbol.Method;
+            if (methodInfo is BslNativeMethodInfo nativeInfo)
+            {
+                var overBinding = nativeInfo.Overrides;
+                if (!overBinding.Equals(default(SymbolBinding)))
+                {
+                    binding = overBinding;
+                    symbol = Symbols.GetScope(binding.ScopeNumber).Methods[binding.MemberNumber];
+                    methodInfo = symbol.Method;
+                }
+            }
+
+            var args = PrepareCallArguments(node.ArgumentList, methodInfo.GetParameters(),
+                InjectedProcessNeeded(methodInfo), IsModuleScope(binding.ScopeNumber));
+
             if (methodInfo is ContextMethodInfo contextMethod)
             {
                 var call = DirectClrCall(
