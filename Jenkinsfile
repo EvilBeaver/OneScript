@@ -22,9 +22,13 @@ pipeline {
                     environment {
                         NugetPath = "${tool 'nuget'}"
                         StandardLibraryPacks = "${tool 'os_stdlib'}"
+                        // MSBuild кладет сюда отчеты о падении своих процессов (MSBuild_*.failure.txt, например при MSB4166),
+                        // по умолчанию они остаются во временной папке пользователя на агенте и в сборку не попадают
+                        MSBUILDDEBUGPATH = "${env.WORKSPACE}/msbuild-debug"
                     }
 
                     steps {
+                        dir('msbuild-debug') { deleteDir() }
                         
                         // в среде Multibranch Pipeline Jenkins первращает имена веток в папки
                         // а для веток Gitflow вида release/* экранирует в слэш в %2F
@@ -48,6 +52,11 @@ pipeline {
                             
                             stash includes: 'built/**', name: 'buildResults'
                             stash includes: 'tests/native-api/bin*/*.dll', name: 'nativeApiTestsDll'
+                        }
+                    }
+                    post {
+                        failure {
+                            archiveArtifacts artifacts: 'msbuild-debug/**', allowEmptyArchive: true
                         }
                     }
                 }
@@ -106,8 +115,12 @@ pipeline {
                     options { skipDefaultCheckout() }
                     environment {
                         OSCRIPT_CONFIG = 'systemlanguage=ru'
+                        // MSBuild кладет сюда отчеты о падении своих процессов (MSBuild_*.failure.txt, например при MSB4166),
+                        // по умолчанию они остаются во временной папке пользователя на агенте и в сборку не попадают
+                        MSBUILDDEBUGPATH = "${env.WORKSPACE}/msbuild-debug"
                     }
                     steps {
+                        dir('msbuild-debug') { deleteDir() }
                         ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                         {
                             step([$class: 'WsCleanup'])
@@ -121,6 +134,11 @@ pipeline {
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:Test"
 
                             publishTestResults('tests/*.xml')
+                        }
+                    }
+                    post {
+                        failure {
+                            archiveArtifacts artifacts: 'msbuild-debug/**', allowEmptyArchive: true
                         }
                     }
                 }
