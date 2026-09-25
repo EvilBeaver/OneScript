@@ -194,7 +194,7 @@ namespace ScriptEngine.Machine.Contexts
             {
                 var methodCall = MethodCallExpression(target, out var instParam, out var argsParam, out var processParam);
 
-                var convertRetMethod = ContextValuesMarshaller.BslReturnValueGenericConverter.MakeGenericMethod(target.ReturnType);
+                var convertRetMethod = ContextValuesMarshaller.GetReturnValueConverter(target.ReturnType);
                 var convertReturnCall = Expression.Call(convertRetMethod, methodCall);
                 var body = convertReturnCall;
 
@@ -224,24 +224,23 @@ namespace ScriptEngine.Machine.Contexts
                 return l.Compile();
             }
 
-            private static InvocationExpression MethodCallExpression(
-                ContextMethodInfo contextMethod, 
+            private static MethodCallExpression MethodCallExpression(
+                ContextMethodInfo contextMethod,
                 out ParameterExpression instParam,
                 out ParameterExpression argsParam,
                 out ParameterExpression processParam)
             {
                 // For those who dare:
-                // Код ниже формирует следующую лямбду с 2-мя замыканиями realMethodDelegate и defaults:
-                // (inst, args) =>
+                // Код ниже формирует следующую лямбду:
+                // (inst, args, process) =>
                 // {
-                //    realMethodDelegate(inst,
-                //        ConvertParam<TypeOfArg1>(args[i], defaults[i]),
+                //    inst.RealMethod(
+                //        ConvertParam<TypeOfArg1>(args[0], default1, process),
                 //        ...
-                //        ConvertParam<TypeOfArgN>(args[i], defaults[i]));
+                //        ConvertParam<TypeOfArgN>(args[N-1], defaultN, process));
                 // }
 
                 var target = contextMethod.GetWrappedMethod();
-                var methodClojure = CreateDelegateExpr(target);
 
                 instParam = Expression.Parameter(typeof(TInstance), "inst");
                 argsParam = Expression.Parameter(typeof(IValue[]), "args");
@@ -250,17 +249,16 @@ namespace ScriptEngine.Machine.Contexts
                 var parameters = target.GetParameters();
 
                 var (clrIndexStart, argsLen) = contextMethod.InjectsProcess ? (1, parameters.Length - 1) : (0, parameters.Length);
-                
+
                 var argsPass = new List<Expression>();
-                argsPass.Add(instParam);
-                
+
                 if (contextMethod.InjectsProcess)
                     argsPass.Add(processParam);
                 
                 for (int bslIndex = 0,clrIndex = clrIndexStart; bslIndex < argsLen; bslIndex++, clrIndex++)
                 {
                     var targetType = parameters[clrIndex].ParameterType;
-                    var convertMethod = ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType);
+                    var convertMethod = ContextValuesMarshaller.GetParameterConverter(targetType);
                     
                     Expression defaultArg;
                     if (parameters[clrIndex].HasDefaultValue)
@@ -281,35 +279,7 @@ namespace ScriptEngine.Machine.Contexts
                     argsPass.Add(Expression.Convert(conversionCall, targetType));
                 }
 
-                var methodCall = Expression.Invoke(methodClojure, argsPass);
-                return methodCall;
-            }
-
-            private static Expression CreateDelegateExpr(MethodInfo target)
-            {
-                var types = new List<Type>();
-                types.Add(target.DeclaringType);
-                types.AddRange(target.GetParameters().Select(x => x.ParameterType));
-                Type delegateType;
-                if (target.ReturnType == typeof(void))
-                {
-                    delegateType = Expression.GetActionType(types.ToArray());
-                }
-                else
-                {
-                    types.Add(target.ReturnType);
-                    delegateType = Expression.GetFuncType(types.ToArray());
-                }
-
-                var deleg = target.CreateDelegate(delegateType);
-
-                var delegateExpr = Expression.Constant(deleg);
-                var conversion = Expression.Convert(delegateExpr, delegateType);
-
-                var delegateCreator = Expression.Lambda(conversion).Compile();
-                var methodClojure = Expression.Constant(delegateCreator.DynamicInvoke());
-
-                return methodClojure;
+                return Expression.Call(instParam, target, argsPass);
             }
         }
     }
