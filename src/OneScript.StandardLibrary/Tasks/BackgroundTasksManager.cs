@@ -46,12 +46,17 @@ namespace OneScript.StandardLibrary.Tasks
         [ContextMethod("Выполнить", "Execute")]
         public BackgroundTask Execute(IRuntimeContextInstance target, string methodName, ArrayImpl parameters = null, bool longRunning = false)
         {
-            var task = new BackgroundTask(target, methodName, parameters);
+            var task = new BackgroundTask(target, methodName, parameters)
+            {
+                Parent = FindCurrentTask()
+            };
 
-            var taskCreationOptions = longRunning ? TaskCreationOptions.LongRunning : TaskCreationOptions.None;
+            // PreferFairness - в общую очередь пула: иначе ожидающий из потока пула (запрос веб-сервера)
+            // может выполнить задание прямо в своем потоке, и два процесса поделят блокировки потока
+            var taskCreationOptions = longRunning ? TaskCreationOptions.LongRunning : TaskCreationOptions.PreferFairness;
             var worker = new Task(() =>
             {
-                var process = _runtimeContext.Services.Resolve<IBslProcessFactory>().NewProcess();
+                var process = _runtimeContext.Services.Resolve<IBslProcessFactory>().NewProcess(task.CancellationToken);
                 task.ExecuteOnCurrentThread(process);
 
             }, taskCreationOptions);
@@ -72,11 +77,12 @@ namespace OneScript.StandardLibrary.Tasks
         /// <summary>
         /// Ожидает завершения всех переданных заданий
         /// </summary>
+        /// <param name="process">Текущий процесс, в котором вызван данный метод</param>
         /// <param name="tasks">Массив заданий</param>
         /// <param name="timeout">Таймаут ожидания. 0 = ожидать бесконечно</param>
         /// <returns>Истина - дождались все задания, Ложь - истек таймаут</returns>
         [ContextMethod("ОжидатьВсе", "WaitAll")]
-        public bool WaitAll(ArrayImpl tasks, int timeout = 0)
+        public bool WaitAll(IBslProcess process, ArrayImpl tasks, int timeout = 0)
         {
             var workers = GetWorkerTasks(tasks);
             timeout = ConvertTimeout(timeout);
@@ -84,17 +90,18 @@ namespace OneScript.StandardLibrary.Tasks
             // Фоновые задания перехватывают исключения внутри себя 
             // и выставляют свойство ИнформацияОбОшибке
             // если WaitAll выбросит исключение, значит действительно что-то пошло не так на уровне самого Task
-            return Task.WaitAll(workers, timeout);
+            return Task.WaitAll(workers, timeout, process.CancellationToken);
         }
         
         /// <summary>
         /// Ожидать хотя бы одно из переданных заданий.
         /// </summary>
+        /// <param name="process">Текущий процесс, в котором вызван данный метод</param>
         /// <param name="tasks">Массив заданий</param>
         /// <param name="timeout">Таймаут ожидания. 0 = ожидать бесконечно</param>
         /// <returns>Число. Индекс в массиве заданий, указывающий на элемент-задание, которое завершилось. -1 = сработал таймаут</returns>
         [ContextMethod("ОжидатьЛюбое", "WaitAny")]
-        public int WaitAny(ArrayImpl tasks, int timeout = 0)
+        public int WaitAny(IBslProcess process, ArrayImpl tasks, int timeout = 0)
         {
             var workers = GetWorkerTasks(tasks);
             timeout = ConvertTimeout(timeout);
@@ -102,19 +109,22 @@ namespace OneScript.StandardLibrary.Tasks
             // Фоновые задания перехватывают исключения внутри себя 
             // и выставляют свойство ИнформацияОбОшибке
             // если WaitAny выбросит исключение, значит действительно что-то пошло не так на уровне самого Task
-            return Task.WaitAny(workers, timeout);
+            return Task.WaitAny(workers, timeout, process.CancellationToken);
         }
 
         /// <summary>
         /// Блокирует поток до завершения всех заданий.
+        /// Вызванный из фонового задания, ждет только задания, запущенные из него (и из них дальше).
         /// Выбрасывает исключение, если какие-то задания завершились аварийно.
         /// Выброшенное исключение в свойстве Параметры содержит массив аварийных заданий.
         /// </summary>
         [ContextMethod("ОжидатьЗавершенияЗадач", "WaitCompletionOfTasks")]
-        public void WaitCompletionOfTasks()
+        public void WaitCompletionOfTasks(IBslProcess process)
         {
-            var snapshot = _tasks.Values.ToArray();
-            Task.WaitAll(GetWorkerTasks(snapshot));
+            // Родитель и соседние задания могут сами ждать текущее - их ждать нельзя
+            var current = FindCurrentTask();
+            var snapshot = _tasks.Values.Where(x => current == null || x.IsDescendantOf(current)).ToArray();
+            Task.WaitAll(GetWorkerTasks(snapshot), process.CancellationToken);
 
             var failedTasks = snapshot.Where(x => x.State == TaskStateEnum.CompletedWithErrors)
                 .ToList();
@@ -182,14 +192,20 @@ namespace OneScript.StandardLibrary.Tasks
         [ContextMethod("ПолучитьТекущее", "GetCurrent")]
         public IValue GetCurrent()
         {
+            return (IValue)FindCurrentTask() ?? ValueFactory.Create();
+        }
+
+        // Фоновое задание, в котором выполняется код, или null
+        private BackgroundTask FindCurrentTask()
+        {
             var currentId = Task.CurrentId;
             if (currentId == null)
-                return ValueFactory.Create();
+                return null;
 
             if (_tasks.TryGetValue(currentId.Value, out var task) && task.State == TaskStateEnum.Running)
                 return task;
 
-            return ValueFactory.Create();
+            return null;
         }
 
         internal static int ConvertTimeout(int timeout)
