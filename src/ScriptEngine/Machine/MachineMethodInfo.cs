@@ -26,5 +26,11 @@ namespace ScriptEngine.Machine
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal MachineMethod GetRuntimeMethod() => _method;
+
+        /// <summary>
+        /// Параметры без копирования, для входа в метод. Массив не изменять.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal BslParameterInfo[] GetRuntimeParameters() => _parameters;
     }
 }

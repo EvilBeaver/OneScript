@@ -138,7 +138,7 @@ namespace ScriptEngine.Machine
             frame.MethodName = methodInfo.Name;
             frame.InstructionPointer = methDescr.EntryPoint;
 
-            var parameters = methodInfo.GetBslParameters();
+            var parameters = methodInfo.GetRuntimeParameters();
             var variables = methDescr.LocalVariables;
             var locals = new IVariable[variables.Length];
             int i = 0;
@@ -918,7 +918,6 @@ namespace ScriptEngine.Machine
 
             IValue[] argValues = PopArguments();
 
-            var definedParameters = methodSignature.GetBslParameters();
             bool needsDiscarding;
 
             if (ReferenceEquals(boundInstance, _currentFrame.ThisScope)) // local call
@@ -945,7 +944,7 @@ namespace ScriptEngine.Machine
                 else
                 {
                     needsDiscarding = _currentFrame.DiscardReturnValue;
-                    CallContext(boundInstance, methodRef.MemberNumber, definedParameters, argValues, asFunc);
+                    CallContext(boundInstance, methodRef.MemberNumber, methodSignature, argValues, asFunc);
                 }
             }
             else
@@ -954,13 +953,13 @@ namespace ScriptEngine.Machine
                 // статус вызова текущего frames не должен изменяться.
                 //
                 needsDiscarding = _currentFrame.DiscardReturnValue;
-                CallContext(boundInstance, methodRef.MemberNumber, definedParameters, argValues, asFunc);
+                CallContext(boundInstance, methodRef.MemberNumber, methodSignature, argValues, asFunc);
             }
 
             return needsDiscarding;
         }
 
-        private void CallContext(IRuntimeContextInstance instance, int index, ParameterInfo[] definedParameters, IValue[] argValues, bool asFunc)
+        private void CallContext(IRuntimeContextInstance instance, int index, BslMethodInfo methodInfo, IValue[] argValues, bool asFunc)
         {
             IValue[] realArgs;
             if (instance.DynamicMethodSignatures)
@@ -969,7 +968,7 @@ namespace ScriptEngine.Machine
             }
             else
             {
-                realArgs = new IValue[definedParameters.Length];
+                realArgs = new IValue[methodInfo.CallParameters.Length];
                 var skippedArg = BslSkippedParameterValue.Instance;
                 int i = 0;
                 for (; i < argValues.Length; i++)
@@ -1066,7 +1065,7 @@ namespace ScriptEngine.Machine
             else
             {
                 var methodInfo = context.GetMethodInfo(methodId);
-                var methodParams = methodInfo.GetBslParameters();
+                var methodParams = methodInfo.CallParameters;
 
                 if (argCount > methodParams.Length)
                     throw RuntimeException.TooManyArgumentsPassed();
@@ -1078,7 +1077,7 @@ namespace ScriptEngine.Machine
                     var argValue = factArgs[i];
                     if (!argValue.IsSkippedArgument())
                     {
-                        if (methodParams[i].IsByRef())
+                        if (methodParams[i].IsByRef)
                         {
                             argValues[i] = argValue is IVariable? argValue : Variable.Create(argValue, "");
                         }
