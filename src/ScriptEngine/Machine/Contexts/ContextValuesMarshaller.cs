@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -20,6 +21,21 @@ namespace ScriptEngine.Machine.Contexts
 {
     public static class ContextValuesMarshaller
     {
+        private static readonly Dictionary<Type, MethodInfo> _primitiveParameterConverters = new Dictionary<Type, MethodInfo>
+        {
+            [typeof(int)] = GetOwnMethod(nameof(ConvertInt32Param)),
+            [typeof(decimal)] = GetOwnMethod(nameof(ConvertDecimalParam)),
+            [typeof(bool)] = GetOwnMethod(nameof(ConvertBooleanParam)),
+            [typeof(string)] = GetOwnMethod(nameof(ConvertStringParam)),
+        };
+
+        private static readonly Dictionary<Type, MethodInfo> _primitiveReturnValueConverters = new Dictionary<Type, MethodInfo>
+        {
+            [typeof(int)] = GetOwnMethod(nameof(ConvertInt32ReturnValue)),
+            [typeof(decimal)] = GetOwnMethod(nameof(ConvertDecimalReturnValue)),
+            [typeof(bool)] = GetOwnMethod(nameof(ConvertBooleanReturnValue)),
+        };
+
         public static MethodInfo BslParameterConverter { get; private set; }
         public static MethodInfo BslGenericParameterConverter { get; private set; }
         public static MethodInfo BslReturnValueGenericConverter { get; private set; }
@@ -37,6 +53,72 @@ namespace ScriptEngine.Machine.Contexts
             BslReturnValueGenericConverter = typeof(ContextValuesMarshaller).GetMethods()
                 .First(x => x.Name == nameof(ConvertReturnValue) && x.GetGenericArguments().Length == 1);
         }
+
+        /// <summary>
+        /// Метод преобразования аргумента из Bsl в параметр типа <paramref name="type"/> для сгенерированных оберток,
+        /// с сигнатурой как у ConvertParam&lt;T&gt;(IValue, T, IBslProcess). Для частых типов - отдельные методы
+        /// без упаковки и перебора типов, выбор делается один раз, при построении обертки.
+        /// </summary>
+        public static MethodInfo GetParameterConverter(Type type)
+        {
+            return _primitiveParameterConverters.TryGetValue(type, out var converter)
+                ? converter
+                : BslGenericParameterConverter.MakeGenericMethod(type);
+        }
+
+        /// <summary>
+        /// Метод преобразования возвращаемого значения C#-метода в значение Bsl для сгенерированных оберток.
+        /// </summary>
+        public static MethodInfo GetReturnValueConverter(Type type)
+        {
+            return _primitiveReturnValueConverters.TryGetValue(type, out var converter)
+                ? converter
+                : BslReturnValueGenericConverter.MakeGenericMethod(type);
+        }
+
+        private static MethodInfo GetOwnMethod(string name)
+        {
+            return typeof(ContextValuesMarshaller).GetMethod(name, BindingFlags.NonPublic | BindingFlags.Static);
+        }
+
+        // Результат тот же, что у ConvertParam<T>: значение нужного вида берется сразу, остальное - общим путем
+        private static int ConvertInt32Param(IValue value, int defaultValue, IBslProcess process)
+        {
+            return value is BslNumericValue number ? ToInt32(number) : ConvertParam(value, defaultValue, process);
+        }
+
+        private static decimal ConvertDecimalParam(IValue value, decimal defaultValue, IBslProcess process)
+        {
+            return value is BslNumericValue number ? (decimal)number : ConvertParam(value, defaultValue, process);
+        }
+
+        private static bool ConvertBooleanParam(IValue value, bool defaultValue, IBslProcess process)
+        {
+            return value is BslBooleanValue boolean ? (bool)boolean : ConvertParam(value, defaultValue, process);
+        }
+
+        private static string ConvertStringParam(IValue value, string defaultValue, IBslProcess process)
+        {
+            return value is BslStringValue str ? (string)str : ConvertParam(value, defaultValue, process);
+        }
+
+        private static int ToInt32(BslNumericValue number)
+        {
+            try
+            {
+                return (int)(decimal)number;
+            }
+            catch (OverflowException)
+            {
+                throw RuntimeException.InvalidArgumentValue();
+            }
+        }
+
+        private static IValue ConvertBooleanReturnValue(bool value) => ValueFactory.Create(value);
+
+        private static IValue ConvertInt32ReturnValue(int value) => ValueFactory.Create(value);
+
+        private static IValue ConvertDecimalReturnValue(decimal value) => ValueFactory.Create(value);
         
         /// <summary>
         /// Выполняет конвертацию значения из Bsl в значение параметра метода C#
