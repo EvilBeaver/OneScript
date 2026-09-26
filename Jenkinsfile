@@ -3,6 +3,10 @@ pipeline {
     
     agent none
 
+    // Сборки одной ветки идут по очереди: параллельные публикации night-build
+    // через rsync --delete оставляли в папке файлы двух сборок, и сайт отдавал 404
+    options { disableConcurrentBuilds() }
+
     environment {
         VersionPrefix = '2.3.0'
         VersionSuffix = 'dev'+"+${BUILD_NUMBER}"
