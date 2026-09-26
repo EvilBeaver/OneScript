@@ -25,13 +25,15 @@ namespace ScriptEngine
             _services = services;
         }
 
-        public IBslProcess NewProcess()
+        public IBslProcess NewProcess() => NewProcess(CancellationToken.None);
+
+        public IBslProcess NewProcess(CancellationToken cancellationToken)
         {
             // Создаем новый контекст со всеми зависимостями
             var context = _services.Resolve<ExecutionContext>();
             var executors = _services.ResolveEnumerable<IExecutorProvider>();
                 
-            return new BslProcess(Interlocked.Increment(ref _threadIdCounter), context, executors);
+            return new BslProcess(Interlocked.Increment(ref _threadIdCounter), context, executors, cancellationToken);
         }
     }
 }

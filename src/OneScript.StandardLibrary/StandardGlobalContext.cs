@@ -99,12 +99,21 @@ namespace OneScript.StandardLibrary
 
         /// <summary>
         /// Приостанавливает выполнение скрипта.
+        /// Ожидание прерывается, если фоновое задание, в котором оно выполняется, отменено.
         /// </summary>
         /// <param name="delay">Время приостановки в миллисекундах</param>
         [ContextMethod("Приостановить", "Sleep")]
-        public void Sleep(int delay)
+        public void Sleep(IBslProcess process, int delay)
         {
-            System.Threading.Thread.Sleep(delay);
+            var cancellationToken = process.CancellationToken;
+
+            // WaitHandle дороже Thread.Sleep и создает событие ядра, а Sleep(0) еще и уступает квант времени
+            if (delay == 0 || !cancellationToken.CanBeCanceled)
+                System.Threading.Thread.Sleep(delay);
+            else
+                cancellationToken.WaitHandle.WaitOne(delay);
+
+            cancellationToken.ThrowIfCancellationRequested();
         }
         
         [ContextMethod("КраткоеПредставлениеОшибки", "BriefErrorDescription")]
