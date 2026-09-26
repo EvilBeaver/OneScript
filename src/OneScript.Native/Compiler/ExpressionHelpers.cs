@@ -297,6 +297,11 @@ namespace OneScript.Native.Compiler
             // если будет ненадежно - поиграем с поиском статических конверсий
             try
             {
+                if (targetType == typeof(string))
+                {
+                    return Expression.Call(value, "ToString", null, null);
+                }
+
                 return Expression.Convert(value, targetType);
             }
             catch (InvalidOperationException)
@@ -515,16 +520,30 @@ namespace OneScript.Native.Compiler
                 $"Conversion from type {source.Type} into {targetType} is not supported"));
         }
 
+        private static Expression ArgsFromArray(Expression[] args)
+        {
+            if (args.Length == 0)
+                return Expression.NewArrayInit(typeof(IValue));
+
+            var arg1 = args[0];
+            var typecheck = Expression.TypeIs(arg1, typeof(IValueArray));
+
+            var method = OperationsCache.GetOrAdd(typeof(Enumerable), nameof(Enumerable.ToArray)).MakeGenericMethod([typeof(IValue)]);
+            var array = Expression.Call(method, Expression.Convert(arg1, typeof(IEnumerable<IValue>)));
+
+            return Expression.Condition(typecheck, array, Expression.NewArrayInit(typeof(IValue)));
+        }
+
         public static Expression ConstructorCall(ITypeManager typeManager, Expression services, Expression type,
             Expression process,
             Expression[] argsArray)
         {
             var method = OperationsCache.GetOrAdd(
                 typeof(DynamicOperations),
-                nameof(DynamicOperations.ConstructorCall));
+                nameof(DynamicOperations.DynamicConstructorCall));
 
-            var arrayOfArgs = Expression.NewArrayInit(typeof(BslValue), argsArray.Select(ConvertToBslValue));
-            
+            var arrayOfArgs = ArgsFromArray(argsArray);
+
             return Expression.Call(method, 
                 Expression.Constant(typeManager),
                 services,
@@ -595,18 +614,12 @@ namespace OneScript.Native.Compiler
 
         public static Expression AccessModuleVariable(ParameterExpression thisArg, int variableIndex)
         {
-            var contextProperty = PropertiesCache.GetOrAdd(
-                typeof(NativeClassInstanceWrapper),
-                nameof(NativeClassInstanceWrapper.Context),
-                BindingFlags.Instance | BindingFlags.Public);
-            
-            var contextAccess = Expression.Property(thisArg, contextProperty);
             var getVariableMethod = OperationsCache.GetOrAdd(
                 typeof(IAttachableContext),
                 nameof(IAttachableContext.GetVariable),
                 BindingFlags.Instance | BindingFlags.Public);
             
-            var iVariable = Expression.Call(contextAccess, getVariableMethod, Expression.Constant(variableIndex));
+            var iVariable = Expression.Call(thisArg, getVariableMethod, Expression.Constant(variableIndex));
             var valueProperty = PropertiesCache.GetOrAdd(
                 typeof(IValueReference),
                 nameof(IValueReference.BslValue),

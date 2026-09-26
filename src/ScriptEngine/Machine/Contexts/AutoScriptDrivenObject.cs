@@ -152,6 +152,15 @@ namespace ScriptEngine.Machine.Contexts
             compiler.FillSymbols(typeof(AutoScriptDrivenObject<T>));
             return compiler.Compile(src, process, type);
         }
+
+        public static IExecutableModule CompileModule(ICompilerFrontend compiler, SourceCode src, T instance, IBslProcess process)
+        {
+            compiler.FillSymbols(typeof(AutoScriptDrivenObject<T>));
+
+            var module = compiler.Compile<T>(src, process, instance);
+            instance.SetModule(module);
+            return module;
+        }
     }
 
 }
