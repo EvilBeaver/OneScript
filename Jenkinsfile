@@ -221,6 +221,7 @@ pipeline {
 
         stage ('Publishing night-build') {
             when { 
+                beforeAgent true
                 anyOf {
                     branch 'develop';
                 }
@@ -240,6 +241,7 @@ pipeline {
 
         stage ('Publishing preview') {
             when { 
+                beforeAgent true
                 anyOf {
                     branch 'release/preview';
                 }
@@ -263,6 +265,7 @@ pipeline {
         
         stage ('Publishing latest') {
             when { 
+                beforeAgent true
                 anyOf {
                     branch 'release/latest';
                 }
@@ -286,6 +289,7 @@ pipeline {
         
         stage ('Publishing artifacts to clouds') {
             when {
+                beforeAgent true
                 anyOf { 
                     branch 'release/latest';
                     branch 'release/preview';
@@ -309,6 +313,7 @@ pipeline {
                 stage('Build v1') {
                     agent { label 'linux' }
                     when { 
+                        beforeAgent true
                         anyOf {
                             branch 'release/lts'
                             expression { 
@@ -329,6 +334,7 @@ pipeline {
                 stage('Build v2') {
                     agent { label 'linux' }
                     when { 
+                        beforeAgent true
                         anyOf {
                             branch 'develop'
                             branch 'release/latest'
@@ -437,11 +443,17 @@ def publishReleaseNotes(codename) {
 def publishDockerImage(flavour, codename, engineVersion) {
     def imageName = "evilbeaver/onescript:${codename}"
 
+    // Временно, см. #1752: в buildkit с runc 1.4.3 на ядре сервера не запускается ни один RUN.
+    // v0.30.0 собран с runc 1.3.5. Убрать, когда выйдет buildkit с runc 1.5.1+
+    def buildkitVersion = 'v0.30.0'
+    def builder = "onescript-buildkit-${buildkitVersion}"
+    sh "docker buildx inspect ${builder} > /dev/null 2>&1 || docker buildx create --name ${builder} --driver docker-container --driver-opt image=moby/buildkit:${buildkitVersion}"
+
     // --no-cache: слой с ovm install не меняется между сборками и иначе берется из кэша агента
     // --pull: обновлять базовые образы (ovm, aspnet, mono)
     docker.build(
         imageName,
-        "--load --pull --no-cache --build-arg VERSION=${engineVersion} -f install/builders/base-image/Dockerfile_${flavour} ."
+        "--builder ${builder} --load --pull --no-cache --build-arg VERSION=${engineVersion} -f install/builders/base-image/Dockerfile_${flavour} ."
     ).push()
 }
 

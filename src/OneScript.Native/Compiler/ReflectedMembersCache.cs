@@ -13,6 +13,9 @@ namespace OneScript.Native.Compiler
 {
     public abstract class ReflectedMembersCache<T> where T : MemberInfo
     {
+        // Кэши в ExpressionHelpers статические и общие для всех потоков
+        private readonly object _lock = new object();
+
         private readonly LruCache<string, T> _cache;
 
         public ReflectedMembersCache() : this(128)
@@ -32,8 +35,11 @@ namespace OneScript.Native.Compiler
         public T GetOrAdd(Type type, string name, BindingFlags flags)
         {
             var key = $"{type.Name}.{name}";
-            return _cache.GetOrAdd(key, x => SearchImpl(type, name, flags) 
-                                             ?? throw new InvalidOperationException($"No member found {key}"));
+            lock (_lock)
+            {
+                return _cache.GetOrAdd(key, x => SearchImpl(type, name, flags)
+                                                 ?? throw new InvalidOperationException($"No member found {key}"));
+            }
         }
 
         protected abstract T SearchImpl(Type type, string name, BindingFlags flags);
