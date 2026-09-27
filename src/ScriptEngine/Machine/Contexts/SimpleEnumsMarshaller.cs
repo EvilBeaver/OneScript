@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -21,8 +22,9 @@ namespace ScriptEngine.Machine.Contexts
     {
         // TODO Наверное можно и прямо отсюда регистрировать SimpleEnum-ы а из ContextDiscoverer этот класс вызывать
 
-        private static LruCache<Type, Func<object, EnumerationValue>> _gettersCache 
-            = new LruCache<Type, Func<object, EnumerationValue>>(32);
+        // Общий на все потоки. Типов перечислений конечное число, вытеснять нечего
+        private static readonly ConcurrentDictionary<Type, Func<object, EnumerationValue>> _gettersCache
+            = new ConcurrentDictionary<Type, Func<object, EnumerationValue>>();
         
         /// <summary>
         /// Получить IValue для значения clr-перечисления.
