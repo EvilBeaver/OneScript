@@ -122,7 +122,7 @@ namespace ScriptEngine.Machine
                 {
                     var conversionArg = Expression.ArrayIndex(argsParam, Expression.Constant(i));
                     var targetType = parameters[paramIndex].ParameterType;
-                    var convertMethod = ContextValuesMarshaller.BslGenericParameterConverter.MakeGenericMethod(targetType);
+                    var convertMethod = ContextValuesMarshaller.GetParameterConverter(targetType);
 
                     Expression marshalledArg;
                     if (parameters[paramIndex].HasDefaultValue)

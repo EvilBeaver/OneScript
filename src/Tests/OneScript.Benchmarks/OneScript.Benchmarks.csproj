@@ -1,0 +1,41 @@
+<Project>
+    <!-- Каталог src движка, против которого собираются бенчмарки. По умолчанию - этот же репозиторий.
+         Чтобы сравнить версии, Program передает BenchmarkDotNet другие каталоги (см. README.md);
+         у каждого свои obj и bin, иначе параллельные сборки разных версий мешают друг другу -->
+    <PropertyGroup Condition="'$(OneScriptSrc)' != ''">
+        <OneScriptSrcKey>$([MSBuild]::StableStringHash($(OneScriptSrc)))</OneScriptSrcKey>
+        <BaseIntermediateOutputPath>obj/engines/$(OneScriptSrcKey)/</BaseIntermediateOutputPath>
+        <BaseOutputPath>bin/engines/$(OneScriptSrcKey)/</BaseOutputPath>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(OneScriptSrc)' == ''">
+        <OneScriptSrc>$(MSBuildThisFileDirectory)../..</OneScriptSrc>
+    </PropertyGroup>
+
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+    <Import Project="$(MSBuildProjectDirectory)/../../oscommon.targets" />
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>$(TargetFrameworkVersion)</TargetFramework>
+        <IsPackable>false</IsPackable>
+
+        <Configurations>Debug;Release;LinuxDebug</Configurations>
+        <Platforms>AnyCPU</Platforms>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Remove="obj/**;bin/**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(OneScriptSrc)/OneScript.Core/OneScript.Core.csproj" />
+        <ProjectReference Include="$(OneScriptSrc)/OneScript.StandardLibrary/OneScript.StandardLibrary.csproj" />
+        <ProjectReference Include="$(OneScriptSrc)/ScriptEngine/ScriptEngine.csproj" />
+    </ItemGroup>
+
+    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

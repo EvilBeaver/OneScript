@@ -17,7 +17,6 @@ public:
 		ePropStringRW,
 		ePropStringRO,
 		ePropStringWO,
-		ePropDateRW,
 		ePropFixedDate,
 		ePropLast      // Always last
 	};
@@ -33,8 +32,14 @@ public:
 		eMethExchange,
 		eMethConcatenate,
 		eMethLoopback,
-		eMethEchoDate,
-		eMethSetDateOut,
+		eMethEchoDateTm,
+		eMethGetDateAsVTypeDate,
+		eMethGetInvalidDateAsVTypeDate,
+		eMethGetInvalidDateAsVTypeTm,
+		eMethPassThrough,
+		eMethFailAfterChange,
+		eMethGetConstructCount,
+		eMethGetDestructCount,
 		eMethLast      // Always last
 	};
 
@@ -65,19 +70,19 @@ public:
 	// LocaleBase
 	virtual void ADDIN_API SetLocale(const WCHAR_T* loc);
 
+protected:
+	IMemoryManager* m_iMemory;
+
 private:
 	long findName(const wchar_t* names[], const wchar_t* name, const uint32_t size) const;
 	void addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code);
-protected:
 	IAddInDefBase* m_iConnect;
-	IMemoryManager* m_iMemory;
 	bool m_Enabled = false;
 	std::wstring m_String;
-	double m_Date = 0.0;
-private:
+	struct tm m_FixedDate = {};
 };
 
-class CAddInNativeSecond : public CAddInNative
+class CSecondAddInNative : public CAddInNative
 {
 public:
 	bool ADDIN_API RegisterExtensionAs(WCHAR_T** wsExtensionName) override;

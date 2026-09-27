@@ -14,6 +14,7 @@ using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Execution;
 using OneScript.StandardLibrary;
+using OneScript.StandardLibrary.NativeApi;
 using OneScript.StandardLibrary.Tasks;
 using ScriptEngine.Machine.Contexts;
 
@@ -149,6 +150,7 @@ namespace ScriptEngine.HostedScript
 
         public void Dispose()
         {
+            NativeApiKernel.Shutdown();
             _engine?.Dispose();
         }
     }

@@ -181,12 +181,12 @@ namespace OneScript.Native.Runtime
         {
             var idx = instance.GetMethodNumber(methodName);
             
-            var parameters = instance.GetMethodInfo(idx).GetParameters();
+            var parametersCount = instance.GetMethodInfo(idx).CallParameters.Length;
             
-            if (arguments.Length > parameters.Length)
+            if (arguments.Length > parametersCount)
                 throw RuntimeException.TooManyArgumentsPassed();
 
-            var valueArgs = new IValue[parameters.Length];
+            var valueArgs = new IValue[parametersCount];
             for (int i = 0; i < valueArgs.Length; i++)
             {
                 if (i < arguments.Length)

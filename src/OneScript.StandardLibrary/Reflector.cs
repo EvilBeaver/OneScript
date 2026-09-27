@@ -55,7 +55,7 @@ namespace OneScript.StandardLibrary
             if (target.DynamicMethodSignatures)
                 argsToPass = arguments?.ToArray() ?? Array.Empty<IValue>();
             else
-                argsToPass = GetArgsToPass(arguments, methInfo.GetBslParameters());
+                argsToPass = GetArgsToPass(arguments, methInfo.CallParameters);
 
             IValue retValue = ValueFactory.Create();
             if (methInfo.IsFunction())
@@ -81,7 +81,7 @@ namespace OneScript.StandardLibrary
             return retValue;
         }
 
-        private static IValue[] GetArgsToPass(ArrayImpl arguments, ParameterInfo[] parameters)
+        private static IValue[] GetArgsToPass(ArrayImpl arguments, ReadOnlySpan<BslCallParameter> parameters)
         {
             var argValues = arguments?.ToArray() ?? Array.Empty<IValue>();
             // ArrayImpl не может (не должен!) содержать null или NotAValidValue
@@ -94,7 +94,7 @@ namespace OneScript.StandardLibrary
             int i = 0;
             for (; i < argValues.Length; i++)
             {
-                if (parameters[i].IsByRef())
+                if (parameters[i].IsByRef)
                     argsToPass[i] = Variable.Create(argValues[i], "");
                 else
                     argsToPass[i] = argValues[i];
