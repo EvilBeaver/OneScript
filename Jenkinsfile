@@ -222,6 +222,7 @@ pipeline {
 
         stage ('Publishing night-build') {
             when { 
+                beforeAgent true
                 anyOf {
                     branch 'develop';
                 }
@@ -241,6 +242,7 @@ pipeline {
 
         stage ('Publishing preview') {
             when { 
+                beforeAgent true
                 anyOf {
                     branch 'release/preview';
                 }
@@ -264,6 +266,7 @@ pipeline {
         
         stage ('Publishing latest') {
             when { 
+                beforeAgent true
                 anyOf {
                     branch 'release/latest';
                 }
@@ -287,6 +290,7 @@ pipeline {
         
         stage ('Publishing artifacts to clouds') {
             when {
+                beforeAgent true
                 anyOf { 
                     branch 'release/latest';
                     branch 'release/preview';
@@ -310,6 +314,7 @@ pipeline {
                 stage('Build v1') {
                     agent { label 'linux' }
                     when { 
+                        beforeAgent true
                         anyOf {
                             branch 'release/lts'
                             expression { 
@@ -330,6 +335,7 @@ pipeline {
                 stage('Build v2') {
                     agent { label 'linux' }
                     when { 
+                        beforeAgent true
                         anyOf {
                             branch 'develop'
                             branch 'release/latest'
