@@ -1,0 +1,238 @@
+# Сборка и тесты OneScript для веток и PR.
+# Сборка дистрибутивов - в dist.yml, публикация - в release.yml.
+
+name: Build
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+  # Тесты рассчитаны на русскую Windows с форматами дат из NLS,
+  # а .NET на новых Windows по умолчанию берет форматы из ICU
+  DOTNET_SYSTEM_GLOBALIZATION_USENLS: 'true'
+  # На develop и release-ветках упавшие тесты не валят сборку
+  TESTS_FAIL_BUILD: ${{ github.event_name == 'pull_request' || !contains(fromJSON('["refs/heads/develop", "refs/heads/release/preview", "refs/heads/release/latest", "refs/heads/release/lts"]'), github.ref) }}
+
+jobs:
+  dist:
+    name: Distribution
+    uses: ./.github/workflows/dist.yml
+
+  windows-testing:
+    name: Windows testing
+    needs: dist
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      OSCRIPT_CONFIG: systemlanguage=ru
+      MSBUILDDEBUGPATH: ${{ github.workspace }}\msbuild-debug
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+      - uses: microsoft/setup-msbuild@v3
+      - name: Russian locale
+        shell: pwsh
+        run: Set-Culture ru-RU
+      # Свой кэш пакетов для dotnet test: в кэше Windows Build почти гигабайт runtime packs, тестам они не нужны
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-tests-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-tests-${{ runner.os }}-
+      - uses: actions/download-artifact@v8
+        with:
+          name: buildResults
+          path: built
+      - uses: actions/download-artifact@v8
+        with:
+          name: nativeApiTestsDll
+          path: tests/native-api
+      - uses: actions/download-artifact@v8
+        with:
+          name: testComponent
+          path: tests/component
+
+      - name: Test
+        run: |
+          chcp 65001 > nul
+          msbuild Build.csproj /t:Test
+
+      - name: Test results
+        if: ${{ !cancelled() }}
+        uses: EnricoMi/publish-unit-test-result-action/windows@v2
+        with:
+          check_name: Windows testing
+          files: tests/*.xml
+          check_run: false
+          comment_mode: off
+          action_fail: ${{ env.TESTS_FAIL_BUILD }}
+          action_fail_on_inconclusive: true
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: wintests
+          path: tests/*.xml
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: msbuild-debug-windows-testing
+          path: msbuild-debug/
+          if-no-files-found: ignore
+
+  linux-testing:
+    name: Linux testing
+    needs: dist
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      # Событие запуска для отчета о тестах в PR (test-results.yml)
+      - uses: actions/upload-artifact@v7
+        with:
+          name: event-file
+          path: ${{ github.event_path }}
+          retention-days: 3
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: buildResults
+          path: built
+      - uses: actions/download-artifact@v8
+        with:
+          name: nativeApiSo
+          path: output/na-proxy
+      - uses: actions/download-artifact@v8
+        with:
+          name: nativeApiTestsSo
+          path: output/na-tests
+      - uses: actions/download-artifact@v8
+        with:
+          name: testComponent
+          path: tests/component
+
+      - name: Test
+        run: |
+          cp output/na-proxy/*.so built/linux-x64/bin/
+          mkdir -p tests/native-api/build64 lintests
+          cp output/na-tests/*.so tests/native-api/build64/
+          docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -e OSCRIPT_CONFIG=systemlanguage=ru \
+            -v "$PWD:/w" -w /w/tests mcr.microsoft.com/dotnet/sdk:6.0 \
+            dotnet ../built/linux-x64/bin/oscript.dll testrunner.os -runall . xddReportPath ../lintests || true
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-tests-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-tests-${{ runner.os }}-
+      # Юнит-тесты движка, как в Windows testing; отчеты UnitTests пишет в tests/
+      - name: Unit tests
+        env:
+          LANG: ru_RU.UTF-8
+          OSCRIPT_CONFIG: systemlanguage=ru
+        run: |
+          dotnet msbuild Build.csproj -t:UnitTests || true
+          mv tests/*.xml lintests/
+
+      - name: Test results
+        if: ${{ !cancelled() }}
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: Linux testing
+          files: lintests/*.xml
+          check_run: false
+          comment_mode: off
+          action_fail: ${{ env.TESTS_FAIL_BUILD }}
+          action_fail_on_inconclusive: true
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: lintests
+          path: lintests/*.xml
+
+  macos-testing:
+    name: macOS testing
+    needs: dist
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: buildResults
+          path: built
+      - uses: actions/download-artifact@v8
+        with:
+          name: nativeApiDylib
+          path: built/osx-arm64/bin
+      - uses: actions/download-artifact@v8
+        with:
+          name: nativeApiTestsDylib
+          path: tests/native-api/build64
+      - uses: actions/download-artifact@v8
+        with:
+          name: testComponent
+          path: tests/component
+
+      # Тот же oscript, что попадет в дистрибутив osx-arm64
+      - name: Test
+        env:
+          OSCRIPT_CONFIG: systemlanguage=ru
+        run: |
+          chmod +x built/osx-arm64/bin/oscript
+          mkdir -p mactests
+          cd tests
+          ../built/osx-arm64/bin/oscript testrunner.os -runall . xddReportPath ../mactests || true
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-tests-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-tests-${{ runner.os }}-
+      # Юнит-тесты движка, как в Windows testing; отчеты UnitTests пишет в tests/
+      - name: Unit tests
+        env:
+          LANG: ru_RU.UTF-8
+          # На раннерах macOS задан LC_ALL=en_US.UTF-8, а он главнее LANG
+          LC_ALL: ru_RU.UTF-8
+          OSCRIPT_CONFIG: systemlanguage=ru
+        run: |
+          dotnet msbuild Build.csproj -t:UnitTests || true
+          mv tests/*.xml mactests/
+
+      - name: Test results
+        if: ${{ !cancelled() }}
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+        with:
+          check_name: macOS testing
+          files: mactests/*.xml
+          check_run: false
+          comment_mode: off
+          action_fail: ${{ env.TESTS_FAIL_BUILD }}
+          action_fail_on_inconclusive: true
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: mactests
+          path: mactests/*.xml

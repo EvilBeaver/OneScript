@@ -4,4 +4,5 @@
   <component os="Windows" path="AddInNativeWin64.dll" type="native" arch="x86_64"/>
   <component os="Linux" path="AddInNativeLin32.so" type="native" arch="i386"/>
   <component os="Linux" path="AddInNativeLin64.so" type="native" arch="x86_64"/>
+  <component os="MacOS" path="AddInNativeMac.dylib" type="native" arch="Universal"/>
 </bundle>
