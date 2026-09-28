@@ -1,0 +1,49 @@
+# Отчет о тестах после Build: комментарий в PR со сводкой и проверка с упавшими тестами.
+# Отдельный workflow, потому что у PR из форков токен в Build только на чтение.
+
+name: Test results
+
+on:
+  workflow_run:
+    workflows: [Build]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  test-results:
+    name: Test results
+    if: github.event.workflow_run.conclusion != 'skipped' && github.event.workflow_run.conclusion != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      checks: write
+      contents: read
+      issues: read
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: '*tests'
+          path: artifacts
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: event-file
+          path: artifacts/event-file
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          commit: ${{ github.event.workflow_run.head_sha }}
+          event_file: artifacts/event-file/event.json
+          event_name: ${{ github.event.workflow_run.event }}
+          # Если нашелся один артефакт, download-artifact кладет его прямо в artifacts/, без своего каталога
+          files: artifacts/**/*.xml
+          check_name: Test results
+          comment_title: Результаты тестов
+          # Только упавшие тесты, без списков всех и пропущенных
+          check_run_annotations: none

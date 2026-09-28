@@ -1,0 +1,295 @@
+# Публикация OneScript.
+# Релиз на GitHub: сборка без тестов (dist.yml), дистрибутивы кладутся в релиз,
+# сайт забирает их по вебхуку, затем NuGet и Docker.
+# develop: после успешной сборки Build ее дистрибутивы выкладываются в пре-релиз night-build.
+# Публикация на сайт, в NuGet и Docker Hub идет только в EvilBeaver/OneScript и требует секретов.
+
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_run:
+    workflows: [Build]
+    types: [completed]
+    branches: [develop, release/lts]
+
+# Публикации одного канала не идут параллельно, чтобы файлы night-build не перемешивались
+concurrency:
+  group: release-${{ github.event_name == 'release' && github.ref || github.event.workflow_run.head_branch }}
+
+permissions:
+  contents: read
+
+env:
+  # Сборка develop публикуется из прогона Build, релиз - из своего
+  BUILD_RUN_ID: ${{ github.event.workflow_run.id || github.run_id }}
+  BUILD_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+jobs:
+  build:
+    name: Build
+    if: github.event_name == 'release'
+    uses: ./.github/workflows/dist.yml
+
+  # Дистрибутивы кладутся в релиз на GitHub: при публикации релиза — в него,
+  # при сборке develop — в постоянный пре-релиз night-build, который каждая сборка перезаписывает
+  github-release:
+    name: Publishing to GitHub release
+    needs: build
+    if: >-
+      !cancelled() && (
+        (github.event_name == 'release' && needs.build.result == 'success') ||
+        (github.repository == 'EvilBeaver/OneScript' && github.event_name == 'workflow_run' &&
+         github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success' &&
+         github.event.workflow_run.head_branch == 'develop'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    outputs:
+      channel: ${{ steps.release.outputs.channel }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: built
+          run-id: ${{ env.BUILD_RUN_ID }}
+          github-token: ${{ github.token }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: vsix
+          path: built/vscode
+          run-id: ${{ env.BUILD_RUN_ID }}
+          github-token: ${{ github.token }}
+
+      - name: Release
+        id: release
+        env:
+          PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          FULL_VERSION=$(cat built/version.txt)
+          if [ "$GITHUB_EVENT_NAME" = release ]; then
+            TAG="$GITHUB_REF_NAME"
+            case "$TAG" in
+              v1.*) CHANNEL= ;;
+              *) if [ "$PRERELEASE" = true ]; then CHANNEL=preview; else CHANNEL=latest; fi ;;
+            esac
+          else
+            TAG=night-build
+            CHANNEL=night-build
+            # Тег переносится на собранный коммит, файлы прошлой сборки удаляются
+            gh api "repos/$GH_REPO/git/refs/tags/$TAG" -X PATCH -f sha="$BUILD_SHA" -F force=true > /dev/null \
+              || gh api "repos/$GH_REPO/git/refs" -f ref="refs/tags/$TAG" -f sha="$BUILD_SHA" > /dev/null
+            NOTES="Сборка develop $FULL_VERSION, коммит $BUILD_SHA"
+            if gh release view "$TAG" > /dev/null 2>&1; then
+              gh release edit "$TAG" --notes "$NOTES"
+              gh release view "$TAG" --json assets --jq '.assets[].name' | while read -r name; do
+                gh release delete-asset "$TAG" "$name" --yes
+              done
+            else
+              gh release create "$TAG" --prerelease --title "Night build" --notes "$NOTES" --verify-tag
+            fi
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
+          echo "version=$FULL_VERSION" >> "$GITHUB_OUTPUT"
+
+      # Все файлы дистрибутива: сайт забирает их отсюда
+      - name: Upload
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          mkdir release
+          for f in built/*.zip built/vscode/*.vsix; do
+            case "$(basename "$f")" in
+              mddoc*.zip) ;;
+              *) cp "$f" release/ ;;
+            esac
+          done
+          gh release upload "$TAG" release/* --clobber
+
+      - name: Site payload
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+          CHANNEL: ${{ steps.release.outputs.channel }}
+          FULL_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          REPO_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+          gh api "repos/$GH_REPO/releases/tags/$TAG" --jq '.assets[] | [.name, .browser_download_url] | @tsv' > assets.tsv
+          for f in release/*; do
+            name=$(basename "$f")
+            url=$(awk -F '\t' -v n="$name" '$1 == n { print $2 }' assets.tsv)
+            if [ -z "$url" ]; then
+              echo "::error::Файла $name нет в релизе $TAG"
+              exit 1
+            fi
+            size=$(stat -c %s "$f")
+            sha=$(sha256sum "$f" | cut -d' ' -f1)
+            rid=${name#OneScript-"$FULL_VERSION"-}
+            rid=${rid%.zip}
+            case "$name" in
+              *.vsix) kind=vsix; os=; arch= ;;
+              OneScript-*.zip)
+                case "$rid" in
+                  fdd-*) kind=fdd; os= ;;
+                  *) kind=scd; os=${rid%-*} ;;
+                esac
+                arch=${rid##*-} ;;
+              *) kind=other; os=; arch= ;;
+            esac
+            jq -n --arg name "$name" --arg kind "$kind" --arg os "$os" --arg arch "$arch" \
+              --arg url "$url" --argjson size "$size" --arg sha256 "$sha" \
+              '{name: $name, kind: $kind, os: (if $os == "" then null else $os end),
+                arch: (if $arch == "" then null else $arch end), url: $url, size: $size, sha256: $sha256}'
+          done | jq -s \
+            --arg channel "$CHANNEL" --arg version "$FULL_VERSION" --arg commit "$BUILD_SHA" \
+            --arg run "$REPO_URL/actions/runs/$BUILD_RUN_ID" --arg release "$REPO_URL/releases/tag/$TAG" \
+            --arg notes "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$BUILD_SHA/install/release-notes.md" \
+            '{channel: $channel, version: $version,
+              versionDir: (if $channel == "night-build" then null else ($version | gsub("\\."; "_")) end),
+              commit: $commit, run: $run, release: $release,
+              releaseNotes: (if $channel == "night-build" then null else $notes end),
+              files: .}' > site-payload.json
+          cat site-payload.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: site-payload
+          path: site-payload.json
+          retention-days: 30
+
+  # Сайт сам забирает файлы из релиза по ссылкам из вебхука
+  publish-site:
+    name: Publishing to oscript.io
+    needs: github-release
+    if: github.repository == 'EvilBeaver/OneScript' && needs.github-release.outputs.channel != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: site-payload
+      - name: Webhook
+        env:
+          SITE_WEBHOOK_URL: ${{ secrets.SITE_WEBHOOK_URL }}
+          SITE_WEBHOOK_SECRET: ${{ secrets.SITE_WEBHOOK_SECRET }}
+        run: |
+          SIGNATURE=$(openssl dgst -sha256 -hmac "$SITE_WEBHOOK_SECRET" -r site-payload.json | cut -d' ' -f1)
+          # Сайт отвечает, когда файлы уже на месте: следом Build v2 ставит движок с сайта через ovm
+          curl --fail-with-body -sS --max-time 1200 \
+            -H 'Content-Type: application/json' \
+            -H "X-OneScript-Signature-256: sha256=$SIGNATURE" \
+            --data-binary @site-payload.json "$SITE_WEBHOOK_URL"
+
+  publish-nuget:
+    name: Publishing artifacts to clouds
+    needs: publish-site
+    if: >-
+      github.repository == 'EvilBeaver/OneScript' && github.event_name == 'release' &&
+      !startsWith(github.ref, 'refs/tags/v1.')
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+      - uses: microsoft/setup-msbuild@v3
+      - uses: actions/download-artifact@v8
+        with:
+          name: buildResults
+          path: built
+      - name: Push
+        env:
+          NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
+        run: |
+          chcp 65001 > nul
+          msbuild Build.csproj /t:PublishNuget /p:NugetToken=%NUGET_TOKEN%
+
+  docker-v1:
+    name: Build v1
+    needs: build
+    if: >-
+      !cancelled() && github.repository == 'EvilBeaver/OneScript' && (
+        (github.event_name == 'release' && startsWith(github.ref, 'refs/tags/v1.') && needs.build.result == 'success') ||
+        (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' &&
+         github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'release/lts'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.BUILD_SHA }}
+      - name: Version
+        id: version
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = release ]; then
+            # тег v1.9.4 -> версия для ovm 1.9.4
+            echo "codename=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+            echo "engine=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "codename=lts" >> "$GITHUB_OUTPUT"
+            echo "engine=lts" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: install/builders/base-image/Dockerfile_v1
+          build-args: VERSION=${{ steps.version.outputs.engine }}
+          tags: evilbeaver/onescript:${{ steps.version.outputs.codename }}
+          # --pull и --no-cache: обновлять базовые образы и заново ставить движок через ovm
+          pull: true
+          no-cache: true
+          push: true
+
+  docker-v2:
+    name: Build v2
+    # Образ ставит движок через ovm с сайта, поэтому после публикации
+    needs: [github-release, publish-site]
+    if: >-
+      github.repository == 'EvilBeaver/OneScript' &&
+      (github.event_name == 'workflow_run' ||
+       (github.event_name == 'release' && !github.event.release.prerelease && !startsWith(github.ref, 'refs/tags/v1.')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.BUILD_SHA }}
+      - name: Version
+        id: version
+        env:
+          FULL_VERSION: ${{ needs.github-release.outputs.version }}
+        # для v2 тег образа совпадает с версией для ovm: dev или 2.2.0
+        run: |
+          case "$FULL_VERSION" in
+            *-*) echo "codename=dev" >> "$GITHUB_OUTPUT" ;;
+            *) echo "codename=$FULL_VERSION" >> "$GITHUB_OUTPUT" ;;
+          esac
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: install/builders/base-image/Dockerfile_v2
+          build-args: VERSION=${{ steps.version.outputs.codename }}
+          tags: evilbeaver/onescript:${{ steps.version.outputs.codename }}
+          pull: true
+          no-cache: true
+          push: true
