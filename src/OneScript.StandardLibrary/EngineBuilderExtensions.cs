@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.NativeApi;
+using OneScript.StandardLibrary.Tasks;
 using OneScript.Types;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
@@ -19,6 +20,12 @@ namespace OneScript.StandardLibrary
         public static IEngineBuilder UseBinaryDataOptions(this IEngineBuilder builder)
         {
             builder.Services.RegisterSingleton<IBinaryDataMemoryLimit, BinaryDataOptions>();
+            return builder;
+        }
+
+        public static IEngineBuilder UseBackgroundTasksOptions(this IEngineBuilder builder)
+        {
+            builder.Services.RegisterSingleton<BackgroundTasksOptions>();
             return builder;
         }
 
