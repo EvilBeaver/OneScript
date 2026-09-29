@@ -45,6 +45,10 @@ namespace ScriptEngine.Machine
 
         public void AfterProcessExit(IBslProcess process)
         {
+            // Поток фонового задания или запроса веб-сервера возвращается в пул,
+            // и время простоя не должно уйти последней исполненной строке
+            process.Services.TryResolve<ICodeStatCollector>()?.StopCurrentWatch();
+
             var debugger = process.Services.TryResolve<IDebugger>();
             if (debugger?.IsEnabled != true)
                 return;
