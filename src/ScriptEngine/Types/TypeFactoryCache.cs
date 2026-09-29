@@ -5,7 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using OneScript.Types;
 using ScriptEngine.Machine;
 
@@ -13,17 +13,12 @@ namespace ScriptEngine.Types
 {
     public class TypeFactoryCache
     {
-        private readonly Dictionary<TypeDescriptor, TypeFactory> _factories = new Dictionary<TypeDescriptor, TypeFactory>(); 
+        // Объекты создаются из всех потоков, где исполняется код, в том числе из фоновых заданий
+        private readonly ConcurrentDictionary<TypeDescriptor, TypeFactory> _factories = new ConcurrentDictionary<TypeDescriptor, TypeFactory>();
 
         public TypeFactory GetFactoryFor(TypeDescriptor type)
         {
-            if (!_factories.TryGetValue(type, out var factory))
-            {
-                factory = new TypeFactory(type);
-                _factories[type] = factory;
-            }
-
-            return factory;
+            return _factories.GetOrAdd(type, t => new TypeFactory(t));
         }
     }
 }

@@ -15,5 +15,11 @@ namespace ScriptEngine.Machine
 
         void StopWatch(CodeStatEntry entry);
         void ResumeWatch(CodeStatEntry entry);
+
+        /// <summary>
+        /// Текущий поток закончил исполнять код: время до следующего исполнения на нем
+        /// не относится к последней достигнутой точке
+        /// </summary>
+        void StopCurrentWatch();
     }
 }
