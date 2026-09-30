@@ -25,7 +25,8 @@ namespace OneScript.StandardLibrary.NativeApi
     {
         private delegate IntPtr GetClassNames();
 
-        private readonly List<NativeApiComponent> _components = new List<NativeApiComponent>();
+        private readonly HashSet<NativeApiComponent> _components =
+            new HashSet<NativeApiComponent>(ReferenceEqualityComparer.Instance);
 
         private readonly string _identifier;
         private readonly String _tempfile;
@@ -36,6 +37,11 @@ namespace OneScript.StandardLibrary.NativeApi
             new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly List<string> _knownExtensionNames = new List<string>();
         private bool _allKeysEnumerated;
+
+        // Компоненты одной библиотеки создают из разных фоновых заданий и запросов веб-сервера,
+        // а кэш имен и список созданных компонент у библиотеки общие
+        private readonly object _lock = new object();
+        private bool _disposed;
 
         public NativeApiLibrary(string filepath, string identifier, ITypeManager typeManager)
         {
@@ -110,48 +116,58 @@ namespace OneScript.StandardLibrary.NativeApi
         {
             var typeDef = typeManager.GetTypeByName(typeName);
 
+            lock (_lock)
+            {
+                // Библиотеку выгружают при остановке движка, а фоновые задания еще могут работать
+                if (_disposed)
+                    throw new RuntimeException($"Библиотека внешних компонент `{_identifier}` уже выгружена");
+
+                return DoCreateComponent(host, typeDef, componentName);
+            }
+        }
+
+        private IValue DoCreateComponent(object host, TypeDescriptor typeDef, String componentName)
+        {
             if (_extensionToClassName.TryGetValue(componentName, out var cachedClassName))
                 return TrackComponent(CreateComponentByClassName(host, typeDef, cachedClassName, componentName));
 
             if (_allKeysEnumerated)
                 throw CreateNotFoundException(componentName);
 
-            if (NativeApiFactory.AllowFactoryClassNames)
-            {
-                var resolvedName = ResolveClassName(componentName);
-                var component = TryCreateComponent(host, typeDef, resolvedName);
-                if (component != null)
-                    return TrackComponent(component);
+            var component = TryCreateByFactoryClassName(host, typeDef, componentName)
+                            ?? FindByExtensionName(host, typeDef, componentName);
+            if (component != null)
+                return TrackComponent(component);
 
-                component = TryCreateComponent(host, typeDef, componentName);
-                if (component != null)
-                    return TrackComponent(component);
-            }
+            throw CreateNotFoundException(componentName);
+        }
 
+        private NativeApiComponent TryCreateByFactoryClassName(object host, TypeDescriptor typeDef, string componentName)
+        {
+            if (!NativeApiFactory.AllowFactoryClassNames)
+                return null;
+
+            return TryCreateComponent(host, typeDef, ResolveClassName(componentName))
+                   ?? TryCreateComponent(host, typeDef, componentName);
+        }
+
+        // Создает компоненты еще не проверенных классов и запоминает их имена расширений
+        private NativeApiComponent FindByExtensionName(object host, TypeDescriptor typeDef, string componentName)
+        {
             NativeApiComponent matched = null;
             foreach (var className in _classNames)
             {
-                if (_checkedKeys.Contains(className))
+                if (!_checkedKeys.Add(className))
                     continue;
-
-                _checkedKeys.Add(className);
 
                 var candidate = TryCreateComponent(host, typeDef, className);
                 if (candidate == null)
                     continue;
 
-                var extensionName = candidate.GetExtensionName();
-                if (!string.IsNullOrEmpty(extensionName))
+                if (RememberExtensionName(candidate, className, componentName))
                 {
-                    _extensionToClassName[extensionName] = className;
-                    if (!_knownExtensionNames.Any(n => string.Equals(n, extensionName, StringComparison.OrdinalIgnoreCase)))
-                        _knownExtensionNames.Add(extensionName);
-
-                    if (string.Equals(extensionName, componentName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        matched = candidate;
-                        break;
-                    }
+                    matched = candidate;
+                    break;
                 }
 
                 candidate.Dispose();
@@ -160,10 +176,21 @@ namespace OneScript.StandardLibrary.NativeApi
             if (_classNames != null && _checkedKeys.Count >= _classNames.Length)
                 _allKeysEnumerated = true;
 
-            if (matched != null)
-                return TrackComponent(matched);
+            return matched;
+        }
 
-            throw CreateNotFoundException(componentName);
+        // true - имя расширения компоненты совпало с искомым
+        private bool RememberExtensionName(NativeApiComponent candidate, string className, string componentName)
+        {
+            var extensionName = candidate.GetExtensionName();
+            if (string.IsNullOrEmpty(extensionName))
+                return false;
+
+            _extensionToClassName[extensionName] = className;
+            if (!_knownExtensionNames.Any(n => string.Equals(n, extensionName, StringComparison.OrdinalIgnoreCase)))
+                _knownExtensionNames.Add(extensionName);
+
+            return string.Equals(extensionName, componentName, StringComparison.OrdinalIgnoreCase);
         }
 
         private NativeApiComponent CreateComponentByClassName(
@@ -197,6 +224,24 @@ namespace OneScript.StandardLibrary.NativeApi
             return component;
         }
 
+        /// <summary>
+        /// Уничтожает объект компоненты и снимает ее с учета: при выгрузке библиотеки ее уничтожать уже не нужно.
+        /// Под блокировкой библиотеки ОсвободитьОбъект из другого потока и выгрузка библиотеки
+        /// не уничтожат объект дважды, а выгрузка не дойдет до FreeLibrary раньше, чем объект уничтожен.
+        /// </summary>
+        internal void DestroyComponent(NativeApiComponent component, ref IntPtr nativeObject)
+        {
+            lock (_lock)
+            {
+                if (nativeObject == IntPtr.Zero)
+                    return;
+
+                NativeApiProxy.DestroyObject(nativeObject);
+                nativeObject = IntPtr.Zero;
+                _components.Remove(component);
+            }
+        }
+
         private RuntimeException CreateNotFoundException(string componentName)
         {
             var message = new StringBuilder();
@@ -214,11 +259,21 @@ namespace OneScript.StandardLibrary.NativeApi
 
         public void Dispose()
         {
-            foreach (var component in _components)
+            NativeApiComponent[] components;
+            lock (_lock)
+            {
+                // Под той же блокировкой, что и создание: компонента, созданная после снимка, осталась бы жить
+                _disposed = true;
+                components = _components.ToArray();
+                _components.Clear();
+            }
+
+            // Не под перебором списка: освобождаемая компонента сама снимает себя с учета.
+            // Если ее уже уничтожают из другого потока, Dispose дождется этого на блокировке
+            foreach (var component in components)
             {
                 component.Dispose();
             }
-            _components.Clear();
 
             if (Loaded && NativeApiKernel.FreeLibrary(Module))
             {
