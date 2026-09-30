@@ -700,7 +700,8 @@ namespace OneScript.StandardLibrary.Binary
         {
             CheckAndThrowIfNull(data);
 
-            return new BinaryDataBuffer(data.Buffer);
+            // Копия: запись в буфер не должна менять двоичные данные (из файла Buffer и так читает новый массив)
+            return new BinaryDataBuffer(data.InMemory ? (byte[])data.Buffer.Clone() : data.Buffer);
         }
 
         /// <summary>
@@ -713,7 +714,8 @@ namespace OneScript.StandardLibrary.Binary
         {
             CheckAndThrowIfNull(buffer);
 
-            return new BinaryDataContext(buffer.Bytes);
+            // Копия: двоичные данные не должны меняться вместе с буфером
+            return new BinaryDataContext((byte[])buffer.Bytes.Clone());
         }
 
     }
