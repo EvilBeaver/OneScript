@@ -19,11 +19,53 @@ namespace ScriptEngine.Machine
     {
         private readonly IReadOnlyList<IAttachableContext> _outerScopes;
         private readonly IAttachableContext _innerScope;
+        private readonly IReadOnlyList<IAttachableContext> _rootScopes;
+        private readonly int _innerScopesCount;
 
         public JoinedScopes(IReadOnlyList<IAttachableContext> outerScopes, IAttachableContext innerScope)
         {
             _outerScopes = outerScopes ?? throw new ArgumentNullException(nameof(outerScopes));
             _innerScope = innerScope ?? throw new ArgumentNullException(nameof(innerScope));
+
+            if (_outerScopes is JoinedScopes outer)
+            {
+                _rootScopes = outer._rootScopes;
+                _innerScopesCount = outer._innerScopesCount + 1;
+            }
+            else
+            {
+                _rootScopes = _outerScopes;
+                _innerScopesCount = 1;
+            }
+        }
+
+        /// <summary>
+        /// Исходный список, к которому добавлены внутренние области (глобальные контексты окружения).
+        /// Может расти, пока выполняется код.
+        /// </summary>
+        public IReadOnlyList<IAttachableContext> RootScopes => _rootScopes;
+
+        /// <summary>
+        /// Число внутренних областей, добавленных к исходному списку.
+        /// </summary>
+        public int InnerScopesCount => _innerScopesCount;
+
+        /// <summary>
+        /// Внутренняя область по номеру с конца: 0 - самая внутренняя.
+        /// В отличие от индексатора не зависит от размера исходного списка.
+        /// </summary>
+        public IAttachableContext FromEnd(int index)
+        {
+            if (index < 0 || index >= _innerScopesCount)
+                throw new ArgumentOutOfRangeException(nameof(index));
+
+            var scopes = this;
+            for (; index > 0; index--)
+            {
+                scopes = (JoinedScopes)scopes._outerScopes;
+            }
+
+            return scopes._innerScope;
         }
 
         public IEnumerator<IAttachableContext> GetEnumerator()
