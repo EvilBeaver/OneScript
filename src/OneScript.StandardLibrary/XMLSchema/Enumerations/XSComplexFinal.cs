@@ -13,7 +13,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
     [SystemEnum("ЗавершенностьСоставногоТипаXS", "XSComplexFinal")]
-    public sealed class EnumerationXSComplexFinal : ClrEnumWrapperCached<XmlSchemaDerivationMethod>
+    public sealed class EnumerationXSComplexFinal : ClrEnumWrapperCached<EnumerationXSComplexFinal, XmlSchemaDerivationMethod>
     {
         private EnumerationXSComplexFinal(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)

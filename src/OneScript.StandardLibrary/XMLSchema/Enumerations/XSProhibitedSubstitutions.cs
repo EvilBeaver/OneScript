@@ -13,7 +13,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
     [SystemEnum("ЗапрещенныеПодстановкиXS", "XSProhibitedSubstitutions")]
-    public sealed class EnumerationXSProhibitedSubstitutions : ClrEnumWrapperCached<XmlSchemaDerivationMethod>
+    public sealed class EnumerationXSProhibitedSubstitutions : ClrEnumWrapperCached<EnumerationXSProhibitedSubstitutions, XmlSchemaDerivationMethod>
     {
         private EnumerationXSProhibitedSubstitutions(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
