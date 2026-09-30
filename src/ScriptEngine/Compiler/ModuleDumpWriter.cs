@@ -165,7 +165,7 @@ namespace ScriptEngine.Compiler
                 {
                     ScopeBindingKind.Static => item.Target?.GetType().Name ?? "null",
                     ScopeBindingKind.ThisScope => "this",
-                    ScopeBindingKind.FrameScope => $"frame[{item.ScopeIndex}]",
+                    ScopeBindingKind.FrameScope => $"frame[^{item.ScopeIndex + 1}]",
                     _ => "unknown"
                 };
                 output.Write(string.Format("{0,-3}:({1},{2},{3})\n", i, item.Kind, targetInfo, item.MemberNumber));
