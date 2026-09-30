@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using OneScript.Contexts;
@@ -19,7 +20,7 @@ namespace ScriptEngine.Machine.Contexts
     {
         private static readonly ContextPropertyMapper<TInstance> _properties = new ContextPropertyMapper<TInstance>();
         private static readonly ContextMethodsMapper<TInstance> _methods = new ContextMethodsMapper<TInstance>();
-        private static readonly HashSet<int> _warnedDeprecatedMethods = new HashSet<int>();
+        private static readonly ConcurrentDictionary<int, byte> _warnedDeprecatedMethods = new ConcurrentDictionary<int, byte>();
         private static readonly TypeDescriptor _objectType = typeof(TInstance).GetTypeFromClassMarkup();
         
         protected AutoContext() : base(_objectType)
@@ -118,12 +119,11 @@ namespace ScriptEngine.Machine.Contexts
             {
                 throw RuntimeException.DeprecatedMethodCall(methodInfo.Name);
             }
-            if (_warnedDeprecatedMethods.Contains(methodNumber))
+            if (!_warnedDeprecatedMethods.TryAdd(methodNumber, 0))
             {
                 return;
             }
             SystemLogger.Write($"ВНИМАНИЕ! Вызов устаревшего метода {methodInfo.Name}");
-            _warnedDeprecatedMethods.Add(methodNumber);
         }
 
         public override void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
