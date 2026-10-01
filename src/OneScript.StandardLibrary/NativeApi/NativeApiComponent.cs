@@ -22,8 +22,6 @@ namespace OneScript.StandardLibrary.NativeApi
     {
         private IntPtr _object;
         private TypeDescriptor _type;
-        // Ссылка на библиотеку Native API, нужна для удержания ссылки и устранения гонки финализаторов.
-        private readonly NativeApiLibrary _library;
         private readonly NativeApiProxy.OnErrorDelegate _onError;
         private readonly NativeApiProxy.OnEventDelegate _onEvent;
         private readonly NativeApiProxy.OnStatusDelegate _onStatus;
@@ -78,27 +76,42 @@ namespace OneScript.StandardLibrary.NativeApi
             }
         }
 
-        public NativeApiComponent(object host, NativeApiLibrary library, TypeDescriptor typeDef, string componentName)
+        public NativeApiComponent(
+            object host,
+            NativeApiLibrary library,
+            TypeDescriptor typeDef,
+            string componentName,
+            string identifier,
+            bool throwOnZero = true)
         {
             if (!NativeApiProxy.IsAvailable)
                 throw new RuntimeException("Native API Proxy DLL is not loaded");
                 
-            _library = library;
             _onError = (wcode, source, descr, scode) =>
-            {
                 OnComponentError?.Invoke(Status(wcode), scode, S(source), S(descr));
-            };
             _onEvent = (source, message, data) =>
-            {
                 OnComponentEvent?.Invoke(S(source), S(message), S(data));
-            };
             _onStatus = status =>
-            {
                 OnComponentStatusText?.Invoke(S(status));
-            };
 
             _object = NativeApiProxy.GetClassObject(library.Module, componentName, _onError, _onEvent, _onStatus);
+            if (_object == IntPtr.Zero)
+            {
+                if (throwOnZero)
+                    throw new RuntimeException($"Не удалось создать объект `{componentName}` внешней компоненты `{identifier}`");
+                return;
+            }
+
             _type = typeDef;
+        }
+
+        internal bool IsCreated => _object != IntPtr.Zero;
+
+        internal string GetExtensionName()
+        {
+            var name = string.Empty;
+            NativeApiProxy.GetExtensionName(_object, n => name = NativeApiProxy.Str(n));
+            return name;
         }
         
         // ReSharper disable once ConvertToAutoProperty
@@ -162,18 +175,18 @@ namespace OneScript.StandardLibrary.NativeApi
         {
             IValue result = ValueFactory.Create();
             NativeApiProxy.GetPropVal(_object, propNum,
-                variant => result = NativeApiVariant.Value(variant)
+                variant => result = new NativeApiVariant(variant).GetValue()
             );
             return result;
         }
 
         public void SetPropValue(int propNum, IValue value)
         {
-            using (var variant = new NativeApiVariant())
+            using (var buffer = new NativeApiVariantArray(1))
             {
-                variant.Assign(value);
-                NativeApiProxy.SetPropVal(_object, propNum, variant.Ptr);
-            };
+                buffer[0].Assign(value);
+                NativeApiProxy.SetPropVal(_object, propNum, buffer.Ptr);
+            }
         }
 
         public int GetMethodsCount()
@@ -217,7 +230,7 @@ namespace OneScript.StandardLibrary.NativeApi
                     // если что - раскомментировать
                     // NativeApiProxy.GetParamDefValue(_object, methodNumber, i, variant =>
                     // {
-                    //     var value = (BslPrimitiveValue)NativeApiVariant.Value(variant);
+                    //     var value = (BslPrimitiveValue)new NativeApiVariant(variant).GetValue();
                     //     parameter.DefaultValue(value);
                     // });
                 }
@@ -247,30 +260,45 @@ namespace OneScript.StandardLibrary.NativeApi
             for (int i = 0; i < paramCount; i++)
                 if (arguments[i] == null)
                     NativeApiProxy.GetParamDefValue(_object, methodNumber, i,
-                        variant => arguments[i] = NativeApiVariant.Value(variant)
+                        variant => arguments[i] = new NativeApiVariant(variant).GetValue()
                     );
         }
 
-        private void WriteBackParameters(int paramCount, IValue[] arguments, IntPtr variantPtr)
+        private static void RemapOutputParameters(
+            int paramCount,
+            IValue[] arguments,
+            IValue[] initialValues,
+            NativeApiVariantArray parameters)
         {
             for (int i = 0; i < paramCount; i++)
             {
-                if (arguments[i] is IVariable variable)
-                    variable.Value = NativeApiVariant.Value(variantPtr, i);
+                if (initialValues[i] == null ||
+                    arguments[i] is not IVariable variable)
+                    continue;
+
+                var valueAfterCall = parameters[i].GetValue();
+                if (!initialValues[i].StrictEquals(valueAfterCall))
+                    variable.Value = valueAfterCall;
             }
         }
 
         public void CallAsProcedure(int methodNumber, IValue[] arguments, IBslProcess process)
         {
             int paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
-            using (var variant = new NativeApiVariant(paramCount))
+            using (var parameters = new NativeApiVariantArray(paramCount))
             {
                 SetDefValues(methodNumber, paramCount, arguments);
-                for (int i = 0; i < paramCount; i++)
-                    variant.Assign(arguments[i], i);
 
-                NativeApiProxy.CallAsProc(_object, methodNumber, variant.Ptr);
-                WriteBackParameters(paramCount, arguments, variant.Ptr);
+                var initialValues = new IValue[paramCount];
+                for (int i = 0; i < paramCount; i++)
+                {
+                    if (arguments[i] is IVariable reference)
+                        initialValues[i] = reference.Value;
+                    parameters[i].Assign(arguments[i]);
+                }
+
+                if (NativeApiProxy.CallAsProc(_object, methodNumber, parameters.Ptr))
+                    RemapOutputParameters(paramCount, arguments, initialValues, parameters);
             }
         }
 
@@ -278,49 +306,34 @@ namespace OneScript.StandardLibrary.NativeApi
         {
             var result = ValueFactory.Create();
             int paramCount = NativeApiProxy.GetNParams(_object, methodNumber);
-            using (var variant = new NativeApiVariant(paramCount))
+            using (var parameters = new NativeApiVariantArray(paramCount))
             {
                 SetDefValues(methodNumber, paramCount, arguments);
-                for (int i = 0; i < paramCount; i++)
-                    variant.Assign(arguments[i], i);
 
-                NativeApiProxy.CallAsFunc(_object, methodNumber, variant.Ptr,
-                    res => result = NativeApiVariant.Value(res)
-                );
-                WriteBackParameters(paramCount, arguments, variant.Ptr);
+                var initialValues = new IValue[paramCount];
+                for (int i = 0; i < paramCount; i++)
+                {
+                    if (arguments[i] is IVariable reference)
+                        initialValues[i] = reference.Value;
+                    parameters[i].Assign(arguments[i]);
+                }
+
+                if (NativeApiProxy.CallAsFunc(_object, methodNumber, parameters.Ptr,
+                    res => result = new NativeApiVariant(res).GetValue()))
+                {
+                    RemapOutputParameters(paramCount, arguments, initialValues, parameters);
+                }
             }
             retValue = result;
         }
 
-        private void ReleaseUnmanagedResources(bool isDisposing)
+        public void Dispose()
         {
             if (_object == IntPtr.Zero)
                 return;
-            
-            try
-            {
-                NativeApiProxy.DestroyObject(_object);
-            }
-            catch (Exception)
-            {
-                if (isDisposing)
-                    throw;
-            }
-            finally
-            {
-                _object = IntPtr.Zero;
-            }
-        }
 
-        public void Dispose()
-        {
-            ReleaseUnmanagedResources(true);
-            GC.SuppressFinalize(this);
-        }
-
-        ~NativeApiComponent()
-        {
-            ReleaseUnmanagedResources(false);
+            NativeApiProxy.DestroyObject(_object);
+            _object = IntPtr.Zero;
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿
 #include "stdafx.h"
 
+#include <atomic>
+
 #if defined( __linux__ ) || defined(__APPLE__)
 #include <unistd.h>
 #include <stdlib.h>
@@ -30,7 +32,6 @@ static const wchar_t* g_PropNames[] = {
 	L"StringRW",
 	L"StringRO",
 	L"StringWO",
-	L"DateRW",
 	L"FixedDate",
 };
 
@@ -39,7 +40,6 @@ static const wchar_t* g_PropNamesRu[] = {
 	L"СтрокаЧтениеЗапись",
 	L"СтрокаТолькоЧтение",
 	L"СтрокаТолькоЗапись",
-	L"ДатаЧтениеЗапись",
 	L"ФиксированнаяДата",
 };
 
@@ -53,8 +53,14 @@ static const wchar_t* g_MethodNames[] = {
 	L"Exchange",
 	L"Concatenate",
 	L"Loopback",
-	L"EchoDate",
-	L"SetDateOut"
+	L"EchoDateTm",
+	L"GetDateAsVTypeDate",
+	L"GetInvalidDateAsVTypeDate",
+	L"GetInvalidDateAsVTypeTm",
+	L"PassThrough",
+	L"FailAfterChange",
+	L"GetConstructCount",
+	L"GetDestructCount",
 };
 
 static const wchar_t* g_MethodNamesRu[] = {
@@ -67,11 +73,17 @@ static const wchar_t* g_MethodNamesRu[] = {
 	L"ОбменПараметров",
 	L"КонкатенацияСтрок",
 	L"Петля",
-	L"ЭхоДата",
-	L"УстановитьДатуИсходящий",
+	L"ЭхоДатаTM",
+	L"ПолучитьДатуКакVTYPE_DATE",
+	L"ПолучитьНекорректнуюДатуКакVTYPE_DATE",
+	L"ПолучитьНекорректнуюДатуКакVTYPE_TM",
+	L"ПропуститьПараметры",
+	L"ОшибкаПослеИзменения",
+	L"ПолучитьСчётчикКонструкторов",
+	L"ПолучитьСчётчикДеструкторов",
 };
 
-static const wchar_t g_kClassNames[] = L"CAddInNative|Alias2";
+static const wchar_t g_kClassNames[] = L"CAddInNative|2";
 static IAddInDefBase* pAsyncEvent = NULL;
 
 uint32_t convToShortWchar(WCHAR_T** Dest, const wchar_t* Source, uint32_t len = 0);
@@ -79,6 +91,8 @@ uint32_t convFromShortWchar(wchar_t** Dest, const WCHAR_T* Source, uint32_t len 
 uint32_t getLenShortWcharStr(const WCHAR_T* Source);
 static AppCapabilities g_capabilities = eAppCapabilitiesInvalid;
 static WcharWrapper s_names(g_kClassNames);
+static std::atomic<long> g_instanceConstructCount{ 0 };
+static std::atomic<long> g_instanceDestructCount{ 0 };
 //---------------------------------------------------------------------------//
 long GetClassObject(const WCHAR_T* wsName, IComponentBase** pInterface)
 {
@@ -86,12 +100,27 @@ long GetClassObject(const WCHAR_T* wsName, IComponentBase** pInterface)
 	{
 		wchar_t* name = 0;
 		::convFromShortWchar(&name, wsName);
-		if (wcscmp(name, L"Alias2") == 0)
-			*pInterface = new CAddInNativeSecond;
-		else
-			*pInterface = new CAddInNative;
-		delete[] name;
-		return (long)*pInterface;
+
+		if (name)
+		{
+			if (!wcscmp(name, L"CAddInNative") || !wcscmp(name, L"DirectAlias"))
+			{
+				*pInterface = new CAddInNative;
+				delete[] name;
+				return (long)*pInterface;
+			}
+
+			if (!wcscmp(name, L"2"))
+			{
+				*pInterface = new CSecondAddInNative;
+				delete[] name;
+				return (long)*pInterface;
+			}
+
+			delete[] name;
+		}
+
+		return 0;
 	}
 	return 0;
 }
@@ -120,12 +149,24 @@ const WCHAR_T* GetClassNames()
 //---------------------------------------------------------------------------//
 CAddInNative::CAddInNative()
 {
+	g_instanceConstructCount.fetch_add(1, std::memory_order_relaxed);
 	m_iMemory = 0;
 	m_iConnect = 0;
+	m_FixedDate = {};
+	m_FixedDate.tm_year = 124;
+	m_FixedDate.tm_mon = 1;
+	m_FixedDate.tm_mday = 29;
+	m_FixedDate.tm_hour = 23;
+	m_FixedDate.tm_min = 59;
+	m_FixedDate.tm_sec = 58;
+	m_FixedDate.tm_wday = 4;
+	m_FixedDate.tm_yday = 59;
+	m_FixedDate.tm_isdst = -1;
 }
 //---------------------------------------------------------------------------//
 CAddInNative::~CAddInNative()
 {
+	g_instanceDestructCount.fetch_add(1, std::memory_order_relaxed);
 }
 //---------------------------------------------------------------------------//
 bool CAddInNative::Init(void* pConnection)
@@ -147,9 +188,9 @@ void CAddInNative::Done()
 /////////////////////////////////////////////////////////////////////////////
 // ILanguageExtenderBase
 //---------------------------------------------------------------------------//
-bool CAddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
+bool CSecondAddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
 {
-	const wchar_t* wsExtension = L"CAddInNative";
+	const wchar_t* wsExtension = L"SecondAddIn";
 	int iActualSize = ::wcslen(wsExtension) + 1;
 	WCHAR_T* dest = 0;
 
@@ -163,9 +204,9 @@ bool CAddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
 	return false;
 }
 //---------------------------------------------------------------------------//
-bool CAddInNativeSecond::RegisterExtensionAs(WCHAR_T** wsExtensionName)
+bool CAddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
 {
-	const wchar_t* wsExtension = L"CAddInNativeSecond";
+	const wchar_t* wsExtension = L"CAddInNative";
 	int iActualSize = ::wcslen(wsExtension) + 1;
 	WCHAR_T* dest = 0;
 
@@ -253,13 +294,9 @@ bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 		}
 		return false;
 	}
-	case ePropDateRW:
-		TV_VT(pvarPropVal) = VTYPE_DATE;
-		TV_DATE(pvarPropVal) = m_Date;
-		break;
 	case ePropFixedDate:
-		TV_VT(pvarPropVal) = VTYPE_DATE;
-		TV_DATE(pvarPropVal) = 46037.5208333333; // 2026-01-15 12:30:00
+		pvarPropVal->tmVal = m_FixedDate;
+		TV_VT(pvarPropVal) = VTYPE_TM;
 		break;
 	default:
 		return false;
@@ -283,10 +320,10 @@ bool CAddInNative::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 			return false;
 		m_String = WcharWrapper(TV_WSTR(pvarPropVal));
 		break;
-	case ePropDateRW:
-		if (TV_VT(pvarPropVal) != VTYPE_DATE)
+	case ePropFixedDate:
+		if (TV_VT(pvarPropVal) != VTYPE_TM)
 			return false;
-		m_Date = TV_DATE(pvarPropVal);
+		m_FixedDate = pvarPropVal->tmVal;
 		break;
 	default:
 		return false;
@@ -302,7 +339,6 @@ bool CAddInNative::IsPropReadable(const long lPropNum)
 	case ePropIsEnabled:
 	case ePropStringRW:
 	case ePropStringRO:
-	case ePropDateRW:
 	case ePropFixedDate:
 		return true;
 	default:
@@ -319,7 +355,7 @@ bool CAddInNative::IsPropWritable(const long lPropNum)
 	case ePropIsEnabled:
 	case ePropStringRW:
 	case ePropStringWO:
-	case ePropDateRW:
+	case ePropFixedDate:
 		return true;
 	default:
 		return false;
@@ -397,9 +433,10 @@ long CAddInNative::GetNParams(const long lMethodNum)
 		return 2;
 	case eMethLoopback:
 		return 1;
-	case eMethEchoDate:
+	case eMethEchoDateTm:
 		return 1;
-	case eMethSetDateOut:
+	case eMethPassThrough:
+	case eMethFailAfterChange:
 		return 1;
 	default:
 		return 0;
@@ -443,7 +480,12 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 	case eMethLoadPicture:
 	case eMethConcatenate:
 	case eMethLoopback:
-	case eMethEchoDate:
+	case eMethEchoDateTm:
+	case eMethGetDateAsVTypeDate:
+	case eMethGetInvalidDateAsVTypeDate:
+	case eMethGetInvalidDateAsVTypeTm:
+	case eMethGetConstructCount:
+	case eMethGetDestructCount:
 		return true;
 	default:
 		return false;
@@ -476,11 +518,18 @@ bool CAddInNative::CallAsProc(const long lMethodNum,
 		memcpy(paParams, paParams + 1, sizeof(tVariant));
 		memcpy(paParams + 1, &variant, sizeof(tVariant));
 		break;
-	case eMethSetDateOut:
-		if (lSizeArray != 1 || TV_VT(paParams) != VTYPE_DATE)
-			return false;
-		TV_DATE(paParams) += 1.0;
+	case eMethPassThrough:
 		break;
+	case eMethFailAfterChange:
+		if (lSizeArray < 1 || !paParams)
+			return false;
+		if (TV_VT(paParams) == VTYPE_I4)
+			TV_I4(paParams) = TV_I4(paParams) + 1;
+		else if (TV_VT(paParams) == VTYPE_R8)
+			TV_R8(paParams) = TV_R8(paParams) + 1;
+		else
+			return false;
+		return false;
 	case eMethShowMsgBox:
 	{
 		if (eAppCapabilities1 <= g_capabilities)
@@ -580,11 +629,36 @@ bool CAddInNative::CallAsFunc(const long lMethodNum,
 		pvarRetValue->strLen = paParams->strLen;
 		return true;
 	}
-	case eMethEchoDate:
-		if (lSizeArray != 1 || TV_VT(paParams) != VTYPE_DATE)
+	case eMethEchoDateTm:
+		if (lSizeArray != 1 || !paParams ||
+			TV_VT(paParams) != VTYPE_TM)
 			return false;
+
+		pvarRetValue->tmVal = paParams->tmVal;
+		TV_VT(pvarRetValue) = VTYPE_TM;
+		return true;
+	case eMethGetDateAsVTypeDate:
 		TV_VT(pvarRetValue) = VTYPE_DATE;
-		TV_DATE(pvarRetValue) = TV_DATE(paParams) + 1.0;
+		TV_DATE(pvarRetValue) = 45351.9999768519; // 2024-02-29 23:59:58
+		return true;
+	case eMethGetInvalidDateAsVTypeDate:
+		TV_VT(pvarRetValue) = VTYPE_DATE;
+		TV_DATE(pvarRetValue) = 1e100;
+		return true;
+	case eMethGetInvalidDateAsVTypeTm:
+		pvarRetValue->tmVal = {};
+		pvarRetValue->tmVal.tm_year = 124;
+		pvarRetValue->tmVal.tm_mon = 12;
+		pvarRetValue->tmVal.tm_mday = 32;
+		TV_VT(pvarRetValue) = VTYPE_TM;
+		return true;
+	case eMethGetConstructCount:
+		TV_VT(pvarRetValue) = VTYPE_I4;
+		TV_I4(pvarRetValue) = g_instanceConstructCount.load(std::memory_order_relaxed);
+		return true;
+	case eMethGetDestructCount:
+		TV_VT(pvarRetValue) = VTYPE_I4;
+		TV_I4(pvarRetValue) = g_instanceDestructCount.load(std::memory_order_relaxed);
 		return true;
 	break;
 

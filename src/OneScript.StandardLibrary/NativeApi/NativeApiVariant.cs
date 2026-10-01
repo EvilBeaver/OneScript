@@ -7,83 +7,125 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Binary;
+using OneScript.Types;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.NativeApi
 {
-
-
     /// <summary>
-    /// Трансляция значений между IValue и tVariant из состава Native API
+    /// Невладеющее представление одного tVariant из состава Native API
     /// </summary>
-    class NativeApiVariant: IDisposable
+    readonly struct NativeApiVariant
     {
-        private IntPtr variant = IntPtr.Zero;
-        private readonly Int32 _count;
+        public IntPtr Ptr { get; }
 
-        public IntPtr Ptr { get { return variant; } }
-
-        public NativeApiVariant(Int32 count = 1)
+        public NativeApiVariant(IntPtr ptr)
         {
-            _count = count;
-            variant = NativeApiProxy.CreateVariant(count);
-            if (count > 0 && variant == IntPtr.Zero)
-                throw new RuntimeException("Не удалось выделить память для массива параметров Native API");
+            Ptr = ptr;
         }
 
-        public void Dispose()
-        { 
-            if (variant != IntPtr.Zero)
-            {
-                NativeApiProxy.FreeVariant(variant, _count);
-                variant = IntPtr.Zero;
-            }
-        }
-
-        public void Assign(IValue value, Int32 number = 0)
+        public void Assign(IValue value)
         {
             var clrObject = value.UnwrapToClrObject();
             switch (clrObject)
             {
                 case string str:
-                    NativeApiProxy.SetVariantStr(variant, number, str, str.Length);
+                    NativeApiProxy.SetVariantStr(Ptr, str, str.Length);
                     break;
                 case bool v:
-                    NativeApiProxy.SetVariantBool(variant, number, value.AsBoolean());
+                    NativeApiProxy.SetVariantBool(Ptr, value.AsBoolean());
                     break;
                 case decimal num:
                     if (num % 1 == 0)
-                        NativeApiProxy.SetVariantInt(variant, number, Convert.ToInt32(value.AsNumber()));
+                        NativeApiProxy.SetVariantInt(Ptr, Convert.ToInt32(value.AsNumber()));
                     else
-                        NativeApiProxy.SetVariantReal(variant, number, Convert.ToDouble(value.AsNumber()));
+                        NativeApiProxy.SetVariantReal(Ptr, Convert.ToDouble(value.AsNumber()));
                     break;
                 case BinaryDataContext binaryData:
-                    NativeApiProxy.SetVariantBlob(variant, number, binaryData.Buffer, binaryData.Buffer.Length);
+                    NativeApiProxy.SetVariantBlob(Ptr, binaryData.Buffer, binaryData.Buffer.Length);
                     break;
                 case DateTime dt:
-                    NativeApiProxy.SetVariantDate(variant, number, dt.ToOADate());
+                    NativeApiProxy.SetVariantTm(
+                        Ptr,
+                        dt.Year, dt.Month, dt.Day,
+                        dt.Hour, dt.Minute, dt.Second);
                     break;
                 default:
-                    NativeApiProxy.SetVariantEmpty(variant, number);
+                    NativeApiProxy.SetVariantEmpty(Ptr);
                     break;
             }
         }
-        public static IValue Value(IntPtr variant, Int32 number = 0)
+
+        /// <summary>
+        /// Снимок значения в той же нормализации, что использует Assign, без маршалинга через tVariant.
+        /// </summary>
+        public static IValue CaptureMarshalledValue(IValue value)
+        {
+            var clrObject = value.UnwrapToClrObject();
+            switch (clrObject)
+            {
+                case string str:
+                    return ValueFactory.Create(str);
+                case bool v:
+                    return ValueFactory.Create(value.AsBoolean());
+                case decimal num:
+                    if (num % 1 == 0)
+                        return ValueFactory.Create(Convert.ToInt32(value.AsNumber()));
+                    return ValueFactory.Create(value.AsNumber());
+                case BinaryDataContext binaryData:
+                    return binaryData;
+                case DateTime dt:
+                    return ValueFactory.Create(new DateTime(
+                        dt.Year, dt.Month, dt.Day,
+                        dt.Hour, dt.Minute, dt.Second, DateTimeKind.Unspecified));
+                default:
+                    return ValueFactory.Create();
+            }
+        }
+
+        public IValue GetValue()
         {
             IValue value = ValueFactory.Create();
-            NativeApiProxy.GetVariant(variant, number,
-                (v, n) => value = ValueFactory.Create(),
-                (v, n, r) => value = ValueFactory.Create(r),
-                (v, n, r) => value = ValueFactory.Create((Decimal)r),
-                (v, n, r) => value = ValueFactory.Create((Decimal)r),
-                (v, n, d) => value = ValueFactory.Create(DateTime.FromOADate(d)),
-                (v, n, r, s) => value = ValueFactory.Create(Marshal.PtrToStringUni(r, s)),
-                (v, n, r, s) => {
+            NativeApiProxy.GetVariant(Ptr,
+                () => value = ValueFactory.Create(),
+                r => value = ValueFactory.Create(r),
+                r => value = ValueFactory.Create((Decimal)r),
+                r => value = ValueFactory.Create((Decimal)r),
+                d => {
+                    try
+                    {
+                        value = ValueFactory.Create(DateTime.FromOADate(d));
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new RuntimeException($"Некорректное значение даты VTYPE_DATE: {ex.Message}");
+                    }
+                },
+                (year, month, day, hour, minute, second) => {
+                    try
+                    {
+                        value = ValueFactory.Create(new DateTime(
+                            year, month, day, hour, minute, second, DateTimeKind.Unspecified));
+                    }
+                    catch (ArgumentOutOfRangeException ex)
+                    {
+                        throw new RuntimeException($"Некорректное значение даты VTYPE_TM: {ex.Message}");
+                    }
+                },
+                (r, s) => value = ValueFactory.Create(Marshal.PtrToStringUni(r, s)),
+                (r, s) => {
                     byte[] buffer = new byte[s];
                     Marshal.Copy(r, buffer, 0, s);
                     value = new BinaryDataContext(buffer);
+                },
+                // VTYPE_PSTR: однобайтовая строка, декодирование через Encoding.Default
+                (r, s) => {
+                    var buffer = new byte[s];
+                    Marshal.Copy(r, buffer, 0, s);
+                    value = ValueFactory.Create(Encoding.Default.GetString(buffer));
                 }
             );
             return value;

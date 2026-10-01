@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.NativeApi;
-using ScriptEngine;
+using OneScript.Types;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 
@@ -24,8 +24,7 @@ namespace OneScript.StandardLibrary
 
         public static IEngineBuilder UseNativeApi(this IEngineBuilder builder)
         {
-            builder.Services.RegisterSingleton<NativeApiFactory>();
-            builder.Services.RegisterSingleton<IEngineLifetime>(sp => sp.Resolve<NativeApiFactory>());
+            builder.Services.RegisterEnumerable<ILazyTypeResolver, NativeApiLazyTypeResolver>();
             return builder;
         }
         

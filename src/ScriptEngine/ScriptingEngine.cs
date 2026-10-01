@@ -22,7 +22,6 @@ namespace ScriptEngine
     {
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IRuntimeEnvironment _runtimeEnvironment;
-        private bool _disposed;
         
         private readonly ILibraryManager _libraryManager;
 
@@ -190,17 +189,7 @@ namespace ScriptEngine
 
         public void Dispose()
         {
-            if (_disposed)
-                return;
-
-            _disposed = true;
-
             AttachedScriptsFactory.SetInstance(null);
-
-            foreach (var service in Services.ResolveEnumerable<IEngineLifetime>())
-            {
-                service.Dispose();
-            }
         }
 
         #endregion

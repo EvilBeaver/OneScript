@@ -10,6 +10,10 @@ using System.Collections.Generic;
 
 namespace OneScript.Commons
 {
+    /// <summary>
+    /// Не потокобезопасен: даже чтение меняет порядок элементов.
+    /// Общий для нескольких потоков кэш нужно защищать блокировкой снаружи.
+    /// </summary>
     public class LruCache<TKey, TValue>
     {
         private readonly int _capacity;

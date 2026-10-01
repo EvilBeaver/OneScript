@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.Contexts;
@@ -20,7 +21,7 @@ namespace ScriptEngine.Machine.Contexts
         private readonly IndexedNameValueCollection<EnumerationValue> _values;
         private readonly List<BslPropertyInfo> _definitions;
         private readonly TypeDescriptor _valuesType;
-        private readonly HashSet<int> _checkedDeprecatedProps = new HashSet<int>();
+        private readonly ConcurrentDictionary<int, byte> _checkedDeprecatedProps = new ConcurrentDictionary<int, byte>();
 
         protected EnumerationContext(TypeDescriptor typeRepresentation, TypeDescriptor valuesType) : base(typeRepresentation)
         {
@@ -85,15 +86,13 @@ namespace ScriptEngine.Machine.Contexts
         
         private void WarnDeprecation(int propNum)
         {
-            if (_checkedDeprecatedProps.Contains(propNum)) 
+            if (!_checkedDeprecatedProps.TryAdd(propNum, 0))
                 return;
             
             if (GetPropertyInfo(propNum) is SystemPropertyInfo { IsDeprecated: true })
             {
                 SystemLogger.Write($"Обращение к устаревшему свойству {GetPropertyInfo(propNum).Name}.");
             }
-            
-            _checkedDeprecatedProps.Add(propNum);
         }
 
         public override string GetPropName(int propNum)

@@ -7,9 +7,9 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections.Generic;
-using OneScript.Types;
 using OneScript.Contexts;
-using ScriptEngine;
+using OneScript.Exceptions;
+using OneScript.Types;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.NativeApi
@@ -18,61 +18,63 @@ namespace OneScript.StandardLibrary.NativeApi
     /// Фабрика, осуществляющая регистрацию библиотеки внешних 
     /// компонент Native API и создания экземпляров компонент.
     /// </summary>
-    class NativeApiFactory : IEngineLifetime
+    class NativeApiFactory
     {
-        private readonly object _sync = new object();
-        private readonly Dictionary<string, NativeApiLibrary> _libraries = new Dictionary<string, NativeApiLibrary>();
-        private bool _disposed;
+        /// <summary>
+        /// Разрешает использовать в качестве имени типа ключ фабрики из GetClassNames
+        /// или любую строку, которую принимает GetClassObject, помимо имени из
+        /// RegisterExtensionAs. Так работал движок до исправления #1359.
+        /// Выключено: по спецификации Native API имя типа задаёт только
+        /// RegisterExtensionAs, а GetClassNames возвращает ключи фабрики.
+        /// Вернуть true, если обнаружатся компоненты, для которых скрипты
+        /// полагаются на прежнее поведение.
+        /// </summary>
+        internal static readonly bool AllowFactoryClassNames = false;
 
-        public bool Register(string filepath, string identifier, ITypeManager typeManager)
+        public static bool Register(string filepath, string identifier, ITypeManager typeManager)
         {
-            lock (_sync)
-            {
-                ObjectDisposedException.ThrowIf(_disposed, this);
-
-                if (_libraries.ContainsKey(identifier))
-                    return true;
-
-                var library = new NativeApiLibrary(filepath, identifier, typeManager);
-                if (library.Loaded)
-                    _libraries.Add(identifier, library);
-                return library.Loaded;
-            }
+            if (_libraries.ContainsKey(identifier)) 
+                return false;
+            var library = new NativeApiLibrary(filepath, identifier, typeManager);
+            if (library.Loaded) 
+                _libraries.Add(identifier, library);
+            return library.Loaded;
         }
 
-        public void Dispose()
+        private static readonly Dictionary<string, NativeApiLibrary> _libraries =
+            new Dictionary<string, NativeApiLibrary>(StringComparer.OrdinalIgnoreCase);
+
+        internal static bool TryGetLibrary(string identifier, out NativeApiLibrary library)
         {
-            lock (_sync)
-            {
-                if (_disposed)
-                    return;
+            return _libraries.TryGetValue(identifier, out library);
+        }
 
-                foreach (var item in _libraries)
-                    item.Value.Dispose();
+        private static bool _shutdown;
 
-                _libraries.Clear();
-                _disposed = true;
-            }
+        internal static void Shutdown()
+        {
+            if (_shutdown)
+                return;
+
+            _shutdown = true;
+
+            foreach (var item in _libraries)
+                item.Value.Dispose();
+            _libraries.Clear();
         }
 
         [ScriptConstructor]
         public static IValue Constructor(TypeActivationContext context)
         {
-            var factory = context.Services.Resolve<NativeApiFactory>();
             var typeName = context.TypeName;
-            var separator = new char[] { '.' };
-            var names = typeName.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-            if (names.Length == 3 && factory.TryGetLibrary(names[1], out NativeApiLibrary library))
-                return library.CreateComponent(context.TypeManager, default, typeName, names[2]);
-            throw new NotImplementedException();
-        }
+            var names = typeName.Split('.', StringSplitOptions.RemoveEmptyEntries);
+            if (names.Length != 3 || !string.Equals(names[0], "AddIn", StringComparison.OrdinalIgnoreCase))
+                throw new RuntimeException($"Имя типа `{typeName}` не имеет формы AddIn.<метка>.<имя>");
 
-        private bool TryGetLibrary(string identifier, out NativeApiLibrary library)
-        {
-            lock (_sync)
-            {
-                return _libraries.TryGetValue(identifier, out library);
-            }
+            if (!_libraries.TryGetValue(names[1], out NativeApiLibrary library))
+                throw new RuntimeException($"Внешняя компонента с меткой `{names[1]}` не подключена");
+
+            return library.CreateComponent(context.TypeManager, default, typeName, names[2]);
         }
     }
 }

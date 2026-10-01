@@ -14,10 +14,12 @@ using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using OneScript.Execution;
 
 namespace OneScript.Web.Server
@@ -36,6 +38,10 @@ namespace OneScript.Web.Server
         private bool _useWebSockets = false;
         private (IRuntimeContextInstance Target, string MethodName)? _exceptionHandler = null;
 
+        /// <summary>
+        /// Порт прослушивателя. Если сервер создан с портом 0, свободный порт выбирает система,
+        /// и после запуска здесь будет выбранный порт
+        /// </summary>
         [ContextProperty("Порт", "Port", CanWrite = false)]
         public int Port { get; private set; }
 
@@ -71,7 +77,18 @@ namespace OneScript.Web.Server
         {
             ConfigureApp();
 
-            _app.Run();
+            try
+            {
+                _app.Start();
+                if (Port == 0)
+                    Port = new Uri(_app.Urls.First()).Port;
+
+                _app.WaitForShutdown();
+            }
+            finally
+            {
+                _app.DisposeAsync().AsTask().Wait();
+            }
         }
 
         /// <summary>

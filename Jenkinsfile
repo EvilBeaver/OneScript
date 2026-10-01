@@ -3,8 +3,12 @@ pipeline {
     
     agent none
 
+    // Сборки одной ветки идут по очереди: параллельные публикации night-build
+    // через rsync --delete оставляли в папке файлы двух сборок, и сайт отдавал 404
+    options { disableConcurrentBuilds() }
+
     environment {
-        VersionPrefix = '2.2.0'
+        VersionPrefix = '2.2.1'
         outputEnc = '65001'
     }
 
@@ -21,9 +25,13 @@ pipeline {
                     environment {
                         NugetPath = "${tool 'nuget'}"
                         StandardLibraryPacks = "${tool 'os_stdlib'}"
+                        // MSBuild кладет сюда отчеты о падении своих процессов (MSBuild_*.failure.txt, например при MSB4166),
+                        // по умолчанию они остаются во временной папке пользователя на агенте и в сборку не попадают
+                        MSBUILDDEBUGPATH = "${env.WORKSPACE}/msbuild-debug"
                     }
 
                     steps {
+                        dir('msbuild-debug') { deleteDir() }
                         
                         // в среде Multibranch Pipeline Jenkins первращает имена веток в папки
                         // а для веток Gitflow вида release/* экранирует в слэш в %2F
@@ -47,6 +55,11 @@ pipeline {
                             
                             stash includes: 'built/**', name: 'buildResults'
                             stash includes: 'tests/native-api/bin*/*.dll', name: 'nativeApiTestsDll'
+                        }
+                    }
+                    post {
+                        failure {
+                            archiveArtifacts artifacts: 'msbuild-debug/**', allowEmptyArchive: true
                         }
                     }
                 }
@@ -81,14 +94,14 @@ pipeline {
         stage('VSCode debugger Build') {
             agent {
                 docker {
-                    image 'node:lts-alpine3.20'
+                    image 'node:22-alpine3.20'
                     label 'linux'
                 }
             }
 
             steps {
                 unstash 'buildResults'
-                sh 'npm install vsce'
+                sh 'npm install @vscode/vsce'
                 script {
                     def vsceBin = pwd() + "/node_modules/.bin/vsce"
                     sh "cd built/vscode && ${vsceBin} package"
@@ -105,8 +118,12 @@ pipeline {
                     options { skipDefaultCheckout() }
                     environment {
                         OSCRIPT_CONFIG = 'systemlanguage=ru'
+                        // MSBuild кладет сюда отчеты о падении своих процессов (MSBuild_*.failure.txt, например при MSB4166),
+                        // по умолчанию они остаются во временной папке пользователя на агенте и в сборку не попадают
+                        MSBUILDDEBUGPATH = "${env.WORKSPACE}/msbuild-debug"
                     }
                     steps {
+                        dir('msbuild-debug') { deleteDir() }
                         ws(env.WORKSPACE.replaceAll("%", "_").replaceAll(/(-[^-]+$)/, ""))
                         {
                             step([$class: 'WsCleanup'])
@@ -120,6 +137,11 @@ pipeline {
                             bat "chcp $outputEnc > nul\r\n\"${tool 'MSBuild'}\" Build.csproj /t:Test"
 
                             publishTestResults('tests/*.xml')
+                        }
+                    }
+                    post {
+                        failure {
+                            archiveArtifacts artifacts: 'msbuild-debug/**', allowEmptyArchive: true
                         }
                     }
                 }
@@ -199,6 +221,7 @@ pipeline {
 
         stage ('Publishing night-build') {
             when { 
+                beforeAgent true
                 anyOf {
                     branch 'develop';
                 }
@@ -218,6 +241,7 @@ pipeline {
 
         stage ('Publishing preview') {
             when { 
+                beforeAgent true
                 anyOf {
                     branch 'release/preview';
                 }
@@ -241,6 +265,7 @@ pipeline {
         
         stage ('Publishing latest') {
             when { 
+                beforeAgent true
                 anyOf {
                     branch 'release/latest';
                 }
@@ -264,6 +289,7 @@ pipeline {
         
         stage ('Publishing artifacts to clouds') {
             when {
+                beforeAgent true
                 anyOf { 
                     branch 'release/latest';
                     branch 'release/preview';
@@ -287,6 +313,7 @@ pipeline {
                 stage('Build v1') {
                     agent { label 'linux' }
                     when { 
+                        beforeAgent true
                         anyOf {
                             branch 'release/lts'
                             expression { 
@@ -297,7 +324,9 @@ pipeline {
                     steps {
                         script {
                             def codename = env.TAG_NAME ? env.TAG_NAME : 'lts'
-                            publishDockerImage('v1', codename)
+                            // тег v1.9.4 -> версия для ovm 1.9.4
+                            def engineVersion = env.TAG_NAME ? env.TAG_NAME.replaceFirst(/^v/, '') : 'lts'
+                            publishDockerImage('v1', codename, engineVersion)
                         }
                     }
                 }
@@ -305,6 +334,7 @@ pipeline {
                 stage('Build v2') {
                     agent { label 'linux' }
                     when { 
+                        beforeAgent true
                         anyOf {
                             branch 'develop'
                             branch 'release/latest'
@@ -321,7 +351,8 @@ pipeline {
                                 codename = fullVersionNumber()
                             }
                             
-                            publishDockerImage('v2', codename)
+                            // для v2 тег образа совпадает с версией для ovm: dev или 2.2.0
+                            publishDockerImage('v2', codename, codename)
                         }
                     }
                 }
@@ -409,12 +440,20 @@ def publishReleaseNotes(codename) {
     }
 }
 
-def publishDockerImage(flavour, codename) {
+def publishDockerImage(flavour, codename, engineVersion) {
     def imageName = "evilbeaver/onescript:${codename}"
 
+    // Временно, см. #1752: в buildkit с runc 1.4.3 на ядре сервера не запускается ни один RUN.
+    // v0.30.0 собран с runc 1.3.5. Убрать, когда выйдет buildkit с runc 1.5.1+
+    def buildkitVersion = 'v0.30.0'
+    def builder = "onescript-buildkit-${buildkitVersion}"
+    sh "docker buildx inspect ${builder} > /dev/null 2>&1 || docker buildx create --name ${builder} --driver docker-container --driver-opt image=moby/buildkit:${buildkitVersion}"
+
+    // --no-cache: слой с ovm install не меняется между сборками и иначе берется из кэша агента
+    // --pull: обновлять базовые образы (ovm, aspnet, mono)
     docker.build(
         imageName,
-        "--load -f install/builders/base-image/Dockerfile_${flavour} ."
+        "--builder ${builder} --load --pull --no-cache --build-arg VERSION=${engineVersion} -f install/builders/base-image/Dockerfile_${flavour} ."
     ).push()
 }
 
