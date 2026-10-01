@@ -2,7 +2,7 @@
 !!
 #КонецЕсли
 
-#Если Windows ИЛИ Linux Тогда //!! ok
+#Если Windows ИЛИ Linux ИЛИ MacOS Тогда //!! ok
 
 #ИначеЕсли НЕ MacOS Тогда //??
 !!
