@@ -41,91 +41,117 @@ namespace OneScript.DebugProtocol.TcpServer
         
         private void RunCommandsLoop()
         {
-            _messageThread = new Thread(() =>
+            _messageThread = new Thread(MessageLoop)
             {
-                _serverStopped = false;
-                while (!_serverStopped)
-                {
-                    try
-                    {
-                        var data = _protocolChannel.Read<TMessage>();
-                        var eventData = new CommunicationEventArgs
-                        {
-                            Data = data,
-                            Channel = _protocolChannel,
-                        };
-
-                        DataReceived?.Invoke(this, eventData);
-                    }
-                    catch (ChannelException e)
-                    {
-                        if (e.StopChannel)
-                        {
-                            // критичные исключения сразу должны завершать сервер
-                            _serverStopped = true;
-                            break;
-                        }
-
-                        var eventData = new CommunicationEventArgs
-                        {
-                            Data = null,
-                            Channel = _protocolChannel,
-                            Exception = e
-                        };
-
-                        try
-                        {
-                            DataReceived?.Invoke(this, eventData);
-                        }
-                        catch
-                        {
-                            // один из обработчиков выбросил исключение
-                            // мы все равно не знаем что с ним делать.
-
-                            // Считаем, что факап подписчика - его проблемы.
-                        }
-
-                        // свойство в исключении может быть уcтановлено в обработчике евента
-                        _serverStopped = e.StopChannel;
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        _serverStopped = true;
-                    }
-                    catch (ThreadInterruptedException)
-                    {
-                        // Сервер принудительно остановлен
-                        _serverStopped = true;
-                    }
-                    catch (Exception e)
-                    {
-                        if (OnError == null)
-                        {
-                            _serverStopped = true;
-                            break;
-                        }
-                        
-                        var eventData = new CommunicationEventArgs
-                        {
-                            Data = null,
-                            Channel = _protocolChannel,
-                            Exception = new ChannelException("Unhandled error in message handler", true, e)
-                        };
-
-                        OnError?.Invoke(this, eventData);
-                    }
-                }
-                
-                DisposeChannel();
-            });
-            
-            _messageThread.IsBackground = true;
+                IsBackground = true
+            };
             if (ServerThreadName != default)
             {
                 _messageThread.Name = ServerThreadName;
             }
 
             _messageThread.Start();
+        }
+
+        private void MessageLoop()
+        {
+            _serverStopped = false;
+            while (!_serverStopped)
+            {
+                try
+                {
+                    DispatchNextMessage();
+                }
+                catch (ChannelException e)
+                {
+                    HandleChannelException(e);
+                }
+                catch (ObjectDisposedException)
+                {
+                    _serverStopped = true;
+                }
+                catch (ThreadInterruptedException)
+                {
+                    // Сервер принудительно остановлен
+                    _serverStopped = true;
+                }
+                catch (Exception e)
+                {
+                    HandleHandlerError(e);
+                }
+            }
+
+            DisposeChannel();
+        }
+
+        private void DispatchNextMessage()
+        {
+            var data = _protocolChannel.Read<TMessage>();
+            var eventData = new CommunicationEventArgs
+            {
+                Data = data,
+                Channel = _protocolChannel,
+            };
+
+            DataReceived?.Invoke(this, eventData);
+        }
+
+        private void HandleChannelException(ChannelException e)
+        {
+            // критичные исключения (например, соединение закрыто) завершают сервер,
+            // но подписчики узнают о них, чтобы закрыть свою сессию
+            var critical = e.StopChannel;
+
+            var eventData = new CommunicationEventArgs
+            {
+                Data = null,
+                Channel = _protocolChannel,
+                Exception = e
+            };
+
+            try
+            {
+                DataReceived?.Invoke(this, eventData);
+            }
+            catch
+            {
+                // один из обработчиков выбросил исключение
+                // мы все равно не знаем что с ним делать.
+
+                // Считаем, что факап подписчика - его проблемы.
+            }
+
+            // свойство в исключении может быть уcтановлено в обработчике евента,
+            // а обработчик мог и сам остановить сервер
+            if (critical || e.StopChannel)
+                _serverStopped = true;
+        }
+
+        private void HandleHandlerError(Exception e)
+        {
+            if (OnError == null)
+            {
+                _serverStopped = true;
+                return;
+            }
+
+            var eventData = new CommunicationEventArgs
+            {
+                Data = null,
+                Channel = _protocolChannel,
+                Exception = new ChannelException("Unhandled error in message handler", true, e)
+            };
+
+            try
+            {
+                OnError?.Invoke(this, eventData);
+            }
+            catch
+            {
+                // исключение из фонового потока уронит отлаживаемый процесс,
+                // а подписчик, который не справился с ошибкой, - повод остановиться
+                _serverStopped = true;
+            }
         }
 
         private void DisposeChannel()
@@ -147,7 +173,9 @@ namespace OneScript.DebugProtocol.TcpServer
             
             _serverStopped = true;
 
-            if (_messageThread?.IsAlive == true)
+            // Из обработчика сообщения свой поток не прерываем: цикл и так завершится,
+            // а прерывание сорвало бы ближайшее ожидание в самом обработчике
+            if (_messageThread?.IsAlive == true && _messageThread != Thread.CurrentThread)
             {
                 _messageThread.Interrupt();
             }

@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.IO;
 using OneScript.DebugProtocol;
 using OneScript.DebugProtocol.Abstractions;
@@ -51,6 +52,10 @@ namespace OneScript.DebugServices.Internal
             catch (IOException)
             {
                 // Ignore
+            }
+            catch (ObjectDisposedException)
+            {
+                // Канал закрыли, пока поток скрипта отправлял событие
             }
         }
     }
