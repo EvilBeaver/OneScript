@@ -101,7 +101,7 @@ namespace OneScript.DebugServices.Internal
 
         public StackFrame[] GetStackFrames(int threadId)
         {
-            var machine = _threadManager.GetTokenForThread(threadId).Machine;
+            var machine = GetMachine(threadId);
             var frames = machine.GetExecutionFrames();
             var result = new StackFrame[frames.Count];
             int index = 0;
@@ -121,7 +121,18 @@ namespace OneScript.DebugServices.Internal
 
         private MachineInstance GetMachine(int threadId)
         {
-            return _threadManager.GetTokenForThread(threadId).Machine;
+            return GetStoppedToken(threadId).Machine;
+        }
+
+        // Состояние машины можно читать и менять, только пока ее поток стоит. Например, после
+        // «Продолжить» IDE еще запрашивает стек потока, событие остановки которого не успела обработать
+        private MachineWaitToken GetStoppedToken(int threadId)
+        {
+            var token = _threadManager.GetTokenForThread(threadId);
+            if (!token.IsStopped)
+                throw new InvalidOperationException($"Thread {threadId} is running");
+
+            return token;
         }
 
         public Variable[] GetVariables(int threadId, int frameIndex, int[] path)
@@ -197,21 +208,21 @@ namespace OneScript.DebugServices.Internal
 
         public void Next(int threadId)
         {
-            var t = _threadManager.GetTokenForThread(threadId);
+            var t = GetStoppedToken(threadId);
             t.Machine.StepOver();
             t.Set();
         }
 
         public void StepIn(int threadId)
         {
-            var t = _threadManager.GetTokenForThread(threadId);
+            var t = GetStoppedToken(threadId);
             t.Machine.StepIn();
             t.Set();
         }
 
         public void StepOut(int threadId)
         {
-            var t = _threadManager.GetTokenForThread(threadId);
+            var t = GetStoppedToken(threadId);
             t.Machine.StepOut();
             t.Set();
         }
