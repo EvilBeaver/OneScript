@@ -1,0 +1,116 @@
+# Анализ SonarQube для PR из форков. В QA у таких PR нет секретов, поэтому там только сборка
+# с анализаторами, а здесь результаты отправляются на сервер. Код форка здесь не собирается и не запускается.
+
+name: QA (fork)
+
+on:
+  workflow_run:
+    workflows: [QA]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  sonar:
+    name: SonarQube
+    runs-on: windows-latest
+    if: >
+      github.repository == 'EvilBeaver/OneScript' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.full_name != github.repository
+    permissions:
+      actions: read
+      pull-requests: read
+    env:
+      HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+      HEAD_OWNER: ${{ github.event.workflow_run.head_repository.owner.login }}
+    steps:
+      # Сканер ставится до checkout, чтобы dotnet не прочитал NuGet.config из кода форка
+      - name: Install SonarQube scanner
+        shell: pwsh
+        run: dotnet tool install dotnet-sonarscanner --tool-path "$env:RUNNER_TEMP\scanner"
+
+      # Номер PR и базовую ветку берем у GitHub, а не из артефакта: артефакт собран кодом форка
+      - name: Find pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          if ($env:HEAD_BRANCH -notmatch '^[\w./+-]+$') { throw "Неподдерживаемое имя ветки: $env:HEAD_BRANCH" }
+          $head = [uri]::EscapeDataString("$($env:HEAD_OWNER):$($env:HEAD_BRANCH)")
+          $pr = gh api "repos/$env:GITHUB_REPOSITORY/pulls?state=open&head=$head" | ConvertFrom-Json |
+              Where-Object { $_.head.sha -eq $env:HEAD_SHA } | Select-Object -First 1
+          if (-not $pr) { throw "Не найден открытый PR из $($env:HEAD_OWNER):$($env:HEAD_BRANCH) на $env:HEAD_SHA" }
+          "number=$($pr.number)" >> $env:GITHUB_OUTPUT
+          "base=$($pr.base.ref)" >> $env:GITHUB_OUTPUT
+
+      # Исходники нужны сканеру для отчета, ничего из них не запускается, поэтому код форка здесь разрешен
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.HEAD_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+          allow-unsafe-pr-checkout: true
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: sonar-analysis
+          path: ${{ runner.temp }}/sonar-analysis
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Prepare analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_BASE: ${{ steps.pr.outputs.base }}
+        shell: pwsh
+        run: |
+          & "$env:RUNNER_TEMP\scanner\dotnet-sonarscanner" begin /k:OneScript /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml `
+              "/d:sonar.pullrequest.key=$env:PR_NUMBER" "/d:sonar.pullrequest.branch=$env:HEAD_BRANCH" "/d:sonar.pullrequest.base=$env:PR_BASE" `
+              "/d:sonar.scm.revision=$env:HEAD_SHA" "/d:sonar.token=$env:SONAR_TOKEN" /d:sonar.host.url=https://sonar.openbsl.ru
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      # Конфигурацию анализа создал begin выше, из артефакта берем только результаты анализаторов,
+      # списки файлов проектов и покрытие. Их пишет сборка форка, поэтому все пути должны вести внутрь
+      # рабочего каталога, а списки файлов — лежать в .sonarqube, который begin только что очистил.
+      - name: Restore analysis results
+        shell: pwsh
+        run: |
+          $src = Join-Path $env:RUNNER_TEMP 'sonar-analysis'
+          $root = $env:GITHUB_WORKSPACE.TrimEnd('\') + '\'
+          function Assert-Under($dir, $paths) {
+              $bad = $paths | Where-Object { $_ } | Where-Object {
+                  $_ -match '(^|[\\/])\.\.([\\/]|$)' -or
+                  -not [IO.Path]::GetFullPath($_).StartsWith($dir, [StringComparison]::OrdinalIgnoreCase)
+              }
+              if ($bad) { throw "Пути вне $($dir):`n$($bad -join "`n")" }
+          }
+          foreach ($info in Get-ChildItem "$src\.sonarqube\out" -Recurse -Filter ProjectInfo.xml) {
+              $project = ([xml](Get-Content -Raw $info.FullName)).ProjectInfo
+              $files = @($project.AnalysisResultFiles.AnalysisResultFile | Where-Object { $_ })
+              Assert-Under $root $project.FullPath
+              Assert-Under $root ($project.AnalysisSettings.Property | ForEach-Object { $_.InnerText -split ',' } | Where-Object { $_ -match '[\\/]' })
+              Assert-Under "$root.sonarqube\" $files.Location
+              foreach ($list in $files) {
+                  Assert-Under $root (Get-Content (Join-Path $src $list.Location.Substring($root.Length)))
+              }
+          }
+          if (git ls-files -s | Select-String '^120000') { throw 'В PR есть символические ссылки' }
+          Copy-Item "$src\.sonarqube\out" "$root.sonarqube" -Recurse -Force
+          foreach ($list in Get-ChildItem "$src\.sonarqube\conf\*\FilesToAnalyze.txt") {
+              $dir = New-Item -ItemType Directory -Force "$root.sonarqube\conf\$($list.Directory.Name)"
+              Copy-Item $list.FullName $dir
+          }
+          Copy-Item "$src\coverage.xml" $root
+
+      - name: Analyze
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        shell: pwsh
+        run: |
+          & "$env:RUNNER_TEMP\scanner\dotnet-sonarscanner" end "/d:sonar.token=$env:SONAR_TOKEN"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
