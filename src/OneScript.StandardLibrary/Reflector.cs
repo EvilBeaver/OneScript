@@ -52,10 +52,20 @@ namespace OneScript.StandardLibrary
             var methInfo = target.GetMethodInfo(methodIdx);
 
             IValue[] argsToPass;
-            if (target.DynamicMethodSignatures)
-                argsToPass = arguments?.ToArray() ?? Array.Empty<IValue>();
+            if (arguments is not null)
+            {
+                if (target.DynamicMethodSignatures)
+                {
+                    argsToPass = arguments.ToArray();
+                }
+                else
+                {
+                    argsToPass = GetArgsToPass(arguments, methInfo.CallParameters);
+                }
+            }
             else
-                argsToPass = GetArgsToPass(arguments, methInfo.CallParameters);
+                argsToPass = [];
+
 
             IValue retValue = BslUndefinedValue.Instance;
             try
@@ -69,10 +79,10 @@ namespace OneScript.StandardLibrary
                     target.CallAsProcedure(methodIdx, argsToPass, process);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 CopyArgsBack(argsToPass, arguments);
-                throw ex;
+                throw;
             }
 
             CopyArgsBack(argsToPass, arguments);
@@ -84,39 +94,39 @@ namespace OneScript.StandardLibrary
             if (arguments == null)
                 return;
 
-            for (int i = 0; i < argsToPass.Length; i++)
+            for (int i = 0; i < arguments.Count(); i++)
             {
-                if (i < arguments.Count())
-                {
-                    arguments.Set(i, argsToPass[i] is IValueReference r ? r.Value : argsToPass[i]);
-                }
+                arguments.Set_unchecked(i, argsToPass[i] is IValueReference r ? r.Value : argsToPass[i]);
             }
         }
 
         private static IValue[] GetArgsToPass(ArrayImpl arguments, ReadOnlySpan<BslCallParameter> parameters)
         {
-            var argValues = arguments?.ToArray() ?? Array.Empty<IValue>();
+            var argValues = arguments.ToArray();
             // ArrayImpl не может (не должен!) содержать null или NotAValidValue
 
-            if (argValues.Length > parameters.Length)
+            int parCount = parameters.Length;
+            int argCount = argValues.Length;
+
+            if (argCount > parCount)
                 throw RuntimeException.TooManyArgumentsPassed();
 
-            var argsToPass = new IValue[parameters.Length];
+            var argsToPass = argValues;
+            if (argCount < parCount)
+            {
+                Array.Resize(ref argsToPass, parCount);
+                while (--parCount >= argCount)
+                {
+                    if (!parameters[parCount].HasDefaultValue)
+                        throw RuntimeException.TooFewArgumentsPassed();
+                    // else keep null as a default value
+                }
+            }
 
-            int i = 0;
-            for (; i < argValues.Length; i++)
+            for (int i = 0; i < argCount; i++)
             {
                 if (parameters[i].IsByRef)
                     argsToPass[i] = Variable.Create(argValues[i], "");
-                else
-                    argsToPass[i] = argValues[i];
-            }
-            for (; i < parameters.Length; i++)
-            {
-                if (!parameters[i].HasDefaultValue)
-                    throw RuntimeException.TooFewArgumentsPassed();
-
-                // else keep null as a default value
             }
 
             return argsToPass;

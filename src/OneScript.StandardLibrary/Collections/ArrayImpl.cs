@@ -201,6 +201,11 @@ namespace OneScript.StandardLibrary.Collections
             _values[index] = value;
         }
 
+        public void Set_unchecked(int index, IValue value)
+        {
+            _values[index] = value;
+        }
+
         private void Extend(int count)
         {
             for (int i = 0; i < count; ++i)
