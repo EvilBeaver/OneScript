@@ -18,10 +18,10 @@ namespace OneScript.StandardLibrary.Tests
         public void Kiev_Summer_Dst_ToUtc_And_Back()
         {
             var dtLocal = new DateTime(2025, 6, 24, 10, 0, 0);
-            var utc = TimeZoneConverter.ToUniversalTime(dtLocal, "Europe/Kiev");
+            var utc = TimeZoneConverter.ToUniversalTime(dtLocal, "FLE Standard Time");
             utc.Should().Be(new DateTime(2025, 6, 24, 7, 0, 0, DateTimeKind.Utc));
 
-            var backLocal = TimeZoneConverter.ToLocalTime(utc, "Europe/Kiev");
+            var backLocal = TimeZoneConverter.ToLocalTime(utc, "FLE Standard Time");
             backLocal.Should().Be(dtLocal);
         }
 
