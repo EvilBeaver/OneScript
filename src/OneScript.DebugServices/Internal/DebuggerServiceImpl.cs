@@ -11,6 +11,7 @@ using System.Linq;
 using OneScript.Contexts;
 using OneScript.DebugProtocol;
 using OneScript.Language;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 using Variable = OneScript.DebugProtocol.Variable;
@@ -101,7 +102,7 @@ namespace OneScript.DebugServices.Internal
 
         public StackFrame[] GetStackFrames(int threadId)
         {
-            var machine = _threadManager.GetTokenForThread(threadId).Machine;
+            var machine = GetMachine(threadId);
             var frames = machine.GetExecutionFrames();
             var result = new StackFrame[frames.Count];
             int index = 0;
@@ -121,7 +122,26 @@ namespace OneScript.DebugServices.Internal
 
         private MachineInstance GetMachine(int threadId)
         {
-            return _threadManager.GetTokenForThread(threadId).Machine;
+            return GetStoppedToken(threadId).Machine;
+        }
+
+        // Состояние машины можно читать и менять, только пока ее поток стоит. Например, после
+        // «Продолжить» IDE еще запрашивает стек потока, событие остановки которого не успела обработать
+        private MachineWaitToken GetStoppedToken(int threadId)
+        {
+            var token = _threadManager.GetTokenForThread(threadId);
+            if (!token.IsStopped)
+                throw new InvalidOperationException($"Thread {threadId} is running");
+
+            return token;
+        }
+
+        // Выражение может вызвать методы сценария: они выполняются в потоке машины,
+        // с его блокировками, а не в потоке отладчика
+        private BslValue EvaluateOnStoppedThread(int threadId, int frameIndex, string expression)
+        {
+            var token = GetStoppedToken(threadId);
+            return token.RunOnStoppedThread(() => token.Machine.EvaluateInFrame(expression, frameIndex));
         }
 
         public Variable[] GetVariables(int threadId, int frameIndex, int[] path)
@@ -160,7 +180,7 @@ namespace OneScript.DebugServices.Internal
 
             try
             {
-                value = GetMachine(threadId).EvaluateInFrame(expression, frameIndex);
+                value = EvaluateOnStoppedThread(threadId, frameIndex, expression);
             }
             catch (Exception e)
             {
@@ -182,8 +202,7 @@ namespace OneScript.DebugServices.Internal
         {
             try
             {
-                var value = GetMachine(threadId)
-                    .EvaluateInFrame(expression, contextFrame);
+                var value = EvaluateOnStoppedThread(threadId, contextFrame, expression);
                 
                 var variable = _visualizer.GetVariable(MachineVariable.Create(value, "$evalResult"));
                 return variable;
@@ -197,21 +216,21 @@ namespace OneScript.DebugServices.Internal
 
         public void Next(int threadId)
         {
-            var t = _threadManager.GetTokenForThread(threadId);
+            var t = GetStoppedToken(threadId);
             t.Machine.StepOver();
             t.Set();
         }
 
         public void StepIn(int threadId)
         {
-            var t = _threadManager.GetTokenForThread(threadId);
+            var t = GetStoppedToken(threadId);
             t.Machine.StepIn();
             t.Set();
         }
 
         public void StepOut(int threadId)
         {
-            var t = _threadManager.GetTokenForThread(threadId);
+            var t = GetStoppedToken(threadId);
             t.Machine.StepOut();
             t.Set();
         }
