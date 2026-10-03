@@ -17,7 +17,8 @@ namespace ScriptEngine.Machine.Contexts
 {
     public class ContextPropertyMapper<TInstance>
     {
-        private List<PropertyTarget<TInstance>> _properties;
+        // Публикуется последним: кто увидел заполненный список, увидит и словарь имен
+        private volatile List<PropertyTarget<TInstance>> _properties;
         private IdentifiersTrie<int> _propertyNumbers;
         
         private readonly object _locker = new object();
