@@ -1,21 +1,36 @@
 ﻿/*----------------------------------------------------------
-This Source Code Form is subject to the terms of the 
-Mozilla Public License, v.2.0. If a copy of the MPL 
-was not distributed with this file, You can obtain one 
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v.2.0. If a copy of the MPL
+was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ScriptEngine.Machine
 {
     public class CodeStatProcessor : ICodeStatCollector
     {
-        private Dictionary<CodeStatEntry, int> _codeStat = new Dictionary<CodeStatEntry, int>();
-        private Dictionary<CodeStatEntry, Stopwatch> _watchers = new Dictionary<CodeStatEntry, Stopwatch>();
-        private Stopwatch _activeStopwatch = null;
-        private HashSet<string> _preparedScripts = new HashSet<string>();
+        private readonly CodeStatHub _hub;
+        private readonly Dictionary<CodeStatEntry, int> _codeStat = new Dictionary<CodeStatEntry, int>();
+        private readonly Dictionary<CodeStatEntry, Stopwatch> _watchers = new Dictionary<CodeStatEntry, Stopwatch>();
+        private readonly HashSet<string> _preparedScripts = new HashSet<string>();
+
+        private Stopwatch _activeStopwatch;
+        private IReadOnlyList<CodeStatEntry> _frozenEntries;
+        private int _frozenCount;
+        private HashSet<string> _frozenPrepared;
+        private bool _finishedHitsOnly;
+
+        public CodeStatProcessor()
+        {
+        }
+
+        internal CodeStatProcessor(CodeStatHub hub)
+        {
+            _hub = hub;
+        }
 
         public bool IsPrepared(string ScriptFileName)
         {
@@ -24,23 +39,21 @@ namespace ScriptEngine.Machine
 
         public void MarkEntryReached(CodeStatEntry entry, int count = 1)
         {
-            int oldValue = 0;
-            _codeStat.TryGetValue(entry, out oldValue);
+            _codeStat.TryGetValue(entry, out var oldValue);
             _codeStat[entry] = oldValue + count;
 
             if (count == 0)
+                return;
+
+            _activeStopwatch?.Stop();
+            if (!_watchers.TryGetValue(entry, out var watch))
             {
-                if (!_watchers.ContainsKey(entry))
-                {
-                    _watchers.Add(entry, new Stopwatch());
-                }
+                watch = new Stopwatch();
+                _watchers[entry] = watch;
             }
-            else
-            {
-                _activeStopwatch?.Stop();
-                _activeStopwatch = _watchers[entry];
-                _activeStopwatch.Start();
-            }
+
+            _activeStopwatch = watch;
+            _activeStopwatch.Start();
         }
 
         public void MarkPrepared(string scriptFileName)
@@ -48,41 +61,108 @@ namespace ScriptEngine.Machine
             _preparedScripts.Add(scriptFileName);
         }
 
-        public CodeStatDataCollection GetStatData()
+        public CodeStatDataCollection GetStatData(bool excludeZeros = false)
         {
-            CodeStatDataCollection data = new CodeStatDataCollection();
+            if (excludeZeros || _finishedHitsOnly)
+                return BuildFromHits(requirePrepared: true, prepared: PreparedScriptsForHits());
+
+            if (_frozenEntries != null)
+                return BuildFromCatalog(_frozenEntries, _frozenCount, _frozenPrepared);
+
+            if (_hub != null)
+                return _hub.GetLiveStatData(this);
+
+            return BuildFromHits(requirePrepared: true, includeZeros: true);
+        }
+
+        private HashSet<string> PreparedScriptsForHits()
+        {
+            return _hub != null ? _hub.SnapshotPreparedScripts() : _preparedScripts;
+        }
+
+        internal void FreezeCatalog(CodeStatEntry[] entries, HashSet<string> prepared)
+        {
+            _frozenEntries = entries;
+            _frozenCount = entries.Length;
+            _frozenPrepared = prepared;
+        }
+
+        internal void FinishWithoutCatalog()
+        {
+            _finishedHitsOnly = true;
+        }
+
+        internal CodeStatDataCollection BuildFromCatalog(
+            IReadOnlyList<CodeStatEntry> entries,
+            int count,
+            HashSet<string> prepared)
+        {
+            var data = new CodeStatDataCollection();
+            for (var i = 0; i < count; i++)
+            {
+                var entry = entries[i];
+                if (!prepared.Contains(entry.ScriptFileName))
+                    continue;
+
+                _codeStat.TryGetValue(entry, out var executionCount);
+                long time = 0;
+                if (_watchers.TryGetValue(entry, out var watch))
+                    time = watch.ElapsedMilliseconds;
+
+                data.Add(new CodeStatData(entry, time, executionCount));
+            }
+
+            return data;
+        }
+
+        private CodeStatDataCollection BuildFromHits(
+            bool requirePrepared = false,
+            bool includeZeros = false,
+            HashSet<string> prepared = null)
+        {
+            var data = new CodeStatDataCollection();
+            var preparedSet = prepared ?? _preparedScripts;
             foreach (var item in _codeStat)
             {
-                if (!IsPrepared(item.Key.ScriptFileName))
-                {
+                if (!includeZeros && item.Value == 0)
                     continue;
-                }
-                data.Add(new CodeStatData(item.Key, _watchers[item.Key].ElapsedMilliseconds, item.Value));
+                if (requirePrepared && !preparedSet.Contains(item.Key.ScriptFileName))
+                    continue;
+
+                long time = 0;
+                if (_watchers.TryGetValue(item.Key, out var watch))
+                    time = watch.ElapsedMilliseconds;
+
+                data.Add(new CodeStatData(item.Key, time, item.Value));
             }
-            
+
             return data;
         }
 
         public void EndCodeStat()
         {
+            StopActiveWatch();
+        }
+
+        public void StopActiveWatch()
+        {
             _activeStopwatch?.Stop();
+            _activeStopwatch = null;
         }
 
         public void StopWatch(CodeStatEntry entry)
         {
-            if (_watchers.ContainsKey(entry))
-            {
-                _watchers[entry].Stop();
-            }
+            if (_watchers.TryGetValue(entry, out var watch))
+                watch.Stop();
         }
 
         public void ResumeWatch(CodeStatEntry entry)
         {
             _activeStopwatch?.Stop();
 
-            if (_watchers.ContainsKey(entry))
+            if (_watchers.TryGetValue(entry, out var watch))
             {
-                _activeStopwatch = _watchers[entry];
+                _activeStopwatch = watch;
                 _activeStopwatch.Start();
             }
         }
