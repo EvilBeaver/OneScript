@@ -490,6 +490,10 @@ namespace ScriptEngine.Machine
             {
                 throw;
             }
+            catch (OperationCanceledException exc) when (exc.IsCancellationOf(_process))
+            {
+                throw;
+            }
             catch (ScriptException exc)
             {
                 exc.SetPositionIfEmpty(GetPositionInfo());
@@ -1298,6 +1302,8 @@ namespace ScriptEngine.Machine
 
         private void LineNum(int arg)
         {
+            _process.CancellationToken.ThrowIfCancellationRequested();
+
             if (_currentFrame.LineNumber != arg)
             {
                 _currentFrame.LineNumber = arg;
