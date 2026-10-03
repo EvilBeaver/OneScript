@@ -27,7 +27,7 @@ namespace OneScript.Native.Runtime
     {
         private readonly BslNativeMethodInfo _method;
 
-        private delegate BslValue NativeCallable(NativeClassInstanceWrapper target, BslValue[] args, IBslProcess process);
+        private delegate BslValue NativeCallable(IAttachableContext target, BslValue[] args, IBslProcess process);
 
         private NativeCallable _delegate;
         
@@ -47,23 +47,16 @@ namespace OneScript.Native.Runtime
             return _delegate.Invoke(callableWrapper, args, process);
         }
         
-        private NativeClassInstanceWrapper GetCallableWrapper(object obj)
+        private IAttachableContext GetCallableWrapper(object obj)
         {
-            NativeClassInstanceWrapper callableWrapper;
+            IAttachableContext callableWrapper;
             if (_method.IsInstance)
             {
                 if (obj == null)
                     throw new InvalidOperationException($"Method {_method.Name} is not static and requires target");
-                if (obj is NativeClassInstanceWrapper w)
+                if (obj is IAttachableContext context)
                 {
-                    callableWrapper = w;
-                }
-                else if (obj is IAttachableContext context)
-                {
-                    callableWrapper = new NativeClassInstanceWrapper
-                    {
-                        Context = context
-                    };
+                    callableWrapper = context;
                 }
                 else
                 {
@@ -86,7 +79,7 @@ namespace OneScript.Native.Runtime
             if (method.Implementation == default)
                 throw new InvalidOperationException("Method has no implementation");
 
-            var targetParam = Expression.Parameter(typeof(NativeClassInstanceWrapper));
+            var targetParam = Expression.Parameter(typeof(IAttachableContext));
             var arrayOfValuesParam = Expression.Parameter(typeof(BslValue[]));
             var processParam = Expression.Parameter(typeof(IBslProcess));
             var convertedAccessList = new List<Expression>();

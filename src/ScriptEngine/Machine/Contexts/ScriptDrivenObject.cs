@@ -45,7 +45,7 @@ namespace ScriptEngine.Machine.Contexts
         {
         }
 
-        protected void SetModule(StackRuntimeModule module)
+        protected void SetModule(IExecutableModule module)
         {
             _module = module;
         }
