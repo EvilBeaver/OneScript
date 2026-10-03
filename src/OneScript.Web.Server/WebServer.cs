@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using OneScript.Contexts;
+using OneScript.StandardLibrary.Text;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -122,6 +123,16 @@ namespace OneScript.Web.Server
             builder.Services.Configure<FormOptions>(builder.Configuration.GetSection("FormOptions"));
 
             _app = builder.Build();
+
+            // Обработчики запросов, как и фоновые задания, выводят консоль туда же, куда тот,
+            // кто запустил сервер. Переносятся только цели вывода, остальной контекст запроса
+            // (трассировка и т.п.) остается свой; async - чтобы цели не вышли за пределы запроса
+            var consoleTargets = ConsoleOutputTargets.Capture();
+            _app.Use(async (context, next) =>
+            {
+                consoleTargets.Apply();
+                await next();
+            });
 
             if (_useStaticFiles)
                 _app.UseStaticFiles();
