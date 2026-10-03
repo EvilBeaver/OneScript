@@ -244,6 +244,17 @@ namespace ScriptEngine.HostedScript
         
         private PackageInfo LoadLibraryInternal(string libraryPath, IBslProcess process)
         {
+            // Библиотеки грузятся по одной: иначе поток, которому нужна библиотека, загружаемая
+            // сейчас в другом потоке, принимает ее за циклическую зависимость или грузит повторно.
+            // Вложенные #Использовать грузятся в том же потоке, блокировка их пропускает
+            lock (_libs)
+            {
+                return DoLoadLibrary(libraryPath, process);
+            }
+        }
+
+        private PackageInfo DoLoadLibrary(string libraryPath, IBslProcess process)
+        {
             var id = GetLibraryId(libraryPath);
             var existedLib = _libs.FirstOrDefault(x => x.id == id);
             if(existedLib != null)
@@ -261,7 +272,6 @@ namespace ScriptEngine.HostedScript
             }
 
             var newLib = new Library() { id = id, state = ProcessingState.Discovered };
-            int newLibIndex = _libs.Count;
             
             var customLoaderFile = Path.Combine(libraryPath, PREDEFINED_LOADER_FILE);
             if (File.Exists(customLoaderFile))
@@ -277,7 +287,7 @@ namespace ScriptEngine.HostedScript
             }
             catch (Exception)
             {
-                _libs.RemoveAt(newLibIndex);
+                _libs.Remove(newLib);
                 throw;
             }
 

@@ -42,8 +42,11 @@ namespace ScriptEngine
             
             lock (_injectedProperties)
             {
-                _scopeOfGlobalProperties ??= _symbols.PushContext(_injectedProperties);
-                _contexts.Add(_injectedProperties);
+                if (_scopeOfGlobalProperties == null)
+                {
+                    _scopeOfGlobalProperties = _symbols.PushContext(_injectedProperties);
+                    _contexts.Add(_injectedProperties);
+                }
             }
         }
 
@@ -85,48 +88,62 @@ namespace ScriptEngine
                 throw new ArgumentException("Invalid identifier", nameof(alias));
             }
             CreateGlobalScopeIfNeeded();
-            var num = _injectedProperties.Insert(value, identifier, true, !readOnly);
 
-            var bslPropertyInfo = _injectedProperties.GetPropertyInfo(num);
-            IVariableSymbol registeredSymbol;
-            if (ownerPackage == null)
+            // Номер свойства в значениях и номер символа в области видимости должны совпасть:
+            // вставки из разных потоков (библиотека, внешняя компонента) идут по одной
+            lock (_injectedProperties)
             {
-                registeredSymbol = new WrappedPropertySymbol(bslPropertyInfo)
-                {
-                    Name = identifier,
-                    Alias = alias
-                };
-            }
-            else
-            {
-                registeredSymbol = new WrappedLibraryPropertySymbol(bslPropertyInfo, ownerPackage)
-                {
-                    Name = identifier,
-                    Alias = alias
-                };
-            }
+                var num = _injectedProperties.Insert(value, identifier, true, !readOnly);
 
-            _scopeOfGlobalProperties.DefineVariable(registeredSymbol);
+                var bslPropertyInfo = _injectedProperties.GetPropertyInfo(num);
+                IVariableSymbol registeredSymbol;
+                if (ownerPackage == null)
+                {
+                    registeredSymbol = new WrappedPropertySymbol(bslPropertyInfo)
+                    {
+                        Name = identifier,
+                        Alias = alias
+                    };
+                }
+                else
+                {
+                    registeredSymbol = new WrappedLibraryPropertySymbol(bslPropertyInfo, ownerPackage)
+                    {
+                        Name = identifier,
+                        Alias = alias
+                    };
+                }
+
+                _scopeOfGlobalProperties.DefineVariable(registeredSymbol);
+            }
         }
 
         public void InjectGlobalProperty(IValue value, BslPropertyInfo definition)
         {
             CreateGlobalScopeIfNeeded();
-            _injectedProperties.Insert(value, definition);
 
-            var symbol = new WrappedPropertySymbol(definition)
+            lock (_injectedProperties)
             {
-                Name = definition.Name,
-                Alias = definition.Alias
-            };
+                _injectedProperties.Insert(value, definition);
 
-            _scopeOfGlobalProperties.DefineVariable(symbol);
+                var symbol = new WrappedPropertySymbol(definition)
+                {
+                    Name = definition.Name,
+                    Alias = definition.Alias
+                };
+
+                _scopeOfGlobalProperties.DefineVariable(symbol);
+            }
         }
 
         private void RegisterObject(IAttachableContext context)
         {
-            _symbols.PushContext(context);
-            _contexts.Add(context);
+            // Номер области видимости и номер контекста должны совпасть
+            lock (_injectedProperties)
+            {
+                _symbols.PushContext(context);
+                _contexts.Add(context);
+            }
         }
         
         public void SetGlobalProperty(string propertyName, IValue value)
