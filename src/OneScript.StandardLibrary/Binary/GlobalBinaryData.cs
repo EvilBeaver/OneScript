@@ -6,6 +6,9 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Buffers;
+using System.Buffers.Text;
+using System.IO;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Text;
 using System.Text;
@@ -22,6 +25,11 @@ namespace OneScript.StandardLibrary.Binary
     [GlobalContext(Category = "Процедуры и функции работы с двоичными данными")]
     public sealed class GlobalBinaryData : GlobalContextBase<GlobalBinaryData>
     {
+        private const int STREAM_CHUNK_SIZE = 64 * 1024;
+
+        // Строки Base64 по 76 символов - это по 57 байт исходных данных
+        private const int BASE64_CHUNK_SIZE = 57 * 1024;
+
         private readonly int _memoryLimitMaxBytesInMemory;
 
         private GlobalBinaryData(int memoryLimitMaxBytesInMemory)
@@ -49,9 +57,9 @@ namespace OneScript.StandardLibrary.Binary
                 -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
                 -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
                  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,-1,-1,-1,-1,-1,-1,
-                -1,10,11,12,13,14,15,16,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,10,11,12,13,14,15,-1,-1,-1,-1,-1,-1,-1,-1,-1,
                 -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
-                -1,10,11,12,13,14,15,16,-1,-1,-1,-1,-1,-1,-1,-1,
+                -1,10,11,12,13,14,15,-1,-1,-1,-1,-1,-1,-1,-1,-1,
                 -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
                 -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
                 -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
@@ -70,30 +78,166 @@ namespace OneScript.StandardLibrary.Binary
         private static byte[] HexArrayToByteArray(byte[] hex)
         {
             var bytes = new byte[hex.Length / 2];
-            int pos = 0;
-
-            int hexDig1;
-            int hexDig2 =-1;
-            for (int i = 0; i < hex.Length; ++i)
-            {
-                hexDig1 = CharCodeToHex(hex[i]);
-                if (hexDig1 < 0)
-                    continue;
-
-                if (hexDig2 < 0)
-                {
-                    hexDig2 = hexDig1;
-                    continue;
-                }
-
-                bytes[pos] = (byte)(hexDig2 * 16 + hexDig1);
-                ++pos;
-                hexDig2 = -1;
-            }
+            int pending = -1;
+            var pos = DecodeHex(hex, bytes, ref pending);
 
             if (pos < bytes.Length)
                 Array.Resize(ref bytes, pos);
             return bytes;
+        }
+
+        // pending - первая цифра незаконченной пары или -1, переходит в следующую порцию
+        private static int DecodeHex(ReadOnlySpan<byte> hex, Span<byte> bytes, ref int pending)
+        {
+            int pos = 0;
+            foreach (var code in hex)
+            {
+                var digit = CharCodeToHex(code);
+                if (digit < 0)
+                    continue;
+
+                if (pending < 0)
+                {
+                    pending = digit;
+                    continue;
+                }
+
+                bytes[pos++] = (byte)(pending * 16 + digit);
+                pending = -1;
+            }
+
+            return pos;
+        }
+
+        private static void DecodeHex(Stream source, Stream dest)
+        {
+            var input = ArrayPool<byte>.Shared.Rent(STREAM_CHUNK_SIZE);
+            var output = ArrayPool<byte>.Shared.Rent(STREAM_CHUNK_SIZE / 2 + 1);
+            try
+            {
+                int pending = -1;
+                int read;
+                while ((read = source.Read(input, 0, STREAM_CHUNK_SIZE)) > 0)
+                {
+                    var count = DecodeHex(input.AsSpan(0, read), output, ref pending);
+                    dest.Write(output, 0, count);
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(input);
+                ArrayPool<byte>.Shared.Return(output);
+            }
+        }
+
+        // Как Convert.FromBase64String: пробелы и переводы строк пропускаются, '=' - только в последней четверке
+        private static bool DecodeBase64(Stream source, Stream dest)
+        {
+            var input = ArrayPool<byte>.Shared.Rent(STREAM_CHUNK_SIZE);
+            var work = ArrayPool<byte>.Shared.Rent(STREAM_CHUNK_SIZE + 4);
+            var output = ArrayPool<byte>.Shared.Rent((STREAM_CHUNK_SIZE + 4) / 4 * 3);
+            try
+            {
+                int tail = 0;
+                int read;
+                while ((read = source.Read(input, 0, STREAM_CHUNK_SIZE)) > 0)
+                {
+                    var length = tail;
+                    for (int i = 0; i < read; i++)
+                    {
+                        var code = input[i];
+                        if (code != ' ' && code != '\t' && code != '\r' && code != '\n')
+                            work[length++] = code;
+                    }
+
+                    // Четверки до '=' декодируются сразу, неполная четверка ждет следующей порции
+                    var padding = Array.IndexOf(work, (byte)'=', 0, length);
+                    var complete = (padding < 0 ? length : padding) / 4 * 4;
+                    if (Base64.DecodeFromUtf8(work.AsSpan(0, complete), output, out _, out var written) != OperationStatus.Done)
+                        return false;
+                    dest.Write(output, 0, written);
+
+                    // Больше четырех символов от четверки с '=' - значит, после '=' есть данные
+                    tail = length - complete;
+                    if (tail > 4)
+                        return false;
+                    Array.Copy(work, complete, work, 0, tail);
+                }
+
+                if (tail == 0)
+                    return true;
+
+                if (Base64.DecodeFromUtf8(work.AsSpan(0, tail), output, out _, out var lastWritten) != OperationStatus.Done)
+                    return false;
+                dest.Write(output, 0, lastWritten);
+                return true;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(input);
+                ArrayPool<byte>.Shared.Return(work);
+                ArrayPool<byte>.Shared.Return(output);
+            }
+        }
+
+        // Как Convert.ToBase64String с InsertLineBreaks: порция - целое число строк, между порциями CR+LF
+        private static void EncodeBase64(Stream source, Stream dest)
+        {
+            var input = ArrayPool<byte>.Shared.Rent(BASE64_CHUNK_SIZE);
+            try
+            {
+                var first = true;
+                int read;
+                while ((read = source.ReadAtLeast(input.AsSpan(0, BASE64_CHUNK_SIZE), BASE64_CHUNK_SIZE, false)) > 0)
+                {
+                    if (!first)
+                        dest.Write("\r\n"u8);
+                    first = false;
+
+                    var text = Convert.ToBase64String(input, 0, read, Base64FormattingOptions.InsertLineBreaks);
+                    dest.Write(Encoding.ASCII.GetBytes(text));
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(input);
+            }
+        }
+
+        private static void CopyBytes(Stream source, Stream dest, int count)
+        {
+            var buffer = ArrayPool<byte>.Shared.Rent(STREAM_CHUNK_SIZE);
+            try
+            {
+                while (count > 0)
+                {
+                    var read = source.Read(buffer, 0, Math.Min(count, STREAM_CHUNK_SIZE));
+                    if (read == 0)
+                        throw new EndOfStreamException();
+
+                    dest.Write(buffer, 0, read);
+                    count -= read;
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+        }
+
+        // Результат больше лимита уходит во временный файл, как и двоичные данные, прочитанные из файла
+        private Stream NewResultStream()
+        {
+            if (_memoryLimitMaxBytesInMemory == BinaryDataConstants.SYSTEM_IN_MEMORY_LIMIT)
+                return new MemoryStream();
+
+            return new FileBackingStream(_memoryLimitMaxBytesInMemory);
+        }
+
+        private BinaryDataContext ResultToBinaryData(Stream result)
+        {
+            result.Position = 0;
+            return new BinaryDataContext(result, _memoryLimitMaxBytesInMemory);
         }
 
         private static string GetStringFromByteBuffer(byte[] buf, Encoding enc)
@@ -172,17 +316,13 @@ namespace OneScript.StandardLibrary.Binary
         {
             CheckAndThrowIfNull(array);
 
-            // Сделано на int т.к. BinaryContext.Size имеет тип int;
-            using var stream = new System.IO.MemoryStream();
-
+            using var result = NewResultStream();
             foreach (var cbd in array)
             {
-                byte[] buffer = ((BinaryDataContext)cbd.AsObject()).Buffer;
-                stream.Write(buffer, 0, buffer.Length);
+                ((BinaryDataContext)cbd.AsObject()).CopyTo(result);
             }
-            stream.Position = 0;
 
-            return new BinaryDataContext(stream, _memoryLimitMaxBytesInMemory);
+            return ResultToBinaryData(result);
         }
 
         /// <summary>
@@ -208,22 +348,27 @@ namespace OneScript.StandardLibrary.Binary
                 return array;
             }
 
-            int readedBytes = 0;
-            var dataStream = data.GetStream();
-
-            while (readedBytes < dataSize)
+            using var dataStream = data.GetStream();
+            for (long rest = dataSize; rest > 0; rest -= size)
             {
-                int bytesToRead = (int)size;
-                if (bytesToRead > dataSize - readedBytes)
-                    bytesToRead = (int)(dataSize - readedBytes);
-
-                byte[] buffer = new byte[bytesToRead];
-                dataStream.Read(buffer, 0, bytesToRead);
-                readedBytes += bytesToRead;
-                array.Add(new BinaryDataContext(buffer));
+                array.Add(ReadPart(dataStream, (int)Math.Min(size, rest)));
             }
 
             return array;
+        }
+
+        private BinaryDataContext ReadPart(Stream source, int count)
+        {
+            if (count < _memoryLimitMaxBytesInMemory)
+            {
+                var buffer = new byte[count];
+                source.ReadExactly(buffer);
+                return new BinaryDataContext(buffer);
+            }
+
+            using var part = NewResultStream();
+            CopyBytes(source, part, count);
+            return ResultToBinaryData(part);
         }
 
         /// <summary>
@@ -380,16 +525,12 @@ namespace OneScript.StandardLibrary.Binary
         {
             CheckAndThrowIfNull(data);
 
-            try
-            {
-                var enc = new UTF8Encoding(false,true);
-                var str = enc.GetString(data.Buffer, 0, data.Buffer.Length);
-                return new BinaryDataContext(Convert.FromBase64String(str));
-            }
-            catch
-            {
-                return new BinaryDataContext(new byte[0]);
-            }
+            using var source = data.GetStream();
+            using var result = NewResultStream();
+            if (!DecodeBase64(source, result))
+                return new BinaryDataContext(Array.Empty<byte>());
+
+            return ResultToBinaryData(result);
         }
 
         /// <summary>
@@ -426,8 +567,10 @@ namespace OneScript.StandardLibrary.Binary
         {
             CheckAndThrowIfNull(data);
 
-            var base64str = Convert.ToBase64String(data.Buffer, Base64FormattingOptions.InsertLineBreaks);
-            return new BinaryDataContext(Encoding.ASCII.GetBytes(base64str));
+            using var source = data.GetStream();
+            using var result = NewResultStream();
+            EncodeBase64(source, result);
+            return ResultToBinaryData(result);
         }
 
         /// <summary>
@@ -504,7 +647,10 @@ namespace OneScript.StandardLibrary.Binary
         {
             CheckAndThrowIfNull(data);
 
-            return new BinaryDataContext(HexArrayToByteArray(data.Buffer));
+            using var source = data.GetStream();
+            using var result = NewResultStream();
+            DecodeHex(source, result);
+            return ResultToBinaryData(result);
         }
 
         /// <summary>
