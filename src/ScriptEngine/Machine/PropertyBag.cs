@@ -15,7 +15,11 @@ namespace ScriptEngine.Machine
     internal class PropertyBag : DynamicPropertiesAccessor, IAttachableContext
     {
         private readonly List<IValue> _values = new List<IValue>();
-        
+
+        // Инициализаторы, которые выполняются перед первым чтением свойства, и поток, задавший каждый из них
+        private readonly Dictionary<int, (Action Initializer, int ThreadId)> _initializers = new Dictionary<int, (Action, int)>();
+        private volatile int _initializersCount;
+
         public void Insert(IValue value, string identifier)
         {
             Insert(value, identifier, true, true);
@@ -64,7 +68,57 @@ namespace ScriptEngine.Machine
 
         public override IValue GetPropValue(int propNum)
         {
+            if (_initializersCount != 0)
+            {
+                RunInitializer(propNum);
+            }
+
             return _values[propNum];
+        }
+
+        /// <summary>
+        /// Задает действие, которое выполнится перед первым чтением свойства.
+        /// Выполняет его только поток, который его задал, остальные получают значение как есть.
+        /// </summary>
+        public void SetInitializer(int propNum, Action initializer)
+        {
+            lock (_initializers)
+            {
+                _initializers[propNum] = (initializer, Environment.CurrentManagedThreadId);
+                _initializersCount = _initializers.Count;
+            }
+        }
+
+        /// <summary>
+        /// Выполняет инициализатор свойства, если он задан и еще не выполнялся.
+        /// </summary>
+        public void RunInitializer(int propNum)
+        {
+            Action initializer;
+            lock (_initializers)
+            {
+                if (!_initializers.TryGetValue(propNum, out var pending)
+                    || pending.ThreadId != Environment.CurrentManagedThreadId)
+                {
+                    return;
+                }
+
+                // Убираем до вызова: при круговом обращении второй получит значение без инициализации
+                _initializers.Remove(propNum);
+                _initializersCount = _initializers.Count;
+                initializer = pending.Initializer;
+            }
+
+            initializer();
+        }
+
+        public void RemoveInitializer(int propNum)
+        {
+            lock (_initializers)
+            {
+                _initializers.Remove(propNum);
+                _initializersCount = _initializers.Count;
+            }
         }
 
         public override void SetPropValue(int propNum, IValue newVal)
