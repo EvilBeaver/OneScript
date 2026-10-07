@@ -904,7 +904,8 @@ namespace ScriptEngine.Machine
 
             for (--argCount; argCount >= 0; --argCount)
             {
-                args[argCount] = _operationStack.Pop();
+                var arg = _operationStack.Pop();
+                args[argCount] = arg.IsSkippedArgument() ? null : arg;
             }
             return args;
         }
@@ -1048,15 +1049,7 @@ namespace ScriptEngine.Machine
 
             if (context.DynamicMethodSignatures)
             {
-                for (int i = 0; i < argCount; i++)
-                {
-                    if (argValues[i].IsSkippedArgument())
-                    {
-                        argValues[i] = null;
-                    }
-                }
-
-                return;
+                 return;
             }
 
             var methodInfo = context.GetMethodInfo(methodId);
@@ -1079,7 +1072,7 @@ namespace ScriptEngine.Machine
             for (int i = 0; i < argCount; i++)
             {
                 var argValue = factArgs[i];
-                if (!argValue.IsSkippedArgument())
+                if (argValue is not null)
                 {
                     if (methodParams[i].IsByRef)
                     {
@@ -1091,7 +1084,7 @@ namespace ScriptEngine.Machine
                             argValues[i] = r.Value;
                 }
                 else if (!methodParams[i].HasDefaultValue)
-                    throw RuntimeException.MissedArgument();
+                        throw RuntimeException.MissedArgument();
             }
         }
 

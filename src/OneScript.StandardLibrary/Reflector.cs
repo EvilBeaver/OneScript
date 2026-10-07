@@ -52,57 +52,28 @@ namespace OneScript.StandardLibrary
             var methInfo = target.GetMethodInfo(methodIdx);
 
             IValue[] argsToPass;
-            if (arguments is not null)
-            {
-                if (target.DynamicMethodSignatures)
-                {
-                    argsToPass = arguments.ToArray();
-                }
-                else
-                {
-                    argsToPass = GetArgsToPass(arguments, methInfo.CallParameters);
-                }
-            }
+            if (target.DynamicMethodSignatures)
+                argsToPass = arguments?.ToArray() ?? [];
             else
-                argsToPass = [];
+                argsToPass = GetArgsToPass(arguments, methInfo.CallParameters);
 
 
             IValue retValue = BslUndefinedValue.Instance;
-            try
+            if (methInfo.IsFunction())
             {
-                if (methInfo.IsFunction())
-                {
-                    target.CallAsFunction(methodIdx, argsToPass, out retValue, process);
-                }
-                else
-                {
-                    target.CallAsProcedure(methodIdx, argsToPass, process);
-                }
+                target.CallAsFunction(methodIdx, argsToPass, out retValue, process);
             }
-            catch (Exception)
+            else
             {
-                CopyArgsBack(argsToPass, arguments);
-                throw;
+                target.CallAsProcedure(methodIdx, argsToPass, process);
             }
 
-            CopyArgsBack(argsToPass, arguments);
             return retValue;
-        }
-
-        private static void CopyArgsBack(IValue[] argsToPass, ArrayImpl arguments)
-        {
-            if (arguments == null)
-                return;
-
-            for (int i = 0; i < arguments.Count(); i++)
-            {
-                arguments.Set_unchecked(i, argsToPass[i] is IValueReference r ? r.Value : argsToPass[i]);
-            }
         }
 
         private static IValue[] GetArgsToPass(ArrayImpl arguments, ReadOnlySpan<BslCallParameter> parameters)
         {
-            var argValues = arguments.ToArray();
+            var argValues = arguments?.ToArray() ?? [];
             // ArrayImpl не может (не должен!) содержать null или NotAValidValue
 
             int parCount = parameters.Length;
@@ -126,7 +97,7 @@ namespace OneScript.StandardLibrary
             for (int i = 0; i < argCount; i++)
             {
                 if (parameters[i].IsByRef)
-                    argsToPass[i] = Variable.Create(argValues[i], "");
+                    argsToPass[i] = Variable.CreateIndexedPropertyReference(arguments, ValueFactory.Create(i), "");
             }
 
             return argsToPass;
