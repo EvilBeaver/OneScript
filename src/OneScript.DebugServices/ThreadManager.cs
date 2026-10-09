@@ -37,7 +37,11 @@ namespace OneScript.DebugServices
 
         private void EmitThreadStopped(int threadId, MachineStopReason reason, string errMessage)
         {
-            var machine = GetTokenForThread(threadId).Machine;
+            // Поток мог уже отпустить отключившийся отладчик: тогда останавливаться некому
+            if (!_machinesOnThreads.TryGetValue(threadId, out var token))
+                return;
+
+            var machine = token.Machine;
             
             var args = new ThreadStoppedEventArgs
             {
