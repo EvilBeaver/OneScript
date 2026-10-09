@@ -904,7 +904,8 @@ namespace ScriptEngine.Machine
 
             for (--argCount; argCount >= 0; --argCount)
             {
-                args[argCount] = _operationStack.Pop();
+                var arg = _operationStack.Pop();
+                args[argCount] = arg.IsSkippedArgument() ? null : arg;
             }
             return args;
         }
@@ -961,26 +962,21 @@ namespace ScriptEngine.Machine
 
         private void CallContext(IRuntimeContextInstance instance, int index, BslMethodInfo methodInfo, IValue[] argValues, bool asFunc)
         {
-            IValue[] realArgs;
-            if (instance.DynamicMethodSignatures)
+            IValue[] realArgs = argValues;
+            if (!instance.DynamicMethodSignatures)
             {
-                realArgs = argValues;
-            }
-            else
-            {
-                realArgs = new IValue[methodInfo.CallParameters.Length];
-                var skippedArg = BslSkippedParameterValue.Instance;
-                int i = 0;
-                for (; i < argValues.Length; i++)
+                int parCount = methodInfo.CallParameters.Length;
+                int argCount = argValues.Length;
+                if (argCount < parCount)
                 {
-                    realArgs[i] = argValues[i];
-                }
-                for (; i < realArgs.Length; i++)
-                {
-                    realArgs[i] = skippedArg;
+                    Array.Resize(ref realArgs, parCount);
+                    while (--parCount >= argCount)
+                    {
+                        realArgs[parCount] = BslSkippedParameterValue.Instance;
+                    }
                 }
             }
- 
+
             if (asFunc)
             {
                 instance.CallAsFunction(index, realArgs, out IValue retVal, _process);
@@ -1044,54 +1040,51 @@ namespace ScriptEngine.Machine
         {
             var factArgs = PopArguments();
             var argCount = factArgs.Length;
- 
+            argValues = factArgs;
+
             var objIValue = _operationStack.Pop();
             context = objIValue.AsObject();
             var methodName = _module.Identifiers[arg];
             methodId = context.GetMethodNumber(methodName);
-            
+
             if (context.DynamicMethodSignatures)
             {
-                argValues = new IValue[argCount];
-                for (int i = 0; i < argCount; i++)
-                {
-                    var argValue = factArgs[i];
-                    if (!argValue.IsSkippedArgument())
-                    {
-                        argValues[i] = argValue;
-                    }
-                }
+                 return;
             }
-            else
+
+            var methodInfo = context.GetMethodInfo(methodId);
+            var methodParams = methodInfo.CallParameters;
+            int parCount = methodParams.Length;
+
+            if (argCount > parCount)
+                throw RuntimeException.TooManyArgumentsPassed();
+
+            if (argCount < parCount)
             {
-                var methodInfo = context.GetMethodInfo(methodId);
-                var methodParams = methodInfo.CallParameters;
-
-                if (argCount > methodParams.Length)
-                    throw RuntimeException.TooManyArgumentsPassed();
-
-                argValues = new IValue[methodParams.Length];
-                int i = 0;
-                for (; i < argCount; i++)
+                Array.Resize(ref argValues, parCount);
+                while (--parCount >= argCount)
                 {
-                    var argValue = factArgs[i];
-                    if (!argValue.IsSkippedArgument())
-                    {
-                        if (methodParams[i].IsByRef)
-                        {
-                            argValues[i] = argValue is IVariable? argValue : Variable.Create(argValue, "");
-                        }
-                        else
-                            argValues[i] = RawValue(argValue);
-                    }
-                    else if(!methodParams[i].HasDefaultValue)
-                        throw RuntimeException.MissedArgument();
-                }
-                for (; i < methodParams.Length; i++)
-                {
-                    if (!methodParams[i].HasDefaultValue)
+                    if (!methodParams[parCount].HasDefaultValue)
                         throw RuntimeException.TooFewArgumentsPassed();
                 }
+            }
+
+            for (int i = 0; i < argCount; i++)
+            {
+                var argValue = factArgs[i];
+                if (argValue is not null)
+                {
+                    if (methodParams[i].IsByRef)
+                    {
+                        if (argValue is not IValueReference)
+                            argValues[i] = Variable.Create(argValue, "");
+                    }
+                    else
+                        if (argValue is IValueReference r)
+                            argValues[i] = r.Value;
+                }
+                else if (!methodParams[i].HasDefaultValue)
+                        throw RuntimeException.MissedArgument();
             }
         }
 
