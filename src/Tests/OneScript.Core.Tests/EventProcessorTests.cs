@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using OneScript.Execution;
 using OneScript.StandardLibrary.Collections;
@@ -25,6 +26,10 @@ namespace OneScript.Core.Tests
 
             Процедура Обработчик() Экспорт
                 Вызовов = Вызовов + 1;
+            КонецПроцедуры
+
+            Процедура ПадающийОбработчик() Экспорт
+                ВызватьИсключение ""ошибка обработчика"";
             КонецПроцедуры
 
             Вызовов = 0;";
@@ -80,6 +85,37 @@ namespace OneScript.Core.Tests
             processor.HandleEvent(aliveSource, "ПриЗавершении", Array.Empty<IValue>(), process);
 
             CallCount(handler).Should().Be(1, "снятие подписок одного источника не трогает другие");
+        }
+
+        [Fact]
+        public void HandleEvent_WithErrorCallback_CallsHandlersAfterFailedOne()
+        {
+            var (handler, process) = CreateHandler();
+            var eventSource = new ArrayImpl();
+            IEventProcessor processor = new DefaultEventProcessor();
+            var errors = new List<Exception>();
+
+            processor.AddHandler(eventSource, "ПриЗавершении", handler, "ПадающийОбработчик");
+            processor.AddHandler(eventSource, "ПриЗавершении", handler, "Обработчик");
+            processor.HandleEvent(eventSource, "ПриЗавершении", Array.Empty<IValue>(), process, errors.Add);
+
+            errors.Should().ContainSingle();
+            CallCount(handler).Should().Be(1, "ошибка первого обработчика не должна отменять второй");
+        }
+
+        [Fact]
+        public void HandleEvent_WithoutErrorCallback_StopsOnFailedHandler()
+        {
+            var (handler, process) = CreateHandler();
+            var eventSource = new ArrayImpl();
+            IEventProcessor processor = new DefaultEventProcessor();
+
+            processor.AddHandler(eventSource, "Событие", handler, "ПадающийОбработчик");
+            processor.AddHandler(eventSource, "Событие", handler, "Обработчик");
+            var handleEvent = () => processor.HandleEvent(eventSource, "Событие", Array.Empty<IValue>(), process);
+
+            handleEvent.Should().Throw<Exception>("ошибка обработчика обычного события уходит вызывающему");
+            CallCount(handler).Should().Be(0);
         }
     }
 }
