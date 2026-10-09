@@ -19,6 +19,8 @@ namespace OneScript.StandardLibrary.Tasks
         [EnumValue("Завершено", "Completed")]
         Completed,
         [EnumValue("ЗавершеноАварийно", "Failed")]
-        CompletedWithErrors
+        CompletedWithErrors,
+        [EnumValue("Отменено", "Canceled")]
+        Canceled
     }
 }

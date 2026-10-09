@@ -5,6 +5,8 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Threading;
+
 namespace OneScript.Execution
 {
     /// <summary>
@@ -14,5 +16,9 @@ namespace OneScript.Execution
     {
         // Создать новый bsl-процесс с пустым стеком вызовов
         IBslProcess NewProcess();
+
+        // Создать новый bsl-процесс, исполнение которого можно отменить через токен.
+        // Фабрики, которые не поддерживают отмену, создают обычный процесс
+        IBslProcess NewProcess(CancellationToken cancellationToken) => NewProcess();
     }
 }
