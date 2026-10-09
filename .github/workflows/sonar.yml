@@ -89,6 +89,11 @@ jobs:
         shell: powershell
         run: |
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+      # Номер нужен sonar-fork.yml: из одной ветки форка может быть несколько PR в разные ветки
+      - name: Save pull request number (fork pull-request)
+        if: env.FORK_PR == 'true'
+        shell: pwsh
+        run: Set-Content pr-number.txt ${{ github.event.pull_request.number }}
       - name: Save analysis (fork pull-request)
         if: env.FORK_PR == 'true'
         uses: actions/upload-artifact@v7
@@ -98,5 +103,6 @@ jobs:
             .sonarqube/out
             .sonarqube/conf/*/FilesToAnalyze.txt
             coverage.xml
+            pr-number.txt
           include-hidden-files: true
           retention-days: 1

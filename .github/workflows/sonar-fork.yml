@@ -25,14 +25,22 @@ jobs:
     env:
       HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
       HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
-      HEAD_OWNER: ${{ github.event.workflow_run.head_repository.owner.login }}
+      HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
     steps:
       # Сканер ставится до checkout, чтобы dotnet не прочитал NuGet.config из кода форка
       - name: Install SonarQube scanner
         shell: pwsh
         run: dotnet tool install dotnet-sonarscanner --tool-path "$env:RUNNER_TEMP\scanner"
 
-      # Номер PR и базовую ветку берем у GitHub, а не из артефакта: артефакт собран кодом форка
+      - uses: actions/download-artifact@v8
+        with:
+          name: sonar-analysis
+          path: ${{ runner.temp }}/sonar-analysis
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      # Артефакт собран кодом форка, поэтому номер PR из него сверяем с GitHub: PR открыт и собран
+      # из этого же коммита форка. Базовую ветку берем у GitHub
       - name: Find pull request
         id: pr
         env:
@@ -40,11 +48,13 @@ jobs:
         shell: pwsh
         run: |
           if ($env:HEAD_BRANCH -notmatch '^[\w./+-]+$') { throw "Неподдерживаемое имя ветки: $env:HEAD_BRANCH" }
-          $head = [uri]::EscapeDataString("$($env:HEAD_OWNER):$($env:HEAD_BRANCH)")
-          $pr = gh api "repos/$env:GITHUB_REPOSITORY/pulls?state=open&head=$head" | ConvertFrom-Json |
-              Where-Object { $_.head.sha -eq $env:HEAD_SHA } | Select-Object -First 1
-          if (-not $pr) { throw "Не найден открытый PR из $($env:HEAD_OWNER):$($env:HEAD_BRANCH) на $env:HEAD_SHA" }
-          "number=$($pr.number)" >> $env:GITHUB_OUTPUT
+          $number = (Get-Content -Raw "$env:RUNNER_TEMP\sonar-analysis\pr-number.txt").Trim()
+          if ($number -notmatch '^\d+$') { throw "Неверный номер PR: $number" }
+          $pr = gh api "repos/$env:GITHUB_REPOSITORY/pulls/$number" | ConvertFrom-Json
+          if ($pr.state -ne 'open' -or $pr.head.sha -ne $env:HEAD_SHA -or $pr.head.repo.full_name -ne $env:HEAD_REPO) {
+              throw "PR #$number не собран из $($env:HEAD_REPO) на $env:HEAD_SHA"
+          }
+          "number=$number" >> $env:GITHUB_OUTPUT
           "base=$($pr.base.ref)" >> $env:GITHUB_OUTPUT
 
       # Исходники нужны сканеру для отчета, ничего из них не запускается, поэтому код форка здесь разрешен
@@ -54,13 +64,6 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           allow-unsafe-pr-checkout: true
-
-      - uses: actions/download-artifact@v8
-        with:
-          name: sonar-analysis
-          path: ${{ runner.temp }}/sonar-analysis
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ github.token }}
 
       - name: Prepare analysis
         env:
@@ -93,7 +96,8 @@ jobs:
               $project = ([xml](Get-Content -Raw $info.FullName)).ProjectInfo
               $files = @($project.AnalysisResultFiles.AnalysisResultFile | Where-Object { $_ })
               Assert-Under $root $project.FullPath
-              Assert-Under $root ($project.AnalysisSettings.Property | ForEach-Object { $_.InnerText -split ',' } | Where-Object { $_ -match '[\\/]' })
+              # Списки путей сканер делит и запятой, и чертой
+              Assert-Under $root ($project.AnalysisSettings.Property | ForEach-Object { $_.InnerText -split '[,;|\r\n]' } | Where-Object { $_ -match '[\\/]' })
               Assert-Under "$root.sonarqube\" $files.Location
               foreach ($list in $files) {
                   Assert-Under $root (Get-Content (Join-Path $src $list.Location.Substring($root.Length)))
