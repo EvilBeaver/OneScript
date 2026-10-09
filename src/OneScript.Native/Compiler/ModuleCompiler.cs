@@ -80,12 +80,9 @@ namespace OneScript.Native.Compiler
             foreach (var methodNode in methodsSection.Children.Cast<MethodNode>())
             {
                 var signature = methodNode.Signature;
-                if (Symbols.TryFindMethodBinding(signature.MethodName, out _))
-                {
-                    AddError(LocalizedErrors.DuplicateMethodDefinition(signature.MethodName), signature.Location);
-                    continue;
-                }
-
+                // разрешено перекрытие глобальных методов, см. #1354, #1740
+                _ = Symbols.TryFindMethodBinding(signature.MethodName, out var binding);
+                
                 var builder = _methodsFactory.NewMethod();
                 builder.SetAnnotations(CompilerHelpers.GetAnnotations(methodNode.Annotations));
                 builder.SetDispatchingIndex(ownMethodsCount++);
@@ -94,6 +91,7 @@ namespace OneScript.Native.Compiler
 
                 var methodInfo = builder.Build();
                 methodInfo.IsInstance = true;
+                methodInfo.Overrides = binding;
                 var symbol = methodInfo.ToSymbol();
                 
                 Symbols.DefineMethod(symbol);
