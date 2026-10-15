@@ -71,6 +71,19 @@ namespace OneScript.StandardLibrary.Tests
         }
 
         [Fact]
+        public void FileDataGoesToIndependentBuffer()
+        {
+            var expected = new byte[] { 1, 2, 3 };
+            using var data = InFile(expected);
+
+            var buffer = Global(LIMIT).GetBinaryDataBufferFromBinaryData(data);
+            buffer.Bytes[0] = 9;
+
+            ReadAll(data).Should().Equal(expected);
+            data.InMemory.Should().BeFalse();
+        }
+
+        [Fact]
         public void HexSkipsNonHexCharsAndDropsUnpairedDigit()
         {
             var hex = InFile(Encoding.ASCII.GetBytes("0a 1B\r\nfgFG-c"));

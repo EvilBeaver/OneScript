@@ -125,19 +125,21 @@ namespace OneScript.StandardLibrary.Binary
             return InMemory ? new MemoryStream(_buffer, 0, _buffer.Length, false, true) : _backingFile.OpenReadStream();
         }
 
+        /// <summary>
+        /// Данные целиком. Данные во временном файле при каждом обращении читаются в новый массив,
+        /// а сами остаются в файле: большие файлы для этого в нем и хранятся
+        /// </summary>
         public byte[] Buffer
         {
             get
             {
-                if (!InMemory)
-                {
-                    using var readStream = _backingFile.OpenReadStream();
-                    LoadToBuffer(readStream);
-                    _backingFile.Dispose();
-                    _backingFile = null;
-                }
+                if (InMemory)
+                    return _buffer;
 
-                return _buffer;
+                using var readStream = _backingFile.OpenReadStream();
+                var buffer = new byte[readStream.Length];
+                readStream.ReadExactly(buffer);
+                return buffer;
             }
         }
 
