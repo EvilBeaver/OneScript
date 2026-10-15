@@ -138,6 +138,38 @@ namespace OneScript.DebugProtocol.Test
         }
 
         [Fact]
+        public void DebuggerWorkRunsOnStoppedThread()
+        {
+            var token = new MachineWaitToken();
+            var stoppedThreadId = 0;
+            var stoppedThread = new Thread(() =>
+            {
+                stoppedThreadId = Environment.CurrentManagedThreadId;
+                token.Reset();
+                token.Wait();
+            });
+            stoppedThread.Start();
+            WaitEvent(() => token.IsStopped, WaitTimeout).Should().BeTrue();
+
+            var workThreadId = token.RunOnStoppedThread(() => Environment.CurrentManagedThreadId);
+
+            workThreadId.Should().Be(stoppedThreadId);
+            token.IsStopped.Should().BeTrue();
+
+            token.Set();
+            stoppedThread.Join(WaitTimeout).Should().BeTrue();
+        }
+
+        [Fact]
+        public void DebuggerWorkOnRunningThreadIsRejected()
+        {
+            var token = new MachineWaitToken();
+
+            token.Invoking(t => t.RunOnStoppedThread(() => 1))
+                .Should().Throw<InvalidOperationException>();
+        }
+
+        [Fact]
         public void MessagesFromManyThreadsAreNotMixed()
         {
             const int threadsCount = 4;

@@ -79,6 +79,11 @@ namespace OneScript.DebugServices.Internal
             {
                 return;
             }
+            
+            // Остановка внутри вычисления отладчика (watch вызвал метод с точкой останова):
+            // отладчик ждет результат и продолжить поток не сможет
+            if (token.IsRunningDebuggerWork)
+                return;
 
             token.Reset();
             try

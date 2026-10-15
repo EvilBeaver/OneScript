@@ -11,6 +11,7 @@ using System.Linq;
 using OneScript.Contexts;
 using OneScript.DebugProtocol;
 using OneScript.Language;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 using Variable = OneScript.DebugProtocol.Variable;
@@ -135,6 +136,14 @@ namespace OneScript.DebugServices.Internal
             return token;
         }
 
+        // Выражение может вызвать методы сценария: они выполняются в потоке машины,
+        // с его блокировками, а не в потоке отладчика
+        private BslValue EvaluateOnStoppedThread(int threadId, int frameIndex, string expression)
+        {
+            var token = GetStoppedToken(threadId);
+            return token.RunOnStoppedThread(() => token.Machine.EvaluateInFrame(expression, frameIndex));
+        }
+
         public Variable[] GetVariables(int threadId, int frameIndex, int[] path)
         {
             var machine = GetMachine(threadId);
@@ -171,7 +180,7 @@ namespace OneScript.DebugServices.Internal
 
             try
             {
-                value = GetMachine(threadId).EvaluateInFrame(expression, frameIndex);
+                value = EvaluateOnStoppedThread(threadId, frameIndex, expression);
             }
             catch (Exception e)
             {
@@ -193,8 +202,7 @@ namespace OneScript.DebugServices.Internal
         {
             try
             {
-                var value = GetMachine(threadId)
-                    .EvaluateInFrame(expression, contextFrame);
+                var value = EvaluateOnStoppedThread(threadId, contextFrame, expression);
                 
                 var variable = _visualizer.GetVariable(MachineVariable.Create(value, "$evalResult"));
                 return variable;
