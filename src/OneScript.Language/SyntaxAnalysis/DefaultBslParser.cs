@@ -1435,7 +1435,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
             if (!IsDereferenceable(target))
             {
-                AddError(LocalizedErrors.ValueIsNotObjectException());
+                AddError(LocalizedErrors.ValueIsNotObjectException(), false);
             }
 
             var dotNode = new NonTerminalNode(NodeKind.DereferenceOperation, _lastExtractedLexem);
@@ -1472,7 +1472,7 @@ namespace OneScript.Language.SyntaxAnalysis
 
             if (!IsDereferenceable(target))
             {
-                AddError(LocalizedErrors.ValueIsNotObjectException());
+                AddError(LocalizedErrors.ValueIsNotObjectException(), false);
             }
 
             var node = new NonTerminalNode(NodeKind.IndexAccess, _lastExtractedLexem);
