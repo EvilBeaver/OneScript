@@ -5,86 +5,137 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace ScriptEngine.Machine
 {
+    /// <summary>
+    /// Сборщик статистики исполнения кода. Его вызывают все потоки, где исполняется код,
+    /// в том числе фоновые задания: коллекции потокобезопасные, а время каждый поток меряет сам.
+    /// </summary>
     public class CodeStatProcessor : ICodeStatCollector
     {
-        private Dictionary<CodeStatEntry, int> _codeStat = new Dictionary<CodeStatEntry, int>();
-        private Dictionary<CodeStatEntry, Stopwatch> _watchers = new Dictionary<CodeStatEntry, Stopwatch>();
-        private Stopwatch _activeStopwatch = null;
-        private HashSet<string> _preparedScripts = new HashSet<string>();
+        private readonly ConcurrentDictionary<CodeStatEntry, EntryStat> _stats =
+            new ConcurrentDictionary<CodeStatEntry, EntryStat>();
+
+        private readonly ConcurrentDictionary<string, bool> _preparedScripts =
+            new ConcurrentDictionary<string, bool>();
+
+        // Точка, которую сейчас исполняет поток: ей идет время до перехода к следующей точке
+        private readonly ThreadLocal<ActiveEntry> _activeEntry =
+            new ThreadLocal<ActiveEntry>(() => new ActiveEntry());
+
+        // Делегат создается один раз: лямбда в вызове GetOrAdd выделяла бы память на каждую строку
+        private readonly Func<CodeStatEntry, EntryStat> _newStat;
+
+        // Отчет идет в порядке регистрации точек
+        private long _registrationOrder;
+
+        public CodeStatProcessor()
+        {
+            _newStat = _ => new EntryStat(Interlocked.Increment(ref _registrationOrder));
+        }
 
         public bool IsPrepared(string ScriptFileName)
         {
-            return _preparedScripts.Contains(ScriptFileName);
+            return _preparedScripts.ContainsKey(ScriptFileName);
         }
 
         public void MarkEntryReached(CodeStatEntry entry, int count = 1)
         {
-            int oldValue = 0;
-            _codeStat.TryGetValue(entry, out oldValue);
-            _codeStat[entry] = oldValue + count;
-
+            var stat = _stats.GetOrAdd(entry, _newStat);
             if (count == 0)
-            {
-                if (!_watchers.ContainsKey(entry))
-                {
-                    _watchers.Add(entry, new Stopwatch());
-                }
-            }
-            else
-            {
-                _activeStopwatch?.Stop();
-                _activeStopwatch = _watchers[entry];
-                _activeStopwatch.Start();
-            }
+                return;
+
+            Interlocked.Add(ref stat.Count, count);
+            SwitchTo(stat);
         }
 
         public void MarkPrepared(string scriptFileName)
         {
-            _preparedScripts.Add(scriptFileName);
+            _preparedScripts.TryAdd(scriptFileName, true);
         }
 
+        /// <summary>
+        /// Снимок статистики. Можно брать, пока код еще исполняется в других потоках.
+        /// </summary>
         public CodeStatDataCollection GetStatData()
         {
-            CodeStatDataCollection data = new CodeStatDataCollection();
-            foreach (var item in _codeStat)
+            var data = new CodeStatDataCollection();
+            foreach (var item in _stats.ToArray().OrderBy(x => x.Value.Order))
             {
                 if (!IsPrepared(item.Key.ScriptFileName))
                 {
                     continue;
                 }
-                data.Add(new CodeStatData(item.Key, _watchers[item.Key].ElapsedMilliseconds, item.Value));
+                data.Add(new CodeStatData(item.Key, item.Value.ElapsedMilliseconds, Volatile.Read(ref item.Value.Count)));
             }
-            
+
             return data;
         }
 
+        /// <summary>
+        /// Завершает замер времени в текущем потоке
+        /// </summary>
         public void EndCodeStat()
         {
-            _activeStopwatch?.Stop();
+            StopCurrentWatch();
+        }
+
+        public void StopCurrentWatch()
+        {
+            SwitchTo(null);
         }
 
         public void StopWatch(CodeStatEntry entry)
         {
-            if (_watchers.ContainsKey(entry))
+            if (_stats.TryGetValue(entry, out var stat) && _activeEntry.Value.Stat == stat)
             {
-                _watchers[entry].Stop();
+                SwitchTo(null);
             }
         }
 
         public void ResumeWatch(CodeStatEntry entry)
         {
-            _activeStopwatch?.Stop();
+            _stats.TryGetValue(entry, out var stat);
+            SwitchTo(stat);
+        }
 
-            if (_watchers.ContainsKey(entry))
+        private void SwitchTo(EntryStat next)
+        {
+            var active = _activeEntry.Value;
+            var now = Stopwatch.GetTimestamp();
+            active.Stat?.AddElapsed(now - active.Since);
+            active.Stat = next;
+            active.Since = now;
+        }
+
+        private sealed class EntryStat
+        {
+            public readonly long Order;
+            public int Count;
+            private long _elapsedTicks;
+
+            public EntryStat(long order)
             {
-                _activeStopwatch = _watchers[entry];
-                _activeStopwatch.Start();
+                Order = order;
             }
+
+            public void AddElapsed(long ticks) => Interlocked.Add(ref _elapsedTicks, ticks);
+
+            // Так же, как Stopwatch.ElapsedMilliseconds
+            public long ElapsedMilliseconds =>
+                Stopwatch.GetElapsedTime(0, Interlocked.Read(ref _elapsedTicks)).Ticks / TimeSpan.TicksPerMillisecond;
+        }
+
+        private sealed class ActiveEntry
+        {
+            public EntryStat Stat;
+            public long Since;
         }
     }
 }
