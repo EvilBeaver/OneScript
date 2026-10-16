@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Xml;
 using Ionic.Zip;
 using OneScript.Exceptions;
@@ -27,9 +28,20 @@ namespace OneScript.StandardLibrary.NativeApi
             return (BitConverter.ToInt32(bytes, 0) == ZIP_LEAD_BYTES);
         }
         
-        private static bool Is64BitProcess()
+        // Архитектура процесса в обозначениях манифеста: по размеру указателя arm64 не отличить от x86_64
+        private static string ProcessArch()
         {
-            return IntPtr.Size == 8;
+            if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                return "ARM64";
+
+            return IntPtr.Size == 8 ? "x86_64" : "i386";
+        }
+
+        // Универсальная библиотека под macOS подходит и для arm64, и для x86_64
+        private static bool IsSuitableArch(string arch, string thisArch)
+        {
+            return string.Equals(arch, thisArch, StringComparison.OrdinalIgnoreCase)
+                || NativeApiKernel.IsMacOS && string.Equals(arch, "Universal", StringComparison.OrdinalIgnoreCase);
         }
 
         public static void Extract(Stream stream, String tempfile)
@@ -54,13 +66,13 @@ namespace OneScript.StandardLibrary.NativeApi
                         stream.Seek(0, 0);
                         using (var reader = XmlReader.Create(stream))
                         {
-                            var thisOs = NativeApiProxy.IsLinux ? "Linux" : "Windows";
-                            var thisArch = Is64BitProcess() ? "x86_64" : "i386";
+                            var thisOs = NativeApiKernel.OsName;
+                            var thisArch = ProcessArch();
                             while (reader.ReadToFollowing("component"))
                             {
                                 var attrOs = reader.GetAttribute("os");
                                 var attrArch = reader.GetAttribute("arch");
-                                if (string.Equals(attrArch, thisArch, StringComparison.OrdinalIgnoreCase)
+                                if (IsSuitableArch(attrArch, thisArch)
                                     && string.Equals(attrOs, thisOs, StringComparison.OrdinalIgnoreCase))
                                     return reader.GetAttribute("path");
                             }
