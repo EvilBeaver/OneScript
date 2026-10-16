@@ -34,7 +34,7 @@ namespace OneScript.Compilation.Binding
         public IAttachableContext Target { get; }
 
         /// <summary>
-        /// Индекс области видимости в списке ExecutionFrame.Scopes. Используется для ScopeBindingKind.FrameScope.
+        /// Номер области видимости с конца списка ExecutionFrame.Scopes (0 - самая внутренняя). Используется для ScopeBindingKind.FrameScope.
         /// </summary>
         public int ScopeIndex { get; }
 
