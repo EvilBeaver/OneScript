@@ -86,14 +86,17 @@ namespace ScriptEngine
             {
                 foreach (var eventName in TerminationEventNames)
                 {
+                    void LogError(Exception exception) => SystemLogger.Write(
+                        $"WARNING! Error in execution thread termination handler '{eventName}': {exception.Message}");
+
                     try
                     {
-                        eventProcessor.HandleEvent(BslWrapper, eventName, Array.Empty<IValue>(), this);
+                        // Ошибка одного обработчика не должна оставить следующие без вызова
+                        eventProcessor.HandleEvent(BslWrapper, eventName, Array.Empty<IValue>(), this, LogError);
                     }
                     catch (Exception exception)
                     {
-                        SystemLogger.Write(
-                            $"WARNING! Error in execution thread termination handler '{eventName}': {exception.Message}");
+                        LogError(exception);
                     }
                 }
             }
