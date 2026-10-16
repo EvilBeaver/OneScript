@@ -33,19 +33,7 @@ namespace oscript
         public int RunProcess(HostedScriptEngine engine, SourceCode source)
         {
             SystemLogger.SetWriter(this);
-
-            Process process;
-            try
-            {
-                process = engine.CreateProcess(this, source);
-            }
-            catch (Exception e)
-            {
-                ShowExceptionInfo(e);
-                return 1;
-            }
-
-            return process.Start();
+            return engine.RunProcess(this, source);
         }
     }
 }
