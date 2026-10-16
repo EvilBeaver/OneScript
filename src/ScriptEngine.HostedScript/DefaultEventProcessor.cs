@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
@@ -125,7 +126,7 @@ namespace ScriptEngine.HostedScript
         public void HandleEvent(IRuntimeContextInstance eventSource, string eventName, IValue[] eventArgs,
             IBslProcess process)
         {
-            HandlersList handlersLocalCopy;
+            Handler[] handlersLocalCopy;
 
             lock (_subscriptionLock)
             {
@@ -133,10 +134,14 @@ namespace ScriptEngine.HostedScript
                 if (!_registeredHandlers.TryGetValue(eventSource, out var handlers))
                     return;
 
-                if (!handlers.TryGetValue(eventName, out handlersLocalCopy))
+                if (!handlers.TryGetValue(eventName, out var handlersList))
                 {
                     return;
                 }
+
+                // Копия: обработчики могут подписываться и отписываться во время события,
+                // в том числе из других потоков
+                handlersLocalCopy = handlersList.ToArray();
             }
 
             foreach (var handler in handlersLocalCopy)
