@@ -1412,57 +1412,80 @@ namespace OneScript.Language.SyntaxAnalysis
             return BuildDereference(node);
         }
 
+        private bool IsDereferenceable(BslSyntaxNode node)
+            => node.Kind switch
+            {
+                NodeKind.Identifier
+                or NodeKind.GlobalCall or NodeKind.MethodCall
+                or NodeKind.DereferenceOperation or NodeKind.IndexAccess
+                or NodeKind.TernaryOperator
+                or NodeKind.NewObject // несовместимо с 1С
+                => true,
+
+                _ => false
+            };
+
         private BslSyntaxNode BuildDereference(BslSyntaxNode target)
         {
             var activeTarget = BuildIndexerAccess(target);
-            if (_lastExtractedLexem.Token == Token.Dot)
+            if (_lastExtractedLexem.Token != Token.Dot)
             {
-                var dotNode = new NonTerminalNode(NodeKind.DereferenceOperation, _lastExtractedLexem);
-                dotNode.AddChild(activeTarget);
-                NextLexem();
-                if (!LanguageDef.IsValidPropertyName(_lastExtractedLexem))
-                {
-                    return CreateError(LocalizedErrors.IdentifierExpected());
-                }
-
-                var identifier = _lastExtractedLexem;
-                NextLexem();
-                if (_lastExtractedLexem.Token == Token.OpenPar)
-                {
-                    var ident = new TerminalNode(NodeKind.Identifier, identifier);
-                    var call = BuildCall(ident, NodeKind.MethodCall);
-                    dotNode.AddChild(call);
-                }
-                else
-                {
-                    _lastDereferenceIsWritable = true;
-                    CreateChild(dotNode, NodeKind.Identifier, identifier);
-                }
-                
-                return BuildDereference(dotNode);
+                return activeTarget;
             }
 
-            return activeTarget;
+            if (!IsDereferenceable(target))
+            {
+                AddError(LocalizedErrors.ValueIsNotObjectException());
+            }
+
+            var dotNode = new NonTerminalNode(NodeKind.DereferenceOperation, _lastExtractedLexem);
+            dotNode.AddChild(activeTarget);
+            NextLexem();
+            if (!LanguageDef.IsValidPropertyName(_lastExtractedLexem))
+            {
+                return CreateError(LocalizedErrors.IdentifierExpected());
+            }
+
+            var identifier = _lastExtractedLexem;
+            NextLexem();
+            if (_lastExtractedLexem.Token == Token.OpenPar)
+            {
+                var ident = new TerminalNode(NodeKind.Identifier, identifier);
+                var call = BuildCall(ident, NodeKind.MethodCall);
+                dotNode.AddChild(call);
+            }
+            else
+            {
+                _lastDereferenceIsWritable = true;
+                CreateChild(dotNode, NodeKind.Identifier, identifier);
+            }
+
+            return BuildDereference(dotNode);
         }
 
         private BslSyntaxNode BuildIndexerAccess(BslSyntaxNode target)
         {
-            if (_lastExtractedLexem.Token == Token.OpenBracket)
+            if (_lastExtractedLexem.Token != Token.OpenBracket)
             {
-                var node = new NonTerminalNode(NodeKind.IndexAccess, _lastExtractedLexem);
-                node.AddChild(target);
-                NextLexem();
-                var expression = BuildExpression(node, Token.CloseBracket);
-                if (expression.Kind == NodeKind.Unknown)
-                {
-                    return CreateError(LocalizedErrors.ExpressionSyntax());
-                }
-                NextLexem();
-                _lastDereferenceIsWritable = true;
-                return BuildDereference(node);
+                return target;
             }
 
-            return target;
+            if (!IsDereferenceable(target))
+            {
+                AddError(LocalizedErrors.ValueIsNotObjectException());
+            }
+
+            var node = new NonTerminalNode(NodeKind.IndexAccess, _lastExtractedLexem);
+            node.AddChild(target);
+            NextLexem();
+            var expression = BuildExpression(node, Token.CloseBracket);
+            if (expression.Kind == NodeKind.Unknown)
+            {
+                return CreateError(LocalizedErrors.ExpressionSyntax());
+            }
+            NextLexem();
+            _lastDereferenceIsWritable = true;
+            return BuildDereference(node);
         }
         
         private BslSyntaxNode BuildNewObjectCreation()
