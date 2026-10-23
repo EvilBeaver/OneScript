@@ -2,7 +2,7 @@
 
 setlocal
 
-set lib="%~dp0..\lib"
+set lib=%~dp0..\lib
 set opm=%lib%\opm\src\cmd\opm.os
 
-oscript %opm% %*
+"%~dp0oscript.exe" "%opm%" %*
