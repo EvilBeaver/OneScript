@@ -104,11 +104,11 @@ namespace OneScript.Language
                     ColumnNumber = codeLine.Length;
                 }
 
-                if (ColumnNumber != ErrorPositionInfo.OUT_OF_TEXT)
+                if (ColumnNumber > 0)
                 {
-                    sb.Append(codeLine[..ColumnNumber]);
+                    sb.Append(codeLine[..(ColumnNumber - 1)]);
                     sb.Append("<<?>>");
-                    sb.AppendLine(codeLine[ColumnNumber..]);
+                    sb.AppendLine(codeLine[(ColumnNumber - 1)..]);
                 }
                 else
                 {
