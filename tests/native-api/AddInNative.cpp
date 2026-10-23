@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <iconv.h>
 #include <sys/time.h>
+#include <locale.h>
 #endif
 
 #include <stdio.h>
