@@ -1063,26 +1063,26 @@ namespace ScriptEngine.Machine
                 {
                     if (!methodParams[parCount].HasDefaultValue)
                         throw RuntimeException.TooFewArgumentsPassed();
+                    // иначе останется null как неуказанный параметр
                 }
             }
 
             for (int i = 0; i < argCount; i++)
             {
                 var argValue = factArgs[i];
-                if (argValue is not null)
+                if (argValue is IValueReference r)
+                {
+                    if (!methodParams[i].IsByRef)
+                        argValues[i] = r.Value;
+                }
+                else if (argValue is not null)
                 {
                     if (methodParams[i].IsByRef)
-                    {
-                        if (argValue is not IValueReference)
-                            argValues[i] = Variable.Create(argValue, "");
-                    }
-                    else
-                        if (argValue is IValueReference r)
-                            argValues[i] = r.Value;
+                        argValues[i] = Variable.Create(argValue, "");
                 }
                 else if (!methodParams[i].HasDefaultValue)
-                        throw RuntimeException.MissedArgument();
-            }
+                    throw RuntimeException.MissedArgument();
+           }
         }
 
         private void Jmp(int arg)
