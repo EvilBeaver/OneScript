@@ -43,6 +43,9 @@ namespace OneScript.Native.Runtime
                 throw new InvalidOperationException($"Method {_method} was not compiled");
             }
             
+            // Проверка на входе в метод прерывает и рекурсию без циклов
+            process.CancellationToken.ThrowIfCancellationRequested();
+
             var callableWrapper = GetCallableWrapper(target);
             return _delegate.Invoke(callableWrapper, args, process);
         }

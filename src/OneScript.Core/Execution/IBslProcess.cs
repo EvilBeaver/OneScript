@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 #nullable enable
 
 using System;
+using System.Threading;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Values;
@@ -39,6 +40,12 @@ namespace OneScript.Execution
         public IServiceContainer Services { get; }
 
         public int VirtualThreadId { get; }
+
+        /// <summary>
+        /// Токен отмены исполнения. При запросе отмены исполнитель прерывает bsl-код
+        /// исключением <see cref="OperationCanceledException"/> с этим токеном.
+        /// </summary>
+        public CancellationToken CancellationToken => CancellationToken.None;
 
         /**
          * Обертка текущего процесса в терминах BSL.
