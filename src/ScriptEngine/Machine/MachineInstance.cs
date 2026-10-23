@@ -970,10 +970,7 @@ namespace ScriptEngine.Machine
                 if (argCount < parCount)
                 {
                     Array.Resize(ref realArgs, parCount);
-                    while (--parCount >= argCount)
-                    {
-                        realArgs[parCount] = BslSkippedParameterValue.Instance;
-                    }
+                    // для неуказанных параметров останется null
                 }
             }
 
