@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System.Threading;
 using OneScript.DebugProtocol.Abstractions;
 using OneScript.DebugProtocol.TcpServer;
 using OneScript.DebugServices.Internal;
@@ -22,6 +23,9 @@ namespace OneScript.DebugServices
         // NB! должен быть согласован с файлом ProtocolVersions в адаптере
         private const short SUPPORTED_FORMAT_VERSION = 4;
         
+        // Клиент, который подключился и молчит, не должен занимать прием подключений
+        private const int HANDSHAKE_TIMEOUT_MS = 5000;
+
         private readonly IDebugServer _transport;
         private IDebugSession _session;
         
@@ -60,7 +64,15 @@ namespace OneScript.DebugServices
             }
 
             var dataStream = debuggerClient.GetDataStream();
-            if (FormatReconcileUtils.CheckReconcileRequest(dataStream))
+            if (dataStream.CanTimeout)
+                dataStream.ReadTimeout = HANDSHAKE_TIMEOUT_MS;
+
+            var isReconcileRequest = FormatReconcileUtils.CheckReconcileRequest(dataStream);
+
+            if (dataStream.CanTimeout)
+                dataStream.ReadTimeout = Timeout.Infinite;
+
+            if (isReconcileRequest)
             {
                 // Да, это наш фейковый заголовок
                 FormatReconcileUtils.WriteReconcileResponse(dataStream, JSON_FORMAT_MARKER, SUPPORTED_FORMAT_VERSION);

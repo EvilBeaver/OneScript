@@ -18,7 +18,9 @@ namespace OneScript.DebugProtocol.TcpServer
         private readonly IDebuggerClient _client;
         private readonly Stream _dataStream;
         
-        private bool _enabled = true;
+        // Пишут и поток сообщений (ответы), и потоки скриптов (события остановки)
+        private readonly object _writeLock = new object();
+        private volatile bool _enabled = true;
 
         public JsonDtoChannel(IDebuggerClient client)
         {
@@ -34,9 +36,10 @@ namespace OneScript.DebugProtocol.TcpServer
 
         public void Dispose()
         {
+            // Без блокировки записи: закрытие потока как раз прерывает зависшую запись
+            _enabled = false;
             _dataStream.Dispose();
             _client?.Dispose();
-            _enabled = false;
         }
 
         public void Write(object data)
@@ -55,7 +58,11 @@ namespace OneScript.DebugProtocol.TcpServer
                     writer.Write(contentBytes, 0, contentBytes.Length);
 
                     bufferedStream.Position = 0;
-                    bufferedStream.CopyTo(_dataStream);
+                    // Сообщение целиком, чтобы сообщения разных потоков не перемешались
+                    lock (_writeLock)
+                    {
+                        bufferedStream.CopyTo(_dataStream);
+                    }
                 }
             }
         }
@@ -84,6 +91,11 @@ namespace OneScript.DebugProtocol.TcpServer
                         return JsonSerializer.CreateDefault().Deserialize<TcpProtocolDtoBase>(reader);
                     }
                 }
+            }
+            catch (Exception ex) when (ex is IOException or ObjectDisposedException)
+            {
+                // Соединение закрыто или оборвалось: дальше читать нечего
+                throw new ChannelException("Channel is closed", true, ex);
             }
             catch (Exception ex)
             {
