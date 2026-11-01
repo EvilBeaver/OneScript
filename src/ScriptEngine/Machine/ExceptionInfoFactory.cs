@@ -27,7 +27,7 @@ namespace ScriptEngine.Machine
             _processFactory = processFactory;
         }
 
-        public BslObjectValue GetExceptionInfo(Exception exception)
+        public BslValue GetExceptionInfo(Exception exception)
         {
             if (exception == null)
             {

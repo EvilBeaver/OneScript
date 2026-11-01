@@ -12,6 +12,7 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Values;
+using OneScript.Compilation.Binding;
 
 namespace OneScript.Native.Runtime
 {
@@ -35,6 +36,8 @@ namespace OneScript.Native.Runtime
         public LambdaExpression Implementation { get; private set; }
 
         public bool IsInstance { get; internal set; }
+
+        public SymbolBinding Overrides { get; internal set; }
 
         public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
