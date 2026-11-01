@@ -47,8 +47,8 @@ namespace oscript
 
 		public static void WriteLine(string text)
 		{
-			Write(text);
-			WriteLine();
+			// Одной записью: иначе строки из фоновых заданий склеиваются
+			Write(text + Environment.NewLine);
 		}
 
 		public static void WriteLine()
