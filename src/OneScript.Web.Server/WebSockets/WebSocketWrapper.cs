@@ -24,6 +24,10 @@ namespace OneScript.Web.Server.WebSockets
     {
         private readonly WebSocket _webSocket;
 
+        // WebSocket допускает только одно ожидающее получение, а сообщение из нескольких частей
+        // должен прочитать целиком один поток
+        private readonly object _receiveLock = new object();
+
         public WebSocketWrapper(WebSocket webSocket) 
         {
             _webSocket = webSocket;
@@ -99,7 +103,11 @@ namespace OneScript.Web.Server.WebSockets
         [ContextMethod("Получить", "Receive")]
         public WebSocketReceiveResultWrapper Receive(BinaryDataBuffer buffer)
         {
-            var result = _webSocket.ReceiveAsync(buffer.Bytes, default).Result;
+            WebSocketReceiveResult result;
+            lock (_receiveLock)
+            {
+                result = _webSocket.ReceiveAsync(buffer.Bytes, default).Result;
+            }
 
             return new WebSocketReceiveResultWrapper(result);
         }
@@ -111,20 +119,7 @@ namespace OneScript.Web.Server.WebSockets
         [ContextMethod("ПолучитьСтроку", "ReceiveString")]
         public BslStringValue ReceiveString()
         {
-            var buffer = new byte[1024];
-            using var stream = new MemoryStream();
-
-            WebSocketReceiveResult result;
-            do
-            {
-                result = _webSocket.ReceiveAsync(buffer, default).Result;
-                stream.Write(buffer);
-            }
-            while (!result.EndOfMessage);
-
-            var data = stream.GetBuffer();
-
-            return BslStringValue.Create(Encoding.UTF8.GetString(data));
+            return BslStringValue.Create(Encoding.UTF8.GetString(ReceiveMessage()));
         }
 
         /// <summary>
@@ -134,20 +129,27 @@ namespace OneScript.Web.Server.WebSockets
         [ContextMethod("ПолучитьДвоичныеДанные", "ReceiveBinary")]
         public byte[] ReceiveBinary()
         {
+            return ReceiveMessage();
+        }
+
+        private byte[] ReceiveMessage()
+        {
             var buffer = new byte[1024];
             using var stream = new MemoryStream();
 
-            WebSocketReceiveResult result;
-            do
+            lock (_receiveLock)
             {
-                result = _webSocket.ReceiveAsync(buffer, default).Result;
-                stream.Write(buffer);
+                WebSocketReceiveResult result;
+                do
+                {
+                    result = _webSocket.ReceiveAsync(buffer, default).Result;
+                    // Только полученные байты: буфер заполнен не весь
+                    stream.Write(buffer, 0, result.Count);
+                }
+                while (!result.EndOfMessage);
             }
-            while (!result.EndOfMessage);
 
-            var data = stream.GetBuffer();
-
-            return data;
+            return stream.ToArray();
         }
 
         /// <summary>
