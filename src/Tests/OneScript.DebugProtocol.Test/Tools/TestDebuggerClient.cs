@@ -44,5 +44,17 @@ namespace OneScript.DebugProtocol.Test.Tools
             bufferedStream.CopyTo(_client.GetStream());
             _client.GetStream().Flush();
         }
+
+        // Как IDE, которую закрыли без Disconnect
+        public void Close()
+        {
+            _client.Dispose();
+        }
+
+        public TcpProtocolDtoBase Read(int timeout)
+        {
+            _client.ReceiveTimeout = timeout;
+            return new JsonDtoChannel(_client.GetStream()).Read<TcpProtocolDtoBase>();
+        }
     }
 }
