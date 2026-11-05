@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using ScriptEngine.Machine.Contexts;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -25,7 +26,8 @@ namespace ScriptEngine.Machine
     {
         private readonly TypeDescriptor _systemType;
 
-        private Dictionary<int, InstanceConstructor> _constructorsCache = new Dictionary<int, InstanceConstructor>();
+        // Фабрика одна на тип, а объекты создаются из разных потоков
+        private readonly ConcurrentDictionary<int, InstanceConstructor> _constructorsCache = new ConcurrentDictionary<int, InstanceConstructor>();
         private static readonly Refl.MethodInfo CopyMethod = typeof(TypeFactory)
             .GetMethod(nameof(CaptureVariantArgs), Refl.BindingFlags.Static | Refl.BindingFlags.InvokeMethod | Refl.BindingFlags.NonPublic);
 
