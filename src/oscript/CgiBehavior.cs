@@ -68,33 +68,17 @@ namespace oscript
 					e.AddAssembly(GetType().Assembly);
 				});
 
-			var engine = ConsoleHostBuilder.Build(builder);
-
-			var request = new WebRequestContext(engine.Services.Resolve<IBinaryDataMemoryLimit>().MaxBytesInMemory);
+			using var engine = ConsoleHostBuilder.Build(builder);
+			using var request = new WebRequestContext(engine.Services.Resolve<IBinaryDataMemoryLimit>().MaxBytesInMemory);
 			engine.InjectGlobalProperty("ВебЗапрос", "WebRequest", request, true);
 			engine.InjectObject(this);
 
 			var source = engine.Loader.FromFile(scriptFile);
-
-			Process process;
-
-			try
-			{
-				process = engine.CreateProcess(this, source);
-			}
-			catch (Exception e)
-			{
-				ShowExceptionInfo(e);
-				return 1;
-			}
-
-			var exitCode = process.Start();
+			var exitCode = engine.RunProcess(this, source);
 
 			if (!_isContentEchoed)
 				Echo("");
 
-			request.Dispose();
-			
 			return exitCode;
 		}
 
