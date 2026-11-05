@@ -21,7 +21,11 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 SET (CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR})
 SET(AddInDef_SRC)
 
-if (UNIX)
+if (APPLE)
+	# Одна библиотека и для arm64, и для x86_64
+	set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
+	set(MySuffix "Mac")
+elseif (UNIX)
 	if (TARGET_PLATFORM_32)
 		set(CMAKE_CXX_FLAGS "-m32 ${CMAKE_CXX_FLAGS}")
 		set(MySuffix "Lin32")

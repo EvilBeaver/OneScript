@@ -11,7 +11,11 @@ add_library(${TARGET} SHARED
 target_compile_definitions(${TARGET} PRIVATE UNICODE _UNICODE)
 target_include_directories(${TARGET} PRIVATE include)
 
-if (UNIX)
+if (APPLE)
+	# Одна библиотека и для osx-arm64, и для osx-x64
+	set(MySuffix "64")
+	set_target_properties(${TARGET} PROPERTIES PREFIX "" OSX_ARCHITECTURES "arm64;x86_64")
+elseif (UNIX)
 	if (TARGET_PLATFORM_32)
 		set(MySuffix "32")
 		set(CMAKE_LIBRARY_PATH "/usr/lib/i386-linux-gnu" CACHE PATH "<desc>")

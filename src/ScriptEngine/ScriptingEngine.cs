@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Runtime.InteropServices;
 using OneScript.Compilation;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
@@ -125,18 +126,13 @@ namespace ScriptEngine
             var compiler = scope.Resolve<CompilerFrontend>();
             compiler.SharedSymbols = _runtimeEnvironment.GetSymbolTable();
             
-            switch (System.Environment.OSVersion.Platform)
-            {
-                case PlatformID.Unix:
-                    compiler.PreprocessorDefinitions.Add("Linux");
-                    break;
-                case PlatformID.MacOSX:
-                    compiler.PreprocessorDefinitions.Add("MacOS");
-                    break;
-                case PlatformID.Win32NT:
-                    compiler.PreprocessorDefinitions.Add("Windows");
-                    break;
-            }
+            // Environment.OSVersion.Platform на macOS возвращает Unix, а не MacOSX
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                compiler.PreprocessorDefinitions.Add("Windows");
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                compiler.PreprocessorDefinitions.Add("MacOS");
+            else
+                compiler.PreprocessorDefinitions.Add("Linux");
             
             compiler.GenerateDebugCode = ProduceExtraCode.HasFlag(CodeGenerationFlags.DebugCode);
             compiler.GenerateCodeStat = ProduceExtraCode.HasFlag(CodeGenerationFlags.CodeStatistics);

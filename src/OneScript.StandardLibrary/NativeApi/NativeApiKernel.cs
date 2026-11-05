@@ -15,31 +15,52 @@ namespace OneScript.StandardLibrary.NativeApi
     /// </summary>
     public class NativeApiKernel
     {
-        private const string KernelDll = "kernel32.dll";
         public static bool IsLinux
         {
             get => System.Environment.OSVersion.Platform == PlatformID.Unix;
         }
 
-        private const String KernelWin = "kernel32.dll";
-        private const String KernelLin = "libdl.so.2";
+        internal static bool IsMacOS => RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
+        /// <summary>
+        /// Операционная система в манифесте библиотеки внешних компонент
+        /// </summary>
+        internal static string OsName
+        {
+            get
+            {
+                if (IsMacOS)
+                    return "MacOS";
+                return IsLinux ? "Linux" : "Windows";
+            }
+        }
+
+        internal static string LibraryExtension
+        {
+            get
+            {
+                if (IsMacOS)
+                    return ".dylib";
+                return IsLinux ? ".so" : ".dll";
+            }
+        }
 
         public static IntPtr LoadLibrary(string filename)
         {
-            return IsLinux ? LinuxLoad(filename, 1) : WindowsLoad(filename);
+            return NativeLibrary.TryLoad(filename, out var module) ? module : IntPtr.Zero;
         }
 
         public static IntPtr GetProcAddress(IntPtr module, string procName)
         {
-            var pointer = IsLinux ? LinuxProc(module, procName) : WindowsProc(module, procName);
-            return pointer != IntPtr.Zero
+            return NativeLibrary.TryGetExport(module, procName, out var pointer)
                 ? pointer
                 : throw new ApplicationException($"Function pointer for {procName} not obtained.");
         }
 
         public static bool FreeLibrary(IntPtr module)
         {
-            return IsLinux ? LinuxFree(module) == 0 : WindowsFree(module);
+            NativeLibrary.Free(module);
+            return true;
         }
 
         /// <summary>
@@ -50,23 +71,5 @@ namespace OneScript.StandardLibrary.NativeApi
         {
             NativeApiFactory.Shutdown();
         }
-
-        [DllImport(KernelWin, SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LoadLibrary")]
-        protected static extern IntPtr WindowsLoad(string lpLibFileName);
-
-        [DllImport(KernelWin, SetLastError = true, ExactSpelling = true, CharSet = CharSet.Ansi, EntryPoint = "GetProcAddress")]
-        protected static extern IntPtr WindowsProc(IntPtr module, string procName);
-
-        [DllImport(KernelWin, SetLastError = true, EntryPoint = "FreeLibrary")]
-        protected static extern bool WindowsFree(IntPtr module);
-
-        [DllImport(KernelLin, EntryPoint = "dlopen")]
-        protected static extern IntPtr LinuxLoad(string filename, int flags);
-
-        [DllImport(KernelLin, EntryPoint = "dlsym")]
-        protected static extern IntPtr LinuxProc(IntPtr handle, string symbol);
-
-        [DllImport(KernelLin, EntryPoint = "dlclose")]
-        protected static extern int LinuxFree(IntPtr handle);
     }
 }
