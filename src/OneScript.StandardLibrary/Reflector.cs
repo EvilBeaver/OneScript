@@ -51,12 +51,7 @@ namespace OneScript.StandardLibrary
             var methodIdx = target.GetMethodNumber(methodName);
             var methInfo = target.GetMethodInfo(methodIdx);
 
-            IValue[] argsToPass;
-            if (target.DynamicMethodSignatures)
-                argsToPass = arguments?.ToArray() ?? [];
-            else
-                argsToPass = GetArgsToPass(arguments, methInfo.CallParameters);
-
+            var argsToPass = target.DynamicMethodSignatures ? GetArgsToPass(arguments) : GetArgsToPass(arguments, methInfo.CallParameters);
 
             IValue retValue = BslUndefinedValue.Instance;
             if (methInfo.IsFunction())
@@ -69,6 +64,21 @@ namespace OneScript.StandardLibrary
             }
 
             return retValue;
+        }
+
+        // в динамические методы все параметры будут переданы как переменные-ссылки на элементы массива аргументов
+        // это дает возможность возвращать значения через параметры
+        // ответственность за неизменность параметров, передаваемых по значению, - на вызываемом методе
+        private static IValue[] GetArgsToPass(ArrayImpl arguments)
+        {
+            var argsToPass = new IValue[arguments?.Count() ?? 0];
+
+            for (int i = 0; i < argsToPass.Length; ++i)
+            {
+                argsToPass[i] = Variable.CreateIndexedPropertyReference(arguments, ValueFactory.Create(i), "$argref");
+            }
+            
+            return argsToPass;
         }
 
         private static IValue[] GetArgsToPass(ArrayImpl arguments, ReadOnlySpan<BslCallParameter> parameters)
