@@ -104,60 +104,28 @@ namespace OneScript.StandardLibrary.Binary
         ///  Значение по умолчанию: Ложь. </param>
         ///
         [ScriptConstructor]
-        public static DataWriter Constructor(IValue file_stream, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, IValue param5 = null, IValue param6 = null, IValue param7 = null)
+        public static DataWriter Constructor(IValue file_stream, IValue textEncoding = null, ByteOrderEnum? byteOrder = null,
+            string lineSplitter = null, IValue param5 = null, IValue param6 = null, IValue param7 = null)
         {
-            if (file_stream.SystemType == BasicTypes.String)
-                return new DataWriter(file_stream.ToString(),
+            if (file_stream?.SystemType == BasicTypes.String)
+                return new DataWriter(file_stream.ToString()!,
                     textEncoding, 
                     byteOrder,
                     lineSplitter,
                     ContextValuesMarshaller.ConvertValueStrict<bool>(param5),
                     ContextValuesMarshaller.ConvertValueStrict<string>(param6),
                     ContextValuesMarshaller.ConvertValueStrict<bool>(param7));
-            else
-                return ConstructorByStream(
-                    file_stream,
+
+            else if (file_stream is IStreamWrapper stream)
+                return new DataWriter(stream,
                     textEncoding,
                     byteOrder,
                     lineSplitter,
                     ContextValuesMarshaller.ConvertValueStrict<string>(param5),
                     ContextValuesMarshaller.ConvertValueStrict<bool>(param6));
-        }
+            else
+                throw RuntimeException.InvalidNthArgumentType(1);
 
-        /// <summary>
-        /// 
-        /// Объект создается для записи в заданный поток.
-        /// После завершения работы с объектом, до закрытия потока, переданного в конструктор, объект необходимо закрыть с помощью метода Закрыть или НачатьЗакрытие.
-        /// </summary>
-        ///
-        /// <param name="stream">
-        /// Поток, в который производится запись данных. Типы: Поток (Stream), ПотокВПамяти (MemoryStream), ФайловыйПоток (FileStream) </param>
-        /// <param name="textEncoding">
-        /// Устанавливает кодировку текста для создаваемого экземпляра ЗаписьДанных. Если не задано, используется кодировка UTF-8.
-        /// Значение по умолчанию: UTF8. Типы: КодировкаТекста (TextEncoding), Строка (String) </param>
-        /// <param name="byteOrder">
-        /// Порядок байтов, используемый по умолчанию для кодирования целых чисел при записи в поток.
-        /// Значение по умолчанию: LittleEndian. </param>
-        /// <param name="lineSplitter">
-        /// Разделитель по умолчанию для строк, записываемых в поток. Если разделитель строк не задан, то используется строка ПС.
-        /// Значение по умолчанию: ПС. </param>
-        /// <param name="convertibleSplitterOfLines">
-        /// Определяет разделение строк в файле для конвертации в стандартный перевод строк ПС.
-        /// Значение по умолчанию: ВК + ПС. </param>
-        /// <param name="writeBOM">
-        /// Если в начало файла или потока требуется записать метку порядка байтов (BOM) для используемой кодировки текста, то данный параметр должен иметь значение Истина.
-        /// Значение по умолчанию: Ложь. </param>
-        ///
-        //[ScriptConstructor(Name = "На основании потока")]
-        public static DataWriter ConstructorByStream(IValue stream, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = null, string convertibleSplitterOfLines = null, bool writeBOM = false)
-        {
-            var streamObj = stream.AsObject() as IStreamWrapper;
-            if (streamObj == null)
-            {
-                throw RuntimeException.InvalidArgumentType(nameof(stream));
-            }
-
-            return new DataWriter(streamObj, textEncoding, byteOrder, lineSplitter, convertibleSplitterOfLines, writeBOM);
         }
 
         /// <summary>

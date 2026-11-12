@@ -93,7 +93,7 @@ namespace oscript.Web.Multipart
         [ScriptConstructor(Name = "Из двоичных данных")]
         public static PostRequestData Constructor(BinaryDataContext data, IValue boundary)
         {
-            return new PostRequestData(data.GetStream(), boundary.ToString());
+            return new PostRequestData(data.GetStream(), boundary?.ToString());
         }
 
         [ScriptConstructor(Name = "Из строки запроса")]
