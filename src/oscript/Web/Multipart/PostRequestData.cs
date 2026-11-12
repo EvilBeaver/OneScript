@@ -10,6 +10,7 @@ using ScriptEngine.Machine.Contexts;
 using System;
 using System.IO;
 using System.Text;
+using OneScript.Exceptions;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
@@ -93,6 +94,9 @@ namespace oscript.Web.Multipart
         [ScriptConstructor(Name = "Из двоичных данных")]
         public static PostRequestData Constructor(BinaryDataContext data, IValue boundary)
         {
+            if (data is null)
+                throw RuntimeException.InvalidNthArgumentType(1);
+
             return new PostRequestData(data.GetStream(), boundary?.ToString());
         }
 
