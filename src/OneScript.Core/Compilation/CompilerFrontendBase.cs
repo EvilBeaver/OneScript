@@ -55,34 +55,50 @@ namespace OneScript.Compilation
         
         private SymbolScope ModuleSymbols { get; set; }
         
+        // Таблица окружения одна на все потоки, а #Использовать дописывает в нее модули библиотек
+        // посреди компиляции. Поэтому компиляции по общей таблице идут по одной, под блокировкой
+        // на самой таблице, и окружение меняет ее под этой же блокировкой.
+        private object CompilationLock => (object)SharedSymbols ?? _ownCompilationLock;
+
+        private readonly object _ownCompilationLock = new object();
+
         public IExecutableModule Compile(SourceCode source, IBslProcess process, Type classType = null)
         {
-            var lexer = CreatePreprocessor(source);
-            var symbols = PrepareSymbols();
-            var parsedModule = ParseSyntaxConstruction(lexer, source, p => p.ParseStatefulModule());
+            lock (CompilationLock)
+            {
+                var lexer = CreatePreprocessor(source);
+                var symbols = PrepareSymbols();
+                var parsedModule = ParseSyntaxConstruction(lexer, source, p => p.ParseStatefulModule());
 
-            return CompileInternal(symbols, parsedModule, classType, process);
+                return CompileInternal(symbols, parsedModule, classType, process);
+            }
         }
 
         public IExecutableModule CompileExpression(SourceCode source)
         {
-            var lexer = new DefaultLexer
+            lock (CompilationLock)
             {
-                Iterator = source.CreateIterator()
-            };
-            var symbols = PrepareSymbols();
-            var parsedModule = ParseSyntaxConstruction(lexer, source, p => p.ParseExpression());
+                var lexer = new DefaultLexer
+                {
+                    Iterator = source.CreateIterator()
+                };
+                var symbols = PrepareSymbols();
+                var parsedModule = ParseSyntaxConstruction(lexer, source, p => p.ParseExpression());
 
-            return CompileExpressionInternal(symbols, parsedModule);
+                return CompileExpressionInternal(symbols, parsedModule);
+            }
         }
 
         public IExecutableModule CompileBatch(SourceCode source)
         {
-            var lexer = CreatePreprocessor(source);
-            var symbols = PrepareSymbols();
-            var parsedModule = ParseSyntaxConstruction(lexer, source, p => p.ParseStatefulModule());
+            lock (CompilationLock)
+            {
+                var lexer = CreatePreprocessor(source);
+                var symbols = PrepareSymbols();
+                var parsedModule = ParseSyntaxConstruction(lexer, source, p => p.ParseStatefulModule());
 
-            return CompileBatchInternal(symbols, parsedModule);
+                return CompileBatchInternal(symbols, parsedModule);
+            }
         }
 
         protected abstract IExecutableModule CompileInternal(SymbolTable symbols, ModuleNode parsedModule, Type classType, IBslProcess process);

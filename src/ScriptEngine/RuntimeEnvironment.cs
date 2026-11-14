@@ -20,6 +20,8 @@ namespace ScriptEngine
     [Obsolete("Use interface IRuntimeEnvironment")]
     public class RuntimeEnvironment : IRuntimeEnvironment, ILibraryManager
     {
+        // Компиляторы всех потоков читают эту таблицу, а #Использовать и ПодключитьВнешнююКомпоненту дописывают в нее.
+        // Компиляция по ней и любые ее изменения идут под блокировкой на самой таблице (см. CompilerFrontendBase)
         private readonly SymbolTable _symbols = new SymbolTable();
         private SymbolScope _scopeOfGlobalProperties;
         
@@ -35,16 +37,14 @@ namespace ScriptEngine
             _libraryManager = new LibraryManager(_injectedProperties);
         }
 
+        // Вызывается под блокировкой _symbols
         private void CreateGlobalScopeIfNeeded()
         {
             if (_scopeOfGlobalProperties != null) 
                 return;
-            
-            lock (_injectedProperties)
-            {
-                _scopeOfGlobalProperties ??= _symbols.PushContext(_injectedProperties);
-                _contexts.Add(_injectedProperties);
-            }
+
+            _scopeOfGlobalProperties = _symbols.PushContext(_injectedProperties);
+            _contexts.Add(_injectedProperties);
         }
 
         public void InjectObject(IAttachableContext context)
@@ -84,65 +84,80 @@ namespace ScriptEngine
             {
                 throw new ArgumentException("Invalid identifier", nameof(alias));
             }
-            CreateGlobalScopeIfNeeded();
-            var num = _injectedProperties.Insert(value, identifier, true, !readOnly);
-
-            var bslPropertyInfo = _injectedProperties.GetPropertyInfo(num);
-            IVariableSymbol registeredSymbol;
-            if (ownerPackage == null)
+            lock (_symbols)
             {
-                registeredSymbol = new WrappedPropertySymbol(bslPropertyInfo)
-                {
-                    Name = identifier,
-                    Alias = alias
-                };
-            }
-            else
-            {
-                registeredSymbol = new WrappedLibraryPropertySymbol(bslPropertyInfo, ownerPackage)
-                {
-                    Name = identifier,
-                    Alias = alias
-                };
-            }
+                CreateGlobalScopeIfNeeded();
+                var num = _injectedProperties.Insert(value, identifier, true, !readOnly);
 
-            _scopeOfGlobalProperties.DefineVariable(registeredSymbol);
+                var bslPropertyInfo = _injectedProperties.GetPropertyInfo(num);
+                IVariableSymbol registeredSymbol;
+                if (ownerPackage == null)
+                {
+                    registeredSymbol = new WrappedPropertySymbol(bslPropertyInfo)
+                    {
+                        Name = identifier,
+                        Alias = alias
+                    };
+                }
+                else
+                {
+                    registeredSymbol = new WrappedLibraryPropertySymbol(bslPropertyInfo, ownerPackage)
+                    {
+                        Name = identifier,
+                        Alias = alias
+                    };
+                }
+
+                _scopeOfGlobalProperties.DefineVariable(registeredSymbol);
+            }
         }
 
         public void InjectGlobalProperty(IValue value, BslPropertyInfo definition)
         {
-            CreateGlobalScopeIfNeeded();
-            _injectedProperties.Insert(value, definition);
-
-            var symbol = new WrappedPropertySymbol(definition)
+            lock (_symbols)
             {
-                Name = definition.Name,
-                Alias = definition.Alias
-            };
+                CreateGlobalScopeIfNeeded();
+                _injectedProperties.Insert(value, definition);
 
-            _scopeOfGlobalProperties.DefineVariable(symbol);
+                var symbol = new WrappedPropertySymbol(definition)
+                {
+                    Name = definition.Name,
+                    Alias = definition.Alias
+                };
+
+                _scopeOfGlobalProperties.DefineVariable(symbol);
+            }
         }
 
         private void RegisterObject(IAttachableContext context)
         {
-            _symbols.PushContext(context);
-            _contexts.Add(context);
+            lock (_symbols)
+            {
+                _symbols.PushContext(context);
+                _contexts.Add(context);
+            }
         }
         
         public void SetGlobalProperty(string propertyName, IValue value)
         {
-            _symbols.FindVariable(propertyName, out var binding);
+            lock (_symbols)
+            {
+                _symbols.FindVariable(propertyName, out var binding);
 
-            var context = _contexts[binding.ScopeNumber];
-            context.SetPropValue(binding.MemberNumber, value);
+                var context = _contexts[binding.ScopeNumber];
+                context.SetPropValue(binding.MemberNumber, value);
+            }
         }
 
         public IValue GetGlobalProperty(string propertyName)
         {
-            _symbols.FindVariable(propertyName, out var binding);
+            lock (_symbols)
+            {
+                _symbols.FindVariable(propertyName, out var binding);
 
-            var context = _contexts[binding.ScopeNumber];
-            return context.GetPropValue(binding.MemberNumber);
+                var context = _contexts[binding.ScopeNumber];
+                return context.GetPropValue(binding.MemberNumber);
+            }
         }
 
         public SymbolTable GetSymbolTable() => _symbols;
