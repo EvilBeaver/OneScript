@@ -54,9 +54,9 @@ namespace OneScript.StandardLibrary.Zip
             // fuck non-russian encodings on non-ascii files
             DotNetZipEncoding.SetDefault(Encoding.GetEncoding(866));
             
-            if (filenameOrStream.SystemType == BasicTypes.String)
+            if (filenameOrStream?.SystemType == BasicTypes.String)
             {
-                _zip = ZipFile.Read(filenameOrStream.ToString(), new ReadOptions { Encoding = ChooseEncoding(encoding) });
+                _zip = ZipFile.Read(filenameOrStream.ToString()!, new ReadOptions { Encoding = ChooseEncoding(encoding) });
             } 
             else if (filenameOrStream is IStreamWrapper stream)
             {
@@ -64,7 +64,7 @@ namespace OneScript.StandardLibrary.Zip
             } 
             else 
             {
-                throw RuntimeException.InvalidArgumentType(nameof(filenameOrStream));
+                throw RuntimeException.InvalidNthArgumentType(1);
             }
             
             _zip.Password = password;
@@ -156,9 +156,7 @@ namespace OneScript.StandardLibrary.Zip
         [ScriptConstructor(Name = "На основании имени файла или потока")]
         public static ZipReader Constructor(IValue dataSource, string password = null)
         {
-            var dataSourceRawValue = dataSource ?? ValueFactory.CreateInvalidValueMarker();
-
-            return new ZipReader(dataSourceRawValue, password);
+            return new ZipReader(dataSource, password);
         }
 
         public void Dispose()

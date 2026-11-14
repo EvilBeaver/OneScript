@@ -83,15 +83,17 @@ namespace OneScript.StandardLibrary.Text
                     ContextValuesMarshaller.ConvertValueStrict<string>(param4),
                     ContextValuesMarshaller.ConvertValueStrict<bool>(param5));
             }
-            else
+            else if (fileOrStream is not null)
             {
                 OpenFile(
-                    fileOrStream.ToString(),
+                    fileOrStream.ToString()!,
                     encoding,
                     lineDelimiter,
                     ContextValuesMarshaller.ConvertValueStrict<bool>(param4),
                     ContextValuesMarshaller.ConvertValueStrict<string>(param5));
             }
+            else
+                throw RuntimeException.InvalidNthArgumentType(1);
         }
 
         [ContextMethod("Закрыть","Close")]
