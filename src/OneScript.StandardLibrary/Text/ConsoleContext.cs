@@ -11,6 +11,7 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.StandardLibrary.Binary;
+using OneScript.StandardLibrary.Collections;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -86,6 +87,63 @@ namespace OneScript.StandardLibrary.Text
         {
             var kki = Console.ReadKey(true);
             return (int)kki.Key;
+        }
+
+        /// <summary>
+        /// Читает нажатие клавиши и возвращает подробное описание нажатия.
+        /// В отличие от <see cref="ReadKey"/>, возвращает не только код клавиши, но и введённый символ
+        /// (в том числе кириллический), а также состояние модификаторов.
+        /// Символ не выводится в консоль (чтение выполняется без эха).
+        /// </summary>
+        /// <returns>
+        /// Структура с полями:
+        /// <list type="bullet">
+        /// <item><description><c>КодКнопки</c> — код клавиши (значение перечисления <see cref="ConsoleKey"/>),
+        /// совпадает с результатом <see cref="ReadKey"/>;</description></item>
+        /// <item><description><c>Символ</c> — введённый символ; пустая строка для служебных клавиш
+        /// и управляющих сочетаний;</description></item>
+        /// <item><description><c>Модификаторы</c> — структура с булевыми полями <c>Shift</c>, <c>Alt</c>, <c>Control</c>.</description></item>
+        /// </list>
+        /// </returns>
+        /// <remarks>
+        /// Возможности платформы различаются:
+        /// <list type="bullet">
+        /// <item><description>в Windows код клавиши и состояние модификаторов определяются для любых нажатий;</description></item>
+        /// <item><description>в Unix-подобных системах .NET распознаёт клавиши и модификаторы только для известных
+        /// символов и управляющих последовательностей. Для символов за пределами ASCII (в том числе кириллицы)
+        /// <c>КодКнопки</c> может быть равен 0, а <c>Shift</c> для заглавной кириллической буквы может не определиться
+        /// (при этом сам символ всегда возвращается в поле <c>Символ</c>).</description></item>
+        /// </list>
+        /// </remarks>
+        [ContextMethod("ПрочитатьНажатие", "ReadKeyPress")]
+        public StructureImpl ReadKeyPress()
+        {
+            return CreateKeyPressInfo(Console.ReadKey(true));
+        }
+
+        /// <summary>
+        /// Преобразует нажатие, полученное от <see cref="Console.ReadKey(bool)"/>,
+        /// в структуру, доступную из BSL.
+        /// </summary>
+        internal static StructureImpl CreateKeyPressInfo(ConsoleKeyInfo keyInfo)
+        {
+            var modifiers = new StructureImpl(
+                "Shift, Alt, Control",
+                ValueFactory.Create((keyInfo.Modifiers & ConsoleModifiers.Shift) != 0),
+                ValueFactory.Create((keyInfo.Modifiers & ConsoleModifiers.Alt) != 0),
+                ValueFactory.Create((keyInfo.Modifiers & ConsoleModifiers.Control) != 0));
+
+            var result = new StructureImpl();
+            result.Insert("КодКнопки", ValueFactory.Create((int)keyInfo.Key));
+            result.Insert("Символ", ValueFactory.Create(GetPrintableSymbol(keyInfo.KeyChar)));
+            result.Insert("Модификаторы", modifiers);
+
+            return result;
+        }
+
+        private static string GetPrintableSymbol(char keyChar)
+        {
+            return char.IsControl(keyChar) ? string.Empty : keyChar.ToString();
         }
 
         [ContextMethod("Очистить", "Clear")]
