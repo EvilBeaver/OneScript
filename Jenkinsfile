@@ -451,10 +451,12 @@ def publishDockerImage(flavour, codename, engineVersion) {
     sh "docker buildx inspect ${builder} > /dev/null 2>&1 || docker buildx create --name ${builder} --driver docker-container --driver-opt image=moby/buildkit:${buildkitVersion}"
 
     // --no-cache: слой с ovm install не меняется между сборками и иначе берется из кэша агента
-    // --pull: обновлять базовые образы (ovm, aspnet, mono)
-    docker.build(
-        imageName,
-        "--builder ${builder} --load --pull --no-cache --build-arg VERSION=${engineVersion} -f install/builders/base-image/Dockerfile_${flavour} ."
-    ).push()
+    // --pull: обновлять базовые образы (ovm, aspnet, mono); login до build нужен для приватных/evilbeaver/* на Hub
+    docker.withRegistry('https://index.docker.io/v1/', 'DockerHubCredentials') {
+        docker.build(
+            imageName,
+            "--builder ${builder} --load --pull --no-cache --build-arg VERSION=${engineVersion} -f install/builders/base-image/Dockerfile_${flavour} ."
+        ).push()
+    }
 }
 
