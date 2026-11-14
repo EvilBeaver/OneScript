@@ -40,6 +40,9 @@
    пользователя, не пробовать SDK.
 2. **BSL-тесты** — свежесобранный `src/oscript/bin/Debug/net8.0/oscript.exe`,
    не версия из `ovm` / PATH (подробности в `native-api.md` и `runbsltests.mdc`).
+   Локально запускать скриптами `tests/run-bsl-tests.*`; цель
+   `dotnet msbuild Build.csproj /t:Test` рассчитана на CI — её часть `ScriptedTests`
+   использует опубликованную сборку из `built/`, а не Debug-сборку.
 3. **Коммиты** — только по явной просьбе пользователя; не коммитить бинарники
    без запроса (см. также `copilot-instructions.md`).
 

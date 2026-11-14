@@ -214,7 +214,7 @@ Out-параметры, `IsPropReadable`/`IsPropWritable`, `VTYPE_TM` и т.д. 
 4. При изменении **сигнатуры экспорта** в `NativeApiProxy.cpp` синхронно менять
    делегат в `NativeApiProxy.cs` (ABI, порядок аргументов, размер возвращаемого
    значения).
-5. После фикса: `native-api.os` (16 тестов), затем полный `run-bsl-tests.cmd`.
+5. После фикса: `native-api.os` (17 тестов), затем полный `run-bsl-tests.cmd`.
 
 ## 7. Ключевые файлы по темам
 
@@ -235,11 +235,13 @@ Out-параметры, `IsPropReadable`/`IsPropWritable`, `VTYPE_TM` и т.д. 
 - [ ] При правках компоненты — пересобран `tests/native-api/AddInNative.vcxproj`.
 - [ ] Свежий прокси скопирован в `src/oscript/bin/Debug/net8.0/`.
 - [ ] `dotnet build src/oscript/oscript.csproj`.
-- [ ] `oscript.exe testrunner.os -run native-api.os` — 16/16.
+- [ ] `oscript.exe testrunner.os -run native-api.os` — 17/17.
 - [ ] Даты DLL прокси и oscript.dll согласованы со временем сборки.
 
 ## 9. Известные исключения при полном прогоне
 
-См. `.cursor/rules/runbsltests.mdc`: игнорировать падения `http.os`, отдельного
-HTTP-теста перемещения файла, а также ошибки из-за отсутствующей `Component.dll`
-(если не в scope задачи).
+См. `.cursor/rules/runbsltests.mdc`: игнорировать падения `http.os`, тест
+`Тест_ДолженПроверитьЧтоПеремещениеФайлаРаботаетПоHTTP` (фактически находится в
+`tests/global-funcs.os`), а также ошибки из-за отсутствующей `Component.dll`
+(бинарник `tests/component/Component.dll` не хранится в git — если не в scope
+задачи).
