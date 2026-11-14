@@ -159,7 +159,7 @@ namespace TestApp
         
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var hostedScript = CreateEngine();
+            using var hostedScript = CreateEngine();
             
             hostedScript.Initialize();
             var src = hostedScript.Loader.FromString(txtCode.Text);
@@ -205,27 +205,16 @@ namespace TestApp
 
             var host = new Host(result, l_args.ToArray());
             SystemLogger.SetWriter(host);
-            var hostedScript = CreateEngine();
+            using var hostedScript = CreateEngine();
             
             var src = SourceCodeBuilder.Create()
                 .FromSource(new EditedFileSource(txtCode.Text, _currentDocPath))
                 .WithName(_currentDocPath)
                 .Build();
 
-            Process process = null;
-            try
-            {
-                process = hostedScript.CreateProcess(host, src);
-            }
-            catch (Exception exc)
-            {
-                host.Echo(exc.Message);
-                return;
-            }
-
             result.AppendText("Script started: " + DateTime.Now.ToString() + "\n");
             sw.Start();
-            var returnCode = process.Start();
+            var returnCode = hostedScript.RunProcess(host, src);
             sw.Stop();
             if (returnCode != 0)
             {
@@ -233,7 +222,6 @@ namespace TestApp
             }
             result.AppendText("\nScript completed: " + DateTime.Now.ToString());
             result.AppendText("\nDuration: " + sw.Elapsed.ToString() + "\n");
-            
         }
 
         private static string GetFileDialogFilter()
@@ -422,11 +410,18 @@ namespace TestApp
 
         public void Echo(string str, MessageStatusEnum status = MessageStatusEnum.Ordinary)
         {
-            _output.Dispatcher.BeginInvoke(new Action(() =>
+            void Append()
             {
                 _output.AppendText(str + '\n');
                 _output.ScrollToEnd();
-            }));
+            }
+
+            // RunProcess вызывается с UI-потока: без синхронной записи
+            // ShowExceptionInfo оказывается после "Error detected" / "Script completed".
+            if (_output.Dispatcher.CheckAccess())
+                Append();
+            else
+                _output.Dispatcher.BeginInvoke(new Action(Append));
         }
 
         public void ShowExceptionInfo(Exception exc)
