@@ -323,6 +323,7 @@ pipeline {
                         }
                     }
                     steps {
+                        checkout scm
                         script {
                             def codename = env.TAG_NAME ? env.TAG_NAME : 'lts'
                             // тег v1.9.4 -> версия для ovm 1.9.4
@@ -342,6 +343,7 @@ pipeline {
                         }
                     }
                     steps {
+                        checkout scm
                         script {
                             def codename = ''
                             if (env.VersionSuffix != null && !env.VersionSuffix.isEmpty()) {
@@ -443,20 +445,43 @@ def publishReleaseNotes(codename) {
 
 def publishDockerImage(flavour, codename, engineVersion) {
     def imageName = "evilbeaver/onescript:${codename}"
+    def dockerfile = "install/builders/base-image/Dockerfile_${flavour}"
 
     // Временно, см. #1752: в buildkit с runc 1.4.3 на ядре сервера не запускается ни один RUN.
-    // v0.30.0 собран с runc 1.3.5. Убрать, когда выйдет buildkit с runc 1.5.1+
+    // onescript-buildkit-v0.30.0 — именованный buildx-builder (контейнер moby/buildkit:v0.30.0 с runc 1.3.5).
+    // Убрать фиксацию, когда на агенте можно снова использовать дефолтный buildkit.
     def buildkitVersion = 'v0.30.0'
     def builder = "onescript-buildkit-${buildkitVersion}"
-    sh "docker buildx inspect ${builder} > /dev/null 2>&1 || docker buildx create --name ${builder} --driver docker-container --driver-opt image=moby/buildkit:${buildkitVersion}"
 
     // --no-cache: слой с ovm install не меняется между сборками и иначе берется из кэша агента
-    // --pull: обновлять базовые образы (ovm, aspnet, mono); login до build нужен для приватных/evilbeaver/* на Hub
+    // --pull: обновлять базовые образы (ovm, aspnet, mono); login до build — evilbeaver/* на Hub
     docker.withRegistry('https://index.docker.io/v1/', 'DockerHubCredentials') {
-        docker.build(
-            imageName,
-            "--builder ${builder} --load --pull --no-cache --build-arg VERSION=${engineVersion} -f install/builders/base-image/Dockerfile_${flavour} ."
-        ).push()
+        sh(label: "Prepare Docker buildx ${flavour}", script: """\
+            set -e
+            if ! docker buildx inspect '${builder}' >/dev/null 2>&1; then
+                docker buildx create --name '${builder}' --driver docker-container --driver-opt image=moby/buildkit:${buildkitVersion}
+            fi
+            docker buildx inspect --bootstrap '${builder}'
+            """.stripIndent())
+
+        // Docker Hub и MCR периодически обрывают загрузку слоев (например, tls: bad record MAC).
+        // При повторе BuildKit продолжит использовать уже загруженные blobs.
+        retry(3) {
+            sh(label: "Docker buildx ${flavour} → ${imageName}", script: """\
+                set -e
+                docker buildx build \\
+                    --builder '${builder}' \\
+                    --tag '${imageName}' \\
+                    --load \\
+                    --pull \\
+                    --no-cache \\
+                    --build-arg VERSION='${engineVersion}' \\
+                    -f '${dockerfile}' \\
+                    .
+                """.stripIndent())
+        }
+
+        sh "docker push '${imageName}'"
     }
 }
 
