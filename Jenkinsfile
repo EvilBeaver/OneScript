@@ -323,7 +323,6 @@ pipeline {
                         }
                     }
                     steps {
-                        checkout scm
                         script {
                             def codename = env.TAG_NAME ? env.TAG_NAME : 'lts'
                             // тег v1.9.4 -> версия для ovm 1.9.4
@@ -343,7 +342,6 @@ pipeline {
                         }
                     }
                     steps {
-                        checkout scm
                         script {
                             def codename = ''
                             if (env.VersionSuffix != null && !env.VersionSuffix.isEmpty()) {
