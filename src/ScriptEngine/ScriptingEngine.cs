@@ -167,6 +167,15 @@ namespace ScriptEngine
             return scriptContext;
         }
 
+        /// <summary>
+        /// Инициализирует ранее созданный экземпляр сценария.
+        /// </summary>
+        /// <remarks>
+        /// Повторная инициализация запрещена, в том числе после неудачной попытки.
+        /// </remarks>
+        /// <param name="sdo">Экземпляр, инициализация которого ещё не начиналась.</param>
+        /// <param name="process">Процесс, в котором выполняется инициализация.</param>
+        /// <exception cref="InvalidOperationException">Инициализация экземпляра уже была начата.</exception>
         public void InitializeSDO(ScriptDrivenObject sdo, IBslProcess process)
         {
             sdo.Initialize(process);
