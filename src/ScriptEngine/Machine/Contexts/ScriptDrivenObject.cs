@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
@@ -20,6 +21,7 @@ namespace ScriptEngine.Machine.Contexts
         private int VARIABLE_COUNT;
         private int METHOD_COUNT;
         private BslMethodInfo[] _attachableMethods;
+        private int _initializationStarted;
         private readonly Dictionary<string, int> _methodSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _propertySearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _allPropertiesSearchCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -121,8 +123,20 @@ namespace ScriptEngine.Machine.Contexts
             process.Run(this, _module, _module.ModuleBody, Array.Empty<IValue>());
         }
         
+        /// <summary>
+        /// Выполняет тело модуля и обработчик создания экземпляра.
+        /// </summary>
+        /// <remarks>
+        /// Допускается только одна попытка инициализации экземпляра, в том числе при завершении с ошибкой.
+        /// Повторный, вложенный или одновременный вызов запрещён.
+        /// </remarks>
+        /// <param name="process">Процесс, в котором выполняется инициализация.</param>
+        /// <exception cref="InvalidOperationException">Инициализация экземпляра уже была начата.</exception>
         public void Initialize(IBslProcess process)
         {
+            if (Interlocked.CompareExchange(ref _initializationStarted, 1, 0) != 0)
+                throw new InvalidOperationException("Script object initialization can only be performed once.");
+
             OnInstanceCreation(process);
         }
 
