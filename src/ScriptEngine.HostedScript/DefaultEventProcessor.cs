@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
@@ -28,6 +29,8 @@ namespace ScriptEngine.HostedScript
         private class HandlersList : IEnumerable<Handler>
         {
             private readonly List<Handler> _handlers = new List<Handler>();
+
+            public bool IsEmpty => _handlers.Count == 0;
             
             public void Add(ScriptDrivenObject target, string methodName)
             {
@@ -59,8 +62,7 @@ namespace ScriptEngine.HostedScript
             }
         }
         
-        private readonly Dictionary<IRuntimeContextInstance, Dictionary<string, HandlersList>> _registeredHandlers 
-            = new Dictionary<IRuntimeContextInstance, Dictionary<string, HandlersList>>();
+        private readonly ConditionalWeakTable<IRuntimeContextInstance, Dictionary<string, HandlersList>> _registeredHandlers = new ();
 
         private readonly object _subscriptionLock = new object();
         
@@ -78,7 +80,7 @@ namespace ScriptEngine.HostedScript
                 if (!_registeredHandlers.TryGetValue(eventSource, out var handlers))
                 {
                     handlers = new Dictionary<string, HandlersList>();
-                    _registeredHandlers[eventSource] = handlers;
+                    _registeredHandlers.Add(eventSource, handlers);
                 }
 
                 if (!handlers.TryGetValue(eventName, out var handlersList))
@@ -110,6 +112,14 @@ namespace ScriptEngine.HostedScript
                 if (handlers.TryGetValue(eventName, out var handlersList))
                 {
                     handlersList.Remove(handlerScript, handlerMethod);
+
+                    if (handlersList.IsEmpty)
+                    {
+                        handlers.Remove(eventName);
+
+                        if (handlers.Count == 0)
+                            _registeredHandlers.Remove(eventSource);
+                    }
                 }
             }
         }
