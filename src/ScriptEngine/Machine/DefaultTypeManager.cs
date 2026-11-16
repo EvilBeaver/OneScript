@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Contexts;
@@ -18,7 +19,11 @@ namespace ScriptEngine.Machine
 {
     public class DefaultTypeManager : ITypeManager
     {
-        private readonly Dictionary<string, int> _knownTypesIndexes = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+        // Типы регистрируются и из фоновых заданий: ПодключитьСценарий, внешние компоненты.
+        // Поиск по имени идет на каждом Новый и Тип(), поэтому он без блокировки,
+        // а регистрация и редкие обращения к списку типов - под _lock.
+        private readonly object _lock = new object();
+        private readonly ConcurrentDictionary<string, TypeDescriptor> _knownTypesByName = new ConcurrentDictionary<string, TypeDescriptor>(StringComparer.InvariantCultureIgnoreCase);
         private readonly List<TypeDescriptor> _knownTypes = new List<TypeDescriptor>();
         private readonly TypeFactoryCache _factoryCache = new TypeFactoryCache();
         private readonly ILazyTypeResolver[] _resolvers;
@@ -42,9 +47,9 @@ namespace ScriptEngine.Machine
 
         public TypeDescriptor GetTypeByName(string name)
         {
-            if (_knownTypesIndexes.TryGetValue(name, out var index))
+            if (_knownTypesByName.TryGetValue(name, out var knownType))
             {
-                return _knownTypes[index];
+                return knownType;
             }
 
             if (TryResolveLazily(name, out var resolvedType))
@@ -64,15 +69,18 @@ namespace ScriptEngine.Machine
 
         public bool TryGetType(Type frameworkType, out TypeDescriptor type)
         {
-            type = _knownTypes.FirstOrDefault(x => x.ImplementingClass == frameworkType);
+            lock (_lock)
+            {
+                type = _knownTypes.FirstOrDefault(x => x.ImplementingClass == frameworkType);
+            }
+
             return type != default;
         }
         
         public bool TryGetType(string name, out TypeDescriptor type)
         {
-            if (_knownTypesIndexes.TryGetValue(name, out var index))
+            if (_knownTypesByName.TryGetValue(name, out type))
             {
-                type = _knownTypes[index];
                 return true;
             }
 
@@ -87,37 +95,38 @@ namespace ScriptEngine.Machine
 
         public TypeDescriptor RegisterType(string name, string alias, Type implementingClass)
         {
-            if (_knownTypesIndexes.ContainsKey(name))
+            lock (_lock)
             {
-                var td = GetTypeByName(name);
-                if (td.ImplementingClass != implementingClass)
+                if (_knownTypesByName.TryGetValue(name, out var td))
                 {
-                    throw new InvalidOperationException($"Name `{name}` is already registered");
+                    if (td.ImplementingClass != implementingClass)
+                    {
+                        throw new InvalidOperationException($"Name `{name}` is already registered");
+                    }
+
+                    return td;
                 }
 
-                return td;
-            }
-            else
-            {
                 var typeDesc = new TypeDescriptor(implementingClass, name, alias);
                 RegisterTypeInternal(typeDesc);
                 return typeDesc;
             }
-
         }
         
         public void RegisterType(TypeDescriptor typeDescriptor)
         {
-            if (_knownTypesIndexes.TryGetValue(typeDescriptor.Name, out var index))
+            lock (_lock)
             {
-                var knownType = _knownTypes[index];
-                if (knownType != typeDescriptor)
-                    throw new InvalidOperationException($"Type {typeDescriptor} already registered");
-                
-                return;
+                if (_knownTypesByName.TryGetValue(typeDescriptor.Name, out var knownType))
+                {
+                    if (knownType != typeDescriptor)
+                        throw new InvalidOperationException($"Type {typeDescriptor} already registered");
+
+                    return;
+                }
+
+                RegisterTypeInternal(typeDescriptor);
             }
-            
-            RegisterTypeInternal(typeDescriptor);
         }
 
         public ITypeFactory GetFactoryFor(TypeDescriptor type)
@@ -127,12 +136,10 @@ namespace ScriptEngine.Machine
 
         private void RegisterTypeInternal(TypeDescriptor td)
         {
-            var nextListId = _knownTypes.Count;
-            _knownTypesIndexes.Add(td.Name, nextListId);
-            if (!string.IsNullOrWhiteSpace(td.Alias) && td.Alias != td.Name)
-                _knownTypesIndexes[td.Alias] = nextListId;
-            
             _knownTypes.Add(td);
+            _knownTypesByName[td.Name] = td;
+            if (!string.IsNullOrWhiteSpace(td.Alias) && td.Alias != td.Name)
+                _knownTypesByName[td.Alias] = td;
         }
 
         private bool TryResolveLazily(string name, out TypeDescriptor type)
@@ -151,23 +158,36 @@ namespace ScriptEngine.Machine
 
         public TypeDescriptor GetTypeByFrameworkType(Type type)
         {
-            return _knownTypes.First(x => x.ImplementingClass == type);
+            lock (_lock)
+            {
+                return _knownTypes.First(x => x.ImplementingClass == type);
+            }
         }
 
         public bool IsKnownType(Type type)
         {
-            return _knownTypes.Any(x => x.ImplementingClass == type);
+            lock (_lock)
+            {
+                return _knownTypes.Any(x => x.ImplementingClass == type);
+            }
         }
 
         public bool IsKnownType(string typeName)
         {
             var nameToUpper = typeName.ToUpperInvariant();
-            return _knownTypes.Any(x => x.Name.ToUpperInvariant() == nameToUpper);
+            lock (_lock)
+            {
+                return _knownTypes.Any(x => x.Name.ToUpperInvariant() == nameToUpper);
+            }
         }
 
         public IReadOnlyList<TypeDescriptor> RegisteredTypes()
         {
-            return _knownTypes;
+            // Копия: вызывающий перебирает список уже без блокировки
+            lock (_lock)
+            {
+                return _knownTypes.ToArray();
+            }
         }
 
         #endregion

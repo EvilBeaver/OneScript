@@ -104,14 +104,15 @@ namespace OneScript.Commons
             string param;
             string zeroAppearance;
 
-            if (formatParameters.HasParam(NUM_ZERO_APPEARANCE, out param))
+            if (formatParameters.HasParam(NUM_ZERO_APPEARANCE, out zeroAppearance))
             {
-                zeroAppearance = (param == "") ? "0" : param;
+                if (zeroAppearance == "")
+                    zeroAppearance = null;
             }
             else
                 zeroAppearance = "";
 
-            if (num == 0)
+            if (num == 0 && zeroAppearance is not null)
             {
                 return zeroAppearance;
             }
@@ -174,7 +175,7 @@ namespace OneScript.Commons
             {
                 bool overflov = !ApplyNumericSizeRestrictions(ref num, totalDigits, fractionDigits); ;
 
-                if (num == 0)
+                if (num == 0 && zeroAppearance is not null)
                     return zeroAppearance;
 
                 if (totalDigits == 0)

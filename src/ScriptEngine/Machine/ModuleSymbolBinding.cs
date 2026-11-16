@@ -33,12 +33,13 @@ namespace ScriptEngine.Machine
 
         private IAttachableContext ResolveFrameScope(ExecutionFrame frame)
         {
-            if (frame?.Scopes == null)
+            if (frame?.Scopes is not JoinedScopes scopes)
                 throw new InvalidOperationException("Frame scopes are not available");
-            if (ScopeIndex < 0 || ScopeIndex >= frame.Scopes.Count)
+            if (ScopeIndex < 0 || ScopeIndex >= scopes.InnerScopesCount)
                 throw new InvalidOperationException($"Invalid scope index {ScopeIndex}");
 
-            return frame.Scopes[ScopeIndex];
+            // Номер с конца: глобальных контекстов в начале списка может стать больше
+            return scopes.FromEnd(ScopeIndex);
         }
 
         public bool Equals(ModuleSymbolBinding other)

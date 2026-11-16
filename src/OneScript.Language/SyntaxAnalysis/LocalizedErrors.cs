@@ -164,5 +164,10 @@ namespace OneScript.Language.SyntaxAnalysis
 
         public static CodeError AsyncMethodsNotSupported() =>
             Create("Асинхронные методы не поддерживаются", "Async methods aren't supported");
+
+        public static CodeError ValueIsNotObjectException()
+        {
+            return Create("Значение не является значением объектного типа", "Value is not of object type");
+        }
     }
 }

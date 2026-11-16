@@ -19,12 +19,16 @@ public class PropertyWrappersCollection
     
     public T Get<T>(string propName, Func<T> factory)
     {
-        if (_objects.TryGetValue(propName, out var value))
-            return (T)value;
+        // Контекст запроса могут передать в фоновые задания
+        lock (_objects)
+        {
+            if (_objects.TryGetValue(propName, out var value))
+                return (T)value;
         
-        value = factory();
-        _objects.Add(propName, value);
+            value = factory();
+            _objects.Add(propName, value);
 
-        return (T)value;
+            return (T)value;
+        }
     }
 }

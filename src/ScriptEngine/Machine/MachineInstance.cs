@@ -2443,53 +2443,24 @@ namespace ScriptEngine.Machine
         {
             var ctx = new SymbolTable();
             var scopes = _currentFrame.Scopes ?? Array.Empty<IAttachableContext>();
-            var scopeCount = scopes.Count;
-            var thisScope = _currentFrame.ThisScope;
 
-            // Добавляем все контексты из scopes (глобальные + локальные из предыдущих кадров)
-            for (int index = 0; index < scopeCount; index++)
+            // В начале scopes - глобальные контексты окружения, дальше области модуля и вложенных вычислений.
+            // Выражение кэшируется, а глобальных контекстов может стать больше (ПодключитьВнешнююКомпоненту),
+            // поэтому глобальные связываются напрямую, а остальные области - по номеру с конца списка
+            var joinedScopes = scopes as JoinedScopes;
+            var globals = joinedScopes?.RootScopes ?? scopes;
+            var globalsCount = globals.Count;
+            for (int index = 0; index < globalsCount; index++)
             {
-                var scope = scopes[index];
+                var scope = globals[index];
+                ctx.PushScope(CreateSymbolScope(scope), ScopeBindingDescriptor.Static(scope));
+            }
 
-                var symbolScope = new SymbolScope();
-                
-                // Добавляем методы
-                for (int i = 0; i < scope.MethodsCount; i++)
-                {
-                    var methodInfo = scope.GetMethod(i);
-                    symbolScope.DefineMethod(methodInfo.ToSymbol());
-                }
-                
-                // Добавляем переменные
-                for (int i = 0; i < scope.VariablesCount; i++)
-                {
-                    var variable = scope.GetVariable(i);
-                    
-                    string alias = null;
-                    if (scope is IRuntimeContextInstance runtimeContext)
-                    {
-                        try
-                        {
-                            var propInfo = runtimeContext.GetPropertyInfo(i);
-                            alias = propInfo.Alias;
-                        }
-                        catch
-                        {
-                            // Алиас остается пустым
-                        }
-                    }
-                    
-                    if (alias != null)
-                    {
-                        symbolScope.DefineVariable(new AliasedVariableSymbol(variable.Name, alias));
-                    }
-                    else
-                    {
-                        symbolScope.DefineVariable(new LocalVariableSymbol(variable.Name));
-                    }
-                }
-
-                ctx.PushScope(symbolScope, ScopeBindingDescriptor.FrameScope(index));
+            var innerScopesCount = joinedScopes?.InnerScopesCount ?? 0;
+            for (int index = innerScopesCount - 1; index >= 0; index--)
+            {
+                // В кадре выражения самой внутренней будет его собственная локальная область
+                ctx.PushScope(CreateSymbolScope(joinedScopes.FromEnd(index)), ScopeBindingDescriptor.FrameScope(index + 1));
             }
 
             // Локальные переменные текущего фрейма
@@ -2501,6 +2472,49 @@ namespace ScriptEngine.Machine
 
             ctx.PushScope(locals, ScopeBindingDescriptor.ThisScope());
             return ctx;
+        }
+
+        private static SymbolScope CreateSymbolScope(IAttachableContext scope)
+        {
+            var symbolScope = new SymbolScope();
+            
+            // Добавляем методы
+            for (int i = 0; i < scope.MethodsCount; i++)
+            {
+                var methodInfo = scope.GetMethod(i);
+                symbolScope.DefineMethod(methodInfo.ToSymbol());
+            }
+            
+            // Добавляем переменные
+            for (int i = 0; i < scope.VariablesCount; i++)
+            {
+                var variable = scope.GetVariable(i);
+                
+                string alias = null;
+                if (scope is IRuntimeContextInstance runtimeContext)
+                {
+                    try
+                    {
+                        var propInfo = runtimeContext.GetPropertyInfo(i);
+                        alias = propInfo.Alias;
+                    }
+                    catch
+                    {
+                        // Алиас остается пустым
+                    }
+                }
+                
+                if (alias != null)
+                {
+                    symbolScope.DefineVariable(new AliasedVariableSymbol(variable.Name, alias));
+                }
+                else
+                {
+                    symbolScope.DefineVariable(new LocalVariableSymbol(variable.Name));
+                }
+            }
+
+            return symbolScope;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
