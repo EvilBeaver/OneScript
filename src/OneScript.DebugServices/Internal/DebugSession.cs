@@ -18,6 +18,7 @@ namespace OneScript.DebugServices.Internal
     internal class DebugSession : IDebugSession
     {
         private bool _isStarted;
+        private int _disposed;
         private readonly ThreadManager _threadManager;
         private readonly TcpEventCallbackChannel _callbackChannel;
         private readonly DispatchingService<IDebuggerService> _messageServer;
@@ -39,6 +40,7 @@ namespace OneScript.DebugServices.Internal
             };
 
             ipcServer.OnError += CommunicationError;
+            ipcServer.DataReceived += ConnectionLost;
             
             BreakpointManager = new DefaultBreakpointManager();
             _threadManager = new ThreadManager();
@@ -59,6 +61,13 @@ namespace OneScript.DebugServices.Internal
             Dispose();
         }
 
+        private void ConnectionLost(object sender, CommunicationEventArgs e)
+        {
+            // IDE закрыла соединение без Disconnect или связь оборвалась
+            if (e.Exception?.StopChannel == true)
+                Dispose();
+        }
+
         private void ThreadManagerOnThreadStopped(object sender, ThreadStoppedEventArgs e)
         {
             MachineWaitToken token;
@@ -71,19 +80,39 @@ namespace OneScript.DebugServices.Internal
                 return;
             }
             
+            // Остановка внутри вычисления отладчика (watch вызвал метод с точкой останова):
+            // отладчик ждет результат и продолжить поток не сможет
+            if (token.IsRunningDebuggerWork)
+                return;
+
             token.Reset();
+            try
+            {
+                _callbackChannel.ThreadStoppedEx(e.ThreadId, ConvertStopReason(e.StopReason), e.ErrorMessage);
+            }
+            catch
+            {
+                // Остановку не сообщили - поток не должен числиться остановленным
+                token.Set();
+                throw;
+            }
             
-            _callbackChannel.ThreadStoppedEx(e.ThreadId, ConvertStopReason(e.StopReason), e.ErrorMessage);
             token.Wait();
         }
 
         public void Dispose()
         {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+                return;
+
             _threadManager.ThreadStopped -= ThreadManagerOnThreadStopped;
             _threadManager.Dispose();
             _messageServer.Stop();
             IsActive = false;
             
+            // IDE отключилась до команды запуска: выполняемся без отладчика, а не ждем вечно
+            _startEvent.Set();
+
             OnClose?.Invoke(this);
         }
 
