@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,7 +15,9 @@ namespace ScriptEngine.Machine
 {
     public class GlobalInstancesManager : IGlobalsManager
     {
-        private readonly Dictionary<Type, object> _instances = new Dictionary<Type, object>();
+        // Экземпляры добавляются и во время работы (ПодключитьВнешнююКомпоненту, ЗагрузитьБиблиотеку),
+        // пока другие потоки их читают
+        private readonly ConcurrentDictionary<Type, object> _instances = new ConcurrentDictionary<Type, object>();
 
         public void Dispose()
         {
@@ -30,12 +33,13 @@ namespace ScriptEngine.Machine
 
         public void RegisterInstance(object instance)
         {
-            _instances.Add(instance.GetType(), instance);
+            RegisterInstance(instance.GetType(), instance);
         }
 
         public void RegisterInstance(Type type, object instance)
         {
-            _instances.Add(type, instance);
+            if (!_instances.TryAdd(type, instance))
+                throw new ArgumentException($"An item with the same key has already been added. Key: {type}");
         }
 
         public object GetInstance(Type type)

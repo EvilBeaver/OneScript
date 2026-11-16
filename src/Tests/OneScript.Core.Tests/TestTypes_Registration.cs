@@ -11,9 +11,11 @@ using System.Linq;
 using FluentAssertions;
 using Moq;
 using OneScript.Contexts;
+using OneScript.Exceptions;
 using OneScript.StandardLibrary.Collections;
 using OneScript.Types;
 using ScriptEngine;
+using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Types;
@@ -98,6 +100,39 @@ namespace OneScript.Core.Tests
             Assert.True(type1 == type2); // operator==
             Assert.False(type1 != type2); // operator !=
         }
-        
+
+        [Fact]
+        public void AttachingScriptUnderBuiltInTypeNameFailsEveryTime()
+        {
+            var engine = DefaultEngineBuilder.Create()
+                .SetDefaultOptions()
+                .Build();
+            engine.Initialize();
+
+            for (var i = 0; i < 2; i++)
+            {
+                Action attach = () => engine.AttachedScriptsFactory.AttachFromString(
+                    engine.GetCompilerService(), "Перем А;", "Строка", engine.NewProcess());
+                attach.Should().Throw<InvalidOperationException>();
+            }
+        }
+
+        [Fact]
+        public void AttachingScriptUnderLibraryClassNameIsRejected()
+        {
+            var engine = DefaultEngineBuilder.Create()
+                .SetDefaultOptions()
+                .Build();
+            engine.Initialize();
+            var libraryClass = engine.AttachedScriptsFactory.CompileModuleFromSource(
+                engine.GetCompilerService(), engine.Loader.FromString("Перем А;"), null, engine.NewProcess());
+            engine.AttachedScriptsFactory.RegisterTypeModule("КлассБиблиотеки", libraryClass);
+
+            Action attach = () => engine.AttachedScriptsFactory.AttachFromString(
+                engine.GetCompilerService(), "Перем Б;", "КлассБиблиотеки", engine.NewProcess());
+
+            attach.Should().Throw<RuntimeException>().WithMessage("*already registered*");
+        }
+
     }
 }

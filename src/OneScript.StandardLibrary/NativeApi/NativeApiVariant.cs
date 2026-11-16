@@ -45,7 +45,8 @@ namespace OneScript.StandardLibrary.NativeApi
                         NativeApiProxy.SetVariantReal(Ptr, Convert.ToDouble(value.AsNumber()));
                     break;
                 case BinaryDataContext binaryData:
-                    NativeApiProxy.SetVariantBlob(Ptr, binaryData.Buffer, binaryData.Buffer.Length);
+                    var blob = binaryData.Buffer;
+                    NativeApiProxy.SetVariantBlob(Ptr, blob, blob.Length);
                     break;
                 case DateTime dt:
                     NativeApiProxy.SetVariantTm(

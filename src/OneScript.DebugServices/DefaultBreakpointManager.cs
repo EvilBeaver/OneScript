@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.Commons;
@@ -14,37 +15,49 @@ namespace OneScript.DebugServices
 {
     public class DefaultBreakpointManager : IBreakpointManager
     {
-        private readonly Dictionary<string, string> _exceptionBreakpointsFilters = new Dictionary<string, string>();
-        private readonly List<BreakpointDescriptor> _breakpoints = new List<BreakpointDescriptor>();
+        // Точки задает поток отладчика, а проверяют потоки скриптов: списки не меняются, а подменяются целиком
+        private volatile Dictionary<string, string> _exceptionBreakpointsFilters = new Dictionary<string, string>();
+        private volatile BreakpointDescriptor[] _breakpoints = Array.Empty<BreakpointDescriptor>();
+        private readonly object _lock = new object();
         private int _idsGenerator;
 
         public void SetExceptionBreakpoints((string Id, string Condition)[] filters)
         {
-            _exceptionBreakpointsFilters?.Clear();
-            filters?.ForEach(c =>_exceptionBreakpointsFilters.Add(c.Id, c.Condition));
+            var newFilters = new Dictionary<string, string>();
+            filters?.ForEach(c => newFilters.Add(c.Id, c.Condition));
+            _exceptionBreakpointsFilters = newFilters;
         }
 
         public void SetBreakpoints(string module, (int Line, string Condition)[] breakpoints)
         {
-            var cleaned = _breakpoints.Where(x => x.Module != module)
-                .ToList();
+            lock (_lock)
+            {
+                var cleaned = _breakpoints.Where(x => x.Module != module)
+                    .ToList();
 
-            var range = breakpoints.Select(x => new BreakpointDescriptor(_idsGenerator++) { LineNumber = x.Line, Module = module, Condition = x.Condition });
-            cleaned.AddRange(range);
-            _breakpoints.Clear();
-            _breakpoints.AddRange(cleaned);
+                var range = breakpoints.Select(x => new BreakpointDescriptor(_idsGenerator++) { LineNumber = x.Line, Module = module, Condition = x.Condition });
+                cleaned.AddRange(range);
+                _breakpoints = cleaned.ToArray();
+            }
         }
 
         public bool FindBreakpoint(string module, int line)
-            => _breakpoints.Find(x => x.Module.Equals(module) && x.LineNumber == line) != null;
+            => Find(module, line) != null;
 
+        // Точку могли снять между FindBreakpoint и GetCondition
         public string GetCondition(string module, int line)
-            => _breakpoints.Find(x => x.Module.Equals(module) && x.LineNumber == line).Condition;
+            => Find(module, line)?.Condition;
+
+        private BreakpointDescriptor Find(string module, int line)
+            => Array.Find(_breakpoints, x => x.Module.Equals(module) && x.LineNumber == line);
 
         public void Clear()
         {
-            _breakpoints.Clear();
-            _exceptionBreakpointsFilters.Clear();
+            lock (_lock)
+            {
+                _breakpoints = Array.Empty<BreakpointDescriptor>();
+            }
+            _exceptionBreakpointsFilters = new Dictionary<string, string>();
         }
 
         public bool StopOnAnyException(string message)
@@ -55,7 +68,7 @@ namespace OneScript.DebugServices
 
         private bool NeedStopOnException(string filterId, string message)
         {
-            if (_exceptionBreakpointsFilters?.TryGetValue(filterId, out var condition) == true)
+            if (_exceptionBreakpointsFilters.TryGetValue(filterId, out var condition))
             {
                 if (string.IsNullOrEmpty(condition))
                     return true;

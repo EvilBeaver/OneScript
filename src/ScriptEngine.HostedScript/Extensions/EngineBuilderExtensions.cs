@@ -70,6 +70,7 @@ namespace ScriptEngine.HostedScript.Extensions
         {
             return b.UseFileSystemLibraries()
                     .UseBinaryDataOptions()
+                    .UseBackgroundTasksOptions()
                     .UseNativeApi();
         }
         

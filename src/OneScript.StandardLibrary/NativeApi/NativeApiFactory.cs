@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Exceptions;
@@ -33,16 +34,23 @@ namespace OneScript.StandardLibrary.NativeApi
 
         public static bool Register(string filepath, string identifier, ITypeManager typeManager)
         {
-            if (_libraries.ContainsKey(identifier)) 
-                return false;
-            var library = new NativeApiLibrary(filepath, identifier, typeManager);
-            if (library.Loaded) 
-                _libraries.Add(identifier, library);
-            return library.Loaded;
+            // Проверка и добавление под одной блокировкой: иначе два задания,
+            // подключающие одну метку, загрузят библиотеку дважды
+            lock (_librariesLock)
+            {
+                if (_libraries.ContainsKey(identifier))
+                    return false;
+                var library = new NativeApiLibrary(filepath, identifier, typeManager);
+                if (library.Loaded)
+                    _libraries.TryAdd(identifier, library);
+                return library.Loaded;
+            }
         }
 
-        private static readonly Dictionary<string, NativeApiLibrary> _libraries =
-            new Dictionary<string, NativeApiLibrary>(StringComparer.OrdinalIgnoreCase);
+        private static readonly object _librariesLock = new object();
+
+        private static readonly ConcurrentDictionary<string, NativeApiLibrary> _libraries =
+            new ConcurrentDictionary<string, NativeApiLibrary>(StringComparer.OrdinalIgnoreCase);
 
         internal static bool TryGetLibrary(string identifier, out NativeApiLibrary library)
         {
@@ -53,14 +61,17 @@ namespace OneScript.StandardLibrary.NativeApi
 
         internal static void Shutdown()
         {
-            if (_shutdown)
-                return;
+            lock (_librariesLock)
+            {
+                if (_shutdown)
+                    return;
 
-            _shutdown = true;
+                _shutdown = true;
 
-            foreach (var item in _libraries)
-                item.Value.Dispose();
-            _libraries.Clear();
+                foreach (var item in _libraries)
+                    item.Value.Dispose();
+                _libraries.Clear();
+            }
         }
 
         [ScriptConstructor]

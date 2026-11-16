@@ -13,7 +13,7 @@ using ScriptEngine.Machine.Contexts;
 namespace OneScript.StandardLibrary.XMLSchema.Enumerations
 {
     [SystemEnum("ИсключенияГруппПодстановкиXS", "XSSubstitutionGroupExclusions")]
-    public sealed class EnumerationXSSubstitutionGroupExclusions : ClrEnumWrapperCached<XmlSchemaDerivationMethod>
+    public sealed class EnumerationXSSubstitutionGroupExclusions : ClrEnumWrapperCached<EnumerationXSSubstitutionGroupExclusions, XmlSchemaDerivationMethod>
     {
         private EnumerationXSSubstitutionGroupExclusions(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)

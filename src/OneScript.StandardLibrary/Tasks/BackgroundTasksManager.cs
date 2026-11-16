@@ -6,7 +6,6 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,7 +15,6 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.StandardLibrary.Collections;
-using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -27,12 +25,27 @@ namespace OneScript.StandardLibrary.Tasks
     [ContextClass("МенеджерФоновыхЗаданий", "BackgroundTasksManager")]
     public class BackgroundTasksManager : AutoContext<BackgroundTasksManager>, IDisposable
     {
+        /// <summary>
+        /// Сколько заданий менеджер хранит, если в настройке backgroundJobs.capacity не указано иное.
+        /// Как у кластера 1С:Предприятия
+        /// </summary>
+        public const int DefaultCapacity = 1000;
+
         private readonly ExecutionContext _runtimeContext;
-        private readonly ConcurrentDictionary<int, BackgroundTask> _tasks = new ConcurrentDictionary<int, BackgroundTask>();
+        private readonly BackgroundTasksRegistry _tasks;
 
         public BackgroundTasksManager(ExecutionContext runtimeContext)
+            : this(runtimeContext, runtimeContext.Services.TryResolve<BackgroundTasksOptions>()?.Capacity ?? DefaultCapacity)
         {
+        }
+
+        public BackgroundTasksManager(ExecutionContext runtimeContext, int capacity)
+        {
+            if (capacity <= 0)
+                throw RuntimeException.InvalidArgumentValue();
+
             _runtimeContext = runtimeContext;
+            _tasks = new BackgroundTasksRegistry(capacity);
         }
         
         /// <summary>
@@ -51,8 +64,17 @@ namespace OneScript.StandardLibrary.Tasks
             var taskCreationOptions = longRunning ? TaskCreationOptions.LongRunning : TaskCreationOptions.None;
             var worker = new Task(() =>
             {
-                var process = _runtimeContext.Services.Resolve<IBslProcessFactory>().NewProcess();
-                task.ExecuteOnCurrentThread(process);
+                try
+                {
+                    var process = _runtimeContext.Services.Resolve<IBslProcessFactory>().NewProcess();
+                    task.ExecuteOnCurrentThread(process);
+                }
+                finally
+                {
+                    // До завершения рабочей задачи: вытесняются задания, завершившиеся раньше,
+                    // и ожидающий завершения уже видит задание на новом месте
+                    _tasks.MarkCompleted(task);
+                }
 
             }, taskCreationOptions);
 
@@ -63,6 +85,11 @@ namespace OneScript.StandardLibrary.Tasks
             return task;
         }
 
+        /// <summary>
+        /// Удаляет все задания из списка заданий менеджера.
+        /// Выполняющиеся задания не останавливаются, но их больше не вернут ПолучитьФоновыеЗадания
+        /// и ПолучитьТекущее, и их не будет ждать ОжидатьЗавершенияЗадач.
+        /// </summary>
         [ContextMethod("Очистить", "Clear")]
         public void Clear()
         {
@@ -109,6 +136,9 @@ namespace OneScript.StandardLibrary.Tasks
         /// Блокирует поток до завершения всех заданий.
         /// Выбрасывает исключение, если какие-то задания завершились аварийно.
         /// Выброшенное исключение в свойстве Параметры содержит массив аварийных заданий.
+        /// Учитываются только задания, которые еще есть в списке менеджера: завершенные задания,
+        /// в том числе аварийные, при переполнении из него вытесняются. Если заданий больше,
+        /// чем хранит менеджер, храните ссылки на них и ждите через ОжидатьВсе, проверяя ИнформацияОбОшибке.
         /// </summary>
         [ContextMethod("ОжидатьЗавершенияЗадач", "WaitCompletionOfTasks")]
         public void WaitCompletionOfTasks()
@@ -132,6 +162,14 @@ namespace OneScript.StandardLibrary.Tasks
             }
         }
 
+        /// <summary>
+        /// Возвращает задания менеджера: выполняющиеся в порядке запуска, завершенные в порядке завершения.
+        /// Если заданий больше, чем задано настройкой backgroundJobs.capacity (по умолчанию 1000),
+        /// из списка убираются задания, завершившиеся раньше всех. Выполняющиеся задания остаются
+        /// в списке, даже если их больше этого числа.
+        /// </summary>
+        /// <param name="filter">Структура отбора: Состояние, ИмяМетода, Объект, УникальныйИдентификатор</param>
+        /// <returns>Массив заданий</returns>
         [ContextMethod("ПолучитьФоновыеЗадания", "GetBackgroundJobs")]
         public ArrayImpl GetBackgroundJobs(StructureImpl filter = default)
         {
@@ -179,6 +217,10 @@ namespace OneScript.StandardLibrary.Tasks
             return arr;
         }
 
+        /// <summary>
+        /// Возвращает фоновое задание, в котором выполняется текущий код.
+        /// </summary>
+        /// <returns>ФоновоеЗадание или Неопределено, если код выполняется не в фоновом задании этого менеджера</returns>
         [ContextMethod("ПолучитьТекущее", "GetCurrent")]
         public IValue GetCurrent()
         {
@@ -222,12 +264,6 @@ namespace OneScript.StandardLibrary.Tasks
         {
             Task.WaitAll(GetWorkerTasks());
             _tasks.Clear();
-        }
-
-        [ScriptConstructor]
-        public static BackgroundTasksManager Create(TypeActivationContext context)
-        {
-            return new BackgroundTasksManager(context.Services.Resolve<ExecutionContext>());
         }
     }
 }

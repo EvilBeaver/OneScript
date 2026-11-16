@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -255,14 +256,15 @@ namespace OneScript.StandardLibrary.Json
                     {
                         Int64 i  = Convert.ToInt64(v);
                         if (useFormatWithExponent)
-                            _writer.WriteRawValue(string.Format(Thread.CurrentThread.CurrentCulture, "{0:E}", i));
+                            // Разделитель дробной части в JSON всегда точка, от языка системы не зависит
+                            _writer.WriteRawValue(string.Format(CultureInfo.InvariantCulture, "{0:E}", i));
                         else
                             _writer.WriteValue(i);
                     }
                     else
                     {
                         if (useFormatWithExponent)
-                            _writer.WriteRawValue(string.Format(string.Format(Thread.CurrentThread.CurrentCulture, "{0:E}", v)));
+                            _writer.WriteRawValue(string.Format(CultureInfo.InvariantCulture, "{0:E}", v));
                         else
                             _writer.WriteValue(v);
                     }

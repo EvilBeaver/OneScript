@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using OneScript.Contexts;
+using OneScript.Exceptions;
+using OneScript.Localization;
 using OneScript.StandardLibrary.Text;
 using OneScript.Types;
 using ScriptEngine.Machine;
@@ -29,7 +31,9 @@ namespace OneScript.Web.Server
     public class WebServer: AutoContext<WebServer>
     {
         private readonly ExecutionContext _executionContext;
-        private WebApplication _app;
+        // Остановить вызывают из другого потока, чем Запустить
+        private volatile WebApplication _app;
+        private int _isRunning;
         private readonly List<(IRuntimeContextInstance Target, string MethodName)> _middlewares = new List<(IRuntimeContextInstance Target, string MethodName)>();
         
         private string _contentRoot = null;
@@ -76,19 +80,31 @@ namespace OneScript.Web.Server
         [ContextMethod("Запустить", "Run")]
         public void Run()
         {
-            ConfigureApp();
+            // Второй запуск того же сервера (например, из фонового задания) подменил бы приложение:
+            // Остановить и освобождение первого запуска пришлись бы на чужое
+            if (System.Threading.Interlocked.Exchange(ref _isRunning, 1) != 0)
+                throw new RuntimeException(new BilingualString("Веб-сервер уже запущен", "Web server is already running"));
 
             try
             {
-                _app.Start();
-                if (Port == 0)
-                    Port = new Uri(_app.Urls.First()).Port;
+                ConfigureApp();
 
-                _app.WaitForShutdown();
+                try
+                {
+                    _app.Start();
+                    if (Port == 0)
+                        Port = new Uri(_app.Urls.First()).Port;
+
+                    _app.WaitForShutdown();
+                }
+                finally
+                {
+                    _app.DisposeAsync().AsTask().Wait();
+                }
             }
             finally
             {
-                _app.DisposeAsync().AsTask().Wait();
+                System.Threading.Volatile.Write(ref _isRunning, 0);
             }
         }
 

@@ -29,9 +29,9 @@ namespace DocumenterTests
 
             var result = stringWriter.ToString();
             
-            Assert.Equal("* One\r\n" +
+            Assert.Equal(("* One\r\n" +
                          "* Two\r\n" +
-                         "* Three\r\n", result);
+                         "* Three\r\n").ReplaceLineEndings(), result);
 
         }
         
@@ -55,11 +55,11 @@ namespace DocumenterTests
 
             var result = stringWriter.ToString();
             
-            Assert.Equal("* One\r\n" +
+            Assert.Equal(("* One\r\n" +
                          "* Two\r\n" +
                          "    * Three\r\n" +
                          "    * Four\r\n" +
-                         "* Five\r\n", result);
+                         "* Five\r\n").ReplaceLineEndings(), result);
 
         }
     }

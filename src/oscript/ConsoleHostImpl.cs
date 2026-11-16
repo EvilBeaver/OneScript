@@ -13,7 +13,19 @@ namespace oscript
 {
 	internal static class ConsoleHostImpl
 	{
+		// Цвет консоли общий для процесса: смена цвета, вывод и возврат цвета
+		// из разных потоков не должны перемежаться
+		private static readonly object EchoLock = new object();
+
 		public static void Echo(string text, MessageStatusEnum status = MessageStatusEnum.Ordinary)
+		{
+			lock (EchoLock)
+			{
+				EchoInternal(text, status);
+			}
+		}
+
+		private static void EchoInternal(string text, MessageStatusEnum status)
 		{
 			if (status == MessageStatusEnum.Ordinary)
 			{

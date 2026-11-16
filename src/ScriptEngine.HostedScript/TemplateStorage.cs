@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Contexts.Enums;
@@ -22,28 +23,31 @@ namespace ScriptEngine.HostedScript
     public class TemplateStorage : GlobalContextBase<TemplateStorage>, IDisposable
     {
         private readonly ITemplateFactory _factory;
-        private readonly Dictionary<string, ITemplate> _templates = new Dictionary<string,ITemplate>();
+        // Макеты регистрируют библиотеки, которые могут загружаться во время работы, пока их читают другие потоки
+        private readonly ConcurrentDictionary<string, ITemplate> _templates = new ConcurrentDictionary<string,ITemplate>();
 
         public TemplateStorage(ITemplateFactory factory)
         {
             _factory = factory;
         }
-        
+
         public void RegisterTemplate(string file, string name, TemplateKind kind)
         {
             if (_templates.ContainsKey(name))
                 throw RuntimeException.InvalidArgumentValue(name);
-            
+
             var template = _factory.CreateTemplate(file, kind);
-            _templates.Add(name, template);
+            if (!_templates.TryAdd(name, template))
+            {
+                template.Dispose();
+                throw RuntimeException.InvalidArgumentValue(name);
+            }
         }
-        
+
         public void RegisterTemplate(string name, ITemplate template)
         {
-            if (_templates.ContainsKey(name))
+            if (!_templates.TryAdd(name, template))
                 throw RuntimeException.InvalidArgumentValue(name);
-            
-            _templates.Add(name, template);
         }
         
         

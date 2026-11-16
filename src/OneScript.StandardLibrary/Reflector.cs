@@ -57,28 +57,40 @@ namespace OneScript.StandardLibrary
             else
                 argsToPass = GetArgsToPass(arguments, methInfo.CallParameters);
 
-            IValue retValue = ValueFactory.Create();
-            if (methInfo.IsFunction())
+            IValue retValue = BslUndefinedValue.Instance;
+            try
             {
-                target.CallAsFunction(methodIdx, argsToPass, out retValue, process);
-            }
-            else
-            {
-                target.CallAsProcedure(methodIdx, argsToPass, process);
-            }
-
-            if (arguments != null)
-            {
-                for (int i = 0; i < argsToPass.Length; i++)
+                if (methInfo.IsFunction())
                 {
-                    if (i < arguments.Count())
-                    {
-                        arguments.Set(i, argsToPass[i] is IValueReference r ? r.Value : argsToPass[i]);
-                    }
+                    target.CallAsFunction(methodIdx, argsToPass, out retValue, process);
+                }
+                else
+                {
+                    target.CallAsProcedure(methodIdx, argsToPass, process);
                 }
             }
+            catch (Exception ex)
+            {
+                CopyArgsBack(argsToPass, arguments);
+                throw ex;
+            }
 
+            CopyArgsBack(argsToPass, arguments);
             return retValue;
+        }
+
+        private static void CopyArgsBack(IValue[] argsToPass, ArrayImpl arguments)
+        {
+            if (arguments == null)
+                return;
+
+            for (int i = 0; i < argsToPass.Length; i++)
+            {
+                if (i < arguments.Count())
+                {
+                    arguments.Set(i, argsToPass[i] is IValueReference r ? r.Value : argsToPass[i]);
+                }
+            }
         }
 
         private static IValue[] GetArgsToPass(ArrayImpl arguments, ReadOnlySpan<BslCallParameter> parameters)

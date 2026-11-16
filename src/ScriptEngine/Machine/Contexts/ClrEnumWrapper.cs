@@ -130,12 +130,26 @@ namespace ScriptEngine.Machine.Contexts
         }
     }
 
-    public abstract class ClrEnumWrapperCached<T> : ClrEnumWrapper<T> where T : struct
+    public abstract class ClrEnumWrapperCached<T> : ClrEnumWrapperCached<ClrEnumWrapperCached<T>, T> where T : struct
+    {
+        protected ClrEnumWrapperCached(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
+            : base(typeRepresentation, valuesType)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Кэш значений свой у каждого перечисления TSelf: несколько перечислений могут оборачивать
+    /// одно перечисление Clr (например, XmlSchemaDerivationMethod), и общий кэш по T путал бы их значения
+    /// </summary>
+    public abstract class ClrEnumWrapperCached<TSelf, T> : ClrEnumWrapper<T>
+        where T : struct
+        where TSelf : ClrEnumWrapperCached<TSelf, T>
     {
         private static readonly Dictionary<T, ClrEnumValueWrapper<T>> _valuesCache
             = new Dictionary<T, ClrEnumValueWrapper<T>>();
 
-        protected ClrEnumWrapperCached(TypeDescriptor typeRepresentation, TypeDescriptor valuesType) 
+        protected ClrEnumWrapperCached(TypeDescriptor typeRepresentation, TypeDescriptor valuesType)
             : base(typeRepresentation, valuesType)
         {
             _valuesCache.Clear();

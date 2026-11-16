@@ -21,7 +21,8 @@ namespace ScriptEngine.Machine.Contexts
 
     public class ContextMethodsMapper<TInstance>
     {
-        private List<InternalMethInfo> _methodPtrs;
+        // Публикуется последним: кто увидел заполненный список, увидит и словарь имен
+        private volatile List<InternalMethInfo> _methodPtrs;
         private IdentifiersTrie<int> _methodNumbers;
 
         private readonly object _locker = new object();
