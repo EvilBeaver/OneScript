@@ -143,6 +143,13 @@ jobs:
           path: ~/.nuget/packages
           key: nuget-tests-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
           restore-keys: nuget-tests-${{ runner.os }}-
+      # ICU использует старые IANA-имена для Windows ID, например Europe/Kiev.
+      # В новых Ubuntu такие алиасы вынесены из tzdata в отдельный пакет.
+      - name: Install time zone aliases
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends tzdata-legacy
+
       # Юнит-тесты движка, как в Windows testing; отчеты UnitTests пишет в tests/
       - name: Unit tests
         env:
