@@ -190,7 +190,7 @@ namespace OneScript.StandardLibrary.NativeApi
             string filename = System.IO.Path.GetDirectoryName(location)
                 + System.IO.Path.DirectorySeparatorChar + "ScriptEngine.NativeApi"
                 + (IntPtr.Size == 8 ? "64" : "32")
-                + (NativeApiKernel.IsLinux ? ".so" : ".dll");
+                + NativeApiKernel.LibraryExtension;
             IntPtr module = NativeApiKernel.LoadLibrary(filename);
             if (module == IntPtr.Zero)
             {
