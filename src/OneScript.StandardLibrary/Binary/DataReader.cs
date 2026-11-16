@@ -69,21 +69,22 @@ namespace OneScript.StandardLibrary.Binary
         /// Определяет разделение строк в файле для конвертации в стандартный перевод строк ПС.
         /// Значение по умолчанию: ВК + ПС. </param>
         [ScriptConstructor(Name = "На основании двоичных данных или имени файла")]
-        public static DataReader Constructor(IValue dataSource, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, string lineSplitter = "\n", string convertibleSplitterOfLines = null)
+        public static DataReader Constructor(IValue dataSource, IValue textEncoding = null, ByteOrderEnum? byteOrder = null, 
+            string lineSplitter = "\n", string convertibleSplitterOfLines = null)
         {
             Stream stream;
-            if (dataSource.SystemType == BasicTypes.String)
+            if (dataSource?.SystemType == BasicTypes.String)
             {
                 stream = new FileStream(dataSource.ToString()!, FileMode.Open, FileAccess.Read, FileShare.Read);
             }
             else
             {
-                stream = dataSource.AsObject() switch
+                stream = dataSource switch
                 {
                     BinaryDataContext binaryData => binaryData.GetStream(),
                     IStreamWrapper wrapper => wrapper.GetUnderlyingStream(),
 
-                    _ => throw RuntimeException.InvalidArgumentType("dataSource")
+                    _ => throw RuntimeException.InvalidNthArgumentType(1)
                 };
             }
 

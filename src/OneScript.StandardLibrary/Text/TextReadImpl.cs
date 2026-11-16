@@ -170,7 +170,7 @@ namespace OneScript.StandardLibrary.Text
         [ScriptConstructor(Name = "На основании файла или потока без кодировки")]
         public static TextReadImpl Constructor (IValue input)
         {
-            var reader = new TextReadImpl ();
+            var reader = new TextReadImpl();
             reader.Open(input);
             return reader;
         }
@@ -210,7 +210,7 @@ namespace OneScript.StandardLibrary.Text
                     lineDelimiter ?? "\n",
                     eolDelimiter);
             }
-            else
+            else if (input is not null)
             {
                 reader.OpenFile(
                     ContextValuesMarshaller.ConvertValueStrict<string>(input),
@@ -219,6 +219,8 @@ namespace OneScript.StandardLibrary.Text
                     eolDelimiter,
                     monopoly);
             }
+            else
+                throw RuntimeException.InvalidNthArgumentType(1);
 
             return reader;
         }
