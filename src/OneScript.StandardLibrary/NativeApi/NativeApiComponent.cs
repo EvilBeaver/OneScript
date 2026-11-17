@@ -225,14 +225,11 @@ namespace OneScript.StandardLibrary.NativeApi
                 
                 if (NativeApiProxy.HasParamDefValue(_object, methodNumber, i))
                 {
-                    parameter.DefaultValue(BslSkippedParameterValue.Instance);
-                    // кажется что значение не нужно в данном кейсе использования
-                    // если что - раскомментировать
-                    // NativeApiProxy.GetParamDefValue(_object, methodNumber, i, variant =>
-                    // {
-                    //     var value = (BslPrimitiveValue)new NativeApiVariant(variant).GetValue();
-                    //     parameter.DefaultValue(value);
-                    // });
+                    NativeApiProxy.GetParamDefValue(_object, methodNumber, i, variant =>
+                    {
+                        var value = (BslPrimitiveValue)new NativeApiVariant(variant).GetValue();
+                        parameter.DefaultValue(value);
+                    });
                 }
             }
 
