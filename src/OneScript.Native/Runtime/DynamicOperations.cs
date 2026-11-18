@@ -60,7 +60,7 @@ namespace OneScript.Native.Runtime
 
         public static DateTime ToDate(BslValue value) => (DateTime)value;
 
-        public static string ToString(BslValue value) => value.ToString();
+        public static string ToString(BslValue value) => value?.ToString() ?? string.Empty;
 
         // FIXME: тут не должно быть Null, но из-за несовершенства мира они тут бывают. Когда задолбает - надо починить и убрать отсюда проверки на null
         public static bool Equality(BslValue left, BslValue right)
@@ -90,7 +90,7 @@ namespace OneScript.Native.Runtime
         {
             return value switch
             {
-            null => BslUndefinedValue.Instance,
+            null => null,//BslUndefinedValue.Instance,
             string s => BslStringValue.Create(s),
             decimal d => BslNumericValue.Create(d),
 
