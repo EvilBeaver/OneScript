@@ -25,6 +25,7 @@ OneScript — открытая реализация языка, совмести
   - `src/TestApp`, `src/Component` — примеры использования.
 - Хостинг и сервисы:
   - `src/ScriptEngine.HostedScript`,
+  - `src/OneScript.DebugProtocol` (мульти-таргет `net48;net8.0`),
   - `src/OneScript.DebugServices`,
   - `src/OneScript.Web.Server`.
 - Рантайм (компиляция/исполнение, встроенные функции):
@@ -41,11 +42,11 @@ OneScript — открытая реализация языка, совмести
 
 ## 2. Быстрый старт для контрибьютора
 
-- Где собирать: решение `src/1Script.sln`.
-- Целевой фреймворк: `net8.0` (см. `src/oscommon.targets`), `LangVersion 8.0`.
+- Где собирать: решение `src/1Script.sln` (в него не входят `src/StandaloneRunner` и legacy `src/Tests/NUnitTests`).
+- Целевой фреймворк: `net8.0`, язык C# 12 (`LangVersion 12` в `src/oscommon.targets`). Исключения: `VSCode.DebugAdapter` — net48 / C# 7.3; `OneScript.DebugProtocol` — мульти-таргет `net48;net8.0`; `StandaloneRunner` — net5.0.
 - Входной CLI: `src/oscript` (консольное приложение для запуска `.os`-скриптов).
 - Запуск тестов:
-  - модульные C#-тесты — проекты `src/Tests/*` (xUnit/NUnit);
+  - модульные C#-тесты — проекты `src/Tests/*` (все актуальные — xUnit; legacy `NUnitTests` не входит в решение);
   - приёмочные BSL-скрипты — каталог `tests/*.os`, запуск через `tests/run-bsl-tests.cmd`/`tests/run-bsl-tests.sh`.
 - Сценарий полной сборки и прогона тестов описан в [`README.md`](../README.md) и [`.github/copilot-instructions.md`](../.github/copilot-instructions.md).
 - Если добавляете новый контекст/тип — обычно правки в `OneScript.Core`/`ScriptEngine`/`StandardLibrary`, плюс модульные тесты. Подробности — в [`docs/contexts.md`](contexts.md).
@@ -58,6 +59,8 @@ OneScript — открытая реализация языка, совмести
 ## 3. Обзор проектов (назначение, ключевые узлы)
 
 Ниже по каждому проекту — зачем он нужен, где искать основную логику и какие классы отвечают за ключевые задачи.
+
+Примечание: в `src/` есть «призрачные» каталоги от удалённых проектов — `ASPNETHandler/`, `NUnitTests/`, `oscriptTest/`, `OneScript.Contexts.Adapters/`, `Tests/VSCode.DebugAdapter.Tests/`. В них остались только `bin/`/`obj/`; это не проекты, не учитывать их при навигации.
 
 ### 3.1. OneScript.Language — лексер/препроцессор/парсер/AST
 
@@ -135,9 +138,9 @@ OneScript — открытая реализация языка, совмести
 Назначение: безопасная обвязка движка для встраивания, инициализация стандартного глобального контекста, загрузка библиотек, конфигурирование.
 
 - Где в коде:
-  - `HostedScriptEngine.cs` — инициализация, глобальные контексты (`SystemGlobalContext`, `DynamicLoadingFunctions`), создание процессов.
+  - `HostedScriptEngine.cs` — инициализация, глобальные контексты (`SystemGlobalContext`, `DynamicLoadingFunctions`, `BackgroundTasksManager` — глобальное свойство `ФоновыеЗадания`/`BackgroundJobs`), создание процессов.
   - `LibraryLoader.cs` — `package-loader.os`, подключение `.os`-модулей/классов/макетов; `FileSystemDependencyResolver.cs` — поиск библиотек, цикл обработки, защита от циклических зависимостей.
-  - `Extensions/EngineBuilderExtensions.cs` — `UseSystemConfigFile`/`UseEnvironmentVariableConfig`/`UseEntrypointConfigFile`; `UseImports`/`UseFileSystemLibraries`/`UseNativeRuntime`/`UseEventHandlers`.
+  - `Extensions/EngineBuilderExtensions.cs` — `UseConfigFile`/`UseSystemConfigFile`/`UseEntrypointConfigFile`/`UseEnvironmentVariableConfig`/`UseFileSystemLibraries`/`UseNativeRuntime`/`UseEventHandlers` и др. (`UseImports` — в `src/ScriptEngine/Hosting/EngineBuilderExtensions.cs`).
 - Жизненный цикл:
   1. Читает настройки из системного `oscript.cfg`, файла `oscript.cfg` рядом с entrypoint и переменной окружения `OSCRIPT_CONFIG` (в порядке возрастания приоритета — переменная окружения перезаписывает все предыдущие настройки).
   2. Инициализация `HostedScriptEngine` → глобальные объекты → процесс → компиляция/исполнение модуля.
@@ -150,14 +153,20 @@ OneScript — открытая реализация языка, совмести
 - Коллекции: `Collections/`
   - `ArrayImpl.cs`, `MapImpl.cs`, `StructureImpl.cs`, `ValueList/ValueListImpl.cs`.
   - Таблицы/деревья значений: `ValueTable/ValueTable.cs` (+ `ValueTableColumn.cs`/`ValueTableRow.cs`), `ValueTree/ValueTree.cs`.
-- Файлы/потоки/текст: `FileOperations.cs`, `FileContext.cs`, `Text/*` (`TextReadImpl.cs`, `TextWriteImpl.cs`), `CustomLineFeedStreamReader.cs`.
-- Сеть/HTTP: `Http/*` (`HttpRequestContext.cs`, `HttpResponseContext.cs`, `HttpRequestBody*`, `InternetProxyContext.cs`).
+- Двоичные данные и потоки: `Binary/` — `BinaryDataContext.cs`, `BinaryDataBuffer.cs`, `DataReader.cs`/`DataWriter.cs`, `FileStreamContext.cs`, `MemoryStreamContext.cs`, `GenericStream.cs`, `FileStreamsManager.cs`, `GlobalBinaryData.cs`.
+- Файлы/потоки/текст: `FileOperations.cs`, `FileContext.cs`, `Text/*` (`TextReadImpl.cs`, `TextWriteImpl.cs`, `ConsoleContext.cs`, `TextDocumentContext.cs`), `CustomLineFeedStreamReader.cs`.
+- Сеть/HTTP: `Http/*` (`HttpConnectionContext.cs`, `HttpRequestContext.cs`, `HttpResponseContext.cs`, `HttpRequestBody*`, `InternetProxyContext.cs`); низкоуровневый TCP — `Net/*` (`TCPClient.cs`, `TCPServer.cs`).
 - JSON: `Json/*` (`JSONReader.cs`, `JSONWriter.cs`, `JSONDataExtractor.cs`, `JSONWriterSettings.cs`).
-- XML/XSLT: `Xml/*` (`XmlReaderImpl.cs`, `XmlWriterImpl.cs`, `XSLTransform.cs`).
+- XML/XSLT: `Xml/*` (`XmlReaderImpl.cs`, `XmlWriterImpl.cs`, `XSLTransform.cs`); схемы — `XMLSchema/*`; XDTO-сериализация — `XDTO/*` (`XDTOSerializer.cs`, `XMLForm.cs`).
 - ZIP: `Zip/*` (`ZipReader.cs`, `ZipWriter.cs` и перечисления параметров).
 - Процессы: `Processes/*` (`ProcessContext.cs`, `GlobalProcessesFunctions.cs`).
+- Фоновые задания: `Tasks/*` — `BackgroundTasksManager.cs` (`МенеджерФоновыхЗаданий`/`BackgroundTasksManager`), `BackgroundTask.cs`, `BackgroundTasksRegistry.cs`, `BackgroundTasksOptions.cs` (ёмкость настраивается ключом `backgroundJobs.capacity` в `oscript.cfg`). Активно развиваемая подсистема.
+- Хеширование: `Hash/*` (`HashImpl.cs` — `ХешированиеДанных`, `Crc32.cs`, `HashFunctionEnum.cs`).
+- Регулярные выражения: `Regex/*` (`Regex.cs`, `MatchImpl.cs`, `MatchCollectionImpl.cs`).
+- Описания типов: `TypeDescriptions/*` (`TypeDescription.cs`, квалификаторы, `TypeDescriptionBuilder.cs`).
+- Диски: `DriveInfo/*` (`DriveInfo.cs`, `DriveTypeEnum.cs`).
 - `StandardGlobalContext.cs` — набор полезных глобальных функций/свойств (например, `Символы`, `Приостановить`/`Sleep`, `ЗначениеЗаполнено` и т.п.).
-- Разное: `RandomNumberGenerator.cs`, `StringOperations.cs`, `Timezones/*`.
+- Разное: `RandomNumberGenerator.cs`, `StringOperations.cs`, `Reflector.cs`, `SystemEnvironmentContext.cs`, `Timezones/*`.
 
 ### 3.7. OneScript.Web.Server — веб-обёртки для BSL (ASP.NET Core)
 
@@ -184,8 +193,8 @@ OneScript — открытая реализация языка, совмести
 - `oscript` (CLI): `src/oscript`
   - `Program.cs` — входная точка.
   - `ConsoleHostBuilder.cs` — сборка консольного хоста.
-  - Поведения (режимы): `ExecuteScriptBehavior.cs`, `CheckSyntaxBehavior.cs`, `ShowVersionBehavior.cs`, `DebugBehavior.cs` и др.
-- `StandaloneRunner` — сборка самодостаточных пакетов/запуск:
+  - Поведения (режимы; классы лежат в корне `src/oscript`, диспетчер — `BehaviorSelector.cs`): `ExecuteScriptBehavior` (запуск скрипта), `ExecuteCodeBehavior` (`-c`), `CheckSyntaxBehavior` (`-check`), `ShowCompiledBehavior` (`-compile`), `MeasureBehavior` (`-measure`), `CgiBehavior` (`-cgi`), `DebugBehavior` (`-debug`), `ShowVersionBehavior` (`-version`) и др.
+- `StandaloneRunner` — сборка самодостаточных пакетов/запуск (не входит в `1Script.sln`, таргет `net5.0`, в каталоге лежат эталонные бинарники-шаблоны для пакетов):
   - `Program.cs`, `ProcessLoader.cs`, `StandaloneApplicationHost.cs`, `StandaloneProcess.cs`, `StandaloneTemplateFactory.cs`.
 - `OneScriptDocumenter` — генерация документации по сборкам:
   - на вход получает список DLL (рядом должны лежать xml-docs от этих dll) и файл оглавления (готовый `OneScriptDocumenter/default_toc.json` лежит в репозитории);
@@ -200,6 +209,7 @@ OneScript — открытая реализация языка, совмести
 - Задача: писать нативные аддины, видимые в BSL как объекты/контексты.
 - Управляемая прослойка: `src/OneScript.StandardLibrary/NativeApi/` (`NativeApiComponent`, `NativeApiProxy.cs`).
 - Сборка C++, копирование DLL, прогон `tests/native-api.os` — [`docs/native-api.md`](native-api.md). **Не** использовать `dotnet msbuild` для vcxproj.
+- Тестовая компонента `AddInNative` (`tests/native-api/AddInNative.vcxproj`) включена в `1Script.sln` (папка решения `Tests`).
 
 ## 4. Как компоненты связаны между собой (словесная диаграмма)
 
@@ -224,11 +234,15 @@ OneScript — открытая реализация языка, совмести
 
 ## 6. Навигация по тестам
 
-- C#-тесты: `src/Tests/*`:
+- C#-тесты (все актуальные — xUnit): `src/Tests/*`:
   - Язык: `src/Tests/OneScript.Language.Tests/*` (лексер/парсер/препроцессор).
   - Ядро/типы/контексты: `src/Tests/OneScript.Core.Tests/*`.
   - Динамика/нативный рантайм: `src/Tests/OneScript.Dynamic.Tests/*`.
   - Стандартная библиотека: `src/Tests/OneScript.StandardLibrary.Tests/*`.
   - Документатор: `src/Tests/DocumenterTests/*`.
-  - Отладчик: `src/Tests/VSCode.DebugAdapter.Tests/`, `src/Tests/OneScript.DebugProtocol.Test/`.
+  - Отладчик: `src/Tests/OneScript.DebugProtocol.Test/*` (включает и тесты DebugAdapter — отдельный проект `VSCode.DebugAdapter.Tests` удалён, остались только старые `bin/`/`obj/`).
+  - Бенчмарки (не тесты): `src/Tests/OneScript.Benchmarks/*` — BenchmarkDotNet.
+  - `src/Tests/NUnitTests/` — legacy (net462, NUnit), в решение не входит.
 - Скриптовые тесты: `tests/*.os` — поведенческие сценарии языка и стандартной библиотеки. Запускаются скриптами `tests/run-bsl-tests.cmd`/`tests/run-bsl-tests.sh` через свежесобранный `oscript` (см. [`README.md`](../README.md), раздел «Тестирование»).
+  - Обнаружение тестов (`testrunner.os -runAll .`): на верхнем уровне `tests/` берутся все `.os`-файлы (кроме `testrunner.os`), во вложенных каталогах — только файлы с префиксом `test-` (например, `tests/XMLSchema/test-*.os`, `tests/zip/test-*.os`). Остальные подкаталоги (`component`, `global-context`, `customlib`, `cgi`, `native-api/` и т.п.) — фикстуры и хелперы, запускаются опосредованно.
+  - Известные падения вне scope: `http.os`, тест `Тест_ДолженПроверитьЧтоПеремещениеФайлаРаботаетПоHTTP` (фактически в `tests/global-funcs.os`), ошибки из-за отсутствующей `tests/component/Component.dll` (бинарник не хранится в git) — полный список в [`.cursor/rules/runbsltests.mdc`](../.cursor/rules/runbsltests.mdc).
