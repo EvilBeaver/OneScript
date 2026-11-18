@@ -227,7 +227,7 @@ namespace OneScript.StandardLibrary.NativeApi
                 {
                     NativeApiProxy.GetParamDefValue(_object, methodNumber, i, variant =>
                     {
-                        var value = (BslPrimitiveValue)new NativeApiVariant(variant).GetValue();
+                        var value = new NativeApiVariant(variant).GetValue() as BslPrimitiveValue;
                         parameter.DefaultValue(value);
                     });
                 }
