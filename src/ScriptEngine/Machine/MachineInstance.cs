@@ -115,7 +115,7 @@ namespace ScriptEngine.Machine
 
             ExecuteCode();
 
-            IValue methodResult = null;
+            IValue methodResult = BslUndefinedValue.Instance;
             if (methodInfo.IsFunction())
             {
                 methodResult = _operationStack.Pop();
