@@ -27,7 +27,7 @@ namespace oscript
         
         public string CodeStatFile { get; set; }
 
-        public bool CodeStatisticsEnabled => CodeStatFile != null;
+        public bool CodeStatisticsEnabled { get; set; }
 
         public override int Execute()
         {
@@ -39,23 +39,26 @@ namespace oscript
 
             var builder = ConsoleHostBuilder.Create(_path);
             builder.WithDebugger(DebugController);
-            CodeStatProcessor codeStatProcessor = null;
+            CodeStatHub codeStatHub = null;
+            CodeStatProcessor cliSession = null;
             if (CodeStatisticsEnabled)
             {
-                codeStatProcessor = new CodeStatProcessor();
-                builder.Services.RegisterSingleton<ICodeStatCollector>(codeStatProcessor);
+                codeStatHub = new CodeStatHub();
+                builder.Services.RegisterSingleton(codeStatHub);
+                builder.Services.RegisterSingleton<ICodeStatCollector>(codeStatHub);
+                if (CodeStatFile != null)
+                    cliSession = codeStatHub.StartSession();
             }
 
             using var hostedScript = ConsoleHostBuilder.Build(builder);
             var source = hostedScript.Loader.FromFile(_path);
             var result = _host.RunProcess(hostedScript, source);
 
-            if (codeStatProcessor != null)
+            if (cliSession != null && codeStatHub != null)
             {
-                codeStatProcessor.EndCodeStat();
-                var codeStat = codeStatProcessor.GetStatData();
+                codeStatHub.FinishSession(cliSession);
                 var statsWriter = new CodeStatWriter(CodeStatFile, CodeStatWriterType.JSON);
-                statsWriter.Write(codeStat);
+                statsWriter.Write(cliSession.GetStatData());
             }
 
             return result;
