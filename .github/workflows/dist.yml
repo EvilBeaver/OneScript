@@ -1,0 +1,241 @@
+# Сборка дистрибутивов OneScript без тестов: вызывается из build.yml (с тестами) и release.yml (публикация)
+
+name: Distribution
+
+on:
+  workflow_call:
+    outputs:
+      version:
+        value: ${{ jobs.windows-build.outputs.version }}
+
+permissions:
+  contents: read
+
+env:
+  VersionPrefix: '2.3.0'
+  VersionSuffix: 'dev+${{ github.run_number }}'
+  BUILD_NUMBER: ${{ github.run_number }}
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+  # Документация рассчитана на русскую Windows с форматами дат из NLS,
+  # а .NET на новых Windows по умолчанию берет форматы из ICU
+  DOTNET_SYSTEM_GLOBALIZATION_USENLS: 'true'
+
+jobs:
+  windows-build:
+    name: Windows Build
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      # MSBuild кладет сюда отчеты о падении своих процессов (MSBuild_*.failure.txt, например при MSB4166)
+      MSBUILDDEBUGPATH: ${{ github.workspace }}\msbuild-debug
+    defaults:
+      run:
+        shell: cmd
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Check release version
+        if: github.event_name == 'release'
+        shell: bash
+        run: |
+          FULL_VERSION="$VersionPrefix${VersionSuffix:+-$VersionSuffix}"
+          if [ "$GITHUB_REF_NAME" != "v$FULL_VERSION" ]; then
+            echo "::error::Тег $GITHUB_REF_NAME не совпадает с версией сборки $FULL_VERSION (VersionPrefix и VersionSuffix в dist.yml)"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+      - uses: microsoft/setup-msbuild@v3
+      - name: Russian locale
+        shell: pwsh
+        run: Set-Culture ru-RU
+      # Без кэша restore каждый раз заново скачивает пакеты, это почти две минуты
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: |
+          chcp 65001 > nul
+          msbuild src/1Script.sln /t:restore
+      - name: Publish documenter
+        run: |
+          chcp 65001 > nul
+          dotnet publish src/OneScriptDocumenter/OneScriptDocumenter.csproj -c Release -o doctool
+      - name: Build
+        run: |
+          chcp 65001 > nul
+          msbuild Build.csproj /t:CleanAll;PrepareDistributionFiles;CreateNuget
+      # Тестовая .NET-компонента для addin.os и enum.os: Build.csproj ее не собирает, а post-build кладет ее в tests/component
+      - name: Build test component
+        run: |
+          chcp 65001 > nul
+          dotnet build src/Component/Component.csproj -c Release -p:SolutionDir=%GITHUB_WORKSPACE%\src\
+
+      # Версия едет вместе с дистрибутивами: по ней release.yml публикует сборку develop
+      - name: Version
+        id: version
+        shell: bash
+        run: |
+          FULL_VERSION="$VersionPrefix${VersionSuffix:+-$VersionSuffix}"
+          echo "$FULL_VERSION" > built/version.txt
+          echo "version=$FULL_VERSION" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: buildResults
+          path: built/
+          include-hidden-files: true
+          retention-days: 3
+      - uses: actions/upload-artifact@v7
+        with:
+          name: vscode
+          path: built/vscode/
+          retention-days: 3
+      - uses: actions/upload-artifact@v7
+        with:
+          name: nativeApiTestsDll
+          path: tests/native-api/bin*/*.dll
+          retention-days: 3
+      - uses: actions/upload-artifact@v7
+        with:
+          name: testComponent
+          path: tests/component/Component.dll
+          retention-days: 3
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: msbuild-debug-windows-build
+          path: msbuild-debug/
+          if-no-files-found: ignore
+
+  linux-build:
+    name: Linux Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      # Сборка в контейнере вручную, а не через container: в ubuntu 18.04 не запускается node из actions
+      - name: Build native API
+        run: |
+          mkdir -p output
+          docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/w" -w /w oscript/onescript-builder:gcc sh -ec '
+            mkdir -p built/tmp/na-proxy built/tmp/na-tests
+            cd src/ScriptEngine.NativeApi && ./build.sh && cp *.so ../../built/tmp/na-proxy && cd ../..
+            cd tests/native-api && ./build.sh && cp *.so ../../built/tmp/na-tests && cd ../..
+            cp -Rv built/tmp/* output/
+          '
+      - uses: actions/upload-artifact@v7
+        with:
+          name: nativeApiSo
+          path: output/na-proxy/*.so
+          retention-days: 3
+      - uses: actions/upload-artifact@v7
+        with:
+          name: nativeApiTestsSo
+          path: output/na-tests/*.so
+          retention-days: 3
+
+  macos-build:
+    name: macOS Build
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      # Универсальные библиотеки, сразу arm64 и x86_64. Политика 3.5 - для CMake 4 со старым cmake_minimum_required
+      - name: Build native API
+        run: |
+          for project in src/ScriptEngine.NativeApi tests/native-api; do
+            cmake -S $project -B build/$project -D CMAKE_BUILD_TYPE=Release -D CMAKE_POLICY_VERSION_MINIMUM=3.5
+            cmake --build build/$project
+          done
+          mkdir -p output/na-proxy output/na-tests
+          cp build/src/ScriptEngine.NativeApi/*.dylib output/na-proxy/
+          cp build/tests/native-api/*.dylib output/na-tests/
+          lipo -info output/*/*.dylib
+          # Apple Silicon не загружает неподписанные библиотеки, а линковщик подписывает не все части универсальной.
+          # На раннере SIP выключен, поэтому подпись проверяется явно
+          codesign -f -s - output/*/*.dylib
+          codesign -v output/*/*.dylib
+      - uses: actions/upload-artifact@v7
+        with:
+          name: nativeApiDylib
+          path: output/na-proxy/*.dylib
+          retention-days: 3
+      - uses: actions/upload-artifact@v7
+        with:
+          name: nativeApiTestsDylib
+          path: output/na-tests/*.dylib
+          retention-days: 3
+
+  vscode-debugger:
+    name: VSCode debugger Build
+    needs: windows-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: vscode
+          path: built/vscode
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Package
+        run: |
+          npm install @vscode/vsce@4.0.0
+          cd built/vscode && ../../node_modules/.bin/vsce package
+      - uses: actions/upload-artifact@v7
+        with:
+          name: vsix
+          path: built/vscode/*.vsix
+
+  packaging:
+    name: Packaging
+    needs: [windows-build, linux-build, macos-build]
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+      - uses: microsoft/setup-msbuild@v3
+      - name: Russian locale
+        shell: pwsh
+        run: Set-Culture ru-RU
+      - uses: actions/download-artifact@v8
+        with:
+          name: buildResults
+          path: built
+      - uses: actions/download-artifact@v8
+        with:
+          name: nativeApiSo
+          path: output/na-proxy
+      - uses: actions/download-artifact@v8
+        with:
+          name: nativeApiDylib
+          path: output/na-mac
+
+      - name: Pack
+        run: |
+          chcp 65001 > nul
+          xcopy output\na-proxy\*64.so built\linux-x64\bin\ /F || exit /b
+          xcopy output\na-mac\*.dylib built\osx-x64\bin\ /F || exit /b
+          xcopy output\na-mac\*.dylib built\osx-arm64\bin\ /F || exit /b
+          msbuild Build.csproj /t:PackDistributions
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: built/
+          include-hidden-files: true
