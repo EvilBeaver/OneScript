@@ -23,7 +23,7 @@ namespace ScriptEngine
         private readonly SymbolTable _symbols = new SymbolTable();
         private SymbolScope _scopeOfGlobalProperties;
         
-        private readonly PropertyBag _injectedProperties;
+        private readonly LazyPropertyBag _injectedProperties;
 
         private readonly List<IAttachableContext> _contexts = new List<IAttachableContext>();
 
@@ -31,7 +31,7 @@ namespace ScriptEngine
 
         public RuntimeEnvironment()
         {
-            _injectedProperties = new PropertyBag();
+            _injectedProperties = new LazyPropertyBag();
             _libraryManager = new LibraryManager(_injectedProperties);
         }
 
