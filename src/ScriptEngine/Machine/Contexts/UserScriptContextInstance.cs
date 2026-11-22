@@ -59,15 +59,18 @@ namespace ScriptEngine.Machine.Contexts
             }
         }
         
-        private IValue[] ConstructorParams { get; }
+        private IValue[] ConstructorParams { get; set; }
 
         protected override void OnInstanceCreation(IBslProcess process)
         {
+            var constructorParams = ConstructorParams;
+            ConstructorParams = Array.Empty<IValue>();
+
             ActivateAsStringOverride();
 
             base.OnInstanceCreation(process);
             var methId = GetScriptMethod(OnInstanceCreationTerms.Russian, OnInstanceCreationTerms.English);
-            int constructorParamsCount = ConstructorParams.Length;
+            int constructorParamsCount = constructorParams.Length;
 
             if (methId > -1)
             {
@@ -88,7 +91,7 @@ namespace ScriptEngine.Machine.Contexts
                 if (constructorParamsCount < procParamsCount)
                 {
                     var ctorParameters = new IValue[procParamsCount];
-                    ConstructorParams.CopyTo(ctorParameters, 0);
+                    constructorParams.CopyTo(ctorParameters, 0);
                     for (int i = constructorParamsCount; i < procParamsCount; i++)
                     {
                         ctorParameters[i] = (IValue)parameters[i].DefaultValue;
@@ -96,7 +99,7 @@ namespace ScriptEngine.Machine.Contexts
                     CallScriptMethod(methId, ctorParameters, process);
                 }
                 else
-                    CallScriptMethod(methId, ConstructorParams, process);
+                    CallScriptMethod(methId, constructorParams, process);
             }
             else
             {
