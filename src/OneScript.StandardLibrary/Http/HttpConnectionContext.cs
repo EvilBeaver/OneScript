@@ -241,13 +241,17 @@ namespace OneScript.StandardLibrary.Http
             if(_proxy != null)
                 request.Proxy = _proxy.GetProxy(uriBuilder.Scheme);
 
+            // Timeout ограничивает только ожидание заголовков ответа.
+            // Чтение тела ограничивает ReadWriteTimeout, по умолчанию в .NET это 5 минут
             if (Timeout == 0)
             {
                 request.Timeout = System.Threading.Timeout.Infinite;
+                request.ReadWriteTimeout = System.Threading.Timeout.Infinite;
             }
             else
             {
                 request.Timeout = Timeout * 1000;
+                request.ReadWriteTimeout = Timeout * 1000;
             }
 
             if (uriBuilder.Scheme == HTTPS_SCHEME)
